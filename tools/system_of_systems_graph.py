@@ -2,7 +2,6 @@
 import os
 import json
 import networkx as nx
-import matplotlib.pyplot as plt
 import sys
 import argparse
 from typing import Dict, List, Tuple
@@ -134,215 +133,6 @@ def build_system_graph(index: Dict[str, str], include_levels: List[str], index_d
                         G.add_edge(service_id, dep_id, type='interface')
     return G
 
-# --- STEP 3: Visualize the graph ---
-def visualize_graph(G: nx.DiGraph, out_file: str = None, title: str = 'System Architecture', layout: str = 'spectral'):
-    # Increase figure size for better readability
-    plt.figure(figsize=(20, 14))
-    
-    # Choose layout algorithm with improved positioning
-    if layout == 'spectral':
-        pos = nx.spectral_layout(G, scale=2.0)
-    elif layout == 'circular':
-        pos = nx.circular_layout(G, scale=2.0)
-    elif layout == 'shell':
-        # Group nodes by level for shell layout
-        levels = {}
-        for n in G.nodes:
-            level = G.nodes[n].get('level', 'unknown')
-            if level not in levels:
-                levels[level] = []
-            levels[level].append(n)
-        
-        # Order shells from outer to inner based on hierarchy
-        level_order = ['system_of_systems', 'system', 'service', 'package', 'module']
-        ordered_shells = []
-        for level in level_order:
-            if level in levels and levels[level]:
-                ordered_shells.append(levels[level])
-        
-        # Add any remaining levels not in the predefined order
-        for level, nodes in levels.items():
-            if level not in level_order and nodes:
-                ordered_shells.append(nodes)
-        
-        pos = nx.shell_layout(G, nlist=ordered_shells, scale=2.0)
-    elif layout == 'kamada':
-        pos = nx.kamada_kawai_layout(G, scale=2.0)
-    elif layout == 'hierarchical':
-        # Create a better hierarchical layout
-        try:
-            import pygraphviz
-            pos = nx.graphviz_layout(G, prog='dot', args='-Grankdir=TB -Gnodesep=1.5 -Granksep=2.0')
-        except:
-            # Fallback to a custom hierarchical layout
-            pos = create_custom_hierarchical_layout(G)
-    elif layout == 'custom_hierarchical':
-        pos = create_custom_hierarchical_layout(G)
-    else:  # spring (default fallback)
-        pos = nx.spring_layout(G, seed=42, k=3.0, iterations=100, scale=2.0)
-    
-    # Scale positions to avoid overlap
-    scale_factor = max(len(G.nodes) * 0.3, 2.0)
-    pos = {node: (coord[0] * scale_factor, coord[1] * scale_factor) for node, coord in pos.items()}
-    
-    labels = nx.get_node_attributes(G, 'label')
-    
-    # Create color map with better contrast
-    color_map = []
-    node_sizes = []
-    
-    for n in G.nodes:
-        node_data = G.nodes[n].get('raw', {})
-        level = G.nodes[n].get('level', 'unknown')
-        implementation_status = node_data.get('implementation_status', 'existing')
-        
-        # Set node size based on hierarchy level
-        if level == 'system_of_systems':
-            size = 3000
-        elif level == 'system':
-            size = 2500
-        elif level == 'service':
-            size = 2000
-        elif level == 'package':
-            size = 1500
-        elif level == 'module':
-            size = 1200
-        else:
-            size = 1500
-        node_sizes.append(size)
-        
-        # Choose base color by level with better contrast
-        if level == 'system_of_systems':
-            base_color = '#003049'  # Dark blue
-        elif level == 'system':
-            base_color = '#219ebc'  # Blue
-        elif level == 'service':
-            base_color = '#ffb703'  # Orange
-        elif level == 'package':
-            base_color = '#8ecae6'  # Light blue
-        elif level == 'module':
-            base_color = '#fb8500'  # Dark orange
-        else:
-            base_color = '#adb5bd'  # Gray
-        
-        # Modify color based on implementation status
-        if implementation_status == 'existing':
-            # Use green tint for existing (verified) components
-            color_map.append('#2d6a4f' if level == 'system_of_systems' else
-                           '#40916c' if level == 'system' else 
-                           '#52b788' if level == 'service' else
-                           '#74c69d' if level == 'package' else
-                           '#95d5b2' if level == 'module' else '#52b788')
-        elif implementation_status == 'recommended':
-            # Use amber tint for recommended components
-            color_map.append('#f3722c' if level == 'system_of_systems' else
-                           '#f8961e' if level == 'system' else
-                           '#f9844a' if level == 'service' else
-                           '#f9c74f' if level == 'package' else
-                           '#90e0ef' if level == 'module' else '#f9c74f')
-        elif implementation_status == 'hypothetical':
-            # Use red tint for hypothetical components
-            color_map.append('#6a040f' if level == 'system_of_systems' else
-                           '#9d0208' if level == 'system' else
-                           '#d00000' if level == 'service' else
-                           '#dc2f02' if level == 'package' else
-                           '#e85d04' if level == 'module' else '#f94144')
-        else:
-            # Default to original level-based colors for unknown status
-            color_map.append(base_color)
-    
-    # Draw nodes with improved styling
-    nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color=color_map, 
-                          alpha=0.9, linewidths=2, edgecolors='black')
-    
-    # Draw labels with better positioning and styling
-    label_pos = {}
-    for node, (x, y) in pos.items():
-        label_pos[node] = (x, y)
-    
-    nx.draw_networkx_labels(G, label_pos, labels=labels, font_size=10, 
-                           font_weight='bold', font_color='white',
-                           bbox=dict(boxstyle="round,pad=0.3", facecolor='black', alpha=0.7))
-    
-    # Draw different edge types with different styles
-    dependency_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('type') == 'dependency']
-    interface_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('type') == 'interface']
-    other_edges = [(u, v) for u, v, d in G.edges(data=True) if d.get('type') not in ['dependency', 'interface']]
-    
-    if dependency_edges:
-        nx.draw_networkx_edges(G, pos, edgelist=dependency_edges, edge_color='darkred', 
-                              arrowsize=25, arrowstyle='->', width=3, alpha=0.8)
-    if interface_edges:
-        nx.draw_networkx_edges(G, pos, edgelist=interface_edges, edge_color='darkblue', 
-                              arrowsize=20, arrowstyle='->', width=2, alpha=0.7, style='dashed')
-    if other_edges:
-        nx.draw_networkx_edges(G, pos, edgelist=other_edges, edge_color='gray', 
-                              arrowsize=15, arrowstyle='->', width=1.5, alpha=0.6)
-    
-    # Add a comprehensive legend
-    from matplotlib.lines import Line2D
-    legend_elements = [
-        # Edge types
-        Line2D([0], [0], color='darkred', lw=3, label='Dependencies'),
-        Line2D([0], [0], color='darkblue', lw=2, linestyle='--', label='Interfaces'),
-        Line2D([0], [0], color='white', lw=0, label=''),  # Spacer
-        # Implementation status
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#52b788', markersize=12, label='Existing (Verified)'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#f9c74f', markersize=12, label='Recommended (LLM)'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#f94144', markersize=12, label='Hypothetical (Guess)'),
-        Line2D([0], [0], color='white', lw=0, label=''),  # Spacer
-        # Component levels (with example existing status colors)
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#003049', markersize=15, label='System of Systems'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#40916c', markersize=12, label='Systems'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#52b788', markersize=10, label='Services'),  
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#74c69d', markersize=8, label='Packages'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor='#95d5b2', markersize=6, label='Internal Modules')
-    ]
-    plt.legend(handles=legend_elements, loc='upper left', fontsize=11, 
-              fancybox=True, shadow=True, ncol=1)
-    
-    plt.title(title, fontsize=16, fontweight='bold', pad=20)
-    plt.axis('off')
-    plt.tight_layout()
-    
-    if out_file:
-        plt.savefig(out_file, dpi=300, bbox_inches='tight', facecolor='white')
-        print(f"Visualization saved to {out_file}")
-    
-    # Only show if not in headless mode
-    import matplotlib
-    if matplotlib.get_backend() != 'Agg':
-        plt.show()
-    else:
-        plt.close()  # Close the figure to free memory
-
-def create_custom_hierarchical_layout(G: nx.DiGraph) -> dict:
-    """Create a custom hierarchical layout based on node levels"""
-    pos = {}
-    
-    # Group nodes by level
-    levels = {}
-    for node in G.nodes:
-        level = G.nodes[node].get('level', 'unknown')
-        if level not in levels:
-            levels[level] = []
-        levels[level].append(node)
-    
-    # Define hierarchy order (top to bottom)
-    level_order = ['system_of_systems', 'system', 'service', 'package', 'module']
-    y_positions = {level: idx for idx, level in enumerate(reversed(level_order))}
-    
-    # Position nodes
-    for level, nodes in levels.items():
-        y = y_positions.get(level, len(level_order))
-        x_spacing = 3.0 if len(nodes) > 1 else 0
-        start_x = -(len(nodes) - 1) * x_spacing / 2
-        
-        for i, node in enumerate(sorted(nodes)):
-            x = start_x + i * x_spacing
-            pos[node] = (x, y * 2.0)  # Scale y for better separation
-    
-    return pos
 
 # --- STEP 4: Export machine-readable graph object ---
 def export_graph_json(G: nx.DiGraph, out_path: str):
@@ -493,16 +283,12 @@ def export_issues_report(issues: Dict, out_path: str):
     return report
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build and visualize a system-of-systems graph from an index.json")
+    parser = argparse.ArgumentParser(description="Build and export a system-of-systems graph from an index.json")
     parser.add_argument('index', help='Path to index.json (absolute path recommended)')
     parser.add_argument('--mode', choices=['all', 'systems', 'packages', 'components', 'modules', 'multi'], default='packages', 
                        help='Which hierarchy level(s) to include: modules (tier 3), packages/components (tier 2), systems (tier 1), all (all levels), or multi (generate multiple viewpoints)')
-    parser.add_argument('--layout', choices=['spectral', 'circular', 'shell', 'kamada', 'hierarchical', 'spring', 'custom_hierarchical'], 
-                       default='custom_hierarchical', help='Graph layout algorithm')
-    parser.add_argument('--png', default='system_of_systems_graph.png', help='Output PNG filename (for single mode) or prefix (for multi mode)')
     parser.add_argument('--json', default='system_of_systems_graph.json', help='Output graph JSON filename')
     parser.add_argument('--issues', default='architecture_issues.json', help='Output architectural issues report filename')
-    parser.add_argument('--no-display', action='store_true', help='Save files only, do not display graphs')
     parser.add_argument('--analyze-issues', action='store_true', help='Perform architectural issue analysis')
     args = parser.parse_args()
 
@@ -513,17 +299,12 @@ if __name__ == "__main__":
     index = load_service_architecture_index(index_path)
     print(f"Loaded {len(index)} components from index")
 
-    # Configure matplotlib for headless operation if requested
-    if args.no_display:
-        import matplotlib
-        matplotlib.use('Agg')  # Use non-interactive backend
-
     # Define viewpoints for multi-mode
     viewpoints = [
-        {'mode': 'systems', 'levels': ['system', 'service'], 'title': 'Systems & Services View'},
-        {'mode': 'packages', 'levels': ['package'], 'title': 'Packages/Components View'},
-        {'mode': 'modules', 'levels': ['module', 'package'], 'title': 'Internal Modules View'},
-        {'mode': 'all', 'levels': ['system_of_systems', 'system', 'service', 'package', 'module'], 'title': 'Complete Architecture View'}
+        {'mode': 'systems', 'levels': ['system', 'service']},
+        {'mode': 'packages', 'levels': ['package']},
+        {'mode': 'modules', 'levels': ['module', 'package']},
+        {'mode': 'all', 'levels': ['system_of_systems', 'system', 'service', 'package', 'module']}
     ]
 
     if args.mode == 'multi':
@@ -536,21 +317,8 @@ if __name__ == "__main__":
                 print(f"Skipping {viewpoint['mode']} view - no nodes at specified levels")
                 continue
             
-            # Create output filenames
-            base_name = args.png.replace('.png', '')
-            out_png = os.path.join(index_dir, f"{base_name}_{viewpoint['mode']}.png")
+            # Create output filename
             out_json = os.path.join(index_dir, f"graph_{viewpoint['mode']}.json")
-            
-            title = f"{viewpoint['title']} - {args.layout} layout"
-            
-            if not args.no_display:
-                visualize_graph(G, out_file=out_png, title=title, layout=args.layout)
-            else:
-                # Save without displaying
-                import matplotlib.pyplot as plt
-                plt.ioff()  # Turn off interactive mode
-                visualize_graph(G, out_file=out_png, title=title, layout=args.layout)
-                plt.close('all')
             
             export_graph_json(G, out_json)
             print(f"Generated {viewpoint['mode']} view: {len(G.nodes())} nodes, {len(G.edges())} edges")
@@ -578,18 +346,6 @@ if __name__ == "__main__":
         
         # Write output files in the same directory as the index
         out_json = os.path.join(index_dir, args.json)
-        out_png = os.path.join(index_dir, args.png)
-        title = f"System Architecture ({args.mode}) - {args.layout} layout"
-        
-        if not args.no_display:
-            visualize_graph(G, out_file=out_png, title=title, layout=args.layout)
-        else:
-            # Save without displaying
-            import matplotlib.pyplot as plt
-            plt.ioff()  # Turn off interactive mode
-            visualize_graph(G, out_file=out_png, title=title, layout=args.layout)
-            plt.close('all')
-        
         export_graph_json(G, out_json)
         print(f"Nodes kept ({args.mode}): {len(G.nodes())}; Edges: {len(G.edges())}")
         

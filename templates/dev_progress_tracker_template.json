@@ -1,0 +1,18 @@
+{
+  "system_name": "<REPLACE_SYSTEM_NAME>",
+  "services": {
+    "_example_service": {
+      "stage": "D1",
+      "last_updated": "<SET_AT_INIT>",
+      "quality_gates_passed": [],
+      "blocking_issues": [],
+      "evidence_refs": []
+    }
+  },
+  "global_status": {
+    "completed_services": 0,
+    "total_services": 0,
+    "overall_stage": "D1",
+    "risk_summary": "No risks recorded yet"
+  }
+}

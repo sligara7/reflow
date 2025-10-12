@@ -1,0 +1,11 @@
+{
+  "system_name": "<REPLACE_SYSTEM_NAME>",
+  "active_service": null,
+  "stage": "D1",
+  "operations_since_refresh": 0,
+  "last_refresh_timestamp": "<SET_AT_INIT>",
+  "pending_quality_gates": [],
+  "open_blockers": [],
+  "recent_actions": [],
+  "next_action": "Initialize development environment (Stage D1)"
+}
