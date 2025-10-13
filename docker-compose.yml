@@ -67,7 +67,7 @@ services:
       - dnd_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.character.rule=PathPrefix(`/api/v1/characters`)"
+      - "traefik.http.routers.character.rule=PathPrefix(`/api/v1/characters`) || PathPrefix(`/api/v2/characters`) || PathPrefix(`/api/v2/whole-characters`) || PathPrefix(`/api/v2/dm/`)"
       - "traefik.http.services.character.loadbalancer.server.port=8000"
 
   # Campaign Service

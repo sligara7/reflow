@@ -1,0 +1,67 @@
+name: dnd_mvp CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test-scan:
+    name: "CI for ${{ matrix.service }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [api_gateway, llm_service, character_service, game_rules_service]
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dev tooling and libs
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint (flake8)
+        run: |
+          flake8 systems/dnd_mvp/${{ matrix.service }}/src || true
+
+      - name: Run tests
+        env:
+          PYTHONPATH: systems/dnd_mvp/${{ matrix.service }}/src
+        run: |
+          if [ -d "systems/dnd_mvp/${{ matrix.service }}/tests" ]; then
+            pytest -q systems/dnd_mvp/${{ matrix.service }}/tests -q | tee systems/dnd_mvp/${{ matrix.service }}/test_reports_last_run_ci.txt
+          else
+            echo "No tests directory for ${{ matrix.service }}; skipping."
+          fi
+
+      - name: Security scan (pip-audit)
+        run: |
+          pip-audit || true
+
+      - name: Static analysis (bandit)
+        run: |
+          if [ -d "systems/dnd_mvp/${{ matrix.service }}/src" ]; then
+            bandit -q -r systems/dnd_mvp/${{ matrix.service }}/src || true
+          fi
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ matrix.service }}-artifacts"
+          path: |
+            systems/dnd_mvp/${{ matrix.service }}/test_reports_last_run_ci.txt
+            systems/dnd_mvp/${{ matrix.service }}/test_reports/
+            systems/dnd_mvp/${{ matrix.service }}/performance_profiles/
+          if-no-files-found: ignore

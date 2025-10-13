@@ -1,0 +1,117 @@
+http:
+  routers:
+    # V1 Legacy routes (existing)
+    character-v1:
+      rule: "PathPrefix(`/api/v1/characters`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "rate-limit-30"
+
+    # V2 Character endpoints  
+    character-v2:
+      rule: "PathPrefix(`/api/v2/characters`) && !PathPrefix(`/api/v2/characters/validate-balance`) && !PathPrefix(`/api/v2/whole-characters`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "rate-limit-30"
+
+    # V2 Whole character endpoints
+    whole-characters:
+      rule: "PathPrefix(`/api/v2/whole-characters`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "rate-limit-10"
+
+    # Character balance validation
+    character-balance:
+      rule: "PathPrefix(`/api/v2/characters/validate-balance`)"
+      service: "character-service"
+      middlewares:
+        - "auth" 
+        - "rate-limit-20"
+
+    # DM Campaign management
+    dm-campaigns:
+      rule: "PathPrefix(`/api/v2/dm/campaigns`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "dm-role-check"
+        - "rate-limit-5"
+
+    # DM Character submission
+    dm-submit:
+      rule: "PathPrefix(`/api/v2/dm/submit-character`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "rate-limit-10"
+
+    # DM Pending approvals
+    dm-pending:
+      rule: "PathPrefix(`/api/v2/dm/pending-approvals`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "dm-role-check"
+        - "rate-limit-30"
+
+    # DM Approval details and review
+    dm-approval:
+      rule: "PathPrefix(`/api/v2/dm/approval`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "dm-role-check"
+        - "rate-limit-20"
+
+    # Player approval status
+    dm-player:
+      rule: "PathPrefix(`/api/v2/dm/player/approvals`)"
+      service: "character-service"
+      middlewares:
+        - "auth"
+        - "rate-limit-30"
+
+  services:
+    character-service:
+      loadBalancer:
+        servers:
+          - url: "http://character-service:8000"
+
+  middlewares:
+    auth:
+      forwardAuth:
+        address: "http://message-hub:8000/auth/verify"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Role"
+
+    dm-role-check:
+      forwardAuth:
+        address: "http://message-hub:8000/auth/verify-role?role=dm"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Role"
+
+    rate-limit-5:
+      rateLimit:
+        burst: 10
+        average: 5
+
+    rate-limit-10:
+      rateLimit:
+        burst: 20
+        average: 10
+
+    rate-limit-20:
+      rateLimit:
+        burst: 40  
+        average: 20
+
+    rate-limit-30:
+      rateLimit:
+        burst: 60
+        average: 30
