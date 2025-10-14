@@ -139,7 +139,7 @@ class ArchitectureValidator:
         for dir_path in self.system_path.rglob('*'):
             if dir_path.is_dir():
                 # Skip certain utility directories
-                if any(x in str(dir_path) for x in ['__pycache__', '.git']):
+                if any(x in str(dir_path) for x in ['__pycache__', '.git', 'interfaces']):
                     continue
                     
                 # Check if directory is empty
@@ -152,10 +152,12 @@ class ArchitectureValidator:
                     })
                     continue
                     
-                # Check if system directory is missing service_architecture.json
-                if 'system' in str(dir_path) and not (dir_path / 'service_architecture.json').exists():
-                    # Exclude parent system directory that contains subsystems
-                    if not any(d.is_dir() for d in dir_path.iterdir()):
+                # Check if this is a direct child directory of the system directory (potential service)
+                # and doesn't have service_architecture.json
+                if (dir_path.parent == self.system_path and 
+                    not (dir_path / 'service_architecture.json').exists()):
+                    # Only flag if directory contains files but no service_architecture.json
+                    if any(f.is_file() for f in dir_path.iterdir()):
                         issues.append({
                             "type": "missing_architecture",
                             "path": str(dir_path),

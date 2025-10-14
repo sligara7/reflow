@@ -75,7 +75,8 @@
     "required_templates": [
       {"path": "/home/ajs7/project/saa/templates/index_template.json", "purpose": "System index format"},
       {"path": "/home/ajs7/project/saa/templates/service_architecture_template.json", "purpose": "Service architecture format"},
-      {"path": "/home/ajs7/project/saa/templates/service_architecture_schema.json", "purpose": "JSON schema validation"}
+      {"path": "/home/ajs7/project/saa/templates/service_architecture_schema.json", "purpose": "JSON schema validation"},
+      {"path": "/home/ajs7/project/saa/templates/interface_registry_template.json", "purpose": "Interface registry format for validation tools"}
     ],
     "required_definitions": [
       {"path": "/home/ajs7/project/saa/definitions/architectural_definitions.json", "purpose": "UAF terminology and hierarchy"}
@@ -235,7 +236,30 @@
           "tool": "manual",
           "template": "/home/ajs7/project/saa/templates/index_template.json",
           "file_path": "systems/<system_name>/index.json",
-          "guidance": "Map each service to ABSOLUTE path of its service_architecture.json. Update after each service creation."
+          "guidance": "Use exact template format with 'components' key mapping service_id to ABSOLUTE path of service_architecture.json. Update after each service creation."
+        },
+        {
+          "action_id": "2.6.5",
+          "description": "Create interface_registry.json",
+          "tool": "manual",
+          "file_path": "systems/<system_name>/interface_registry.json",
+          "guidance": "Create comprehensive interface registry mapping all service interfaces for validation tool compatibility. Include all interface details (path, method, auth_required, etc.) from service_architecture.json files.",
+          "required_format": {
+            "registry_version": "1.0",
+            "system_name": "<system_name>",
+            "creation_date": "YYYY-MM-DD",
+            "interfaces": {
+              "service_id": {
+                "interface_name": {
+                  "path": "/api/path",
+                  "method": "GET|POST",
+                  "auth_required": true,
+                  "interface_type": "http_endpoint",
+                  "communication_pattern": "synchronous"
+                }
+              }
+            }
+          }
         },
         {
           "action_id": "2.7",
@@ -288,6 +312,14 @@
       "mandatory": true,
       "context_refresh": "before",
       "actions": [
+        {
+          "action_id": "4.0",
+          "description": "Verify interface_registry.json exists and is complete", 
+          "tool": "manual",
+          "guidance": "Ensure interface_registry.json exists in system directory and contains all interfaces from all service_architecture.json files",
+          "template": "/home/ajs7/project/saa/templates/interface_registry_template.json",
+          "success_criteria": "interface_registry.json exists and validation tool can read it"
+        },
         {
           "action_id": "4.1",
           "description": "Validate all service_architecture.json files against template",
@@ -1038,19 +1070,22 @@
     "validate_architecture": {
       "path": "/home/ajs7/project/saa/tools/validate_architecture.py",
       "usage": "python3 validate_architecture.py <system_path>",
-      "purpose": "Validate service_architecture.json files against template",
+      "purpose": "Validate service_architecture.json files against template and interface_registry.json",
+      "prerequisites": ["interface_registry.json must exist in system directory"],
       "when_to_use": ["After creating service files", "After updates", "Before proceeding to next step"]
     },
     "system_of_systems_graph": {
       "path": "/home/ajs7/project/saa/tools/system_of_systems_graph.py",
-      "usage": "python3 system_of_systems_graph.py <system_path> --format json --output <output_path>",
+      "usage": "python3 system_of_systems_graph.py index.json --json <output_path> --issues <issues_path> --analyze-issues --no-display",
       "purpose": "Generate system graph and detect architectural issues",
+      "prerequisites": ["index.json with 'components' key mapping service_id to file paths"],
       "when_to_use": ["After all services created", "After major architecture changes", "Step 6 validation"]
     },
     "generate_interface_contracts": {
       "path": "/home/ajs7/project/saa/tools/generate_interface_contracts.py",
       "usage": "python3 generate_interface_contracts.py <system_path>",
       "purpose": "Generate ICD specifications from service architectures",
+      "prerequisites": ["index.json with 'components' key", "All service_architecture.json files complete"],
       "when_to_use": ["After interface deduction in Step 2", "When interfaces change"]
     },
     "analyze_features": {
@@ -1077,10 +1112,11 @@
     ],
     "key_principles": [
       "Use exact template formats",
-      "Mark implementation_status with justification",
+      "Mark implementation_status with justification", 
       "Update progress tracking after each operation",
       "Validate frequently (every 5-7 services)",
       "Request source code when making recommendations",
+<<<<<<< Updated upstream
       "Document all decisions in process_log.md",
       "Create operational mission artifacts in Step 9 for seamless handoff to development workflow"
     ],
@@ -1097,5 +1133,15 @@
         "validation_command": "Verify all artifacts exist before initiating service_development_workflow.json"
       }
     }
+=======
+      "Document all decisions in process_log.md"
+    ],
+    "critical_file_dependencies": [
+      "index.json MUST have 'components' key for system_of_systems_graph.py",
+      "interface_registry.json MUST exist for validate_architecture.py", 
+      "Both files must be created in Step 2 before validation in Step 4",
+      "Use index_template.json and interface_registry_template.json for correct formats"
+    ]
+>>>>>>> Stashed changes
   }
 }
