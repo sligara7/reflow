@@ -114,34 +114,228 @@
     {
       "phase_id": "P4",
       "name": "Development Bootstrap & Implementation",
-      "description": "Apply development workflow steps for new/updated services, using service_development_workflow.json.",
+      "description": "Apply development workflow steps for new/updated services, using service_development_workflow.json with operational testing requirements.",
       "actions": [
         "Run bootstrap_development_context.py for new/updated services",
         "Initialize dev_progress_tracker.json, dev_working_memory.json, dev_current_focus.md",
+        "Create/update operational mission artifacts for new features: mission statement deltas, user scenarios, success criteria",
         "Scaffold code, implement new/updated logic, update tests, docs, configs",
-        "Enforce quality gates and context refresh at each stage",
+        "Develop operational test scenarios that validate new features deliver user value",
+        "Implement both development testing (built correctly) and operational testing (right thing built)",
+        "Enforce quality gates including MISSION_VALIDATION and USER_ACCEPTANCE for new features",
         "Update dev_process_log.md and dev_context_checkpoint.md after each major step"
       ],
-      "artifacts": ["dev_progress_tracker.json", "dev_working_memory.json", "dev_current_focus.md", "dev_process_log.md", "dev_context_checkpoint.md", "code artifacts", "test artifacts"]
+      "artifacts": [
+        "dev_progress_tracker.json", 
+        "dev_working_memory.json", 
+        "dev_current_focus.md", 
+        "dev_process_log.md", 
+        "dev_context_checkpoint.md", 
+        "code artifacts", 
+        "test artifacts",
+        "feature_mission_deltas.md",
+        "feature_user_scenarios.md", 
+        "feature_success_criteria.md",
+        "operational_test_scenarios/"
+      ],
+      "operational_testing_requirements": {
+        "new_features": {
+          "mission_validation": "Define how new feature aligns with and enhances system mission",
+          "user_impact_scenarios": "Create concrete scenarios showing how users benefit from new feature",
+          "success_measurement": "Define measurable criteria for feature effectiveness",
+          "integration_scenarios": "Test how new feature integrates with existing user workflows"
+        },
+        "updated_features": {
+          "delta_mission_analysis": "Analyze how changes affect system mission and user value",
+          "user_workflow_impact": "Validate that changes improve rather than degrade user experience",
+          "backward_compatibility": "Ensure changes don't break existing user scenarios",
+          "migration_scenarios": "Test user transition from old to new feature behavior"
+        }
+      }
     },
     {
       "phase_id": "P5",
       "name": "Integration, Validation & Release Preparation",
-      "description": "Integrate new/updated services, validate end-to-end, and prepare for release.",
+      "description": "Integrate new/updated services, validate end-to-end including operational effectiveness, and prepare for release.",
       "actions": [
         "Update integration tests and scenarios to include new/updated services",
         "Run system graph and architecture validation tools",
         "Validate all contracts, data models, and deployment artifacts",
+        "Execute operational test scenarios to validate feature effectiveness and user value",
+        "Validate mission alignment: ensure new/updated features enhance system mission achievement",
+        "Conduct user acceptance validation using feature_user_scenarios.md",
+        "Measure success criteria defined in feature_success_criteria.md",
+        "Update system-level operational artifacts to reflect feature changes",
         "Update documentation and runbooks as needed",
-        "Prepare release notes and migration instructions if required"
+        "Prepare release notes highlighting user benefits and operational improvements",
+        "Create migration instructions if required, focusing on user experience"
       ],
-      "artifacts": ["integration_tests.json", "system_of_systems_graph.json", "validation_reports", "release_notes.md", "migration_instructions.md"]
+      "artifacts": [
+        "integration_tests.json", 
+        "system_of_systems_graph.json", 
+        "validation_reports", 
+        "operational_validation_report.md",
+        "mission_alignment_assessment.md",
+        "user_acceptance_results.md",
+        "updated_system_mission_artifacts/",
+        "release_notes.md", 
+        "migration_instructions.md"
+      ],
+      "operational_validation_gates": {
+        "FEATURE_MISSION_ALIGNMENT": {
+          "requirement": "New/updated features demonstrably enhance system mission achievement",
+          "validation": "Execute mission validation scenarios and measure improvement",
+          "artifacts": ["mission_alignment_assessment.md"]
+        },
+        "USER_SCENARIO_VALIDATION": {
+          "requirement": "All feature user scenarios execute successfully and deliver expected value",
+          "validation": "Run through each scenario in feature_user_scenarios.md",
+          "artifacts": ["user_acceptance_results.md"]
+        },
+        "SUCCESS_CRITERIA_ACHIEVEMENT": {
+          "requirement": "Feature meets or exceeds success criteria defined in feature_success_criteria.md",
+          "validation": "Measure each success criterion and document results",
+          "artifacts": ["operational_validation_report.md"]
+        },
+        "SYSTEM_INTEGRATION_VALIDATION": {
+          "requirement": "New features integrate seamlessly with existing user workflows",
+          "validation": "Test end-to-end user journeys that span old and new features",
+          "artifacts": ["integration_test_results.md"]
+        }
+      }
     }
   ],
 
+  "operational_testing_artifacts": {
+    "purpose": "Ensure new/updated features deliver user value and enhance system mission, not just meet technical specifications",
+    "artifact_types": {
+      "feature_mission_deltas": {
+        "file": "feature_mission_deltas.md",
+        "purpose": "Document how new/updated features align with and enhance system mission",
+        "template": [
+          "# Feature Mission Deltas",
+          "",
+          "## Feature Overview",
+          "**Feature Name:** [Name of new or updated feature]",
+          "**Feature Type:** [New | Update | Enhancement]",
+          "**Affected Services:** [List of services impacted]",
+          "",
+          "## Mission Alignment Analysis",
+          "**Current System Mission:** [Reference to SYSTEM_MISSION_STATEMENT.md]",
+          "**Feature Mission Contribution:**",
+          "- [How this feature enhances mission achievement]",
+          "- [Specific value proposition this feature adds]",
+          "- [Mission capabilities this feature enables or improves]",
+          "",
+          "## Mission Enhancement Validation",
+          "**Before Feature:** [Current mission achievement level]",
+          "**After Feature:** [Expected mission achievement level]",
+          "**Success Indicators:** [How we'll know mission is enhanced]",
+          "",
+          "## Mission Risk Assessment",
+          "**Potential Mission Risks:** [How feature could compromise mission]",
+          "**Mitigation Strategies:** [How risks are addressed]"
+        ]
+      },
+      "feature_user_scenarios": {
+        "file": "feature_user_scenarios.md",
+        "purpose": "Define concrete user workflows that validate feature effectiveness",
+        "template": [
+          "# Feature User Scenarios",
+          "",
+          "## Primary User Impact",
+          "**Target Users:** [Who benefits from this feature]",
+          "**Usage Context:** [When and why users will use this feature]",
+          "",
+          "## New User Scenarios (for new features)",
+          "",
+          "### Scenario 1: [Primary Use Case]",
+          "**Context:** [Situation requiring this feature]",
+          "**User Journey:**",
+          "1. [User action/system response]",
+          "2. [Next step in workflow]",
+          "3. [Continue until complete]",
+          "**Expected Outcome:** [What success looks like]",
+          "**Validation Method:** [How to verify success]",
+          "",
+          "## Updated User Scenarios (for feature updates)",
+          "",
+          "### Scenario 1: [Changed Workflow]",
+          "**Previous Workflow:** [How users accomplished this before]",
+          "**Updated Workflow:** [How users accomplish this now]",
+          "**Improvement Validation:** [How to verify improvement]",
+          "",
+          "## Integration Scenarios",
+          "**Cross-Feature Workflows:** [How this feature works with existing features]",
+          "**End-to-End User Journeys:** [Complete workflows involving this feature]"
+        ]
+      },
+      "feature_success_criteria": {
+        "file": "feature_success_criteria.md",
+        "purpose": "Define measurable criteria for feature effectiveness validation",
+        "template": [
+          "# Feature Success Criteria",
+          "",
+          "## Feature Effectiveness Metrics",
+          "- [Metric 1]: [Measurement method] - Target: [Desired level]",
+          "- [Metric 2]: [Measurement method] - Target: [Desired level]",
+          "",
+          "## User Experience Metrics",
+          "- [UX Metric 1]: [How measured] - Improvement: [Expected improvement]",
+          "- [UX Metric 2]: [How measured] - Improvement: [Expected improvement]",
+          "",
+          "## Mission Impact Metrics",
+          "- [Mission Metric 1]: [Measurement] - Enhancement: [Expected enhancement]",
+          "- [Mission Metric 2]: [Measurement] - Enhancement: [Expected enhancement]",
+          "",
+          "## Acceptance Thresholds",
+          "**Minimum Viable Feature:**",
+          "- [Threshold 1 - minimum acceptable performance]",
+          "- [Threshold 2]",
+          "",
+          "**Target Feature Performance:**",
+          "- [Target 1 - desired performance level]",
+          "- [Target 2]",
+          "",
+          "## Validation Timeline",
+          "**Development Phase:** [What to measure during development]",
+          "**Integration Phase:** [What to measure during integration]",
+          "**Post-Release:** [What to measure after release]"
+        ]
+      }
+    },
+    "validation_requirements": {
+      "development_testing": {
+        "purpose": "Validate feature is built correctly according to specifications",
+        "focus": "Technical correctness, functionality, performance",
+        "artifacts": ["unit tests", "integration tests", "performance tests"]
+      },
+      "operational_testing": {
+        "purpose": "Validate feature delivers user value and enhances mission",
+        "focus": "User effectiveness, mission alignment, value delivery",
+        "artifacts": ["feature_user_scenarios.md", "feature_success_criteria.md", "operational_validation_report.md"]
+      }
+    },
+    "testing_balance": {
+      "principle": "Features must pass both development testing (built correctly) AND operational testing (right thing built)",
+      "validation_gates": [
+        "FEATURE_FUNCTIONALITY (development testing)",
+        "FEATURE_MISSION_ALIGNMENT (operational testing)", 
+        "USER_SCENARIO_VALIDATION (operational testing)",
+        "SUCCESS_CRITERIA_ACHIEVEMENT (operational testing)"
+      ]
+    }
+  },
+
   "delta_tracking": {
-    "delta_report": "Summarizes all changes to architecture, interfaces, contracts, data models, deployment, and compliance.",
+    "delta_report": "Summarizes all changes to architecture, interfaces, contracts, data models, deployment, compliance, and operational testing requirements.",
     "delta_summary.json": "Machine-readable summary of all deltas for downstream automation.",
+    "operational_deltas": {
+      "mission_impact": "How feature changes affect system mission achievement",
+      "user_workflow_changes": "Impact on existing user scenarios and workflows",
+      "success_criteria_updates": "New or modified success criteria for feature validation",
+      "testing_requirements": "Additional operational testing scenarios required"
+    },
     "context_refresh": "MANDATORY after each delta artifact is created or updated."
   },
 
@@ -179,8 +373,15 @@
   },
 
   "quick_reference": {
-    "phases": ["Change Proposal & Impact Analysis", "Architecture Re-Engineering & Decomposition", "Delta Highlighting & Approval", "Development Bootstrap & Implementation", "Integration, Validation & Release Preparation"],
+    "phases": [
+      "Change Proposal & Impact Analysis", 
+      "Architecture Re-Engineering & Decomposition", 
+      "Delta Highlighting & Approval", 
+      "Development Bootstrap & Implementation (with operational testing)", 
+      "Integration, Validation & Release Preparation (with operational validation)"
+    ],
     "delta_artifacts": ["delta_report.md", "delta_summary.json"],
+    "operational_artifacts": ["feature_mission_deltas.md", "feature_user_scenarios.md", "feature_success_criteria.md"],
     "context_refresh": "MANDATORY after each major step, delta artifact update, or any refresh trigger",
     "before_every_operation": [
       "1. Read current_focus.md (or dev_current_focus.md)",
@@ -202,7 +403,33 @@
       "Update progress tracking after each operation",
       "Validate frequently (every 5-7 services or after major deltas)",
       "Request source code when making recommendations",
-      "Document all decisions in process_log.md"
-    ]
+      "Document all decisions in process_log.md",
+      "Create operational testing artifacts for all new/updated features",
+      "Validate features deliver user value, not just meet technical specifications",
+      "Ensure features enhance system mission achievement",
+      "Balance development testing (built correctly) with operational testing (right thing built)"
+    ],
+    "operational_testing_checklist": {
+      "for_new_features": [
+        "Create feature_mission_deltas.md defining mission alignment",
+        "Create feature_user_scenarios.md with concrete user workflows",
+        "Create feature_success_criteria.md with measurable validation criteria",
+        "Develop operational test scenarios that validate user value",
+        "Execute mission validation to ensure feature enhances system purpose"
+      ],
+      "for_updated_features": [
+        "Analyze mission impact of changes in feature_mission_deltas.md",
+        "Update user scenarios to reflect workflow improvements",
+        "Define success criteria that measure improvement over previous version",
+        "Test backward compatibility and user transition scenarios",
+        "Validate that updates enhance rather than degrade user experience"
+      ],
+      "validation_gates": [
+        "FEATURE_MISSION_ALIGNMENT: Feature demonstrably enhances system mission",
+        "USER_SCENARIO_VALIDATION: All user scenarios execute successfully",
+        "SUCCESS_CRITERIA_ACHIEVEMENT: Feature meets measurable success criteria",
+        "SYSTEM_INTEGRATION_VALIDATION: Feature integrates seamlessly with existing workflows"
+      ]
+    }
   }
 }

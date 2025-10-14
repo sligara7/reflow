@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "fields": {
+    "timestamp": "ISO8601",
+    "workflow_area": "architecture|development|feature_update|decision_flow|shared_policies",
+    "sub_id": "e.g., A2.S2.4 or Dev-05.D8.2",
+    "category": "context_management|iteration|artifact_routing|validation|tooling|docs|usability|automation",
+    "suggestion": "Short actionable improvement proposal (generic, system-agnostic)",
+    "rationale": "Why this improves the process",
+    "evidence_refs": ["paths within /home/ajs7/project/saa/reflow or tools/templates in repo"],
+    "impact": "low|medium|high",
+    "status": "proposed|curated|applied"
+  },
+  "redaction_rules": [
+    "Never include system or service names",
+    "No secrets or external URLs with tokens",
+    "Use only repo-relative paths for evidence"
+  ]
+}

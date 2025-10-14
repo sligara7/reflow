@@ -791,15 +791,198 @@
         },
         {
           "action_id": "9.6",
+          "description": "Create operational testing mission artifacts",
+          "tool": "manual",
+          "prerequisites": ["ARCHITECTURE_CONTEXT_SUMMARY.md must exist", "All service architectures completed"],
+          "output_files": [
+            "systems/<system_name>/SYSTEM_MISSION_STATEMENT.md",
+            "systems/<system_name>/USER_SCENARIOS.md", 
+            "systems/<system_name>/SUCCESS_CRITERIA.md",
+            "systems/<system_name>/operational_test_scenarios/"
+          ],
+          "includes": [
+            "System mission statement defining purpose and value proposition",
+            "User scenarios covering primary use cases and workflows",
+            "Success criteria for operational validation",
+            "Directory structure for operational test scenarios"
+          ],
+          "guidance": [
+            "CRITICAL: These artifacts enable seamless handoff to service_development_workflow.json",
+            "Focus on 'why' the system exists, not just 'what' it does",
+            "Define success from user perspective, not just technical specifications",
+            "Create concrete scenarios that validate system effectiveness",
+            "Ensure operational testing validates mission achievement, not just spec compliance"
+          ],
+          "artifact_specifications": {
+            "mission_statement": {
+              "purpose": "Define the fundamental purpose and value proposition of the system",
+              "structure": [
+                "System Purpose: Single clear statement of why this system exists",
+                "Primary Value Proposition: What value does this deliver to users/stakeholders",
+                "Key Capabilities: The 3-5 most important things this system must do well",
+                "Success Definition: How we know this system is achieving its mission",
+                "Scope Boundaries: What this system is NOT responsible for"
+              ],
+              "guidance": "Write from user perspective - focus on outcomes, not features"
+            },
+            "user_scenarios": {
+              "purpose": "Define concrete user workflows that validate system effectiveness",
+              "structure": [
+                "Primary User Personas: Who uses this system and in what contexts",
+                "Core User Journeys: Step-by-step workflows for primary use cases",
+                "Edge Case Scenarios: Important but less common usage patterns",
+                "Failure Recovery Scenarios: How users recover when things go wrong",
+                "Integration Scenarios: How this system fits into larger workflows"
+              ],
+              "guidance": "Each scenario should be testable and measurable"
+            },
+            "success_criteria": {
+              "purpose": "Define measurable criteria for operational validation",
+              "structure": [
+                "Mission Success Metrics: How we measure mission achievement",
+                "User Experience Metrics: Indicators of good user outcomes",
+                "Operational Health Metrics: System performance and reliability",
+                "Business Impact Metrics: Value delivered to organization",
+                "Acceptance Thresholds: Minimum acceptable performance levels"
+              ],
+              "guidance": "All criteria must be objectively measurable during operational testing"
+            },
+            "test_scenarios_directory": {
+              "purpose": "Directory structure for organizing operational test scenarios",
+              "initial_structure": [
+                "operational_test_scenarios/README.md - Overview and organization",
+                "operational_test_scenarios/mission_validation/ - Tests that validate mission achievement",
+                "operational_test_scenarios/user_acceptance/ - User-focused acceptance tests",
+                "operational_test_scenarios/integration/ - End-to-end workflow tests",
+                "operational_test_scenarios/templates/ - Test scenario templates"
+              ],
+              "guidance": "Create directory structure only - actual test scenarios created during development"
+            }
+          },
+          "template_content": {
+            "mission_statement_template": [
+              "# System Mission Statement",
+              "",
+              "## System Purpose",
+              "[Single clear statement of why this system exists]",
+              "",
+              "## Primary Value Proposition", 
+              "[What value does this deliver to users/stakeholders]",
+              "",
+              "## Key Capabilities",
+              "1. [Capability 1 - most important thing system must do well]",
+              "2. [Capability 2]",
+              "3. [Capability 3]",
+              "4. [Additional capabilities as needed]",
+              "",
+              "## Success Definition",
+              "[How we know this system is achieving its mission]",
+              "",
+              "## Scope Boundaries",
+              "This system IS responsible for:",
+              "- [Responsibility 1]",
+              "- [Responsibility 2]",
+              "",
+              "This system is NOT responsible for:",
+              "- [Exclusion 1]",
+              "- [Exclusion 2]"
+            ],
+            "user_scenarios_template": [
+              "# User Scenarios",
+              "",
+              "## Primary User Personas",
+              "[Who uses this system and in what contexts]",
+              "",
+              "## Core User Journeys",
+              "",
+              "### Journey 1: [Primary Use Case Name]",
+              "**Context:** [When and why this journey occurs]",
+              "**Steps:**",
+              "1. [User action/system response]",
+              "2. [Next step]",
+              "3. [Continue until complete]",
+              "**Expected Outcome:** [What success looks like]",
+              "**Validation Points:** [How to verify success]",
+              "",
+              "### Journey 2: [Secondary Use Case Name]",
+              "[Repeat structure]",
+              "",
+              "## Edge Case Scenarios",
+              "[Important but less common usage patterns]",
+              "",
+              "## Failure Recovery Scenarios", 
+              "[How users recover when things go wrong]",
+              "",
+              "## Integration Scenarios",
+              "[How this system fits into larger workflows]"
+            ],
+            "success_criteria_template": [
+              "# Success Criteria",
+              "",
+              "## Mission Success Metrics",
+              "- [Metric 1]: [Measurement method] - Threshold: [Acceptable level]",
+              "- [Metric 2]: [Measurement method] - Threshold: [Acceptable level]",
+              "",
+              "## User Experience Metrics", 
+              "- [UX Metric 1]: [How measured] - Target: [Desired level]",
+              "- [UX Metric 2]: [How measured] - Target: [Desired level]",
+              "",
+              "## Operational Health Metrics",
+              "- [Health Metric 1]: [Measurement] - Minimum: [Threshold]",
+              "- [Health Metric 2]: [Measurement] - Minimum: [Threshold]",
+              "",
+              "## Business Impact Metrics",
+              "- [Impact Metric 1]: [How measured] - Goal: [Target value]",
+              "- [Impact Metric 2]: [How measured] - Goal: [Target value]",
+              "",
+              "## Acceptance Thresholds",
+              "**Minimum Viable Performance:**",
+              "- [Threshold 1]",
+              "- [Threshold 2]",
+              "",
+              "**Target Performance:**", 
+              "- [Target 1]",
+              "- [Target 2]"
+            ]
+          },
+          "handoff_validation": {
+            "purpose": "Ensure seamless transition to service_development_workflow.json",
+            "required_artifacts": [
+              "SYSTEM_MISSION_STATEMENT.md exists and contains mission definition",
+              "USER_SCENARIOS.md exists and contains testable user workflows", 
+              "SUCCESS_CRITERIA.md exists and contains measurable criteria",
+              "operational_test_scenarios/ directory exists with proper structure"
+            ],
+            "content_validation": [
+              "Mission statement focuses on 'why' not just 'what'",
+              "User scenarios are concrete and testable",
+              "Success criteria are objectively measurable",
+              "All artifacts align with architecture and service specifications"
+            ]
+          },
+          "rationale": "Service development workflow requires operational mission artifacts to validate that development builds 'the right thing' for users, not just 'the thing built correctly' to specifications. This ensures development maintains focus on user value and mission achievement."
+        },
+        {
+          "action_id": "9.7",
           "description": "Final process log entry",
           "tool": "manual",
           "update_files": ["process_log.md"],
-          "guidance": "Document completion, artifacts produced, any outstanding items"
+          "guidance": "Document completion, artifacts produced, any outstanding items, and readiness for service development handoff"
         }
       ],
       "validation": {
-        "check": "All completion artifacts created and archived",
-        "on_failure": "Complete missing artifacts"
+        "check": "All completion artifacts created and archived, including operational mission artifacts",
+        "requirements": [
+          "build_ready_index.json exists and is complete",
+          "ARCHITECTURE_CONTEXT_SUMMARY.md exists",
+          "All visualizations generated and embedded",
+          "SYSTEM_MISSION_STATEMENT.md exists and defines purpose",
+          "USER_SCENARIOS.md exists with testable workflows",
+          "SUCCESS_CRITERIA.md exists with measurable criteria",
+          "operational_test_scenarios/ directory structure created",
+          "Process log documents handoff readiness"
+        ],
+        "on_failure": "Complete missing artifacts - both technical and operational"
       },
       "next_step": "complete"
     }
@@ -898,7 +1081,21 @@
       "Update progress tracking after each operation",
       "Validate frequently (every 5-7 services)",
       "Request source code when making recommendations",
-      "Document all decisions in process_log.md"
-    ]
+      "Document all decisions in process_log.md",
+      "Create operational mission artifacts in Step 9 for seamless handoff to development workflow"
+    ],
+    "workflow_handoff": {
+      "to_service_development_workflow": {
+        "required_artifacts": [
+          "build_ready_index.json (technical specifications)",
+          "SYSTEM_MISSION_STATEMENT.md (purpose and value)",
+          "USER_SCENARIOS.md (concrete user workflows)",
+          "SUCCESS_CRITERIA.md (measurable success metrics)",
+          "operational_test_scenarios/ (test organization structure)"
+        ],
+        "handoff_purpose": "Ensure development focuses on building 'the right thing' for users, not just 'the thing built correctly' to specifications",
+        "validation_command": "Verify all artifacts exist before initiating service_development_workflow.json"
+      }
+    }
   }
 }

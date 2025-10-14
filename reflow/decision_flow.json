@@ -1,0 +1,93 @@
+{
+  "workflow_metadata": {
+    "version": "0.1.0",
+    "description": "High-level decision flow from concept to architecture, development, or feature update",
+    "preserves": [
+      "architecture_workflow.json",
+      "service_development_workflow.json",
+      "feature_update_workflow.json"
+    ]
+  },
+  "entry_points": {
+    "new_concept_or_system": {
+      "description": "A brand-new system or major capability not architected yet",
+      "route_to": "architecture/Arch-01-SetupAndContext.json"
+    },
+    "feature_or_service_change": {
+      "description": "A change to an existing system/service or a new feature",
+      "route_to": "feature_update/FU-01-ChangeProposal.json"
+    },
+    "implementation_from_final_specs": {
+      "description": "Architecture is complete (build_ready_index.json exists) and development should begin",
+      "preconditions": [
+        "systems/<system_name>/build_ready_index.json exists",
+        "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present"
+      ],
+      "route_to": "development/Dev-01-InitBootstrap.json"
+    }
+  },
+  "decisions": [
+    {
+      "id": "D0",
+      "question": "Is this a new concept/system or a change to an existing one?",
+      "options": {
+        "new": { "goto": "entry_points.new_concept_or_system" },
+        "change": { "goto": "entry_points.feature_or_service_change" }
+      }
+    },
+    {
+      "id": "D1",
+      "question": "Has Step 0–9 of architecture been completed for the target system?",
+      "evidence": [
+        "systems/<system_name>/build_ready_index.json",
+        "ARCHITECTURE_CONTEXT_SUMMARY.md",
+        "interfaces/* ICDs",
+        "index.json"
+      ],
+      "options": {
+        "no": { "goto": "architecture/Arch-01-SetupAndContext.json" },
+        "yes": { "goto": "development/Dev-01-InitBootstrap.json" }
+      }
+    },
+    {
+      "id": "D2",
+      "question": "During development, is a cross-service/contract change required?",
+      "signals": [
+        "New or modified interface",
+        "Breaking API change",
+        "Service split/merge",
+        "Security/compliance policy changes"
+      ],
+      "options": {
+        "yes": { "goto": "feature_update/FU-02-ArchReengineering.json" },
+        "no": { "goto": "development/Dev-02-CoreAndDomain.json" }
+      }
+    }
+  ],
+  "handoff_requirements": {
+    "architecture_to_development": {
+      "required_artifacts": [
+        "build_ready_index.json",
+        "index.json",
+        "interfaces/* ICDs",
+        "ARCHITECTURE_CONTEXT_SUMMARY.md",
+        "SYSTEM_MISSION_STATEMENT.md",
+        "USER_SCENARIOS.md",
+        "SUCCESS_CRITERIA.md",
+        "operational_test_scenarios/"
+      ]
+    },
+    "feature_update_to_development": {
+      "required_artifacts": [
+        "delta_report.md",
+        "delta_summary.json",
+        "updated index.json & build_ready_index.json",
+        "updated ICDs",
+        "feature_mission_deltas.md",
+        "feature_user_scenarios.md",
+        "feature_success_criteria.md"
+      ]
+    }
+  },
+  "workflows_index": "./workflows_index.json"
+}

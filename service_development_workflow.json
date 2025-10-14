@@ -25,6 +25,12 @@
       "FUNCTIONAL_TEST_STRATEGY.md",
       "ARCHITECTURE_CONTEXT_SUMMARY.md"
     ],
+    "operational_mission_artifacts": [
+      "SYSTEM_MISSION_STATEMENT.md",
+      "USER_SCENARIOS.md", 
+      "SUCCESS_CRITERIA.md",
+      "operational_test_scenarios/"
+    ],
     "optional": [
       "stubs/",
       "dev_setup/",
@@ -155,14 +161,18 @@
       "OBSERVABILITY_INSTRUMENTATION",
       "PERFORMANCE_SMOKE",
       "DEPLOYABILITY",
-      "RUNBOOK_COMPLETENESS"
+      "RUNBOOK_COMPLETENESS",
+      "MISSION_VALIDATION",
+      "USER_ACCEPTANCE"
     ],
     "minimum_requirements": {
       "TEST_COVERAGE": ">= primary path tests + contract tests for all external interfaces",
       "SECURITY_BASELINE": "All declared authN/authZ paths enforced, no critical static analysis issues",
       "OBSERVABILITY_INSTRUMENTATION": "Metrics/traces/log events for key operations enumerated in observability.json",
       "PERFORMANCE_SMOKE": "Baseline throughput & latency within preliminary targets from service_architecture.json",
-      "RUNBOOK_COMPLETENESS": "Runbook sections: startup, shutdown, config change, dependency outage, scaling, incident triage"
+      "RUNBOOK_COMPLETENESS": "Runbook sections: startup, shutdown, config change, dependency outage, scaling, incident triage",
+      "MISSION_VALIDATION": "System demonstrates ability to achieve its stated mission with typical user flows",
+      "USER_ACCEPTANCE": "Real users can accomplish intended tasks in realistic environments"
     }
   },
 
@@ -170,16 +180,19 @@
     {
       "stage_id": "D1",
       "name": "Initialization & Environment Bootstrap",
-      "description": "Establish reproducible development environment per service dependency groups",
+      "description": "Establish reproducible development environment per service dependency groups and capture system mission",
       "entry_criteria": ["build_ready_index.json present"],
       "actions": [
         {"id": "D1.1", "description": "Parse build_ready_index.json to enumerate dependency layers", "tool": "manual"},
         {"id": "D1.2", "description": "Create dev_progress_tracker.json with all services initial status=not_started", "tool": "manual"},
         {"id": "D1.3", "description": "Initialize per-service dev_current_focus.md with first implementation target", "tool": "manual"},
         {"id": "D1.4", "description": "Validate required runtimes, toolchains, and lint/test frameworks", "tool": "bash"},
-        {"id": "D1.5", "description": "Record environment baseline hashes/versions to dev_process_log.md", "tool": "manual"}
+        {"id": "D1.5", "description": "Record environment baseline hashes/versions to dev_process_log.md", "tool": "manual"},
+        {"id": "D1.6", "description": "Create SYSTEM_MISSION_STATEMENT.md capturing the fundamental 'why' of the system", "tool": "manual"},
+        {"id": "D1.7", "description": "Create USER_SCENARIOS.md with realistic user stories and expected outcomes", "tool": "manual"},
+        {"id": "D1.8", "description": "Create SUCCESS_CRITERIA.md defining measurable mission success indicators", "tool": "manual"}
       ],
-      "exit_criteria": ["All dependency layers recognized", "Tracking files created", "Tooling verified"],
+      "exit_criteria": ["All dependency layers recognized", "Tracking files created", "Tooling verified", "Mission artifacts created"],
       "next_stage": "D2"
     },
     {
@@ -336,28 +349,64 @@
     },
     {
       "stage_id": "D12",
-      "name": "Release Candidate Certification",
-      "description": "Aggregate quality evidence and certify service set for production onboarding",
+      "name": "Mission Validation & Operational Testing",
+      "description": "Validate system achieves its intended mission through operational testing with real user scenarios",
       "actions": [
-        {"id": "D12.1", "description": "Assemble evidence pack: test summaries, security scan results, performance baselines", "tool": "manual"},
-        {"id": "D12.2", "description": "Trace requirements → implementation → tests for completeness", "tool": "manual"},
-        {"id": "D12.3", "description": "Document unresolved technical debt & risk acceptance", "tool": "manual"},
-        {"id": "D12.4", "description": "Approve release candidate with sign-off log entry", "tool": "manual"}
+        {"id": "D12.1", "description": "Create operational test environment simulating realistic conditions", "tool": "manual"},
+        {"id": "D12.2", "description": "Execute user scenarios from USER_SCENARIOS.md with typical users", "tool": "manual"},
+        {"id": "D12.3", "description": "Measure success criteria from SUCCESS_CRITERIA.md in operational context", "tool": "manual"},
+        {"id": "D12.4", "description": "Document gaps between intended mission and actual user experience", "tool": "manual"},
+        {"id": "D12.5", "description": "Validate system can handle edge cases and degraded conditions", "tool": "manual"},
+        {"id": "D12.6", "description": "Confirm system supports user workflows end-to-end, not just technical functions", "tool": "manual"}
       ],
-      "exit_criteria": ["Evidence pack complete", "Traceability closure achieved", "Residual risks cataloged"],
+      "exit_criteria": ["User scenarios complete successfully", "Success criteria measurably achieved", "Mission validated in realistic environment"],
+      "quality_gate": "MISSION_VALIDATION",
+      "next_stage": "D13"
+    },
+    {
+      "stage_id": "D13",
+      "name": "User Acceptance & Effectiveness Validation",
+      "description": "Conduct user acceptance testing to confirm system effectiveness and suitability for actual use",
+      "actions": [
+        {"id": "D13.1", "description": "Recruit representative users matching target persona profiles", "tool": "manual"},
+        {"id": "D13.2", "description": "Execute unguided user acceptance tests using system in intended environment", "tool": "manual"},
+        {"id": "D13.3", "description": "Measure task completion rates, error rates, and user satisfaction", "tool": "manual"},
+        {"id": "D13.4", "description": "Identify usability issues and workflow friction points", "tool": "manual"},
+        {"id": "D13.5", "description": "Validate system improves user outcomes compared to current state", "tool": "manual"},
+        {"id": "D13.6", "description": "Document user feedback and recommended improvements", "tool": "manual"}
+      ],
+      "exit_criteria": ["Target users can complete intended tasks", "User satisfaction meets acceptance criteria", "System demonstrates effectiveness"],
+      "quality_gate": "USER_ACCEPTANCE",
+      "next_stage": "D14"
+    },
+    {
+      "stage_id": "D14",
+      "name": "Release Candidate Certification",
+      "description": "Aggregate quality evidence including operational validation and certify service set for production onboarding",
+      "actions": [
+        {"id": "D14.1", "description": "Assemble evidence pack: test summaries, security scan results, performance baselines, operational test results", "tool": "manual"},
+        {"id": "D14.2", "description": "Trace requirements → implementation → tests → operational validation for completeness", "tool": "manual"},
+        {"id": "D14.3", "description": "Document unresolved technical debt & risk acceptance", "tool": "manual"},
+        {"id": "D14.4", "description": "Create mission effectiveness report summarizing operational validation", "tool": "manual"},
+        {"id": "D14.5", "description": "Approve release candidate with sign-off log entry including operational readiness", "tool": "manual"}
+      ],
+      "exit_criteria": ["Evidence pack complete", "Traceability closure achieved", "Residual risks cataloged", "Mission effectiveness documented"],
       "next_stage": "POST"
     },
     {
       "stage_id": "POST",
       "name": "Post-Deployment Feedback Loop Initialization",
-      "description": "Establish continuous improvement cycle integrating runtime signals back into architecture & code",
+      "description": "Establish continuous improvement cycle integrating runtime signals and user feedback back into architecture & code",
       "actions": [
         {"id": "P1", "description": "Capture first-week telemetry deltas vs baselines", "tool": "manual"},
         {"id": "P2", "description": "Feed production incident learnings into architecture change log", "tool": "manual"},
         {"id": "P3", "description": "Update service_architecture.json or observability.json where model drift detected", "tool": "manual"},
-        {"id": "P4", "description": "Prioritize backlog items from operational insights", "tool": "manual"}
+        {"id": "P4", "description": "Prioritize backlog items from operational insights", "tool": "manual"},
+        {"id": "P5", "description": "Monitor mission effectiveness metrics in production environment", "tool": "manual"},
+        {"id": "P6", "description": "Collect ongoing user feedback and usage patterns", "tool": "manual"},
+        {"id": "P7", "description": "Update SUCCESS_CRITERIA.md based on real-world usage data", "tool": "manual"}
       ],
-      "exit_criteria": ["Feedback backlog created", "Updated architectural adjustments recorded"],
+      "exit_criteria": ["Feedback backlog created", "Updated architectural adjustments recorded", "Mission monitoring established"],
       "next_stage": "continuous"
     }
   ],
@@ -474,7 +523,7 @@
   },
 
   "quick_reference": {
-    "preferred_sequence": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "POST"],
+    "preferred_sequence": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13", "D14", "POST"],
     "avoid": [
       "Skipping contract tests until after implementation",
       "Implementing persistence before domain logic",
@@ -482,7 +531,15 @@
       "Adding endpoints not in contracts",
       "Leaving observability until pre-release",
       "Making cross-service changes without architecture workflow steps 2 & 6",
-      "Modifying interfaces without updating all consumers"
+      "Modifying interfaces without updating all consumers",
+      "Skipping mission validation and treating specs as gospel",
+      "Releasing without user acceptance testing"
+    ],
+    "operational_testing_principles": [
+      "Development testing verifies 'built correctly' - operational testing validates 'right thing built'",
+      "Mission validation with real users in realistic environments",
+      "Success criteria based on user outcomes, not technical metrics",
+      "Continuous feedback loop from users back to architecture"
     ],
     "cross_service_change_triggers": [
       "Adding DM approval workflow → affects character_service, campaign_service, user_service",
@@ -496,7 +553,10 @@
       "security_scans/",
       "performance_profiles/",
       "deployment_logs/",
-      "runbook_validation/"
+      "runbook_validation/",
+      "operational_test_results/",
+      "user_acceptance_reports/",
+      "mission_effectiveness_data/"
     ]
   },
   "automation": {
