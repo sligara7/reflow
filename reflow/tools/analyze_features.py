@@ -1,4 +1,34 @@
 #!/usr/bin/env python3
+"""
+Feature Analysis Tool
+
+Parses feature summary documents to identify required systems and their responsibilities.
+This tool helps break down high-level requirements into system boundaries for architecture design.
+
+Analyzes markdown feature summaries with structured sections (### numbered sections) and:
+- Extracts feature descriptions from each section
+- Maps features to system IDs based on section titles
+- Identifies required systems for architecture design
+- Updates working memory with system requirements
+- Generates analysis report for LLM architectural planning
+
+Usage:
+    python3 analyze_features.py <feature_summary_path>
+    
+Expected Input Format:
+    Markdown file with sections like:
+    ### 1. User Authentication & Management
+    ### 2. Content Creation & Publishing
+    ### 3. Payment Processing & Billing
+    
+Output:
+    - JSON analysis report with system breakdown
+    - Updated working_memory.json with required_systems list
+    
+LLM Usage:
+    Use analysis results to inform system decomposition in architecture phase.
+    Each identified system becomes a candidate for service architecture design.
+"""
 
 import sys
 import json
@@ -104,21 +134,41 @@ class FeatureAnalyzer:
             print(f"Error updating working memory: {str(e)}")
 
     def generate_report(self) -> dict:
-        """Generate analysis report"""
+        """Generate analysis report with LLM architectural guidance"""
+        total_features = sum(len(features) for features in self.system_features.values())
+        
         return {
-            "timestamp": "2025-10-05T00:30:00Z",
+            "timestamp": "2025-10-14T00:00:00Z",
             "feature_summary_path": str(self.feature_summary_path),
             "analysis": {
                 "required_systems": len(self.required_systems),
-                "total_features": sum(len(features) for features in self.system_features.values()),
+                "total_features": total_features,
                 "systems": [
                     {
                         "system_id": system_id,
                         "section": data["section"],
-                        "feature_count": len(data["features"])
+                        "feature_count": len(data["features"]),
+                        "features": data["features"]
                     }
                     for system_id, data in self.required_systems.items()
                 ]
+            },
+            "llm_architectural_guidance": {
+                "purpose": "Use identified systems as basis for service architecture decomposition",
+                "next_steps": [
+                    "1. Review each identified system and its feature responsibilities",
+                    "2. Use system_id values as candidate service names in architecture design",
+                    "3. Map features to service capabilities in service_architecture.json files",
+                    "4. Ensure complete feature coverage across all identified systems",
+                    "5. Consider system interactions and interface requirements"
+                ],
+                "system_design_considerations": [
+                    f"Each system represents a distinct domain boundary with {total_features//len(self.required_systems) if len(self.required_systems) > 0 else 0} average features",
+                    "Systems with high feature counts may need further decomposition",
+                    "Systems with related features should consider shared interfaces",
+                    "Use feature descriptions to derive service capabilities and interfaces"
+                ],
+                "working_memory_updated": "required_systems list populated for architecture workflow"
             }
         }
 
@@ -147,6 +197,16 @@ def main():
     # Generate and print report
     report = analyzer.generate_report()
     print(json.dumps(report, indent=2))
+    
+    # Summary for LLM agents
+    system_count = len(analyzer.required_systems)
+    feature_count = sum(len(features) for features in analyzer.system_features.values())
+    
+    print(f"\n📊 Feature Analysis Complete:")
+    print(f"✅ Identified {system_count} required systems from feature analysis")
+    print(f"✅ Mapped {feature_count} total features to system boundaries")
+    print(f"✅ Updated working_memory.json with required_systems list")
+    print("🤖 LLM agents can use identified systems for architecture decomposition")
 
 if __name__ == "__main__":
     main()

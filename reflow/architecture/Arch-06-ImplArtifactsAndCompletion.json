@@ -91,16 +91,94 @@
     {
       "id": "C9.4.1",
       "name": "Architecture context summary for visuals",
-      "output": "specs/human/ARCHITECTURE_CONTEXT_SUMMARY.md"
+      "description": "Create architecture context summary for visualizations",
+      "tool": "manual",
+      "template": "../templates/architecture_context_summary_template.json",
+      "output": "specs/human/ARCHITECTURE_CONTEXT_SUMMARY.md",
+      "prerequisites": ["All service architectures completed", "Index.json exists"],
+      "guidance": "Before creating visualizations, generate a summary of all service architectures, components, interfaces, and implementation statuses to provide context for diagram generation",
+      "includes": [
+        "List of all Level 1 systems/components",
+        "List of all Level 2 components within each Level 1 parent",
+        "List of all Level 3 decompositions (if any)",
+        "Implementation status for each component (existing/recommended/hypothetical)",
+        "Primary interfaces between components",
+        "External systems and dependencies"
+      ],
+      "rationale": "Prevents issues where service architecture files are not immediately accessible during visualization generation"
     },
     {
       "id": "C9.5",
       "name": "Generate Mermaid visualizations",
+      "description": "Generate comprehensive Mermaid architecture visualizations with detailed specifications",
+      "tool": "manual",
+      "template": "../templates/architecture_visualization_template.json",
+      "prerequisites": ["ARCHITECTURE_CONTEXT_SUMMARY.md must exist"],
       "outputs": [
         "specs/human/visualizations/ARCHITECTURE_VISUALIZATION.md",
         "specs/human/visualizations/level1_architecture.mmd",
         "specs/human/visualizations/level2_architecture.mmd",
         "specs/human/visualizations/level3_architecture.mmd"
+      ],
+      "includes": [
+        "Level 1 Mermaid graph showing system-to-system or major component interfaces",
+        "Level 2 Mermaid graph showing component-to-component interfaces within each Level 1 entity",
+        "Level 3 Mermaid graph showing internal module/class interfaces (if Level 3 decomposition was performed)",
+        "Master visualization document with all diagrams and navigation hierarchy"
+      ],
+      "guidance": [
+        "Read ARCHITECTURE_CONTEXT_SUMMARY.md to understand system components and relationships",
+        "Create separate Mermaid diagrams for each hierarchy level to maintain clarity",
+        "Use flowchart or graph notation for Level 1 and Level 2 (e.g., graph LR or graph TB)",
+        "Show interface names on edges/connections between nodes",
+        "Color-code nodes by status: existing (green), recommended (blue), hypothetical (yellow), external (gray)",
+        "CRITICAL: Embed complete Mermaid code directly in ARCHITECTURE_VISUALIZATION.md - DO NOT use [[@include]] syntax",
+        "For Level 3, use sequence diagrams, class diagrams, or state diagrams as appropriate",
+        "Add navigation links between hierarchy levels in the master document",
+        "Use Markdown tables for legends instead of bullet lists with emoji"
+      ],
+      "diagram_specifications": {
+        "level1": {
+          "shows": "Top-level systems or major components",
+          "edges_represent": "Primary interfaces and data flows between Level 1 entities",
+          "recommended_style": "graph TB or graph LR",
+          "max_nodes_per_diagram": 15,
+          "split_strategy": "If >15 nodes, create domain-specific sub-diagrams"
+        },
+        "level2": {
+          "shows": "Components/submodules within each Level 1 entity",
+          "edges_represent": "Interfaces between Level 2 components",
+          "recommended_style": "graph TB (one diagram per Level 1 parent)",
+          "organization": "Create one Level 2 diagram per Level 1 parent, showing its internal structure"
+        },
+        "level3": {
+          "shows": "Internal modules, classes, or functions (only if Level 3 was decomposed)",
+          "edges_represent": "Method calls, data dependencies, integration points",
+          "recommended_style": "classDiagram for object relationships, sequenceDiagram for workflows",
+          "organization": "Create Level 3 diagrams only for components that underwent deep decomposition"
+        }
+      },
+      "node_styling": {
+        "existing": "fill:#9f9,stroke:#393,stroke-width:2px",
+        "recommended": "fill:#9cf,stroke:#369,stroke-width:2px",
+        "hypothetical": "fill:#ff9,stroke:#990,stroke-width:2px,stroke-dasharray: 5 5",
+        "external": "fill:#ccc,stroke:#666,stroke-width:2px"
+      },
+      "example_structure": {
+        "master_doc": "ARCHITECTURE_VISUALIZATION.md with embedded diagrams",
+        "level1_file": "level1_architecture.mmd - system overview",
+        "level2_files": "level2_architecture.mmd - can be single file or multiple per-parent files",
+        "level3_files": "level3_architecture.mmd (optional) - deep dive on complex interfaces"
+      },
+      "success_criteria": [
+        "ARCHITECTURE_CONTEXT_SUMMARY.md exists and is complete",
+        "All hierarchy levels present in architecture are visualized",
+        "Interfaces are clearly labeled on diagram edges",
+        "Color coding matches implementation status from context summary",
+        "Diagrams are syntactically valid Mermaid markup that renders properly",
+        "All Mermaid code is embedded directly in ARCHITECTURE_VISUALIZATION.md (no file inclusion syntax)",
+        "Master document provides clear navigation and context",
+        "Legend uses Markdown table format for proper rendering"
       ]
     },
     {

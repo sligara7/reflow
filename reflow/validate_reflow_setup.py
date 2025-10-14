@@ -28,7 +28,8 @@ def validate_reflow_setup():
         'system_of_systems_graph.py', 
         'generate_interface_contracts.py',
         'analyze_features.py',
-        'bootstrap_development_context.py'
+        'bootstrap_development_context.py',
+        'verify_component_contract.py'
     ]
     tools_dir = reflow_root / 'tools'
     for tool in required_tools:
@@ -49,7 +50,9 @@ def validate_reflow_setup():
         'step_progress_tracker_template.json',
         'dev_progress_tracker_template.json',
         'dev_current_focus_template.md',
-        'dev_working_memory_template.json'
+        'dev_working_memory_template.json',
+        'interface_contract_complete_template.json',
+        'component_specification_complete_template.json'
     ]
     templates_dir = reflow_root / 'templates'
     for template in required_templates:

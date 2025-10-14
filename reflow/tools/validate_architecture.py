@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+"""
+Architecture Validation Tool
+
+Validates service_architecture.json files for template compliance and architectural consistency.
+This tool checks:
+- Interface consistency between services and interface_registry.json
+- Resource isolation between services  
+- Circular dependency detection
+- Directory structure completeness
+
+Outputs structured JSON results for LLM agent analysis and automated fixing.
+"""
 
 import json
 import sys
@@ -51,7 +63,9 @@ class ArchitectureValidator:
                         "type": "interface_missing",
                         "service": service_name,
                         "interface": interface["name"],
-                        "severity": "high"
+                        "severity": "high",
+                        "description": f"Service '{service_name}' declares interface '{interface['name']}' but it's not in interface_registry.json",
+                        "recommendation": f"Add interface '{interface['name']}' to interface_registry.json for service '{service_name}'"
                     })
                     continue
 
@@ -61,7 +75,9 @@ class ArchitectureValidator:
                         "type": "interface_not_registered",
                         "service": service_name,
                         "interface": interface["name"],
-                        "severity": "medium"
+                        "severity": "medium",
+                        "description": f"Interface '{interface['name']}' for service '{service_name}' exists in registry but details are missing",
+                        "recommendation": f"Complete interface definition for '{interface['name']}' in interface_registry.json"
                     })
                     continue
 
@@ -73,7 +89,11 @@ class ArchitectureValidator:
                             "service": service_name,
                             "interface": interface["name"],
                             "field": field,
-                            "severity": "high"
+                            "severity": "high",
+                            "description": f"Interface '{interface['name']}' field '{field}' mismatch between service definition and registry",
+                            "recommendation": f"Update {field} for interface '{interface['name']}' in service_architecture.json or interface_registry.json to match",
+                            "service_value": interface.get(field),
+                            "registry_value": reg_interface.get(field)
                         })
 
         return issues
@@ -93,7 +113,9 @@ class ArchitectureValidator:
                         "type": "shared_resource",
                         "resource": resource[0],
                         "performer": resource[1],
-                        "severity": "medium"
+                        "severity": "medium",
+                        "description": f"Resource '{resource[0]}' performed by '{resource[1]}' is shared between multiple services",
+                        "recommendation": "Implement resource isolation by dedicating resources to single services or using proper resource management patterns"
                     })
                 shared_resources.add(resource)
 
@@ -118,7 +140,9 @@ class ArchitectureValidator:
                 issues.append({
                     "type": "circular_dependency",
                     "cycle": cycle,
-                    "severity": "high"
+                    "severity": "high",
+                    "description": f"Circular dependency detected: {' -> '.join(cycle + [cycle[0]])}",
+                    "recommendation": "Break dependency cycle by introducing async communication, event-driven architecture, or refactoring service boundaries"
                 })
         except Exception as e:
             issues.append({
@@ -202,7 +226,31 @@ class ArchitectureValidator:
         }
 
         # Combine all issues
-        self.validation_results["issues"] = interface_issues + resource_issues + dependency_issues
+        all_issues = directory_issues + interface_issues + resource_issues + dependency_issues
+        self.validation_results["issues"] = all_issues
+        
+        # Add LLM guidance
+        self.validation_results["llm_agent_instructions"] = {
+            "total_issues": len(all_issues),
+            "critical_issues": len([i for i in all_issues if i.get("severity") == "high"]),
+            "action_required": any(i.get("severity") == "high" for i in all_issues),
+            "fix_workflow": [
+                "1. Address all high severity issues first - these prevent proper system operation",
+                "2. Update service_architecture.json files to fix interface mismatches",
+                "3. Update interface_registry.json to add missing interface definitions",
+                "4. Refactor service boundaries to resolve circular dependencies",
+                "5. Implement proper resource isolation patterns",
+                "6. Create missing service_architecture.json files",
+                "7. Re-run validation until all checks pass"
+            ],
+            "common_fixes": {
+                "interface_missing": "Add missing interface definition to interface_registry.json",
+                "interface_mismatch": "Align interface definitions between service files and registry",
+                "circular_dependency": "Break cycles using async communication or service boundary refactoring",
+                "shared_resource": "Implement resource isolation by dedicating resources to single services",
+                "missing_architecture": "Create service_architecture.json file using template"
+            }
+        }
 
         return self.validation_results
 
@@ -246,8 +294,21 @@ def main():
     results = validator.run_all_validations()
     validator.update_working_memory()
 
-    # Output results
+    # Enhanced output for LLM agents
+    total_issues = len(results["issues"])
+    critical_issues = len([i for i in results["issues"] if i.get("severity") == "high"])
+    
     print(json.dumps(results, indent=2))
+    
+    # Summary for LLM agents
+    if critical_issues > 0:
+        print(f"\n⚠️  CRITICAL VALIDATION FAILURES - {critical_issues} high severity issues detected")
+        print("LLM agent should address these issues immediately before proceeding")
+    elif total_issues > 0:
+        print(f"\n⚠️  VALIDATION ISSUES - {total_issues} issues detected")
+        print("LLM agent should review and fix these issues") 
+    else:
+        print("\n✅ VALIDATION PASSED - All architecture files are valid")
 
     # Exit with status code
     sys.exit(1 if results["issues"] else 0)
