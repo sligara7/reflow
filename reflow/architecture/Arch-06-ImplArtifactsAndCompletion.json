@@ -193,6 +193,52 @@
     },
     {
       "id": "C9.7",
+      "name": "Development Test & Evaluation (DT&E) artifacts",
+      "description": "Generate comprehensive DT&E artifacts to verify design meets technical specifications",
+      "tool": "manual",
+      "template": "../templates/dte_artifacts_template.json",
+      "outputs": [
+        "specs/human/testing/DTE_TEST_PLAN.md",
+        "specs/human/testing/REQUIREMENTS_TRACEABILITY_MATRIX.md",
+        "specs/human/testing/DESIGN_VERIFICATION_PLAN.md",
+        "specs/human/testing/COMPONENT_QUALIFICATION_PLANS/",
+        "specs/human/testing/INTERFACE_VERIFICATION_SUITES/"
+      ],
+      "purpose": "Engineering tool to identify problems, assess progress, and verify technical compliance",
+      "focus": "Verify system design is satisfactory and all technical specifications and contract requirements have been met",
+      "includes": [
+        "Systematic verification plans for all technical specifications",
+        "Requirements traceability mapping tests to specifications",
+        "Design verification protocols for architectural compliance", 
+        "Component-level qualification test procedures",
+        "Interface verification test suites for all system boundaries"
+      ]
+    },
+    {
+      "id": "C9.8", 
+      "name": "Operational Test & Evaluation (OT&E) artifacts",
+      "description": "Generate comprehensive OT&E artifacts to validate operational effectiveness and suitability",
+      "tool": "manual",
+      "template": "../templates/ote_artifacts_template.json",
+      "outputs": [
+        "specs/human/testing/OTE_TEST_PLAN.md",
+        "specs/human/testing/MISSION_EFFECTIVENESS_SCENARIOS/",
+        "specs/human/testing/OPERATIONAL_SUITABILITY_PLAN.md", 
+        "specs/human/testing/USER_ACCEPTANCE_FRAMEWORK.md",
+        "specs/human/testing/SYSTEM_OF_SYSTEMS_INTEGRATION_PLAN.md"
+      ],
+      "purpose": "Validate operational effectiveness and suitability by representative users in realistic environments",
+      "focus": "Operational effectiveness (mission execution) and operational suitability (field sustainability)",
+      "includes": [
+        "Mission effectiveness test scenarios in realistic operational environments",
+        "Operational suitability validation for field use sustainability",
+        "User acceptance testing framework with representative users",
+        "System-of-systems integration testing for multi-system scenarios",
+        "Operational readiness assessment criteria and procedures"
+      ]
+    },
+    {
+      "id": "C9.9",
       "name": "Final process log entry",
       "output": "context/process_log.md"
     }
@@ -217,7 +263,17 @@
       "specs/human/SYSTEM_MISSION_STATEMENT.md",
       "specs/human/USER_SCENARIOS.md",
       "specs/human/SUCCESS_CRITERIA.md",
-      "specs/human/operational_test_scenarios/"
+      "specs/human/operational_test_scenarios/",
+      "specs/human/testing/DTE_TEST_PLAN.md",
+      "specs/human/testing/REQUIREMENTS_TRACEABILITY_MATRIX.md",
+      "specs/human/testing/DESIGN_VERIFICATION_PLAN.md",
+      "specs/human/testing/COMPONENT_QUALIFICATION_PLANS/",
+      "specs/human/testing/INTERFACE_VERIFICATION_SUITES/",
+      "specs/human/testing/OTE_TEST_PLAN.md",
+      "specs/human/testing/MISSION_EFFECTIVENESS_SCENARIOS/",
+      "specs/human/testing/OPERATIONAL_SUITABILITY_PLAN.md",
+      "specs/human/testing/USER_ACCEPTANCE_FRAMEWORK.md",
+      "specs/human/testing/SYSTEM_OF_SYSTEMS_INTEGRATION_PLAN.md"
     ],
     "next_workflow": "../development/Dev-01-InitBootstrap.json"
   }
