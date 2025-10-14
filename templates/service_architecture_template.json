@@ -98,11 +98,8 @@
       "version must follow semver-date: X.Y+YYYY-MM-DD",
       "dependencies array must contain valid service_ids that exist in the system",
       "interfaces array must have at least one interface unless is_external=true",
-      "All enum fields must use exact values from UAF definitions",
-      "implementation_status must be clearly specified for all components and interfaces",
-      "source_verification must explain the basis for all interface specifications",
-      "When source code is unavailable, request GitHub repos or documentation from user",
-      "Mark all recommendations and hypothetical solutions explicitly"
+      "implementation_status must be one of: existing, recommended, hypothetical",
+      "For 'recommended' or 'hypothetical' status, justification.rationale is required"
     ]
   }
 }

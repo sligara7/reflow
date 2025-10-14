@@ -1,10 +1,30 @@
 
+#!/usr/bin/env python3
+"""
+System-of-Systems Graph Generator
+
+Creates machine-readable JSON representation of system architecture using NetworkX.
+This tool builds a directed graph where:
+- Nodes represent services/systems/components  
+- Edges represent interfaces/dependencies between components
+- Output is NetworkX node_link_data format for LLM architectural analysis
+
+Replaces visual graph generation with JSON-only output for automated analysis.
+"""
+
 import os
 import json
 import networkx as nx
 import sys
 import argparse
 from typing import Dict, List, Tuple
+from pathlib import Path
+from datetime import datetime
+
+# Adjust paths for reflow directory structure
+REFLOW_ROOT = Path(__file__).parent.parent
+TEMPLATES_PATH = REFLOW_ROOT / "templates"
+DEFINITIONS_PATH = REFLOW_ROOT / "definitions"
 
 # --- STEP 1: Load the robust index file ---
 def load_service_architecture_index(index_path: str) -> Dict[str, str]:
@@ -134,12 +154,66 @@ def build_system_graph(index: Dict[str, str], include_levels: List[str], index_d
     return G
 
 
-# --- STEP 4: Export machine-readable graph object ---
+# --- STEP 4: Export machine-readable graph object for LLM analysis ---
 def export_graph_json(G: nx.DiGraph, out_path: str):
+    """Export NetworkX graph as machine-readable JSON for LLM architectural analysis.
+    
+    Uses NetworkX's node_link_data format which includes:
+    - nodes: List of all nodes with their attributes (services/systems/components)
+    - links: List of all edges with their attributes (interfaces/dependencies) 
+    - directed: True (indicates this is a directed graph)
+    - multigraph: False
+    
+    Example output structure:
+    {
+      "directed": true,
+      "multigraph": false,
+      "graph": {},
+      "nodes": [
+        {
+          "id": "auth_service",
+          "label": "Authentication Service", 
+          "level": "service",
+          "raw": {...service_architecture_data...}
+        }
+      ],
+      "links": [
+        {
+          "source": "web_frontend",
+          "target": "auth_service", 
+          "type": "dependency"
+        }
+      ],
+      "metadata": {
+        "export_timestamp": "2025-10-14T...",
+        "node_count": 5,
+        "edge_count": 8,
+        "purpose": "system_of_systems_architectural_analysis"
+      }
+    }
+    """
     data = nx.node_link_data(G)
+    
+    # Add metadata for LLM analysis
+    data['metadata'] = {
+        'export_timestamp': datetime.now().isoformat(),
+        'node_count': len(G.nodes()),
+        'edge_count': len(G.edges()),
+        'purpose': 'system_of_systems_architectural_analysis',
+        'format': 'networkx_node_link_data',
+        'usage_instructions': [
+            'Parse nodes array to understand all services/systems in architecture',
+            'Parse links array to understand dependencies and interfaces between services',
+            'Check raw data in nodes for detailed service specifications',
+            'Cross-reference with architectural issues report for problems to fix'
+        ]
+    }
+    
     with open(out_path, 'w') as f:
         json.dump(data, f, indent=2)
-    print(f"Graph exported to {out_path}")
+    print(f"System-of-systems graph exported to {out_path}")
+    print(f"Format: NetworkX JSON with {len(G.nodes())} nodes and {len(G.edges())} edges")
+    print(f"LLM agents can parse this JSON to understand system topology and dependencies")
 
 # --- STEP 5: Architectural Issue Detection ---
 def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
@@ -245,7 +319,7 @@ def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
     return issues
 
 def export_issues_report(issues: Dict, out_path: str):
-    """Export architectural issues to a machine-readable JSON report"""
+    """Export architectural issues to a machine-readable JSON report for LLM analysis"""
     
     # Count issues by severity
     severity_counts = {'critical': 0, 'warning': 0, 'medium': 0, 'info': 0}
@@ -258,19 +332,38 @@ def export_issues_report(issues: Dict, out_path: str):
             total_issues += 1
     
     report = {
-        'analysis_timestamp': '2025-10-05T00:00:00Z',
+        'analysis_timestamp': datetime.now().isoformat(),
         'summary': {
             'total_issues': total_issues,
             'critical_issues': severity_counts['critical'],
             'warning_issues': severity_counts['warning'],
             'medium_issues': severity_counts['medium'],
-            'info_issues': severity_counts['info']
+            'info_issues': severity_counts['info'],
+            'action_required': severity_counts['critical'] > 0 or severity_counts['warning'] > 0
         },
         'architectural_issues': issues,
         'recommendations': {
             'immediate_action_required': severity_counts['critical'] > 0,
             'review_recommended': severity_counts['warning'] + severity_counts['medium'] > 0,
             'overall_status': 'needs_attention' if total_issues > 0 else 'healthy'
+        },
+        'llm_agent_instructions': {
+            'priority_order': ['critical', 'warning', 'medium', 'info'],
+            'fix_workflow': [
+                '1. Address all critical issues first - these can break the system',
+                '2. Review and fix warning issues - these indicate architectural problems',
+                '3. Consider medium issues - these may affect maintainability',
+                '4. Info issues are suggestions for improvement',
+                '5. Update service_architecture.json files to resolve issues',
+                '6. Re-run system_of_systems_graph.py to verify fixes'
+            ],
+            'common_fixes': {
+                'circular_dependencies': 'Break cycles by introducing async communication, event-driven architecture, or refactoring service boundaries',
+                'orphaned_nodes': 'Either remove unused services or add missing interface connections',
+                'performance_bottlenecks': 'Split high-connectivity services or add load balancing/caching layers',
+                'security_gaps': 'Add authentication/authorization interfaces for services that handle user data',
+                'inconsistent_protocols': 'Standardize on fewer communication protocols (e.g., REST, gRPC, message queues)'
+            }
         }
     }
     
@@ -279,17 +372,23 @@ def export_issues_report(issues: Dict, out_path: str):
     
     print(f"Architectural issues report exported to {out_path}")
     print(f"Found {total_issues} issues: {severity_counts['critical']} critical, {severity_counts['warning']} warnings")
+    if severity_counts['critical'] > 0:
+        print("⚠️  CRITICAL ISSUES DETECTED - Immediate LLM agent attention required")
+    elif severity_counts['warning'] > 0:
+        print("⚠️  WARNING ISSUES DETECTED - LLM agent should review and fix")
+    else:
+        print("✅ No critical issues detected - Architecture appears healthy")
     
     return report
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build and export a system-of-systems graph from an index.json")
+    parser = argparse.ArgumentParser(description="Build and export a machine-readable system-of-systems graph from an index.json for LLM architectural analysis. Uses NetworkX to model nodes (services/systems) and edges (interfaces) with JSON output.")
     parser.add_argument('index', help='Path to index.json (absolute path recommended)')
     parser.add_argument('--mode', choices=['all', 'systems', 'packages', 'components', 'modules', 'multi'], default='packages', 
                        help='Which hierarchy level(s) to include: modules (tier 3), packages/components (tier 2), systems (tier 1), all (all levels), or multi (generate multiple viewpoints)')
-    parser.add_argument('--json', default='system_of_systems_graph.json', help='Output graph JSON filename')
+    parser.add_argument('--json', default='system_of_systems_graph.json', help='Output graph JSON filename (NetworkX node_link_data format)')
     parser.add_argument('--issues', default='architecture_issues.json', help='Output architectural issues report filename')
-    parser.add_argument('--analyze-issues', action='store_true', help='Perform architectural issue analysis')
+    parser.add_argument('--analyze-issues', action='store_true', help='Perform automated architectural issue analysis')
     args = parser.parse_args()
 
     # Resolve absolute path to index file and its containing directory
@@ -355,4 +454,5 @@ if __name__ == "__main__":
             issues_file = os.path.join(index_dir, args.issues)
             export_issues_report(issues, issues_file)
 
-    print("Graph generation complete!")
+    print("System-of-systems graph generation complete!")
+    print("Output: NetworkX JSON format optimized for LLM architectural analysis")

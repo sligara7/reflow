@@ -1,24 +1,60 @@
 # Development Current Focus
 
-Updated: <TIMESTAMP>
+**System Name:** REPLACE_WITH_SYSTEM_NAME
+**Current Stage:** CURRENT_STAGE_ID - STAGE_NAME
+**Active Service:** CURRENT_SERVICE_ID
+**Last Updated:** YYYY-MM-DD HH:MM:SS
 
 ## IMMEDIATE NEXT ACTION
-Set active service and enumerate initial environment bootstrap tasks.
+DESCRIPTION_OF_NEXT_ACTION
 
-## ACTIVE CONTEXT
-- System: <REPLACE_SYSTEM_NAME>
-- Stage: D1 (Initialization & Environment Bootstrap)
-- Service: <PENDING_SELECTION>
-- Dependency Layer: <UNKNOWN>
+## Current Task Context
+DETAILED_DESCRIPTION_OF_CURRENT_TASK
 
-## WHAT TO DO RIGHT NOW
-1. Populate dev_progress_tracker.json with all services from build_ready_index.json
-2. Select first service in lowest dependency layer as active_service
-3. Create service directory skeleton if missing
-4. Verify runtimes & tooling for the service
-5. Update dev_working_memory.json (active_service, next_action)
+## Progress Summary
+- **Current Stage:** X/12
+- **Active Service:** service_name
+- **Actions Completed:** X/Y in current stage
+- **Quality Gates Status:** PENDING/PASSED/FAILED
+- **Critical Blockers:** None/LIST_BLOCKERS
 
-## DO NOT FORGET
-- Every code artifact must trace to service_architecture.json or api_contracts.json
-- Increment operations_since_refresh after each meaningful change
-- Trigger context refresh before stage transition or after 6 operations
+## Quality Gates Pending
+- [ ] SPEC_ALIGNMENT: Code maps to declared interfaces
+- [ ] BUILD_HEALTH: Clean build with no errors
+- [ ] TEST_COVERAGE: Primary path and contract tests
+- [ ] SECURITY_BASELINE: AuthN/AuthZ enforcement
+- [ ] Other gates as applicable
+
+## Development Context Validation
+- [ ] Working directory confirmed: systems/<system_name>
+- [ ] Operations since refresh: X/6
+- [ ] Dev tracking files synchronized
+- [ ] No degradation signals detected
+- [ ] Active service artifacts loaded
+
+## Blocking Issues / Risks
+- Issue 1: Description and impact
+- Issue 2: Description and impact
+- (Escalation flag if same issue in 2+ consecutive snapshots)
+
+## Recently Completed Actions
+1. Last action completed
+2. Previous action
+3. Earlier action
+4. (Up to 5 recent actions)
+
+## Evidence Artifacts Added
+- File/artifact 1: Path and purpose
+- File/artifact 2: Path and purpose
+- Recent test results: Reference to test_reports/
+
+## Token Pressure Management
+- **Services Open:** X/3 (max concurrent)
+- **Task Size:** Small/Medium/Large (split if >150 lines)
+- **Compression Applied:** Y/N (ellipses for unchanged sections)
+
+## Important Notes
+- Critical decisions or constraints
+- Dependencies on external teams
+- Environment or tooling issues
+- Integration concerns

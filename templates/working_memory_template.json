@@ -1,50 +1,33 @@
 {
-  "version": "1.0",
-  "last_updated": "",
-  "system_context": {
-    "system_name": "",
-    "current_step": "",
-    "working_directory": "",
-    "active_services": [],
-    "pending_tasks": []
+  "template_version": "1.0",
+  "template_description": "Template for working_memory.json - context tracking during architecture workflow",
+  "system_name": "REPLACE_WITH_SYSTEM_NAME",
+  "current_step": "CURRENT_STEP_ID",
+  "current_substep": "CURRENT_SUBSTEP_ID",
+  "operations_since_refresh": 0,
+  "last_refresh_timestamp": "YYYY-MM-DD HH:MM:SS",
+  "hierarchy_level": "LEVEL_0_CLASSIFICATION",
+  "component_list": [],
+  "external_systems": [],
+  "global_constraints": {},
+  "progress_summary": {
+    "completed_steps": [],
+    "current_focus": "DESCRIPTION_OF_CURRENT_TASK",
+    "next_action": "DESCRIPTION_OF_NEXT_ACTION",
+    "validation_status": "PENDING|PASSED|FAILED"
   },
-  "context_state": {
-    "definitions_loaded": false,
-    "templates_verified": false,
-    "system_validated": false,
-    "last_refresh": "",
-    "operations_since_refresh": 0
+  "artifact_status": {
+    "service_architectures_created": 0,
+    "interfaces_deduced": 0,
+    "icds_generated": false,
+    "index_json_updated": false,
+    "interface_registry_created": false,
+    "validation_passed": false
   },
-  "critical_context": {
-    "constraints": [],
-    "decisions": [],
-    "issues": []
-  },
-  "validation_state": {
-    "interface_consistency": {
-      "last_checked": "",
-      "status": "",
-      "issues": []
-    },
-    "resource_isolation": {
-      "last_checked": "",
-      "status": "",
-      "issues": []
-    },
-    "dependency_cycles": {
-      "last_checked": "",
-      "status": "",
-      "issues": []
-    }
-  },
-  "refresh_triggers": {
-    "operation_count": 7,
-    "time_window_minutes": 20,
-    "degradation_indicators": [
-      "template_violations",
-      "naming_inconsistencies",
-      "forgotten_constraints",
-      "repetitive_questions"
-    ]
+  "context_metadata": {
+    "working_directory": "systems/<system_name>",
+    "last_validation_timestamp": null,
+    "degradation_signals": [],
+    "refresh_triggers_met": []
   }
 }
