@@ -1,28 +1,151 @@
 {
   "workflow_metadata": {
-    "version": "0.1.0",
-    "description": "High-level decision flow from concept to architecture, development, or feature update",
+    "version": "2.0.0",
+    "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
+    "last_updated": "2025-10-14",
+    "based_on": "UAF 1.2 architecture framework with automated context management",
     "preserves": [
       "architecture_workflow.json",
       "service_development_workflow.json",
       "feature_update_workflow.json"
     ]
   },
+  "prerequisites": {
+    "required_tools": [
+      {"path": "./tools/validate_architecture.py", "purpose": "Validate service architecture JSON files"},
+      {"path": "./tools/system_of_systems_graph.py", "purpose": "Generate system graph and detect issues"},
+      {"path": "./tools/analyze_features.py", "purpose": "Analyze system features and requirements"},
+      {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"}
+    ],
+    "required_templates": [
+      {"path": "./templates/index_template.json", "purpose": "System index format"},
+      {"path": "./templates/service_architecture_template.json", "purpose": "Service architecture format"},
+      {"path": "./templates/interface_registry_template.json", "purpose": "Interface registry format for validation tools"},
+      {"path": "./templates/working_memory_template.json", "purpose": "Context tracking format"},
+      {"path": "./templates/current_focus_template.md", "purpose": "Current focus tracking format"},
+      {"path": "./templates/step_progress_tracker_template.json", "purpose": "Progress tracking format"}
+    ],
+    "required_definitions": [
+      {"path": "./definitions/architectural_definitions.json", "purpose": "UAF terminology and hierarchy"}
+    ],
+    "python_dependencies": ["networkx", "matplotlib", "pygraphviz"],
+    "system_packages": ["graphviz", "graphviz-dev"]
+  },
+  "context_management": {
+    "system_isolation": {
+      "mandatory_check": "ALWAYS verify working directory is /path/to/saa/systems/<system_name> before ANY operation",
+      "working_directory_rule": "cd to systems/<system_name> at the start of EVERY step and substep",
+      "path_verification": "pwd must equal /path/to/saa/systems/<system_name> before file operations",
+      "cross_contamination_prevention": [
+        "NEVER reference or modify files in other system directories",
+        "All file paths must be relative to current system directory or absolute with verified system_name",
+        "Before reading ANY file, verify it contains the current system_name in its path",
+        "If you find yourself in wrong system directory, STOP immediately and return to correct directory"
+      ],
+      "context_file_location": "ALL context files (current_focus.md, working_memory.json, etc.) MUST be in systems/<system_name>/",
+      "sanity_check": "If system_name from working_memory.json doesn't match pwd, ERROR and STOP"
+    },
+    "refresh_triggers": {
+      "operation_count": 4,
+      "time_minutes": 12,
+      "step_transition": true,
+      "substep_transition": true,
+      "degradation_detected": true
+    },
+    "validation_before_every_operation": [
+      "VERIFY: pwd equals /path/to/saa/systems/<system_name>",
+      "READ: systems/<system_name>/current_focus.md",
+      "READ: systems/<system_name>/step_progress_tracker.json",
+      "CHECK: operations_since_refresh <= 4",
+      "VERIFY: system_name, current_step, current_substep",
+      "CONFIRM: No files from other systems will be modified"
+    ],
+    "refresh_sequence": [
+      "PAUSE: Stop all operations",
+      "SAVE: Update step_progress_tracker.json and working_memory.json",
+      "RELOAD: ./definitions/architectural_definitions.json",
+      "RELOAD: ./templates/* files",
+      "RELOAD: decision_flow.json (this file)",
+      "READ: systems/<system_name>/current_focus.md",
+      "CONFIRM: State system name, step, substep, next action",
+      "RESUME: Continue with confirmed action"
+    ],
+    "degradation_signals": [
+      "Asking about system name when it's in working_memory.json",
+      "Forgetting current step/substep",
+      "Repeating questions about completed work",
+      "Using wrong template format",
+      "Creating files in wrong directory",
+      "Not updating progress tracking files",
+      "Working in wrong system directory",
+      "Referencing files from other systems",
+      "pwd does not match system_name from working_memory.json"
+    ],
+    "tracking_files": {
+      "process_log": "systems/<system_name>/process_log.md",
+      "working_memory": "systems/<system_name>/working_memory.json",
+      "progress_tracker": "systems/<system_name>/step_progress_tracker.json",
+      "current_focus": "systems/<system_name>/current_focus.md",
+      "context_checkpoint": "systems/<system_name>/context_checkpoint.md"
+    }
+  },
   "entry_points": {
     "new_concept_or_system": {
       "description": "A brand-new system or major capability not architected yet",
-      "route_to": "architecture/Arch-01-SetupAndContext.json"
+      "prerequisites_check": {
+        "tool": "manual",
+        "verify": [
+          "All required tools present in ./tools/",
+          "All required templates present in ./templates/",
+          "All required definitions present in ./definitions/",
+          "Python dependencies installed"
+        ],
+        "on_failure": "Stop and install missing prerequisites"
+      },
+      "route_to": "architecture/Arch-01-SetupAndContext.json",
+      "initial_context_setup": {
+        "create_working_directory": "systems/<system_name>/",
+        "initialize_tracking_files": [
+          "working_memory.json from template",
+          "current_focus.md from template", 
+          "step_progress_tracker.json from template",
+          "process_log.md with initial entry"
+        ],
+        "validate_setup": "Confirm all tracking files created and populated"
+      }
     },
     "feature_or_service_change": {
       "description": "A change to an existing system/service or a new feature",
+      "prerequisites_check": {
+        "verify": [
+          "Target system exists in systems/<system_name>/",
+          "Current architecture artifacts are present",
+          "Working memory and progress tracking files exist"
+        ],
+        "on_failure": "Complete initial architecture before feature changes"
+      },
       "route_to": "feature_update/FU-01-ChangeProposal.json"
     },
     "implementation_from_final_specs": {
       "description": "Architecture is complete (build_ready_index.json exists) and development should begin",
       "preconditions": [
         "systems/<system_name>/build_ready_index.json exists",
-        "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present"
+        "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
+        "All validation gates passed"
       ],
+      "validation_required": {
+        "template_validation": "python3 ./tools/validate_architecture.py systems/<system_name>",
+        "graph_validation": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+        "handoff_artifacts": [
+          "build_ready_index.json",
+          "ARCHITECTURE_CONTEXT_SUMMARY.md",
+          "interfaces/* ICDs",
+          "SYSTEM_MISSION_STATEMENT.md",
+          "USER_SCENARIOS.md", 
+          "SUCCESS_CRITERIA.md",
+          "operational_test_scenarios/"
+        ]
+      },
       "route_to": "development/Dev-01-InitBootstrap.json"
     }
   },
@@ -30,23 +153,59 @@
     {
       "id": "D0",
       "question": "Is this a new concept/system or a change to an existing one?",
+      "context_management": {
+        "before_decision": [
+          "REFRESH: Load architectural_definitions.json",
+          "VERIFY: All prerequisite tools and templates are present",
+          "CONFIRM: System working directory if existing system"
+        ]
+      },
       "options": {
-        "new": { "goto": "entry_points.new_concept_or_system" },
-        "change": { "goto": "entry_points.feature_or_service_change" }
+        "new": { 
+          "goto": "entry_points.new_concept_or_system",
+          "validation": "Run prerequisites check before proceeding"
+        },
+        "change": { 
+          "goto": "entry_points.feature_or_service_change",
+          "validation": "Verify existing system artifacts before proceeding"
+        }
       }
     },
     {
       "id": "D1",
-      "question": "Has Step 0–9 of architecture been completed for the target system?",
+      "question": "Has architecture workflow (Steps 0-9) been completed for the target system?",
       "evidence": [
         "systems/<system_name>/build_ready_index.json",
         "ARCHITECTURE_CONTEXT_SUMMARY.md",
         "interfaces/* ICDs",
-        "index.json"
+        "index.json with 'components' key",
+        "All validation gates passed"
       ],
+      "validation_checks": {
+        "template_validation": {
+          "tool": "./tools/validate_architecture.py",
+          "command": "python3 ./tools/validate_architecture.py systems/<system_name>",
+          "success_criteria": "All service architectures pass template validation"
+        },
+        "graph_validation": {
+          "tool": "./tools/system_of_systems_graph.py", 
+          "command": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+          "success_criteria": "No critical architectural issues detected"
+        },
+        "interface_contracts": {
+          "tool": "./tools/generate_interface_contracts.py",
+          "verify": "All interfaces have complete ICDs generated"
+        }
+      },
       "options": {
-        "no": { "goto": "architecture/Arch-01-SetupAndContext.json" },
-        "yes": { "goto": "development/Dev-01-InitBootstrap.json" }
+        "no": { 
+          "goto": "architecture/Arch-01-SetupAndContext.json",
+          "context_setup": "Initialize tracking files and working directory"
+        },
+        "yes": { 
+          "goto": "development/Dev-01-InitBootstrap.json",
+          "prerequisite": "All validation checks must pass"
+        }
       }
     },
     {
@@ -55,27 +214,124 @@
       "signals": [
         "New or modified interface",
         "Breaking API change",
-        "Service split/merge",
+        "Service split/merge", 
         "Security/compliance policy changes"
       ],
+      "impact_analysis": {
+        "required": "Analyze impact on existing interfaces and ICDs",
+        "validation": "Re-run graph validation after changes",
+        "update_artifacts": [
+          "service_architecture.json files",
+          "interface_registry.json",
+          "ICDs",
+          "index.json"
+        ]
+      },
       "options": {
-        "yes": { "goto": "feature_update/FU-02-ArchReengineering.json" },
-        "no": { "goto": "development/Dev-02-CoreAndDomain.json" }
+        "yes": { 
+          "goto": "feature_update/FU-02-ArchReengineering.json",
+          "validation": "Re-validate architecture after changes"
+        },
+        "no": { 
+          "goto": "development/Dev-02-CoreAndDomain.json",
+          "context_refresh": "Update progress tracking"
+        }
       }
     }
   ],
-  "handoff_requirements": {
-    "architecture_to_development": {
+  "quality_gates": {
+    "architecture_completion": {
       "required_artifacts": [
         "build_ready_index.json",
-        "index.json",
+        "index.json with 'components' key",
+        "interface_registry.json",
         "interfaces/* ICDs",
         "ARCHITECTURE_CONTEXT_SUMMARY.md",
         "SYSTEM_MISSION_STATEMENT.md",
         "USER_SCENARIOS.md",
         "SUCCESS_CRITERIA.md",
         "operational_test_scenarios/"
+      ],
+      "validation_tools": [
+        "python3 ./tools/validate_architecture.py systems/<system_name>",
+        "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues"
+      ],
+      "success_criteria": [
+        "All template validations pass",
+        "No critical architectural issues",
+        "All interfaces have complete ICDs",
+        "Handoff artifacts complete"
       ]
+    },
+    "development_readiness": {
+      "prerequisites": "architecture_completion gate passed",
+      "additional_checks": [
+        "Operational mission artifacts exist",
+        "Integration test strategy defined",
+        "Success criteria measurable"
+      ]
+    },
+    "development_quality_gates": {
+      "SPEC_ALIGNMENT": "All code maps to declared interfaces in service_architecture.json",
+      "BUILD_HEALTH": "Clean build with no compilation errors or critical warnings",
+      "TEST_COVERAGE": "Primary path tests + contract tests for all external interfaces",
+      "SECURITY_BASELINE": "All declared authN/authZ paths enforced, no critical static analysis issues",
+      "OBSERVABILITY_INSTRUMENTATION": "Metrics/traces/log events for key operations enumerated in observability.json",
+      "PERFORMANCE_SMOKE": "Baseline throughput & latency within preliminary targets",
+      "DEPLOYABILITY": "Service can be deployed and started in target environment",
+      "RUNBOOK_COMPLETENESS": "Runbook sections: startup, shutdown, config change, dependency outage, scaling, incident triage",
+      "MISSION_VALIDATION": "System demonstrates ability to achieve its stated mission with typical user flows",
+      "USER_ACCEPTANCE": "Real users can accomplish intended tasks in realistic environments"
+    }
+  },
+  "baseline_policies": {
+    "development_constraints": [
+      "All new code must map to a declared interface or internal function in service_architecture.json",
+      "No endpoints added outside api_contracts.json without architecture change workflow",
+      "Data schema mutations require synchronized update to data_models.json and migration plan"
+    ],
+    "validation_requirements": [
+      "Pre-commit schema validation",
+      "Interface compatibility checks on changes",
+      "Automated conflict detection between artifacts",
+      "Schema version consistency across services"
+    ]
+  },
+  "handoff_requirements": {
+    "architecture_to_development": {
+      "required_artifacts": [
+        "build_ready_index.json",
+        "index.json with 'components' key mapping service_id to ABSOLUTE path",
+        "interface_registry.json (required by validation tools)",
+        "interfaces/* ICDs",
+        "ARCHITECTURE_CONTEXT_SUMMARY.md",
+        "SYSTEM_MISSION_STATEMENT.md",
+        "USER_SCENARIOS.md",
+        "SUCCESS_CRITERIA.md",
+        "operational_test_scenarios/"
+      ],
+      "validation_required": {
+        "template_validation": "All service_architecture.json files pass validate_architecture.py",
+        "graph_validation": "No critical issues in system_of_systems_graph.py analysis",
+        "interface_validation": "All interfaces have complete ICDs generated by generate_interface_contracts.py"
+      },
+      "quality_assurance": [
+        "All components have implementation_status with justification",
+        "All dependencies are resolvable",
+        "Deployment architecture reconciled with logical architecture",
+        "External systems properly marked"
+      ],
+      "development_bootstrap": {
+        "automated_setup": "python3 ./tools/bootstrap_development_context.py <system_name>",
+        "creates_files": [
+          "dev_progress_tracker.json - Development stage tracking",
+          "dev_current_focus.md - Current development focus",
+          "dev_working_memory.json - Development context state",
+          "dev_process_log.md - Development process log",
+          "dev_context_checkpoint.md - Development context snapshots"
+        ],
+        "validation": "All development tracking files created and initialized"
+      }
     },
     "feature_update_to_development": {
       "required_artifacts": [
@@ -86,8 +342,135 @@
         "feature_mission_deltas.md",
         "feature_user_scenarios.md",
         "feature_success_criteria.md"
+      ],
+      "validation_required": {
+        "impact_analysis": "Changes validated against existing architecture",
+        "regression_check": "No breaking changes to existing interfaces",
+        "integration_validation": "Updated interfaces properly coordinated"
+      },
+      "development_impact": {
+        "tracking_update": "Update existing dev_progress_tracker.json with new requirements",
+        "context_refresh": "Refresh development context with architectural changes",
+        "quality_gates": "Re-validate affected quality gates"
+      }
+    }
+  },
+  "tool_reference": {
+    "validate_architecture": {
+      "path": "./tools/validate_architecture.py",
+      "usage": "python3 validate_architecture.py <system_path>",
+      "purpose": "Validate service_architecture.json files against template and interface_registry.json",
+      "prerequisites": ["interface_registry.json must exist in system directory"],
+      "when_to_use": ["After creating service files", "After updates", "Before proceeding to next step"]
+    },
+    "system_of_systems_graph": {
+      "path": "./tools/system_of_systems_graph.py",
+      "usage": "python3 system_of_systems_graph.py index.json --json <output_path> --issues <issues_path> --analyze-issues --no-display",
+      "purpose": "Generate system graph and detect architectural issues",
+      "prerequisites": ["index.json with 'components' key mapping service_id to file paths"],
+      "when_to_use": ["After all services created", "After major architecture changes", "Quality gate validation"]
+    },
+    "generate_interface_contracts": {
+      "path": "./tools/generate_interface_contracts.py",
+      "usage": "python3 generate_interface_contracts.py <system_path>",
+      "purpose": "Generate ICD specifications from service architectures",
+      "prerequisites": ["index.json with 'components' key", "All service_architecture.json files complete"],
+      "when_to_use": ["After interface deduction", "When interfaces change"]
+    },
+    "analyze_features": {
+      "path": "./tools/analyze_features.py",
+      "usage": "python3 analyze_features.py <feature_summary_path>",
+      "purpose": "Analyze system features and requirements",
+      "when_to_use": ["System analysis", "Verifying requirements coverage"]
+    },
+    "bootstrap_development_context": {
+      "path": "./tools/bootstrap_development_context.py",
+      "usage": "python3 bootstrap_development_context.py <system_name> [--system-path <path>] [--force]",
+      "purpose": "Create development tracking files for service development workflow",
+      "prerequisites": ["Templates must exist in ./templates/"],
+      "when_to_use": ["Before starting development workflow", "Initializing development context"],
+      "creates": [
+        "dev_progress_tracker.json",
+        "dev_current_focus.md",
+        "dev_working_memory.json", 
+        "dev_process_log.md",
+        "dev_context_checkpoint.md"
       ]
     }
   },
+  "automation_features": {
+    "bootstrap_automation": {
+      "description": "Automated creation of development tracking files",
+      "trigger": "Entry to development workflow",
+      "command": "python3 ./tools/bootstrap_development_context.py <system_name>",
+      "validates": "All required templates exist before creation"
+    },
+    "context_synchronization": {
+      "description": "Automatic synchronization between tracking files",
+      "triggers": [
+        "Stage transitions",
+        "Quality gate completion",
+        "Service switching"
+      ],
+      "checks": [
+        "dev_current_focus.md matches dev_progress_tracker.json",
+        "dev_working_memory.json reflects current state",
+        "File modification timestamps are consistent"
+      ]
+    },
+    "degradation_detection": {
+      "development_signals": [
+        "Implementing code for undefined interface",
+        "Modifying API without updating api_contracts.json",
+        "Tests referencing non-existent endpoints",
+        "Schema drift between code and data_models.json",
+        "Skipping mandated quality gates"
+      ],
+      "architecture_signals": [
+        "Asking about system name when in working_memory.json",
+        "Forgetting current step/substep",
+        "Using wrong template format",
+        "Working in wrong system directory"
+      ]
+    },
+    "token_pressure_mitigation": {
+      "micro_batching_rules": [
+        "Split large implementation tasks (>150 lines) into sub-actions",
+        "Never open more than 3 services concurrently",
+        "Prefer referencing artifact paths over re-inlining large specs"
+      ],
+      "compression_guidelines": [
+        "Summarize unchanged sections with ellipses",
+        "Store verbose test output in test_reports/ and reference path only",
+        "Document one exemplar for repetitive patterns, then index variations"
+      ]
+    },
+    "metrics_collection": {
+      "time_based_metrics": [
+        "Stage completion time",
+        "Validation time", 
+        "Tool execution time",
+        "Overall process duration"
+      ],
+      "quality_metrics": [
+        "Validation success rate",
+        "Conflict occurrence rate",
+        "Artifact consistency score",
+        "Tool success rate"
+      ],
+      "process_metrics": [
+        "Steps requiring manual intervention",
+        "Automated vs manual decision ratio",
+        "Rollback frequency",
+        "Parallel execution efficiency"
+      ]
+    }
+  },
+  "critical_file_dependencies": [
+    "index.json MUST have 'components' key for system_of_systems_graph.py",
+    "interface_registry.json MUST exist for validate_architecture.py", 
+    "Both files must be created during architecture workflow before validation",
+    "Use index_template.json and interface_registry_template.json for correct formats"
+  ],
   "workflows_index": "./workflows_index.json"
 }
