@@ -2,6 +2,7 @@
   "version": "0.1.0",
   "description": "Index of modular workflows for the SAA reflow",
   "architecture": {
+    "A0": "architecture/Arch-00-SystemDecomposition.json",
     "A1": "architecture/Arch-01-SetupAndContext.json",
     "A2": "architecture/Arch-02-AnalysisAndDecomposition.json",
     "A3": "architecture/Arch-03-ConstraintsAndTemplateValidation.json",

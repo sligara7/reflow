@@ -23,7 +23,10 @@
       {"path": "./templates/interface_registry_template.json", "purpose": "Interface registry format for validation tools"},
       {"path": "./templates/working_memory_template.json", "purpose": "Context tracking format"},
       {"path": "./templates/current_focus_template.md", "purpose": "Current focus tracking format"},
-      {"path": "./templates/step_progress_tracker_template.json", "purpose": "Progress tracking format"}
+      {"path": "./templates/step_progress_tracker_template.json", "purpose": "Progress tracking format"},
+      {"path": "./templates/integration_requirements_template.json", "purpose": "System-of-systems integration requirements format"},
+      {"path": "./templates/system_decomposition_template.json", "purpose": "Individual system structure analysis format"},
+      {"path": "./templates/component_analysis_template.json", "purpose": "Detailed component analysis format"}
     ],
     "required_definitions": [
       {"path": "./definitions/architectural_definitions.json", "purpose": "UAF terminology and hierarchy"}
@@ -182,8 +185,24 @@
           },
           "route_to": "architecture/Arch-01-SetupAndContext.json"
         },
+        "with_system_decomposition": {
+          "description": "Decompose multiple existing systems to understand integration requirements",
+          "use_case": "System-of-systems integration where multiple independent systems need to work together",
+          "prerequisites": [
+            "High-level integration requirements document available",
+            "List of systems to be integrated identified",
+            "Access to system documentation or codebases (can be provided during workflow)"
+          ],
+          "benefits": [
+            "Systematic analysis of each system's internal structure",
+            "Identification of specific integration points and interfaces needed",
+            "Impact assessment for required changes in each system",
+            "Unified architecture view across all systems"
+          ],
+          "route_to": "architecture/Arch-00-SystemDecomposition.json"
+        },
         "direct_architecture": {
-          "description": "Start architecture design directly without feature analysis",
+          "description": "Start architecture design directly without feature analysis or decomposition",
           "route_to": "architecture/Arch-01-SetupAndContext.json"
         }
       },

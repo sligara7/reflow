@@ -26,6 +26,7 @@ This folder contains all documentation, guides, and analysis reports for the ref
 
 ### Usage & Examples
 - `USAGE_EXAMPLES.md` - Practical usage examples
+- `SYSTEM_DECOMPOSITION_USAGE_GUIDE.md` - Guide for system-of-systems decomposition workflow
 - `MISSING_ASPECTS.md` - Gap analysis
 
 ### Operational Documentation
