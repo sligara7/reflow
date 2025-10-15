@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "55433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  character_service:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./systems/dnd_reflow/character_service:/app
+    command: bash -lc "pip install -q -r requirements.txt && uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload"
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - GAME_RULES_URL=http://game_rules_service:8002
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  game_rules_service:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./systems/dnd_reflow/game_rules_service:/app
+    command: bash -lc "pip install -q -r requirements.txt && uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload"
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1

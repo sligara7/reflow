@@ -4,6 +4,7 @@
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
     "last_updated": "2025-10-14",
     "based_on": "UAF 1.2 architecture framework with automated context management",
+    "validated_architecture_sequence": "scaffold services -> deduce interfaces -> create index & registry -> validate -> generate ICDs -> build_ready_index -> bootstrap development",
     "preserves": [
       "architecture_workflow.json",
       "service_development_workflow.json",

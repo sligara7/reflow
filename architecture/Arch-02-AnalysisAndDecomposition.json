@@ -77,7 +77,22 @@
   ],
   "validation": {
     "tool": "/home/ajs7/project/saa/tools/validate_architecture.py",
-    "check": "All services have service_architecture.json, index.json is complete, ICDs generated"
+    "check": "All services have service_architecture.json, index.json is complete, ICDs generated",
+    "interface_registry_sync": {
+      "description": "Critical validation to ensure interface_registry.json stays in strict sync with service_architecture.json files",
+      "validation_points": [
+        "After S2.5 (Infer & Update Interfaces)",
+        "After S2.6 (Create/Update index.json)",
+        "Before S2.7 (Generate ICDs)"
+      ],
+      "sync_requirements": [
+        "All interfaces defined in service_architecture.json must appear in interface_registry.json",
+        "No orphaned interfaces in interface_registry.json",
+        "Interface specifications must match between files",
+        "JSON structure validation for manual edits"
+      ],
+      "failure_action": "Stop and fix interface_registry.json before proceeding to ICD generation"
+    }
   },
   "artifact_routing": {
     "best_practices": "specs/human/reports/best_practices_summary.md",
