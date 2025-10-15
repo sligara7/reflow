@@ -32,7 +32,11 @@
       {"path": "./definitions/architectural_definitions.json", "purpose": "UAF terminology and hierarchy"}
     ],
     "python_dependencies": ["networkx", "matplotlib", "pygraphviz"],
-    "system_packages": ["graphviz", "graphviz-dev"]
+    "system_packages": ["graphviz", "graphviz-dev"],
+    "required_policies": [
+      {"path": "./shared/context_policies.json", "purpose": "Context management and process improvement collection rules"},
+      {"section": "process_improvement_policy", "purpose": "MANDATORY: All process improvements MUST go to ./process_improvements/inbox/inbox.jsonl in JSONL format"}
+    ]
   },
   "context_management": {
     "system_isolation": {
@@ -70,6 +74,10 @@
     "refresh_sequence": [
       "PAUSE: Stop all operations",
       "SAVE: Update step_progress_tracker.json and working_memory.json",
+      "COLLECT: Process improvements using classification decision tree (see process_improvement_policy)",
+      "  - CLASSIFY: System-specific vs generic workflow improvements",
+      "  - FOR SYSTEM-SPECIFIC: Prompt user for immediate implementation",
+      "  - FOR GENERIC: Append to ./process_improvements/inbox/inbox.jsonl",
       "RELOAD: ./definitions/architectural_definitions.json",
       "RELOAD: ./templates/* files",
       "RELOAD: decision_flow.json (this file)",
@@ -86,14 +94,18 @@
       "Not updating progress tracking files",
       "Working in wrong system directory",
       "Referencing files from other systems",
-      "pwd does not match system_name from working_memory.json"
+      "pwd does not match system_name from working_memory.json",
+      "Creating PROCESS_IMPROVEMENTS.md files in system directories instead of using proper classification",
+      "Implementing system-specific improvements without user confirmation",
+      "Putting system-specific improvements in generic inbox.jsonl"
     ],
     "tracking_files": {
       "process_log": "systems/<system_name>/process_log.md",
       "working_memory": "systems/<system_name>/working_memory.json",
       "progress_tracker": "systems/<system_name>/step_progress_tracker.json",
       "current_focus": "systems/<system_name>/current_focus.md",
-      "context_checkpoint": "systems/<system_name>/context_checkpoint.md"
+      "context_checkpoint": "systems/<system_name>/context_checkpoint.md",
+      "note": "process_log.md also contains system-specific process improvements (see process_improvement_policy)"
     },
     "system_isolation_recovery": {
       "description": "Procedure when wrong-system context is detected",
@@ -137,6 +149,120 @@
         ],
         "log_location": "systems/<correct_system_name>/process_log.md"
       }
+    },
+    "process_improvement_policy": {
+      "description": "Policy for collecting and implementing process improvements during workflow execution",
+      "improvement_classification": {
+        "system_specific": {
+          "description": "Improvements that apply only to the current system being developed",
+          "scope": "Current system architecture, interfaces, components, or implementation details",
+          "action": "PROMPT user for immediate implementation",
+          "examples": [
+            "Add missing interface to specific service",
+            "Correct component dependency in current system",
+            "Fix validation error in current service_architecture.json",
+            "Improve specific component's resource allocation"
+          ],
+          "implementation_flow": [
+            "IDENTIFY: Is this improvement specific to current system?",
+            "PROMPT: 'Would you like to implement this improvement now: [improvement_description]? (y/n)'",
+            "IF YES: Implement immediately and document in process_log.md",
+            "IF NO: Log as system-specific improvement in process_log.md for later",
+            "CONTINUE: Resume workflow execution"
+          ]
+        },
+        "generic_workflow": {
+          "description": "Improvements that apply to the workflow, templates, or process itself",
+          "scope": "decision_flow.json, templates, tools, shared policies, or general process",
+          "action": "COLLECT to inbox.jsonl for later review and implementation",
+          "examples": [
+            "Add validation step to workflow",
+            "Improve template format",
+            "Enhance tool functionality",
+            "Update shared policies"
+          ],
+          "format": "JSONL - one JSON object per line using ./process_improvements/template.json format",
+          "target_file": "./process_improvements/inbox/inbox.jsonl"
+        }
+      },
+      "classification_decision_tree": {
+        "questions": [
+          "Does this improvement apply only to the current system being developed?",
+          "Does this improvement involve changing decision_flow.json, templates, or tools?",
+          "Does this improvement affect how future systems would be developed?"
+        ],
+        "routing": {
+          "current_system_only": "system_specific -> prompt for immediate implementation",
+          "affects_workflow_or_tools": "generic_workflow -> collect to inbox.jsonl",
+          "affects_future_systems": "generic_workflow -> collect to inbox.jsonl"
+        }
+      },
+      "collection_triggers": [
+        "on_refresh_complete",
+        "on_step_exit", 
+        "after_validation_failure_resolved",
+        "at_workflow_completion",
+        "when_discovering_process_inefficiency",
+        "when_identifying_system_specific_optimization"
+      ],
+      "mandatory_fields_for_generic": {
+        "timestamp": "ISO8601 format",
+        "workflow_area": "architecture|development|feature_update|decision_flow|shared_policies",
+        "sub_id": "Specific step identifier (e.g., A2.S2.4, Dev-05.D8.2)",
+        "category": "context_management|iteration|artifact_routing|validation|tooling|docs|usability|automation",
+        "suggestion": "Short actionable improvement proposal (must be generic and system-agnostic)",
+        "rationale": "Why this improves the process",
+        "evidence_refs": "Array of repo-relative paths only",
+        "impact": "low|medium|high",
+        "status": "proposed"
+      },
+      "system_specific_documentation": {
+        "location": "systems/<system_name>/process_log.md",
+        "format": "Markdown entry with timestamp and implementation status",
+        "required_fields": [
+          "timestamp",
+          "improvement_description", 
+          "implementation_status (implemented|deferred|rejected)",
+          "rationale_for_status",
+          "files_modified (if implemented)"
+        ],
+        "example_entry": "## Process Improvement - 2025-10-14T10:30:00Z\n**Improvement**: Add auth_requirement to coordinator service\n**Status**: Implemented\n**Rationale**: Satisfies security validation requirements\n**Files Modified**: specs/machine/service_arch/coordinator/service_architecture.json"
+      },
+      "implementation_prompts": {
+        "immediate_implementation": "🔧 PROCESS IMPROVEMENT IDENTIFIED:\n{improvement_description}\n\nThis improvement is specific to the current system '{system_name}' and can be implemented immediately.\n\nWould you like to implement this now? (y/n)\n\nIf yes, I will make the necessary changes and continue the workflow.\nIf no, I will document it for later implementation.",
+        "user_confirmation_required": true,
+        "timeout_behavior": "If no response in 30 seconds, document as deferred and continue workflow"
+      },
+      "critical_rules": [
+        "CLASSIFY first: system-specific vs generic workflow improvement",
+        "PROMPT for system-specific improvements before implementing",
+        "NEVER create PROCESS_IMPROVEMENTS.md files in system directories",
+        "FOR GENERIC: ALWAYS append to ./process_improvements/inbox/inbox.jsonl using proper JSONL format",
+        "FOR SYSTEM-SPECIFIC: Document in systems/<system_name>/process_log.md",
+        "Generic suggestions MUST be system-agnostic - no system/service names",
+        "No secrets, no external tokens, no absolute paths",
+        "Use proper JSON format for generic improvements - one object per line in JSONL file"
+      ],
+      "example_generic_entry": {
+        "timestamp": "2025-10-14T10:30:00Z",
+        "workflow_area": "architecture", 
+        "sub_id": "A2.S2.4",
+        "category": "validation",
+        "suggestion": "Add automatic interface consistency check before ICD generation",
+        "rationale": "Prevents validation failures by catching interface mismatches early",
+        "evidence_refs": ["tools/validate_architecture.py", "architecture/Arch-02-AnalysisAndDecomposition.json"],
+        "impact": "medium",
+        "status": "proposed"
+      },
+      "invalid_approaches": [
+        "❌ Creating PROCESS_IMPROVEMENTS.md in systems/<system_name>/",
+        "❌ Implementing system-specific changes without user confirmation",
+        "❌ Putting system-specific improvements in generic inbox.jsonl",
+        "❌ Including system-specific names in generic improvements",
+        "❌ Using absolute paths in evidence_refs",
+        "❌ Writing improvements as markdown instead of proper format"
+      ],
+      "validation": "All generic improvements must follow shared/context_policies.json self_improvement guidelines"
     }
   },
   "entry_points": {

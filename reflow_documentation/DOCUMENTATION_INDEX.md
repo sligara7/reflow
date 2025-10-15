@@ -32,6 +32,7 @@ This folder contains all documentation, guides, and analysis reports for the ref
 ### Operational Documentation
 - `CLI_POLICY.md` - Non-interactive CLI policies
 - `COORDINATION.md` - Parallel development coordination
+- `PROCESS_IMPROVEMENT_POLICY.md` - Mandatory process improvement collection policy
 
 ## Purpose
 
