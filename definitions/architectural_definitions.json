@@ -5,7 +5,7 @@
     "framework_standard": "ISO/IEC 19540-1:2022 and ISO/IEC 19540-2:2022",
     "description": "Architectural definitions for LLM-driven system decomposition based on Unified Architecture Framework (UAF) version 1.2",
     "purpose": "Standardized terminology for service_architecture.json generation and system analysis aligned with UAF 1.2 Domain Metamodel (DMM) and UAF Modeling Language (UAFML)",
-    "last_updated": "2025-01",
+    "last_updated": "2025-10-14",
     "uaf_components": {
       "dmm": "Domain Metamodel (DMM) - Part 1: Formal metamodel with VIEW specifications",
       "uafml": "UAF Modeling Language (UAFML) - Part 2: UML/SysML implementation",
@@ -49,270 +49,103 @@
     "function": {
       "definition": "Internal behavior or operation within a service that transforms inputs to outputs",
       "characteristics": [
-        "Internal implementation details",
-        "Performs specific computational or business logic",
-        "May not be directly exposed to external consumers",
-        "Part of service's internal architecture"
+        "Performs specific data processing or business logic",
+        "Internal to service implementation",
+        "May coordinate with other functions within the same service",
+        "Not directly exposed to external consumers"
       ],
-      "uaf_reference": "OperationalActivity and ResourceFunction specifications from UAF 1.2 DMM with enhanced activity-resource performer relationships",
+      "uaf_reference": "Function specifications from UAF 1.2 DMM with Activity and Behavior modeling patterns",
       "examples": [
-        "Data validation logic",
-        "Queue processing algorithm",
-        "Device state monitoring",
-        "Message routing function"
+        "Data validation function",
+        "Message routing function",
+        "Authentication verification function",
+        "State management function"
       ]
+    }
+  },
+  "hierarchy_levels": {
+    "level_0": {
+      "name": "System Classification",
+      "purpose": "Determine the starting point for decomposition",
+      "options": {
+        "system_of_systems": {
+          "description": "Multiple independent systems working together",
+          "decompose_to": "Level 1: Individual Systems, Level 2: System Components",
+          "example": "Distributed microservices platform"
+        },
+        "individual_system": {
+          "description": "Single cohesive system with multiple components",
+          "decompose_to": "Level 1: Major Components, Level 2: Minor Components",
+          "example": "Web application with frontend, backend, database"
+        },
+        "major_component": {
+          "description": "Large component within a system",
+          "decompose_to": "Level 1: Submodules, Level 2: Functions/Classes",
+          "example": "Authentication service with user management and token handling"
+        }
+      }
     },
-    "system": {
-      "definition": "Integrated set of elements (hardware, software, processes, people) accomplishing specific objectives",
+    "level_1": {
+      "name": "Primary Decomposition",
+      "purpose": "Break down Level 0 into major architectural elements",
       "characteristics": [
-        "Contains multiple interconnected services",
-        "Has defined boundaries and interfaces with other systems",
-        "Provides capabilities through service composition",
-        "May be part of larger system-of-systems"
-      ],
-      "uaf_reference": "ResourcePerformer, System, and Capability specifications from UAF 1.2 DMM with enhanced System-of-Systems composition patterns",
-      "examples": [
-        "Bluesky Data Acquisition System",
-        "Device Control System",
-        "Data Processing System"
+        "Major functional boundaries",
+        "Independent development possible",
+        "Clear interface definitions required"
       ]
     },
-    "system_of_systems": {
-      "definition": "Federation of independent systems that together provide capabilities not available from individual systems",
+    "level_2": {
+      "name": "Secondary Decomposition", 
+      "purpose": "Break down Level 1 elements into detailed components",
       "characteristics": [
-        "Composed of multiple independent systems",
-        "Exhibits emergent properties and capabilities",
-        "Systems can operate independently but provide enhanced value when integrated",
-        "Requires careful interface management and governance"
-      ],
-      "uaf_reference": "System-of-Systems patterns via ResourcePerformer composition and Capability aggregation from UAF 1.2 with enhanced emergent property modeling",
-      "examples": [
-        "Laboratory Automation Ecosystem",
-        "Integrated Scientific Facility",
-        "Multi-beamline Experimental Setup"
+        "Detailed implementation guidance",
+        "Service-level specifications",
+        "Interface contract definitions"
+      ]
+    },
+    "level_3": {
+      "name": "Deep Decomposition (Conditional)",
+      "purpose": "Additional decomposition for complex or critical interfaces",
+      "trigger_conditions": [
+        "Interface marked 'recommended' with no existing implementation",
+        "Interface requires >3 method calls or data transformation",
+        "Interface is safety/security critical",
+        "Interface coordinates >2 services",
+        "Interface bridges with external systems",
+        "Interface is performance bottleneck (>5 connections)"
       ]
     }
   },
-  "hierarchical_structure": {
-    "description": "Four-tier hierarchy for systematic decomposition with conditional deeper analysis",
-    "uaf_reference": "UAF 1.2 Grid-based Viewpoint x Aspect matrix with 11 Viewpoints: Architecture Management, Summary and Overview, Strategic, Operational, Services, Personnel, Resources, Security, Project, Standards, and Actual Resources",
-    "tiers": {
-      "tier_0": {
-        "name": "System of Systems / Enterprise",
-        "description": "Highest level federation of multiple independent systems",
-        "characteristics": [
-          "Strategic and operational integration",
-          "Cross-system governance and policies",
-          "Emergent capabilities from system federation",
-          "Enterprise-wide objectives"
-        ],
-        "examples": [
-          "Laboratory Information Management Ecosystem",
-          "Beamline Operations Enterprise"
-        ]
-      },
-      "tier_1": {
-        "name": "Systems / Major Services",
-        "description": "Independent systems that can operate standalone but integrate for enhanced capability",
-        "characteristics": [
-          "Well-defined system boundaries",
-          "Independent operational capability",
-          "Clear interfaces with other systems",
-          "Specific domain responsibilities"
-        ],
-        "examples": [
-          "Queue Server System",
-          "Device Monitoring System",
-          "Data Acquisition System"
-        ]
-      },
-      "tier_2": {
-        "name": "Components / Sub-services",
-        "description": "Individual services and components within a system",
-        "characteristics": [
-          "Focused functional responsibility",
-          "May depend on other components within the system",
-          "Provide specific capabilities to the parent system",
-          "Implementation-level services"
-        ],
-        "examples": [
-          "bluesky-queueserver",
-          "nginx",
-          "redis",
-          "web-client"
-        ]
-      },
-      "tier_3": {
-        "name": "Internal Modules / Implementation Details",
-        "description": "Classes, methods, and functions within components (conditional decomposition)",
-        "characteristics": [
-          "Specific implementation details for complex interfaces",
-          "Provides precise guidance for development teams",
-          "Created only when interface implementation is unclear",
-          "Enables exact integration specifications"
-        ],
-        "examples": [
-          "coordination_service.LockManager",
-          "ophyd_websocket.DeviceManager",
-          "bluesky_queueserver.PlanExecutor"
-        ]
-      }
+  "implementation_status": {
+    "existing": {
+      "definition": "Component is already implemented and operational",
+      "justification_required": "Reference to existing code, deployment, or documentation"
     },
-    "decomposition_rules": {
-      "two_level_rule": {
-        "description": "Standard decomposition should proceed exactly two levels deep",
-        "rationale": "Provides optimal balance between detail and comprehensibility",
-        "application": "System → Services → Components/Packages"
-      },
-      "conditional_deeper_decomposition": {
-        "description": "Go to Level 3 when interface implementation details are unclear",
-        "trigger_conditions": [
-          "Interface between components requires specific method calls",
-          "Integration points need exact implementation guidance",
-          "Source code analysis reveals complex internal interactions",
-          "Development teams need precise specifications"
-        ],
-        "application": "Components → Internal Modules → Classes/Methods"
-      },
-      "granularity_guidelines": {
-        "too_shallow": "Single monolithic service representing entire system",
-        "appropriate": "5-15 distinct components with clear responsibilities",
-        "too_deep": "Every function or class as separate service (unless interface complexity requires it)"
-      }
+    "recommended": {
+      "definition": "Component should be implemented based on analysis",
+      "justification_required": "Rationale for why this component is needed"
+    },
+    "hypothetical": {
+      "definition": "Component might be needed but requires further investigation",
+      "justification_required": "Uncertainty factors and investigation needed"
     }
   },
-  "communication_patterns": {
-    "synchronous": {
-      "description": "Request-response communication where caller waits for response",
-      "protocols": ["HTTP/REST", "RPC", "Direct function calls"],
-      "use_cases": ["API queries", "Configuration requests", "Status checks"]
+  "validation_types": {
+    "template_validation": {
+      "purpose": "Ensure all files conform to required JSON schemas",
+      "tool": "validate_architecture.py"
     },
-    "asynchronous": {
-      "description": "Fire-and-forget or publish-subscribe communication",
-      "protocols": ["WebSockets", "Message queues", "Event streams", "Redis pub/sub"],
-      "use_cases": ["Real-time notifications", "Event broadcasting", "Long-running operations"]
+    "graph_validation": {
+      "purpose": "Detect architectural issues like cycles and orphaned nodes",
+      "tool": "system_of_systems_graph.py"
     },
-    "bidirectional": {
-      "description": "Two-way communication where both parties can initiate exchanges",
-      "protocols": ["WebSockets", "TCP connections", "Peer-to-peer protocols"],
-      "use_cases": ["Real-time collaboration", "Interactive sessions", "Monitoring streams"]
+    "interface_validation": {
+      "purpose": "Verify interface contracts are complete and consistent",
+      "tool": "generate_interface_contracts.py"
+    },
+    "deployment_validation": {
+      "purpose": "Reconcile logical architecture with deployment reality",
+      "method": "Manual analysis of deployment artifacts"
     }
-  },
-  "dependency_types": {
-    "direct": {
-      "description": "Component directly communicates with another component",
-      "representation": "Direct edge in architecture graph",
-      "examples": ["web-client → nginx", "queueserver → redis"]
-    },
-    "indirect": {
-      "description": "Communication mediated through intermediary service",
-      "representation": "Path through intermediary in architecture graph", 
-      "examples": ["web-client → nginx → bluesky-httpserver"]
-    },
-    "external": {
-      "description": "Dependency on service outside the current system boundary",
-      "representation": "External node or dotted edge",
-      "examples": ["EPICS IOCs", "Instrument hardware", "Authentication providers"]
-    }
-  },
-  "validation_criteria": {
-    "service_boundaries": {
-      "clear_responsibility": "Each service has well-defined, non-overlapping responsibilities",
-      "appropriate_granularity": "Services are neither too fine-grained nor too coarse",
-      "independence": "Services can be developed, deployed, and scaled independently where appropriate"
-    },
-    "interface_specifications": {
-      "protocol_clarity": "Communication protocols are clearly specified",
-      "data_format": "Data exchange formats are documented",
-      "error_handling": "Error conditions and recovery mechanisms are defined"
-    },
-    "dependency_management": {
-      "acyclic_dependencies": "No circular dependencies between services",
-      "minimal_coupling": "Services have minimal necessary dependencies",
-      "loose_coupling": "Dependencies are through well-defined interfaces"
-    }
-  },
-  "uaf_1_2_enhancements": {
-    "iso_standardization": "Published as ISO/IEC 19540-1:2022 (DMM) and ISO/IEC 19540-2:2022 (UAFML) international standards",
-    "enhanced_metamodel": "Refined Domain Metamodel (DMM) with improved Service-Resource relationships and Information Element flows",
-    "viewpoint_refinements": "Enhanced 11-viewpoint grid with improved Architecture Management, Security, and Actual Resources viewpoints",
-    "sysml_v2_alignment": "Updated alignment with SysML v2 for advanced Model-Based Systems Engineering (MBSE)",
-    "ideas_ontology_update": "Enhanced IDEAS Foundation Ontology integration with improved four-dimensional modeling (temporal and spatial)",
-    "parametric_analysis": "Advanced parametric analysis capabilities through SysML integration for trade-off studies",
-    "enterprise_architecture": "Comprehensive Enterprise Architecture Guide (Appendix C) for commercial and government applications",
-    "traceability_framework": "Enhanced traceability specifications (Appendix A) for requirements and design element tracking",
-    "digital_transformation": "Specific guidance for Digital Transformation initiatives and Cyber-physical Systems engineering"
-  },
-  "uaf_1_2_viewpoint_grid": {
-    "description": "UAF 1.2 eleven-viewpoint architecture framework organized as stakeholder concerns (rows) vs architectural aspects (columns)",
-    "viewpoints": {
-      "architecture_management": {
-        "concern": "Architecture governance, standards compliance, and configuration management",
-        "key_views": ["Architecture Timeline", "Architecture Versions", "Standards Profile"],
-        "stakeholders": ["Architecture Review Board", "Configuration Managers", "Standards Bodies"]
-      },
-      "summary_overview": {
-        "concern": "Executive-level architecture summaries and high-level system context",
-        "key_views": ["Architecture Overview", "Capability Summary", "High-Level Operational Concept"],
-        "stakeholders": ["Executives", "Program Managers", "Senior Leadership"]
-      },
-      "strategic": {
-        "concern": "Strategic goals, capabilities, and long-term architectural vision",
-        "key_views": ["Capability Vision", "Strategic Dependencies", "Capability Roadmap"],
-        "stakeholders": ["Strategic Planners", "Enterprise Architects", "Business Leaders"]
-      },
-      "operational": {
-        "concern": "Operational activities, workflows, and behavioral specifications",
-        "key_views": ["Operational Activity Model", "Operational State Model", "Operational Event-Trace"],
-        "stakeholders": ["Operations Personnel", "Process Analysts", "Domain Experts"]
-      },
-      "services": {
-        "concern": "Service specifications, interfaces, and service-oriented architecture",
-        "key_views": ["Service Interface", "Service Function", "Service Interaction"],
-        "stakeholders": ["Service Architects", "Integration Engineers", "API Designers"]
-      },
-      "personnel": {
-        "concern": "Human resources, roles, responsibilities, and organizational structure",
-        "key_views": ["Personnel Role", "Personnel Event-Trace", "Personnel State"],
-        "stakeholders": ["Human Resources", "Training Personnel", "Organizational Leaders"]
-      },
-      "resources": {
-        "concern": "Physical and logical resources, systems, and resource relationships",
-        "key_views": ["Resource Structure", "Resource Connectivity", "Resource Interface"],
-        "stakeholders": ["Systems Engineers", "Infrastructure Architects", "Resource Managers"]
-      },
-      "security": {
-        "concern": "Security policies, constraints, and security-related architecture elements",
-        "key_views": ["Security Constraint", "Security Policy", "Security Architecture"],
-        "stakeholders": ["Security Officers", "Risk Managers", "Compliance Teams"]
-      },
-      "project": {
-        "concern": "Project timelines, milestones, and implementation planning",
-        "key_views": ["Project Timeline", "Project Dependencies", "Implementation Roadmap"],
-        "stakeholders": ["Project Managers", "Implementation Teams", "Delivery Managers"]
-      },
-      "standards": {
-        "concern": "Technical standards, protocols, and compliance requirements",
-        "key_views": ["Standards Profile", "Protocol Specification", "Compliance Matrix"],
-        "stakeholders": ["Standards Bodies", "Technical Writers", "Compliance Officers"]
-      },
-      "actual_resources": {
-        "concern": "Deployed, configured, and operational resource instances",
-        "key_views": ["Actual Resource Structure", "Deployed Configuration", "Operational Status"],
-        "stakeholders": ["Operations Teams", "System Administrators", "Maintenance Personnel"]
-      }
-    }
-  },
-  "llm_agent_guidance": {
-    "uaf_1_2_alignment": "Apply UAF 1.2 Domain Metamodel concepts for precise architectural element classification",
-    "viewpoint_selection": "Select appropriate UAF 1.2 viewpoints based on stakeholder concerns and analysis objectives",
-    "service_identification": "Use UAF 1.2 ServiceFunction and ServiceInterface specifications for service boundary definition",
-    "resource_modeling": "Apply ResourcePerformer and System concepts for comprehensive resource architecture",
-    "interface_specification": "Leverage enhanced ServiceInterface and ResourceServiceInterface patterns for connectivity modeling",
-    "hierarchy_construction": "Apply Two-Level Rule with UAF 1.2 recursive composition patterns for consistent decomposition depth",
-    "traceability_implementation": "Use UAF 1.2 traceability framework for requirements-to-design element mapping",
-    "validation_approach": "Cross-reference against UAF 1.2 View Specifications and deployment artifacts",
-    "documentation_standards": "Generate UAF 1.2 compliant architectural descriptions with proper viewpoint coverage",
-    "parametric_analysis": "Leverage SysML integration for trade-off studies and parametric design optimization"
   }
 }

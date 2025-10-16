@@ -15,7 +15,8 @@
       {"path": "./tools/validate_architecture.py", "purpose": "Validate service architecture JSON files"},
       {"path": "./tools/system_of_systems_graph.py", "purpose": "Generate system graph and detect issues"},
       {"path": "./tools/analyze_features.py", "purpose": "Analyze system features and requirements"},
-      {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"}
+      {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"},
+      {"path": "./tools/validate_foundational_alignment.py", "purpose": "Ensure changes align with foundational documents and black-box principles"}
     ],
     "required_templates": [
       {"path": "./templates/index_template.json", "purpose": "System index format"},
@@ -207,6 +208,30 @@
           "Working memory and progress tracking files exist"
         ],
         "on_failure": "Complete initial architecture before feature changes"
+      },
+      "foundational_validation": {
+        "description": "MANDATORY: Validate alignment with foundational documents before any changes",
+        "tool": "./tools/validate_foundational_alignment.py",
+        "command": "python3 ./tools/validate_foundational_alignment.py systems/<system_name> --change-proposal <proposal_path>",
+        "required_foundational_documents": [
+          "SYSTEM_MISSION_STATEMENT.md",
+          "USER_SCENARIOS.md", 
+          "SUCCESS_CRITERIA.md",
+          "architectural_definitions.json"
+        ],
+        "validation_gates": {
+          "mission_alignment": "Changes must align with stated system mission",
+          "architectural_consistency": "Changes must comply with UAF architectural definitions",
+          "black_box_integrity": "Changes must maintain service encapsulation principles",
+          "user_scenario_coverage": "Changes must not break existing user scenarios",
+          "success_criteria_impact": "Changes must not compromise success criteria"
+        },
+        "on_failure": {
+          "blocked": "Critical foundational documents missing - return to architecture workflow",
+          "conditional": "Address alignment issues before proceeding to change proposal",
+          "pass": "Proceed to feature update workflow"
+        },
+        "success_criteria": "Foundational validation passes with status 'pass' or 'conditional' with addressed issues"
       },
       "route_to": "feature_update/FU-01-ChangeProposal.json"
     },
@@ -618,6 +643,46 @@
       "prerequisites": ["Component specification and implementation must exist", "Interface contracts must be defined"],
       "when_to_use": ["Before component integration", "During development quality gates", "After implementation completion"],
       "guarantees": "If verification passes with no critical issues, component integration will succeed"
+    },
+    "validate_foundational_alignment": {
+      "path": "./tools/validate_foundational_alignment.py",
+      "usage": "python3 ./tools/validate_foundational_alignment.py <system_path> [--change-proposal <proposal_path>]",
+      "purpose": "Ensure changes align with foundational documents and maintain black-box architecture principles",
+      "output_analysis": {
+        "validation_report": "JSON with foundational alignment status and specific issues",
+        "llm_usage_instructions": [
+          "ALWAYS run this tool before proceeding with feature/service changes",
+          "Address all critical 'blocked' issues before any workflow progression",
+          "Review mission alignment scores and adjust proposals if needed",
+          "Ensure black-box integrity is maintained for all affected services",
+          "Update foundational documents if legitimate scope expansion is needed"
+        ]
+      },
+      "validation_checks": [
+        "mission_alignment: Changes align with SYSTEM_MISSION_STATEMENT.md",
+        "user_scenario_coverage: Changes don't break existing user scenarios", 
+        "success_criteria_impact: Changes don't compromise success criteria",
+        "architectural_consistency: Changes comply with architectural_definitions.json",
+        "black_box_integrity: Service interfaces and encapsulation principles maintained"
+      ],
+      "prerequisites": [
+        "SYSTEM_MISSION_STATEMENT.md must exist",
+        "USER_SCENARIOS.md must exist", 
+        "SUCCESS_CRITERIA.md must exist",
+        "architectural_definitions.json must exist",
+        "service_architecture.json files for affected services"
+      ],
+      "when_to_use": [
+        "MANDATORY before any feature/service change workflow",
+        "Before adding new services to existing systems",
+        "Before modifying existing service interfaces",
+        "When scope expansion is proposed"
+      ],
+      "exit_codes": {
+        "0": "Validation passes - proceed with workflow",
+        "1": "Blocked - critical issues prevent progression", 
+        "2": "Conditional - issues found but workflow can proceed with caution"
+      }
     }
   },
   "automation_features": {

@@ -48,7 +48,7 @@
       "asynchronous - Fire-and-forget, pub-sub, event-driven", 
       "bidirectional - Two-way communication, both parties can initiate"
     ],
-    "required_fields": ["interface_type", "communication_pattern", "auth_required"],
-    "optional_fields": ["path", "method"] 
+    "required_fields": ["registry_version", "system_name", "creation_date", "interfaces"],
+    "validation_notes": "All interface entries must match those defined in corresponding service_architecture.json files"
   }
 }
