@@ -53,7 +53,7 @@ echo ""
 echo "✅ Installation complete!"
 echo ""
 echo "🧪 Running validation..."
-python3 validate_reflow_setup.py
+python3 ./tools/validate_reflow_setup.py
 
 echo ""
 echo "🚀 Reflow system is ready to use!"

@@ -10,7 +10,7 @@ from pathlib import Path
 
 def validate_reflow_setup():
     """Validate that reflow directory has all required components."""
-    reflow_root = Path(__file__).parent
+    reflow_root = Path(__file__).parent.parent  # Go up one level from tools/ to reflow/
     issues = []
     
     # Check required directories

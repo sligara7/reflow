@@ -16,7 +16,9 @@
       {"path": "./tools/system_of_systems_graph.py", "purpose": "Generate system graph and detect issues"},
       {"path": "./tools/analyze_features.py", "purpose": "Analyze system features and requirements"},
       {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"},
-      {"path": "./tools/validate_foundational_alignment.py", "purpose": "Ensure changes align with foundational documents and black-box principles"}
+      {"path": "./tools/validate_foundational_alignment.py", "purpose": "Ensure changes align with foundational documents and black-box principles"},
+      {"path": "./tools/select_development_languages.py", "purpose": "Interactive language selection for homogeneous or heterogeneous development"},
+      {"path": "./tools/validate_reflow_setup.py", "purpose": "Validate that all reflow prerequisites and components are properly installed"}
     ],
     "required_templates": [
       {"path": "./templates/index_template.json", "purpose": "System index format"},
@@ -235,8 +237,8 @@
       },
       "route_to": "feature_update/FU-01-ChangeProposal.json"
     },
-    "implementation_from_final_specs": {
-      "description": "Architecture is complete (build_ready_index.json exists) and development should begin",
+    "architecture_only_completion": {
+      "description": "Architecture is complete and user wants to stop without software development",
       "preconditions": [
         "systems/<system_name>/build_ready_index.json exists",
         "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
@@ -254,6 +256,87 @@
           "SUCCESS_CRITERIA.md",
           "operational_test_scenarios/"
         ]
+      },
+      "completion_artifacts": {
+        "systems_engineering_deliverables": [
+          "Complete system architecture documentation",
+          "Service decomposition with interface specifications", 
+          "Component interaction diagrams and flow charts",
+          "Mission alignment and success criteria documentation",
+          "Interface Contract Documents (ICDs) for all external integrations",
+          "Deployment architecture specifications",
+          "Operational test scenarios and validation criteria"
+        ],
+        "ready_for_handoff_to": [
+          "Software development teams (in any programming language)",
+          "Integration teams with existing systems",
+          "Third-party vendors for component implementation",
+          "Domain experts for manual process implementation"
+        ]
+      },
+      "route_to": "WORKFLOW_COMPLETE"
+    },
+    "implementation_from_final_specs": {
+      "description": "Architecture is complete (build_ready_index.json exists) and software development should begin",
+      "preconditions": [
+        "systems/<system_name>/build_ready_index.json exists",
+        "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
+        "All validation gates passed"
+      ],
+      "validation_required": {
+        "template_validation": "python3 ./tools/validate_architecture.py systems/<system_name>",
+        "graph_validation": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+        "handoff_artifacts": [
+          "build_ready_index.json",
+          "ARCHITECTURE_CONTEXT_SUMMARY.md",
+          "interfaces/* ICDs",
+          "SYSTEM_MISSION_STATEMENT.md",
+          "USER_SCENARIOS.md", 
+          "SUCCESS_CRITERIA.md",
+          "operational_test_scenarios/"
+        ]
+      },
+      "language_selection": {
+        "description": "Select programming language(s) for software development",
+        "options": {
+          "homogeneous_system": {
+            "description": "All services developed in the same programming language",
+            "supported_languages": [
+              {"language": "python", "framework_options": ["fastapi", "flask", "django"], "default_framework": "fastapi"},
+              {"language": "java", "framework_options": ["spring-boot", "micronaut", "quarkus"], "default_framework": "spring-boot"},
+              {"language": "javascript", "framework_options": ["express", "nestjs", "koa"], "default_framework": "express"},
+              {"language": "typescript", "framework_options": ["express", "nestjs", "koa"], "default_framework": "nestjs"},
+              {"language": "go", "framework_options": ["gin", "echo", "fiber"], "default_framework": "gin"},
+              {"language": "rust", "framework_options": ["axum", "warp", "actix-web"], "default_framework": "axum"},
+              {"language": "ruby", "framework_options": ["rails", "sinatra", "hanami"], "default_framework": "sinatra"},
+              {"language": "csharp", "framework_options": ["asp.net-core", "minimal-api"], "default_framework": "asp.net-core"}
+            ],
+            "prompt": "Select one programming language for all services in the system"
+          },
+          "heterogeneous_system": {
+            "description": "Different services can be developed in different programming languages based on suitability",
+            "service_language_mapping": {
+              "description": "Assign programming languages to services based on their requirements",
+              "considerations": [
+                "Performance requirements (CPU/memory intensive services)",
+                "Library ecosystem availability (ML/AI, data processing, etc.)",
+                "Team expertise and familiarity",
+                "Integration requirements with existing systems",
+                "Deployment and operational constraints"
+              ],
+              "examples": [
+                "High-performance data processing services → Go or Rust",
+                "Machine learning services → Python",
+                "Web APIs and business logic → Java, TypeScript, or Python",
+                "Real-time services → Go or Rust", 
+                "Admin interfaces and dashboards → JavaScript/TypeScript"
+              ]
+            },
+            "prompt": "For each service, select the most appropriate programming language based on requirements"
+          }
+        },
+        "language_selection_tool": "./tools/select_development_languages.py",
+        "output": "systems/<system_name>/development_language_configuration.json"
       },
       "route_to": "development/Dev-01-InitBootstrap.json"
     }
@@ -351,8 +434,29 @@
           "context_setup": "Initialize tracking files and working directory"
         },
         "yes": { 
-          "goto": "development/Dev-01-InitBootstrap.json",
+          "goto": "D2",
           "prerequisite": "All validation checks must pass"
+        }
+      }
+    },
+    {
+      "id": "D2",
+      "question": "Do you want to proceed with software development, or complete the workflow with architecture only?",
+      "context": "Architecture is complete and validated. You can either proceed to develop software implementations or stop here with complete systems engineering deliverables.",
+      "options": {
+        "architecture_only": {
+          "description": "Complete workflow with systems engineering deliverables only",
+          "benefits": [
+            "Complete architectural documentation suitable for any implementation approach",
+            "Technology-agnostic specifications that can be implemented in any programming language",
+            "Interface contracts suitable for integration with existing systems",
+            "Handoff-ready documentation for development teams or third-party vendors"
+          ],
+          "goto": "entry_points.architecture_only_completion"
+        },
+        "software_development": {
+          "description": "Proceed to develop software implementations of the architecture",
+          "goto": "entry_points.implementation_from_final_specs"
         }
       }
     },
@@ -682,6 +786,89 @@
         "0": "Validation passes - proceed with workflow",
         "1": "Blocked - critical issues prevent progression", 
         "2": "Conditional - issues found but workflow can proceed with caution"
+      }
+    },
+    "select_development_languages": {
+      "path": "./tools/select_development_languages.py",
+      "usage": "python3 ./tools/select_development_languages.py <system_path> [--interactive] [--homogeneous] [--heterogeneous]",
+      "purpose": "Interactive tool to select programming languages and frameworks for service development",
+      "output_analysis": {
+        "language_configuration": "JSON with language assignments and development setup information",
+        "llm_usage_instructions": [
+          "Use this tool after architecture completion but before development workflow",
+          "Consider service requirements when selecting languages (performance, libraries, team expertise)",
+          "Review generated development setup requirements for each selected language",
+          "Update development workflow with language-specific tooling and frameworks",
+          "Ensure interface contracts remain language-agnostic for proper black-box architecture"
+        ]
+      },
+      "configuration_options": {
+        "homogeneous": "All services use the same programming language and framework",
+        "heterogeneous": "Services can use different languages based on their specific requirements"
+      },
+      "supported_languages": [
+        "python (FastAPI, Flask, Django)",
+        "java (Spring Boot, Micronaut, Quarkus)", 
+        "javascript (Express, Koa, Fastify)",
+        "typescript (NestJS, Express)",
+        "go (Gin, Echo, Fiber)",
+        "rust (Axum, Warp, Actix-web)",
+        "ruby (Sinatra, Rails)",
+        "csharp (ASP.NET Core)"
+      ],
+      "selection_criteria": [
+        "Performance requirements (high-load services)",
+        "Library ecosystem (ML/AI, data processing)",
+        "Team expertise and familiarity",
+        "Integration with existing systems",
+        "Deployment and operational constraints"
+      ],
+      "prerequisites": [
+        "build_ready_index.json must exist with service definitions",
+        "service_architecture.json files must exist for all services"
+      ],
+      "when_to_use": [
+        "After architecture completion (D2 decision point)",
+        "Before development workflow initialization",
+        "When changing development language strategy"
+      ],
+      "output_file": "systems/<system_name>/development_language_configuration.json"
+    },
+    "validate_reflow_setup": {
+      "path": "./tools/validate_reflow_setup.py",
+      "usage": "python3 ./tools/validate_reflow_setup.py",
+      "purpose": "Comprehensive validation of reflow system installation and prerequisites",
+      "output_analysis": {
+        "validation_report": "Console output with detailed validation results for each component",
+        "llm_usage_instructions": [
+          "Run this tool after initial reflow setup to ensure all components are working",
+          "Use before starting any workflow to verify system readiness",
+          "Address any failed validations before proceeding with architecture or development",
+          "Re-run after installing missing dependencies or fixing configuration issues"
+        ]
+      },
+      "validation_checks": [
+        "All required tools present and executable in ./tools/ directory",
+        "All required templates present in ./templates/ directory",
+        "All required definitions present in ./definitions/ directory", 
+        "Python dependencies installed (networkx, matplotlib, pygraphviz)",
+        "System packages installed (graphviz, graphviz-dev)",
+        "Workflow files present and properly structured"
+      ],
+      "prerequisites": [
+        "Reflow system setup completed",
+        "Python 3.8+ installed",
+        "Package managers available (pip, apt/yum for system packages)"
+      ],
+      "when_to_use": [
+        "After initial reflow installation",
+        "Before starting any workflow",
+        "When troubleshooting setup issues",
+        "After system updates or environment changes"
+      ],
+      "exit_codes": {
+        "0": "All validations passed - system ready for use",
+        "1": "Validation failures found - see output for details"
       }
     }
   },

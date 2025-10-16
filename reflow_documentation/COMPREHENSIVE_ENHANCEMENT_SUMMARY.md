@@ -125,7 +125,7 @@ The reflow system now provides:
 ./setup_reflow.sh
 
 # 2. Validate setup
-python3 validate_reflow_setup.py
+python3 ./tools/validate_reflow_setup.py
 
 # 3. Architecture workflow (new system)
 # Routes through decision_flow.json → architecture/Arch-01-SetupAndContext.json
