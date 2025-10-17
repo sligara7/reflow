@@ -99,28 +99,7 @@
       "dependencies array must contain valid service_ids that exist in the system",
       "interfaces array must have at least one interface unless is_external=true",
       "implementation_status must be one of: existing, recommended, hypothetical",
-      "For 'recommended' or 'hypothetical' status, justification.rationale is required",
-      "Each service MUST have a storage_requirement interface defining unique/internal database boundaries",
-      "Storage requirements must capture data isolation and ownership boundaries between services"
-    ],
-    "storage_requirement_guidance": {
-      "purpose": "Every service must explicitly define its storage boundaries and data ownership",
-      "required_interface": {
-        "name": "storage_requirement",
-        "interface_type": "storage_requirement",
-        "description": "Define unique database/storage boundaries for this service",
-        "implementation_details": [
-          "Specify dedicated database/schema if service owns data",
-          "Define shared storage access patterns if data is shared",
-          "Document data isolation boundaries between services",
-          "Clarify read vs write access to different data stores"
-        ]
-      },
-      "examples": [
-        "Dedicated database: 'Service owns user_profiles database with exclusive write access'",
-        "Shared read: 'Service reads from shared configurations table, no write access'",
-        "Cache boundaries: 'Service maintains private Redis cache, no sharing with other services'"
-      ]
-    }
+      "For 'recommended' or 'hypothetical' status, justification.rationale is required"
+    ]
   }
 }

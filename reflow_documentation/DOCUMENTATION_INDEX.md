@@ -27,12 +27,12 @@ This folder contains all documentation, guides, and analysis reports for the ref
 ### Usage & Examples
 - `USAGE_EXAMPLES.md` - Practical usage examples
 - `SYSTEM_DECOMPOSITION_USAGE_GUIDE.md` - Guide for system-of-systems decomposition workflow
+- `SYSTEM_DIRECTORY_STRUCTURE.md` - Standard 4-folder system organization
 - `MISSING_ASPECTS.md` - Gap analysis
 
 ### Operational Documentation
 - `CLI_POLICY.md` - Non-interactive CLI policies
 - `COORDINATION.md` - Parallel development coordination
-- `PROCESS_IMPROVEMENT_POLICY.md` - Mandatory process improvement collection policy
 
 ## Purpose
 

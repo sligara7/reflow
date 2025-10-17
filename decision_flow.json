@@ -4,7 +4,6 @@
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
     "last_updated": "2025-10-14",
     "based_on": "UAF 1.2 architecture framework with automated context management",
-    "validated_architecture_sequence": "scaffold services -> deduce interfaces -> create index & registry -> validate -> generate ICDs -> build_ready_index -> bootstrap development",
     "preserves": [
       "architecture_workflow.json",
       "service_development_workflow.json",
@@ -16,7 +15,10 @@
       {"path": "./tools/validate_architecture.py", "purpose": "Validate service architecture JSON files"},
       {"path": "./tools/system_of_systems_graph.py", "purpose": "Generate system graph and detect issues"},
       {"path": "./tools/analyze_features.py", "purpose": "Analyze system features and requirements"},
-      {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"}
+      {"path": "./tools/generate_interface_contracts.py", "purpose": "Generate ICD specifications"},
+      {"path": "./tools/validate_foundational_alignment.py", "purpose": "Ensure changes align with foundational documents and black-box principles"},
+      {"path": "./tools/select_development_languages.py", "purpose": "Interactive language selection for homogeneous or heterogeneous development"},
+      {"path": "./tools/validate_reflow_setup.py", "purpose": "Validate that all reflow prerequisites and components are properly installed"}
     ],
     "required_templates": [
       {"path": "./templates/index_template.json", "purpose": "System index format"},
@@ -24,20 +26,13 @@
       {"path": "./templates/interface_registry_template.json", "purpose": "Interface registry format for validation tools"},
       {"path": "./templates/working_memory_template.json", "purpose": "Context tracking format"},
       {"path": "./templates/current_focus_template.md", "purpose": "Current focus tracking format"},
-      {"path": "./templates/step_progress_tracker_template.json", "purpose": "Progress tracking format"},
-      {"path": "./templates/integration_requirements_template.json", "purpose": "System-of-systems integration requirements format"},
-      {"path": "./templates/system_decomposition_template.json", "purpose": "Individual system structure analysis format"},
-      {"path": "./templates/component_analysis_template.json", "purpose": "Detailed component analysis format"}
+      {"path": "./templates/step_progress_tracker_template.json", "purpose": "Progress tracking format"}
     ],
     "required_definitions": [
       {"path": "./definitions/architectural_definitions.json", "purpose": "UAF terminology and hierarchy"}
     ],
     "python_dependencies": ["networkx", "matplotlib", "pygraphviz"],
-    "system_packages": ["graphviz", "graphviz-dev"],
-    "required_policies": [
-      {"path": "./shared/context_policies.json", "purpose": "Context management and process improvement collection rules"},
-      {"section": "process_improvement_policy", "purpose": "MANDATORY: All process improvements MUST go to ./process_improvements/inbox/inbox.jsonl in JSONL format"}
-    ]
+    "system_packages": ["graphviz", "graphviz-dev"]
   },
   "context_management": {
     "system_isolation": {
@@ -54,7 +49,7 @@
         "ALL context files must be read from current system directory only",
         "Verify system_name in working_memory.json matches pwd before every file operation"
       ],
-      "context_file_location": "ALL context files (current_focus.md, working_memory.json, etc.) MUST be in systems/<system_name>/",
+      "context_file_location": "ALL context files (current_focus.md, working_memory.json, etc.) MUST be in systems/<system_name>/context/",
       "sanity_check": "If system_name from working_memory.json doesn't match pwd, ERROR and STOP"
     },
     "refresh_triggers": {
@@ -66,8 +61,8 @@
     },
     "validation_before_every_operation": [
       "VERIFY: pwd equals /path/to/saa/systems/<system_name>",
-      "READ: systems/<system_name>/current_focus.md",
-      "READ: systems/<system_name>/step_progress_tracker.json",
+      "READ: systems/<system_name>/context/current_focus.md",
+      "READ: systems/<system_name>/context/step_progress_tracker.json",
       "CHECK: operations_since_refresh <= 4",
       "VERIFY: system_name, current_step, current_substep",
       "CONFIRM: No files from other systems will be modified"
@@ -75,14 +70,10 @@
     "refresh_sequence": [
       "PAUSE: Stop all operations",
       "SAVE: Update step_progress_tracker.json and working_memory.json",
-      "COLLECT: Process improvements using classification decision tree (see process_improvement_policy)",
-      "  - CLASSIFY: System-specific vs generic workflow improvements",
-      "  - FOR SYSTEM-SPECIFIC: Prompt user for immediate implementation",
-      "  - FOR GENERIC: Append to ./process_improvements/inbox/inbox.jsonl",
       "RELOAD: ./definitions/architectural_definitions.json",
       "RELOAD: ./templates/* files",
       "RELOAD: decision_flow.json (this file)",
-      "READ: systems/<system_name>/current_focus.md",
+      "READ: systems/<system_name>/context/current_focus.md",
       "CONFIRM: State system name, step, substep, next action",
       "RESUME: Continue with confirmed action"
     ],
@@ -95,18 +86,15 @@
       "Not updating progress tracking files",
       "Working in wrong system directory",
       "Referencing files from other systems",
-      "pwd does not match system_name from working_memory.json",
-      "Creating PROCESS_IMPROVEMENTS.md files in system directories instead of using proper classification",
-      "Implementing system-specific improvements without user confirmation",
-      "Putting system-specific improvements in generic inbox.jsonl"
+      "pwd does not match system_name from working_memory.json"
     ],
     "tracking_files": {
-      "process_log": "systems/<system_name>/process_log.md",
-      "working_memory": "systems/<system_name>/working_memory.json",
-      "progress_tracker": "systems/<system_name>/step_progress_tracker.json",
-      "current_focus": "systems/<system_name>/current_focus.md",
-      "context_checkpoint": "systems/<system_name>/context_checkpoint.md",
-      "note": "process_log.md also contains system-specific process improvements (see process_improvement_policy)"
+      "process_log": "systems/<system_name>/context/process_log.md",
+      "working_memory": "systems/<system_name>/context/working_memory.json",
+      "progress_tracker": "systems/<system_name>/context/step_progress_tracker.json",
+      "current_focus": "systems/<system_name>/context/current_focus.md",
+      "context_checkpoint": "systems/<system_name>/context/context_checkpoint.md",
+      "note": "All tracking files are in the context/ folder for LLM agent workflow guidance"
     },
     "system_isolation_recovery": {
       "description": "Procedure when wrong-system context is detected",
@@ -118,19 +106,19 @@
       ],
       "recovery_steps": [
         "STOP immediately - Do not create/modify any more files",
-        "Document the error in current directory's process_log.md with timestamp",
-        "Identify correct system name from intended working_memory.json",
+        "Document the error in current directory's context/process_log.md with timestamp",
+        "Identify correct system name from intended context/working_memory.json",
         "Execute: cd /path/to/saa/systems/<correct_system_name>",
         "Verify: pwd must show correct system directory",
-        "READ working_memory.json to reestablish context",
-        "READ current_focus.md to understand current task",
+        "READ context/working_memory.json to reestablish context",
+        "READ context/current_focus.md to understand current task",
         "RESUME work with verified context and document recovery"
       ],
       "prevention_examples": {
         "correct_approach": [
           "cd /path/to/saa/systems/<system_name>",
           "pwd  # Verify correct directory",
-          "cat current_focus.md  # Read context from current system",
+          "cat context/current_focus.md  # Read context from current system",
           "All file operations relative to current directory"
         ],
         "wrong_approach_avoid": [
@@ -148,122 +136,8 @@
           "operation_attempted",
           "recovery_action_taken"
         ],
-        "log_location": "systems/<correct_system_name>/process_log.md"
+        "log_location": "systems/<correct_system_name>/context/process_log.md"
       }
-    },
-    "process_improvement_policy": {
-      "description": "Policy for collecting and implementing process improvements during workflow execution",
-      "improvement_classification": {
-        "system_specific": {
-          "description": "Improvements that apply only to the current system being developed",
-          "scope": "Current system architecture, interfaces, components, or implementation details",
-          "action": "PROMPT user for immediate implementation",
-          "examples": [
-            "Add missing interface to specific service",
-            "Correct component dependency in current system",
-            "Fix validation error in current service_architecture.json",
-            "Improve specific component's resource allocation"
-          ],
-          "implementation_flow": [
-            "IDENTIFY: Is this improvement specific to current system?",
-            "PROMPT: 'Would you like to implement this improvement now: [improvement_description]? (y/n)'",
-            "IF YES: Implement immediately and document in process_log.md",
-            "IF NO: Log as system-specific improvement in process_log.md for later",
-            "CONTINUE: Resume workflow execution"
-          ]
-        },
-        "generic_workflow": {
-          "description": "Improvements that apply to the workflow, templates, or process itself",
-          "scope": "decision_flow.json, templates, tools, shared policies, or general process",
-          "action": "COLLECT to inbox.jsonl for later review and implementation",
-          "examples": [
-            "Add validation step to workflow",
-            "Improve template format",
-            "Enhance tool functionality",
-            "Update shared policies"
-          ],
-          "format": "JSONL - one JSON object per line using ./process_improvements/template.json format",
-          "target_file": "./process_improvements/inbox/inbox.jsonl"
-        }
-      },
-      "classification_decision_tree": {
-        "questions": [
-          "Does this improvement apply only to the current system being developed?",
-          "Does this improvement involve changing decision_flow.json, templates, or tools?",
-          "Does this improvement affect how future systems would be developed?"
-        ],
-        "routing": {
-          "current_system_only": "system_specific -> prompt for immediate implementation",
-          "affects_workflow_or_tools": "generic_workflow -> collect to inbox.jsonl",
-          "affects_future_systems": "generic_workflow -> collect to inbox.jsonl"
-        }
-      },
-      "collection_triggers": [
-        "on_refresh_complete",
-        "on_step_exit", 
-        "after_validation_failure_resolved",
-        "at_workflow_completion",
-        "when_discovering_process_inefficiency",
-        "when_identifying_system_specific_optimization"
-      ],
-      "mandatory_fields_for_generic": {
-        "timestamp": "ISO8601 format",
-        "workflow_area": "architecture|development|feature_update|decision_flow|shared_policies",
-        "sub_id": "Specific step identifier (e.g., A2.S2.4, Dev-05.D8.2)",
-        "category": "context_management|iteration|artifact_routing|validation|tooling|docs|usability|automation",
-        "suggestion": "Short actionable improvement proposal (must be generic and system-agnostic)",
-        "rationale": "Why this improves the process",
-        "evidence_refs": "Array of repo-relative paths only",
-        "impact": "low|medium|high",
-        "status": "proposed"
-      },
-      "system_specific_documentation": {
-        "location": "systems/<system_name>/process_log.md",
-        "format": "Markdown entry with timestamp and implementation status",
-        "required_fields": [
-          "timestamp",
-          "improvement_description", 
-          "implementation_status (implemented|deferred|rejected)",
-          "rationale_for_status",
-          "files_modified (if implemented)"
-        ],
-        "example_entry": "## Process Improvement - 2025-10-14T10:30:00Z\n**Improvement**: Add auth_requirement to coordinator service\n**Status**: Implemented\n**Rationale**: Satisfies security validation requirements\n**Files Modified**: specs/machine/service_arch/coordinator/service_architecture.json"
-      },
-      "implementation_prompts": {
-        "immediate_implementation": "🔧 PROCESS IMPROVEMENT IDENTIFIED:\n{improvement_description}\n\nThis improvement is specific to the current system '{system_name}' and can be implemented immediately.\n\nWould you like to implement this now? (y/n)\n\nIf yes, I will make the necessary changes and continue the workflow.\nIf no, I will document it for later implementation.",
-        "user_confirmation_required": true,
-        "timeout_behavior": "If no response in 30 seconds, document as deferred and continue workflow"
-      },
-      "critical_rules": [
-        "CLASSIFY first: system-specific vs generic workflow improvement",
-        "PROMPT for system-specific improvements before implementing",
-        "NEVER create PROCESS_IMPROVEMENTS.md files in system directories",
-        "FOR GENERIC: ALWAYS append to ./process_improvements/inbox/inbox.jsonl using proper JSONL format",
-        "FOR SYSTEM-SPECIFIC: Document in systems/<system_name>/process_log.md",
-        "Generic suggestions MUST be system-agnostic - no system/service names",
-        "No secrets, no external tokens, no absolute paths",
-        "Use proper JSON format for generic improvements - one object per line in JSONL file"
-      ],
-      "example_generic_entry": {
-        "timestamp": "2025-10-14T10:30:00Z",
-        "workflow_area": "architecture", 
-        "sub_id": "A2.S2.4",
-        "category": "validation",
-        "suggestion": "Add automatic interface consistency check before ICD generation",
-        "rationale": "Prevents validation failures by catching interface mismatches early",
-        "evidence_refs": ["tools/validate_architecture.py", "architecture/Arch-02-AnalysisAndDecomposition.json"],
-        "impact": "medium",
-        "status": "proposed"
-      },
-      "invalid_approaches": [
-        "❌ Creating PROCESS_IMPROVEMENTS.md in systems/<system_name>/",
-        "❌ Implementing system-specific changes without user confirmation",
-        "❌ Putting system-specific improvements in generic inbox.jsonl",
-        "❌ Including system-specific names in generic improvements",
-        "❌ Using absolute paths in evidence_refs",
-        "❌ Writing improvements as markdown instead of proper format"
-      ],
-      "validation": "All generic improvements must follow shared/context_policies.json self_improvement guidelines"
     }
   },
   "entry_points": {
@@ -271,15 +145,59 @@
       "description": "A brand-new system or major capability not architected yet",
       "system_isolation_setup": {
         "mandatory_first_step": "Establish system isolation before any work begins",
+        "standard_directory_structure": {
+          "description": "Every system must follow the standardized 4-folder organization",
+          "required_folders": {
+            "context/": "LLM agent tracking and workflow guidance artifacts",
+            "specs/": "System engineering artifacts (human and machine readable)",
+            "services/": "Actual developed service implementations",
+            "docs/": "Human documentation and visual artifacts"
+          },
+          "detailed_structure": {
+            "context/": [
+              "working_memory.json - LLM agent context tracking",
+              "current_focus.md - Current workflow focus",
+              "step_progress_tracker.json - Progress through workflow steps",
+              "process_log.md - Detailed process execution log",
+              "context_checkpoint.md - Context recovery checkpoints"
+            ],
+            "specs/": {
+              "machine/": [
+                "index.json - System component index",
+                "interface_registry.json - Interface definitions registry",
+                "system_of_systems_graph.json - System topology",
+                "service_arch/<service_name>/service_architecture.json - Per-service architecture",
+                "interfaces/ - Interface Contract Documents (ICDs)",
+                "graphs/ - Machine-readable graph data"
+              ],
+              "human/": [
+                "visualizations/ - Human-readable diagrams and charts",
+                "reports/ - Analysis and summary reports",
+                "documentation/ - Human-oriented documentation"
+              ]
+            },
+            "services/": [
+              "<service_name>/ - Actual service implementation directories",
+              "build_ready_index.json - Ready-for-development service index"
+            ],
+            "docs/": [
+              "SYSTEM_MISSION_STATEMENT.md - System purpose and goals",
+              "USER_SCENARIOS.md - User interaction scenarios", 
+              "SUCCESS_CRITERIA.md - System success metrics",
+              "ARCHITECTURE_CONTEXT_SUMMARY.md - Architecture overview"
+            ]
+          }
+        },
         "setup_sequence": [
           "Determine system_name for new system",
-          "Create working directory: mkdir -p systems/<system_name>",
+          "Create working directory with 4-folder structure:",
+          "  mkdir -p systems/<system_name>/{context,specs/{machine/{service_arch,interfaces,graphs,registries},human/{visualizations,reports,documentation}},services,docs}",
           "Change to system directory: cd systems/<system_name>", 
           "Verify isolation: pwd must show systems/<system_name>",
-          "Initialize working_memory.json with system_name",
-          "Initialize current_focus.md with initial objectives",
-          "Initialize step_progress_tracker.json",
-          "Document setup in process_log.md"
+          "Initialize context/working_memory.json with system_name",
+          "Initialize context/current_focus.md with initial objectives",
+          "Initialize context/step_progress_tracker.json",
+          "Document setup in context/process_log.md"
         ]
       },
       "prerequisites_check": {
@@ -312,36 +230,20 @@
           },
           "route_to": "architecture/Arch-01-SetupAndContext.json"
         },
-        "with_system_decomposition": {
-          "description": "Decompose multiple existing systems to understand integration requirements",
-          "use_case": "System-of-systems integration where multiple independent systems need to work together",
-          "prerequisites": [
-            "High-level integration requirements document available",
-            "List of systems to be integrated identified",
-            "Access to system documentation or codebases (can be provided during workflow)"
-          ],
-          "benefits": [
-            "Systematic analysis of each system's internal structure",
-            "Identification of specific integration points and interfaces needed",
-            "Impact assessment for required changes in each system",
-            "Unified architecture view across all systems"
-          ],
-          "route_to": "architecture/Arch-00-SystemDecomposition.json"
-        },
         "direct_architecture": {
-          "description": "Start architecture design directly without feature analysis or decomposition",
+          "description": "Start architecture design directly without feature analysis",
           "route_to": "architecture/Arch-01-SetupAndContext.json"
         }
       },
       "initial_context_setup": {
-        "create_working_directory": "systems/<system_name>/",
+        "create_working_directory": "systems/<system_name>/ with 4-folder structure",
         "initialize_tracking_files": [
-          "working_memory.json from template",
-          "current_focus.md from template", 
-          "step_progress_tracker.json from template",
-          "process_log.md with initial entry"
+          "context/working_memory.json from template",
+          "context/current_focus.md from template", 
+          "context/step_progress_tracker.json from template",
+          "context/process_log.md with initial entry"
         ],
-        "validate_setup": "Confirm all tracking files created and populated"
+        "validate_setup": "Confirm all tracking files created in context/ folder and 4-folder structure exists"
       }
     },
     "feature_or_service_change": {
@@ -354,10 +256,34 @@
         ],
         "on_failure": "Complete initial architecture before feature changes"
       },
+      "foundational_validation": {
+        "description": "MANDATORY: Validate alignment with foundational documents before any changes",
+        "tool": "./tools/validate_foundational_alignment.py",
+        "command": "python3 ./tools/validate_foundational_alignment.py systems/<system_name> --change-proposal <proposal_path>",
+        "required_foundational_documents": [
+          "SYSTEM_MISSION_STATEMENT.md",
+          "USER_SCENARIOS.md", 
+          "SUCCESS_CRITERIA.md",
+          "architectural_definitions.json"
+        ],
+        "validation_gates": {
+          "mission_alignment": "Changes must align with stated system mission",
+          "architectural_consistency": "Changes must comply with UAF architectural definitions",
+          "black_box_integrity": "Changes must maintain service encapsulation principles",
+          "user_scenario_coverage": "Changes must not break existing user scenarios",
+          "success_criteria_impact": "Changes must not compromise success criteria"
+        },
+        "on_failure": {
+          "blocked": "Critical foundational documents missing - return to architecture workflow",
+          "conditional": "Address alignment issues before proceeding to change proposal",
+          "pass": "Proceed to feature update workflow"
+        },
+        "success_criteria": "Foundational validation passes with status 'pass' or 'conditional' with addressed issues"
+      },
       "route_to": "feature_update/FU-01-ChangeProposal.json"
     },
-    "implementation_from_final_specs": {
-      "description": "Architecture is complete (build_ready_index.json exists) and development should begin",
+    "architecture_only_completion": {
+      "description": "Architecture is complete and user wants to stop without software development",
       "preconditions": [
         "systems/<system_name>/build_ready_index.json exists",
         "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
@@ -375,6 +301,87 @@
           "SUCCESS_CRITERIA.md",
           "operational_test_scenarios/"
         ]
+      },
+      "completion_artifacts": {
+        "systems_engineering_deliverables": [
+          "Complete system architecture documentation",
+          "Service decomposition with interface specifications", 
+          "Component interaction diagrams and flow charts",
+          "Mission alignment and success criteria documentation",
+          "Interface Contract Documents (ICDs) for all external integrations",
+          "Deployment architecture specifications",
+          "Operational test scenarios and validation criteria"
+        ],
+        "ready_for_handoff_to": [
+          "Software development teams (in any programming language)",
+          "Integration teams with existing systems",
+          "Third-party vendors for component implementation",
+          "Domain experts for manual process implementation"
+        ]
+      },
+      "route_to": "WORKFLOW_COMPLETE"
+    },
+    "implementation_from_final_specs": {
+      "description": "Architecture is complete (build_ready_index.json exists) and software development should begin",
+      "preconditions": [
+        "systems/<system_name>/build_ready_index.json exists",
+        "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
+        "All validation gates passed"
+      ],
+      "validation_required": {
+        "template_validation": "python3 ./tools/validate_architecture.py systems/<system_name>",
+        "graph_validation": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+        "handoff_artifacts": [
+          "build_ready_index.json",
+          "ARCHITECTURE_CONTEXT_SUMMARY.md",
+          "interfaces/* ICDs",
+          "SYSTEM_MISSION_STATEMENT.md",
+          "USER_SCENARIOS.md", 
+          "SUCCESS_CRITERIA.md",
+          "operational_test_scenarios/"
+        ]
+      },
+      "language_selection": {
+        "description": "Select programming language(s) for software development",
+        "options": {
+          "homogeneous_system": {
+            "description": "All services developed in the same programming language",
+            "supported_languages": [
+              {"language": "python", "framework_options": ["fastapi", "flask", "django"], "default_framework": "fastapi"},
+              {"language": "java", "framework_options": ["spring-boot", "micronaut", "quarkus"], "default_framework": "spring-boot"},
+              {"language": "javascript", "framework_options": ["express", "nestjs", "koa"], "default_framework": "express"},
+              {"language": "typescript", "framework_options": ["express", "nestjs", "koa"], "default_framework": "nestjs"},
+              {"language": "go", "framework_options": ["gin", "echo", "fiber"], "default_framework": "gin"},
+              {"language": "rust", "framework_options": ["axum", "warp", "actix-web"], "default_framework": "axum"},
+              {"language": "ruby", "framework_options": ["rails", "sinatra", "hanami"], "default_framework": "sinatra"},
+              {"language": "csharp", "framework_options": ["asp.net-core", "minimal-api"], "default_framework": "asp.net-core"}
+            ],
+            "prompt": "Select one programming language for all services in the system"
+          },
+          "heterogeneous_system": {
+            "description": "Different services can be developed in different programming languages based on suitability",
+            "service_language_mapping": {
+              "description": "Assign programming languages to services based on their requirements",
+              "considerations": [
+                "Performance requirements (CPU/memory intensive services)",
+                "Library ecosystem availability (ML/AI, data processing, etc.)",
+                "Team expertise and familiarity",
+                "Integration requirements with existing systems",
+                "Deployment and operational constraints"
+              ],
+              "examples": [
+                "High-performance data processing services → Go or Rust",
+                "Machine learning services → Python",
+                "Web APIs and business logic → Java, TypeScript, or Python",
+                "Real-time services → Go or Rust", 
+                "Admin interfaces and dashboards → JavaScript/TypeScript"
+              ]
+            },
+            "prompt": "For each service, select the most appropriate programming language based on requirements"
+          }
+        },
+        "language_selection_tool": "./tools/select_development_languages.py",
+        "output": "systems/<system_name>/development_language_configuration.json"
       },
       "route_to": "development/Dev-01-InitBootstrap.json"
     }
@@ -472,8 +479,29 @@
           "context_setup": "Initialize tracking files and working directory"
         },
         "yes": { 
-          "goto": "development/Dev-01-InitBootstrap.json",
+          "goto": "D2",
           "prerequisite": "All validation checks must pass"
+        }
+      }
+    },
+    {
+      "id": "D2",
+      "question": "Do you want to proceed with software development, or complete the workflow with architecture only?",
+      "context": "Architecture is complete and validated. You can either proceed to develop software implementations or stop here with complete systems engineering deliverables.",
+      "options": {
+        "architecture_only": {
+          "description": "Complete workflow with systems engineering deliverables only",
+          "benefits": [
+            "Complete architectural documentation suitable for any implementation approach",
+            "Technology-agnostic specifications that can be implemented in any programming language",
+            "Interface contracts suitable for integration with existing systems",
+            "Handoff-ready documentation for development teams or third-party vendors"
+          ],
+          "goto": "entry_points.architecture_only_completion"
+        },
+        "software_development": {
+          "description": "Proceed to develop software implementations of the architecture",
+          "goto": "entry_points.implementation_from_final_specs"
         }
       }
     },
@@ -594,11 +622,11 @@
       "development_bootstrap": {
         "automated_setup": "python3 ./tools/bootstrap_development_context.py <system_name>",
         "creates_files": [
-          "dev_progress_tracker.json - Development stage tracking",
-          "dev_current_focus.md - Current development focus",
-          "dev_working_memory.json - Development context state",
-          "dev_process_log.md - Development process log",
-          "dev_context_checkpoint.md - Development context snapshots"
+          "context/dev_progress_tracker.json - Development stage tracking",
+          "context/dev_current_focus.md - Current development focus",
+          "context/dev_working_memory.json - Development context state",
+          "context/dev_process_log.md - Development process log",
+          "context/dev_context_checkpoint.md - Development context snapshots"
         ],
         "validation": "All development tracking files created and initialized"
       }
@@ -732,11 +760,11 @@
       "prerequisites": ["Templates must exist in ./templates/"],
       "when_to_use": ["Before starting development workflow", "Initializing development context"],
       "creates": [
-        "dev_progress_tracker.json",
-        "dev_current_focus.md",
-        "dev_working_memory.json", 
-        "dev_process_log.md",
-        "dev_context_checkpoint.md"
+        "context/dev_progress_tracker.json",
+        "context/dev_current_focus.md",
+        "context/dev_working_memory.json", 
+        "context/dev_process_log.md",
+        "context/dev_context_checkpoint.md"
       ]
     },
     "verify_component_contract": {
@@ -764,6 +792,129 @@
       "prerequisites": ["Component specification and implementation must exist", "Interface contracts must be defined"],
       "when_to_use": ["Before component integration", "During development quality gates", "After implementation completion"],
       "guarantees": "If verification passes with no critical issues, component integration will succeed"
+    },
+    "validate_foundational_alignment": {
+      "path": "./tools/validate_foundational_alignment.py",
+      "usage": "python3 ./tools/validate_foundational_alignment.py <system_path> [--change-proposal <proposal_path>]",
+      "purpose": "Ensure changes align with foundational documents and maintain black-box architecture principles",
+      "output_analysis": {
+        "validation_report": "JSON with foundational alignment status and specific issues",
+        "llm_usage_instructions": [
+          "ALWAYS run this tool before proceeding with feature/service changes",
+          "Address all critical 'blocked' issues before any workflow progression",
+          "Review mission alignment scores and adjust proposals if needed",
+          "Ensure black-box integrity is maintained for all affected services",
+          "Update foundational documents if legitimate scope expansion is needed"
+        ]
+      },
+      "validation_checks": [
+        "mission_alignment: Changes align with SYSTEM_MISSION_STATEMENT.md",
+        "user_scenario_coverage: Changes don't break existing user scenarios", 
+        "success_criteria_impact: Changes don't compromise success criteria",
+        "architectural_consistency: Changes comply with architectural_definitions.json",
+        "black_box_integrity: Service interfaces and encapsulation principles maintained"
+      ],
+      "prerequisites": [
+        "SYSTEM_MISSION_STATEMENT.md must exist",
+        "USER_SCENARIOS.md must exist", 
+        "SUCCESS_CRITERIA.md must exist",
+        "architectural_definitions.json must exist",
+        "service_architecture.json files for affected services"
+      ],
+      "when_to_use": [
+        "MANDATORY before any feature/service change workflow",
+        "Before adding new services to existing systems",
+        "Before modifying existing service interfaces",
+        "When scope expansion is proposed"
+      ],
+      "exit_codes": {
+        "0": "Validation passes - proceed with workflow",
+        "1": "Blocked - critical issues prevent progression", 
+        "2": "Conditional - issues found but workflow can proceed with caution"
+      }
+    },
+    "select_development_languages": {
+      "path": "./tools/select_development_languages.py",
+      "usage": "python3 ./tools/select_development_languages.py <system_path> [--interactive] [--homogeneous] [--heterogeneous]",
+      "purpose": "Interactive tool to select programming languages and frameworks for service development",
+      "output_analysis": {
+        "language_configuration": "JSON with language assignments and development setup information",
+        "llm_usage_instructions": [
+          "Use this tool after architecture completion but before development workflow",
+          "Consider service requirements when selecting languages (performance, libraries, team expertise)",
+          "Review generated development setup requirements for each selected language",
+          "Update development workflow with language-specific tooling and frameworks",
+          "Ensure interface contracts remain language-agnostic for proper black-box architecture"
+        ]
+      },
+      "configuration_options": {
+        "homogeneous": "All services use the same programming language and framework",
+        "heterogeneous": "Services can use different languages based on their specific requirements"
+      },
+      "supported_languages": [
+        "python (FastAPI, Flask, Django)",
+        "java (Spring Boot, Micronaut, Quarkus)", 
+        "javascript (Express, Koa, Fastify)",
+        "typescript (NestJS, Express)",
+        "go (Gin, Echo, Fiber)",
+        "rust (Axum, Warp, Actix-web)",
+        "ruby (Sinatra, Rails)",
+        "csharp (ASP.NET Core)"
+      ],
+      "selection_criteria": [
+        "Performance requirements (high-load services)",
+        "Library ecosystem (ML/AI, data processing)",
+        "Team expertise and familiarity",
+        "Integration with existing systems",
+        "Deployment and operational constraints"
+      ],
+      "prerequisites": [
+        "build_ready_index.json must exist with service definitions",
+        "service_architecture.json files must exist for all services"
+      ],
+      "when_to_use": [
+        "After architecture completion (D2 decision point)",
+        "Before development workflow initialization",
+        "When changing development language strategy"
+      ],
+      "output_file": "systems/<system_name>/development_language_configuration.json"
+    },
+    "validate_reflow_setup": {
+      "path": "./tools/validate_reflow_setup.py",
+      "usage": "python3 ./tools/validate_reflow_setup.py",
+      "purpose": "Comprehensive validation of reflow system installation and prerequisites",
+      "output_analysis": {
+        "validation_report": "Console output with detailed validation results for each component",
+        "llm_usage_instructions": [
+          "Run this tool after initial reflow setup to ensure all components are working",
+          "Use before starting any workflow to verify system readiness",
+          "Address any failed validations before proceeding with architecture or development",
+          "Re-run after installing missing dependencies or fixing configuration issues"
+        ]
+      },
+      "validation_checks": [
+        "All required tools present and executable in ./tools/ directory",
+        "All required templates present in ./templates/ directory",
+        "All required definitions present in ./definitions/ directory", 
+        "Python dependencies installed (networkx, matplotlib, pygraphviz)",
+        "System packages installed (graphviz, graphviz-dev)",
+        "Workflow files present and properly structured"
+      ],
+      "prerequisites": [
+        "Reflow system setup completed",
+        "Python 3.8+ installed",
+        "Package managers available (pip, apt/yum for system packages)"
+      ],
+      "when_to_use": [
+        "After initial reflow installation",
+        "Before starting any workflow",
+        "When troubleshooting setup issues",
+        "After system updates or environment changes"
+      ],
+      "exit_codes": {
+        "0": "All validations passed - system ready for use",
+        "1": "Validation failures found - see output for details"
+      }
     }
   },
   "automation_features": {
@@ -781,8 +932,8 @@
         "Service switching"
       ],
       "checks": [
-        "dev_current_focus.md matches dev_progress_tracker.json",
-        "dev_working_memory.json reflects current state",
+        "context/dev_current_focus.md matches context/dev_progress_tracker.json",
+        "context/dev_working_memory.json reflects current state",
         "File modification timestamps are consistent"
       ]
     },
