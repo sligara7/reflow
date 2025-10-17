@@ -1,5 +1,6 @@
-# Exclude all system-specific modeling and design artifacts
-systems/
+# Include the systems folder, but exclude its contents
+!systems/
+systems/*
 
 # Bytecode / cache
 __pycache__/

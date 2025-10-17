@@ -36,7 +36,6 @@ from pathlib import Path
 import re
 from typing import Dict, List, Set
 
-
 class FeatureAnalyzer:
     def __init__(self, feature_summary_path: Path):
         self.feature_summary_path = Path(feature_summary_path)
@@ -50,28 +49,28 @@ class FeatureAnalyzer:
                 content = f.read()
 
             # Find all major section headers (e.g., "### 1. Character Creation & Management")
-            sections = re.findall(r"### \d+\. ([^\n]+)", content)
-
+            sections = re.findall(r'### \d+\. ([^\n]+)', content)
+            
             for section in sections:
                 # Extract section content
                 section_pattern = f"### \\d+\\. {re.escape(section)}([^#]*)"
                 match = re.search(section_pattern, content)
                 if not match:
                     continue
-
+                
                 section_content = match.group(1)
-
+                
                 # Determine required system
                 system_id = self._get_system_id(section)
-
+                
                 # Extract features
                 features = self._extract_features(section_content)
-
+                
                 # Store mapping
                 if features:
                     self.required_systems[system_id] = {
                         "section": section,
-                        "features": features,
+                        "features": features
                     }
                     self.system_features[system_id] = features
 
@@ -81,13 +80,13 @@ class FeatureAnalyzer:
 
         return {
             "required_systems": self.required_systems,
-            "system_features": self.system_features,
+            "system_features": self.system_features
         }
 
     def _get_system_id(self, section: str) -> str:
         """Convert section title to system ID"""
         # Remove numbers and special characters
-        clean = re.sub(r"^\d+\.\s*", "", section)
+        clean = re.sub(r'^\d+\.\s*', '', section)
         # Convert to lowercase and replace spaces/special chars
         system_id = clean.lower().replace(" & ", "_").replace(" ", "_") + "_system"
         return system_id
@@ -95,14 +94,14 @@ class FeatureAnalyzer:
     def _extract_features(self, content: str) -> List[str]:
         """Extract feature descriptions from section content"""
         features = []
-
+        
         # Look for subsections (####) or bullet points
-        subsections = re.findall(r"####\s+([^\n]+)", content)
-        bullets = re.findall(r"[-*]\s+([^\n]+)", content)
-
+        subsections = re.findall(r'####\s+([^\n]+)', content)
+        bullets = re.findall(r'[-*]\s+([^\n]+)', content)
+        
         features.extend(subsections)
         features.extend(bullets)
-
+        
         return features
 
     def update_working_memory(self, working_memory_path: Path):
@@ -122,7 +121,7 @@ class FeatureAnalyzer:
                     "section": data["section"],
                     "feature_count": len(data["features"]),
                     "status": "identified",
-                    "created_at": None,
+                    "created_at": None
                 }
                 for system_id, data in self.required_systems.items()
             ]
@@ -136,10 +135,8 @@ class FeatureAnalyzer:
 
     def generate_report(self) -> dict:
         """Generate analysis report with LLM architectural guidance"""
-        total_features = sum(
-            len(features) for features in self.system_features.values()
-        )
-
+        total_features = sum(len(features) for features in self.system_features.values())
+        
         return {
             "timestamp": "2025-10-14T00:00:00Z",
             "feature_summary_path": str(self.feature_summary_path),
@@ -151,10 +148,10 @@ class FeatureAnalyzer:
                         "system_id": system_id,
                         "section": data["section"],
                         "feature_count": len(data["features"]),
-                        "features": data["features"],
+                        "features": data["features"]
                     }
                     for system_id, data in self.required_systems.items()
-                ],
+                ]
             },
             "llm_architectural_guidance": {
                 "purpose": "Use identified systems as basis for service architecture decomposition",
@@ -163,18 +160,17 @@ class FeatureAnalyzer:
                     "2. Use system_id values as candidate service names in architecture design",
                     "3. Map features to service capabilities in service_architecture.json files",
                     "4. Ensure complete feature coverage across all identified systems",
-                    "5. Consider system interactions and interface requirements",
+                    "5. Consider system interactions and interface requirements"
                 ],
                 "system_design_considerations": [
                     f"Each system represents a distinct domain boundary with {total_features//len(self.required_systems) if len(self.required_systems) > 0 else 0} average features",
                     "Systems with high feature counts may need further decomposition",
                     "Systems with related features should consider shared interfaces",
-                    "Use feature descriptions to derive service capabilities and interfaces",
+                    "Use feature descriptions to derive service capabilities and interfaces"
                 ],
-                "working_memory_updated": "required_systems list populated for architecture workflow",
-            },
+                "working_memory_updated": "required_systems list populated for architecture workflow"
+            }
         }
-
 
 def main():
     if len(sys.argv) != 2:
@@ -187,7 +183,7 @@ def main():
         sys.exit(1)
 
     analyzer = FeatureAnalyzer(feature_summary_path)
-
+    
     # Parse features
     analysis = analyzer.parse_feature_summary()
     if not analysis:
@@ -201,17 +197,16 @@ def main():
     # Generate and print report
     report = analyzer.generate_report()
     print(json.dumps(report, indent=2))
-
+    
     # Summary for LLM agents
     system_count = len(analyzer.required_systems)
     feature_count = sum(len(features) for features in analyzer.system_features.values())
-
+    
     print(f"\n📊 Feature Analysis Complete:")
     print(f"✅ Identified {system_count} required systems from feature analysis")
     print(f"✅ Mapped {feature_count} total features to system boundaries")
     print(f"✅ Updated working_memory.json with required_systems list")
     print("🤖 LLM agents can use identified systems for architecture decomposition")
-
 
 if __name__ == "__main__":
     main()
