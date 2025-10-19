@@ -1,0 +1,568 @@
+{
+  "workflow_metadata": {
+    "version": "1.0.0",
+    "description": "Inject complete reflow toolchain into developed system's context folder for standalone operation",
+    "last_updated": "2025-10-19",
+    "purpose": "Transform developed systems into standalone repositories containing all reflow workflow capabilities within their context folder",
+    "changelog": "v1.0.0: Initial implementation of self-contained system injection",
+    "IMPORTANT": "This workflow injects the entire reflow decision-making and development process into the target system, making it completely self-contained",
+    "usage_pattern": "Run from reflow directory on existing developed system to make it standalone",
+    "benefits": [
+      "Developed systems become completely standalone with embedded workflow tools",
+      "Each system can be pushed to its own GitHub repo with full reflow capabilities",
+      "No dependency on external reflow installation",
+      "Systems contain complete development workflow within their context folder",
+      "Optional cleanup removes workflow artifacts for production delivery"
+    ]
+  },
+  "injection_philosophy": {
+    "description": "Transform the developed system into a self-contained workflow environment",
+    "approach": "The context folder becomes a complete reflow environment embedded within the system",
+    "directory_transformation": {
+      "before_injection": [
+        "system/",
+        "├── context/          # Basic tracking files",
+        "├── specs/           # System specifications",
+        "├── services/        # Implementation code",
+        "└── docs/            # System documentation"
+      ],
+      "after_injection": [
+        "system/",
+        "├── context/          # Now contains COMPLETE reflow environment",
+        "│   ├── workflows/    # Full decision_flow.json + all workflow JSONs",
+        "│   ├── tools/        # All reflow Python tools",
+        "│   ├── templates/    # All reflow templates",
+        "│   ├── definitions/  # Architectural definitions",
+        "│   ├── tracking/     # Original context files (moved here)",
+        "│   └── inject_flow.json  # This workflow file for reference",
+        "├── specs/           # Unchanged",
+        "├── services/        # Unchanged", 
+        "└── docs/            # Unchanged"
+      ]
+    },
+    "self_contained_benefits": [
+      "System repo contains everything needed to continue development with reflow",
+      "Team can clone system repo and immediately use full reflow capabilities",
+      "No need to install or maintain separate reflow repository",
+      "Complete development history and context preserved within system",
+      "System becomes a showcase of reflow methodology"
+    ]
+  },
+  "prerequisites": {
+    "verification": {
+      "description": "Verify system readiness for injection",
+      "required_artifacts": [
+        "Target system must exist with standard reflow directory structure",
+        "System must have completed at least initial architecture (context/ folder exists)",
+        "specs/, services/, docs/ directories should be present"
+      ],
+      "working_directory": "Must be run from reflow root directory"
+    },
+    "tool": {
+      "path": "./tools/validate_injection_readiness.py",
+      "command": "python3 tools/validate_injection_readiness.py <target_system_path>",
+      "creates_if_missing": "Tools will create the injection readiness validator",
+      "success_criteria": "Target system has basic reflow structure and is suitable for injection"
+    }
+  },
+  "injection_workflow": {
+    "step_1_backup_existing_context": {
+      "description": "Preserve existing context files before injection",
+      "actions": [
+        "Create backup: cp -r <target_system>/context <target_system>/context_backup_$(date +%Y%m%d_%H%M%S)",
+        "Verify backup creation and completeness",
+        "Document backup location in process log"
+      ],
+      "safety": "Never proceed without successful backup of existing context"
+    },
+    "step_2_create_embedded_structure": {
+      "description": "Set up complete reflow environment structure within context folder",
+      "new_structure": {
+        "context/workflows/": "Complete workflow JSON files",
+        "context/tools/": "All Python tools with relative path adjustments", 
+        "context/templates/": "All template files",
+        "context/definitions/": "Architectural definitions",
+        "context/tracking/": "Original context tracking files (migrated here)",
+        "context/bin/": "Executable workflow scripts",
+        "context/config/": "Environment configuration files"
+      },
+      "commands": [
+        "mkdir -p <target_system>/context/{workflows,tools,templates,definitions,tracking,bin,config}",
+        "# Move original tracking files to tracking/ subdirectory",
+        "mv <target_system>/context/*.json <target_system>/context/*.md <target_system>/context/tracking/ 2>/dev/null || true"
+      ]
+    },
+    "step_3_inject_workflows": {
+      "description": "Copy all workflow files with path adjustments",
+      "source_files": [
+        "decision_flow.json → context/workflows/decision_flow.json",
+        "workflows/architecture/*.json → context/workflows/architecture/",
+        "workflows/development/*.json → context/workflows/development/", 
+        "workflows/feature_update/*.json → context/workflows/feature_update/"
+      ],
+      "path_adjustments": {
+        "description": "Update all tool paths in workflows to use context-relative paths",
+        "tool_paths": "Change './tools/tool.py' to './context/tools/tool.py'",
+        "template_paths": "Change './templates/file' to './context/templates/file'",
+        "definition_paths": "Change './definitions/file' to './context/definitions/file'"
+      },
+      "tool": {
+        "path": "./tools/inject_workflows.py", 
+        "command": "python3 tools/inject_workflows.py <reflow_root> <target_system>/context/workflows",
+        "creates_if_missing": "Tool will be created to handle workflow injection with path updates"
+      }
+    },
+    "step_4_inject_tools": {
+      "description": "Copy all Python tools with import path adjustments",
+      "source_directory": "tools/",
+      "target_directory": "context/tools/",
+      "modifications": {
+        "relative_imports": "Update any relative imports to work within context structure",
+        "file_path_resolution": "Adjust hardcoded paths to be relative to system root",
+        "system_path_detection": "Update tools to auto-detect they are running in embedded mode"
+      },
+      "tool": {
+        "path": "./tools/inject_tools.py",
+        "command": "python3 tools/inject_tools.py <reflow_root>/tools <target_system>/context/tools",
+        "creates_if_missing": "Tool will handle copying and modifying Python scripts for embedded operation"
+      }
+    },
+    "step_5_inject_templates": {
+      "description": "Copy all template files", 
+      "source_directory": "templates/",
+      "target_directory": "context/templates/",
+      "action": "Direct copy - templates rarely need modification",
+      "command": "cp -r <reflow_root>/templates/* <target_system>/context/templates/"
+    },
+    "step_6_inject_definitions": {
+      "description": "Copy architectural definitions",
+      "source_directory": "definitions/",
+      "target_directory": "context/definitions/",
+      "action": "Direct copy - definitions are static",
+      "command": "cp -r <reflow_root>/definitions/* <target_system>/context/definitions/"
+    },
+    "step_7_create_executable_scripts": {
+      "description": "Create convenience scripts for workflow execution",
+      "scripts": {
+        "context/bin/reflow": {
+          "description": "Main workflow execution script",
+          "functionality": "Execute any workflow step with proper path resolution",
+          "usage": "./context/bin/reflow <workflow_step> [args]"
+        },
+        "context/bin/validate": {
+          "description": "Run validation tools",
+          "functionality": "Execute validation with embedded tools",
+          "usage": "./context/bin/validate architecture|contracts|all"
+        },
+        "context/bin/setup-dev": {
+          "description": "Set up development environment", 
+          "functionality": "Bootstrap development workflow with embedded tools",
+          "usage": "./context/bin/setup-dev"
+        }
+      },
+      "tool": {
+        "path": "./tools/create_embedded_scripts.py",
+        "command": "python3 tools/create_embedded_scripts.py <target_system>/context/bin",
+        "creates_if_missing": "Tool will generate wrapper scripts for embedded operation"
+      }
+    },
+    "step_8_create_configuration": {
+      "description": "Set up embedded environment configuration",
+      "config_files": {
+        "context/config/embedded.json": {
+          "description": "Embedded environment configuration",
+          "contains": {
+            "embedded_mode": true,
+            "reflow_root": "./context",
+            "system_root": "..",
+            "tools_path": "./context/tools",
+            "templates_path": "./context/templates",
+            "workflows_path": "./context/workflows",
+            "definitions_path": "./context/definitions",
+            "tracking_path": "./context/tracking",
+            "original_reflow_version": "<inject_from_metadata>",
+            "injection_timestamp": "<current_timestamp>",
+            "injection_source": "<reflow_root_path>"
+          }
+        },
+        "context/config/paths.json": {
+          "description": "Path resolution configuration for embedded tools",
+          "contains": "Mapping of logical paths to actual embedded paths"
+        }
+      }
+    },
+    "step_9_update_tracking_files": {
+      "description": "Update migrated tracking files with new embedded context",
+      "migrations": [
+        "Update working_memory.json with embedded_mode: true",
+        "Add injection metadata to process_log.md",
+        "Update any hardcoded paths in tracking files to use embedded structure",
+        "Create embedded_context_map.json showing old→new path mappings"
+      ],
+      "tool": {
+        "path": "./tools/migrate_tracking_to_embedded.py",
+        "command": "python3 tools/migrate_tracking_to_embedded.py <target_system>/context/tracking",
+        "creates_if_missing": "Tool will handle migration of tracking files to embedded structure"
+      }
+    },
+    "step_10_create_usage_documentation": {
+      "description": "Document how to use the embedded reflow environment",
+      "files": {
+        "context/README_EMBEDDED.md": {
+          "description": "Complete guide to using embedded reflow environment",
+          "sections": [
+            "What is the embedded reflow environment",
+            "How to continue development with embedded tools",
+            "Workflow execution examples",
+            "Tool usage patterns", 
+            "Troubleshooting embedded mode",
+            "Cleanup and production preparation"
+          ]
+        },
+        "context/INJECTION_HISTORY.md": {
+          "description": "Record of injection process and source",
+          "contains": [
+            "Original reflow source location",
+            "Injection timestamp and version",
+            "List of injected files and modifications", 
+            "How to reverse injection if needed"
+          ]
+        }
+      }
+    },
+    "step_11_validate_injection": {
+      "description": "Verify successful injection and embedded environment functionality",
+      "validation_checks": [
+        "All required tools present in context/tools/",
+        "All workflow files present in context/workflows/",
+        "Path adjustments correct in workflow files",
+        "Executable scripts have proper permissions",
+        "Configuration files valid JSON",
+        "Tracking files migrated successfully to context/tracking/"
+      ],
+      "test_execution": {
+        "command": "cd <target_system> && ./context/bin/validate all",
+        "success_criteria": "Embedded tools execute successfully",
+        "failure_action": "Review injection logs and re-run failed steps"
+      }
+    },
+    "step_12_cleanup_and_documentation": {
+      "description": "Final cleanup and process documentation",
+      "actions": [
+        "Remove context_backup if injection successful and validated",
+        "Update main system README.md to mention embedded reflow capabilities",
+        "Add .gitignore entries if needed for embedded environment",
+        "Create EMBEDDED_USAGE.md in system root with quick start guide",
+        "Log successful injection in system process log"
+      ]
+    }
+  },
+  "embedded_operation": {
+    "description": "How the embedded reflow environment operates within the system",
+    "workflow_execution": {
+      "from_system_root": {
+        "description": "All workflows executed from system root directory",
+        "path_resolution": "Tools use relative paths from system root: ./context/tools/, ./specs/, ./services/",
+        "example": "cd <system> && ./context/bin/reflow architecture/Arch-01-SetupAndContext.json"
+      },
+      "embedded_tool_behavior": {
+        "description": "Tools automatically detect embedded operation",
+        "detection_method": "Check for context/config/embedded.json existence",
+        "path_adjustment": "Use embedded paths when in embedded mode",
+        "system_path": "Automatically use '..' as system path (parent of context/)"
+      }
+    },
+    "advantages": {
+      "portability": "System repo contains complete development environment",
+      "version_consistency": "Workflow tools versioned with system development",
+      "team_collaboration": "All team members get identical reflow environment",
+      "historical_preservation": "Complete development methodology preserved with system",
+      "independence": "No external reflow installation required"
+    },
+    "usage_patterns": {
+      "continue_development": {
+        "description": "Resume development with full reflow capabilities",
+        "workflow": "Use embedded workflows exactly like external reflow",
+        "command_pattern": "cd <system> && ./context/bin/reflow <workflow_step>"
+      },
+      "architectural_changes": {
+        "description": "Make architecture changes with embedded tools",
+        "validation": "cd <system> && ./context/bin/validate architecture"
+      },
+      "new_team_members": {
+        "description": "Onboard developers with embedded environment",
+        "setup": "git clone <system_repo> && cd <system> && cat context/README_EMBEDDED.md"
+      }
+    }
+  },
+  "github_integration": {
+    "description": "Enhanced GitHub export with embedded reflow capabilities",
+    "export_options": {
+      "with_embedded_reflow": {
+        "description": "Export system with complete embedded reflow environment",
+        "includes": [
+          "All system files (specs/, services/, docs/)",
+          "Complete embedded reflow in context/ folder",
+          "Usage documentation and setup guides",
+          "Executable workflow scripts"
+        ],
+        "benefits": [
+          "Recipients can immediately continue development with reflow",
+          "No separate reflow installation required",
+          "Complete development methodology documented and preserved"
+        ]
+      },
+      "production_ready": {
+        "description": "Export system with cleaned context for production",
+        "cleanup_actions": [
+          "Remove context/workflows/, context/tools/, context/templates/",
+          "Keep only essential tracking files in context/tracking/",
+          "Add DEVELOPMENT_HISTORY.md with summary of reflow methodology used",
+          "Clean .gitignore for production environment"
+        ],
+        "result": "Clean system suitable for production deployment"
+      },
+      "hybrid_documentation": {
+        "description": "Export with reflow methodology documentation but no executable tools",
+        "includes": [
+          "All system files",
+          "context/DEVELOPMENT_METHODOLOGY.md (how reflow was used)",
+          "context/WORKFLOW_HISTORY.md (decisions made and rationale)",
+          "Essential architecture documentation"
+        ],
+        "benefits": "Understanding of development approach without tool bloat"
+      }
+    },
+    "enhanced_export_process": {
+      "step_1_prepare_export_type": {
+        "prompt": "Export type: (embedded_reflow / production_ready / hybrid_documentation)",
+        "configuration": "Configure cleanup and inclusion based on selection"
+      },
+      "step_2_context_processing": {
+        "embedded_reflow": "Include complete context/ folder as-is",
+        "production_ready": "Strip workflow tools, keep essential docs",
+        "hybrid_documentation": "Convert embedded environment to static documentation"
+      },
+      "step_3_documentation_generation": {
+        "embedded_readme": "Generate README with embedded reflow usage instructions",
+        "methodology_doc": "Create summary of reflow approach used in development",
+        "quick_start": "Generate quick-start guide appropriate for export type"
+      }
+    }
+  },
+  "cleanup_and_maintenance": {
+    "description": "Managing embedded reflow environment lifecycle",
+    "update_embedded_reflow": {
+      "description": "Update embedded tools from newer reflow version",
+      "tool": "./tools/update_embedded_reflow.py",
+      "command": "python3 tools/update_embedded_reflow.py <target_system> <new_reflow_source>",
+      "process": [
+        "Backup existing embedded environment",
+        "Inject updated tools and workflows", 
+        "Migrate configuration and tracking files",
+        "Validate updated environment",
+        "Document update in injection history"
+      ]
+    },
+    "remove_embedded_reflow": {
+      "description": "Remove embedded environment for production or handoff",
+      "tool": "./tools/remove_embedded_reflow.py", 
+      "command": "python3 tools/remove_embedded_reflow.py <target_system> [--keep-docs]",
+      "options": {
+        "clean_removal": "Remove all embedded files, keep only system artifacts",
+        "with_documentation": "Keep development methodology docs, remove executable tools",
+        "backup_first": "Create backup before removal for potential restoration"
+      }
+    },
+    "embedded_diagnostics": {
+      "description": "Debug and maintain embedded reflow environment",
+      "tool": "./tools/diagnose_embedded_reflow.py",
+      "command": "cd <system> && ./context/tools/diagnose_embedded_reflow.py",
+      "checks": [
+        "Verify all embedded tools functional",
+        "Validate path resolution in embedded mode", 
+        "Check workflow file integrity",
+        "Confirm tracking file migration status",
+        "Test executable scripts"
+      ]
+    }
+  },
+  "tool_creation_requirements": {
+    "description": "Tools that need to be created to support injection workflow",
+    "priority_tools": {
+      "validate_injection_readiness.py": {
+        "priority": "HIGH",
+        "description": "Check if system is ready for injection",
+        "functionality": "Verify system structure, check for conflicts, validate prerequisites"
+      },
+      "inject_workflows.py": {
+        "priority": "HIGH", 
+        "description": "Copy and modify workflow files for embedded operation",
+        "functionality": "Update paths in JSON files, adjust tool references"
+      },
+      "inject_tools.py": {
+        "priority": "HIGH",
+        "description": "Copy and modify Python tools for embedded operation", 
+        "functionality": "Update imports, adjust path resolution, add embedded mode detection"
+      },
+      "create_embedded_scripts.py": {
+        "priority": "HIGH",
+        "description": "Generate executable wrapper scripts",
+        "functionality": "Create bin/ scripts that work with embedded environment"
+      },
+      "migrate_tracking_to_embedded.py": {
+        "priority": "MEDIUM",
+        "description": "Migrate tracking files to embedded structure",
+        "functionality": "Update references, add embedded mode flags"
+      },
+      "update_embedded_reflow.py": {
+        "priority": "MEDIUM", 
+        "description": "Update embedded environment from newer reflow version",
+        "functionality": "Handle version migrations and updates"
+      },
+      "remove_embedded_reflow.py": {
+        "priority": "LOW",
+        "description": "Clean removal of embedded environment",
+        "functionality": "Clean removal with optional documentation preservation"
+      },
+      "diagnose_embedded_reflow.py": {
+        "priority": "LOW",
+        "description": "Diagnostic and maintenance tool",
+        "functionality": "Troubleshoot embedded environment issues"
+      }
+    },
+    "implementation_notes": {
+      "shared_functionality": "Many tools will share path resolution and embedded mode detection logic",
+      "configuration_driven": "Use context/config/embedded.json for runtime behavior",
+      "error_handling": "Robust error handling with rollback capabilities",
+      "logging": "Comprehensive logging for debugging injection issues"
+    }
+  },
+  "implementation_phases": {
+    "phase_1_core_injection": {
+      "description": "Implement basic injection capability", 
+      "deliverables": [
+        "validate_injection_readiness.py",
+        "inject_workflows.py with basic path updates",
+        "inject_tools.py with simple copying",
+        "create_embedded_scripts.py with basic wrapper scripts",
+        "Manual testing of core injection workflow"
+      ]
+    },
+    "phase_2_enhanced_functionality": {
+      "description": "Add advanced features and maintenance tools",
+      "deliverables": [
+        "migrate_tracking_to_embedded.py",
+        "Enhanced path resolution in injected tools",
+        "Comprehensive embedded configuration system",
+        "Integration with existing export workflows"
+      ]
+    },
+    "phase_3_lifecycle_management": {
+      "description": "Complete lifecycle and maintenance capabilities",
+      "deliverables": [
+        "update_embedded_reflow.py",
+        "remove_embedded_reflow.py", 
+        "diagnose_embedded_reflow.py",
+        "Comprehensive documentation and usage guides"
+      ]
+    }
+  },
+  "decision_points": {
+    "D1_injection_scope": {
+      "question": "What level of reflow functionality should be injected?",
+      "options": {
+        "complete": "Full reflow toolchain with all workflows and tools",
+        "minimal": "Core workflow and essential tools only",
+        "custom": "User-selected subset of tools and workflows"
+      },
+      "recommendation": "Complete injection for maximum self-containment"
+    },
+    "D2_original_context_handling": {
+      "question": "How should original context files be handled?",
+      "options": {
+        "migrate": "Move to context/tracking/ subdirectory",
+        "merge": "Integrate with embedded tracking system", 
+        "preserve": "Keep alongside embedded files"
+      },
+      "recommendation": "Migrate to context/tracking/ for clean organization"
+    },
+    "D3_path_resolution_strategy": {
+      "question": "How should embedded tools resolve paths?",
+      "options": {
+        "automatic": "Auto-detect embedded mode and adjust paths",
+        "configuration": "Use configuration files for path mapping",
+        "wrapper_scripts": "Use wrapper scripts to handle path resolution"
+      },
+      "recommendation": "Automatic detection with configuration fallback"
+    }
+  },
+  "success_criteria": {
+    "functional": [
+      "System can execute full reflow workflows using only embedded tools",
+      "All validation tools work correctly in embedded mode",
+      "Development workflows function identically to external reflow",
+      "Tracking and context management work seamlessly"
+    ],
+    "operational": [
+      "System can be cloned and used immediately without external dependencies",
+      "Team members can collaborate using embedded environment",
+      "Updates and maintenance possible through embedded tools",
+      "Clean removal option available for production deployment"
+    ],
+    "integration": [
+      "Embedded environment integrates with existing Git workflows",
+      "GitHub export works with embedded reflow included or excluded",
+      "Continuous integration compatible with embedded tools",
+      "Documentation and usage clear for new team members"
+    ]
+  },
+  "usage_examples": {
+    "basic_injection": {
+      "description": "Inject reflow into existing system",
+      "commands": [
+        "cd /path/to/reflow",
+        "python3 tools/validate_injection_readiness.py /path/to/my_system", 
+        "python3 inject_flow.py /path/to/my_system",
+        "cd /path/to/my_system",
+        "./context/bin/validate all",
+        "cat context/README_EMBEDDED.md"
+      ]
+    },
+    "continue_development": {
+      "description": "Use embedded environment for continued development",
+      "commands": [
+        "cd /path/to/my_system",
+        "./context/bin/reflow development/Dev-03-Persistence.json",
+        "./context/bin/validate architecture",
+        "git add . && git commit -m 'Continue development with embedded reflow'"
+      ]
+    },
+    "team_collaboration": {
+      "description": "New team member using embedded environment",
+      "commands": [
+        "git clone https://github.com/org/my-system.git",
+        "cd my-system", 
+        "cat context/README_EMBEDDED.md",
+        "./context/bin/setup-dev",
+        "./context/bin/reflow # Continue where previous developer left off"
+      ]
+    },
+    "export_for_handoff": {
+      "description": "Export system with embedded reflow for complete handoff",
+      "commands": [
+        "cd /path/to/my_system",
+        "./context/bin/export-system --type embedded_reflow --repo org/my-system-with-reflow",
+        "# Recipient gets complete system with embedded development environment"
+      ]
+    },
+    "production_cleanup": {
+      "description": "Clean embedded environment for production deployment",
+      "commands": [
+        "cd /path/to/my_system",
+        "./context/bin/remove-embedded --keep-docs",
+        "./context/bin/export-system --type production_ready --repo org/my-system-prod"
+      ]
+    }
+  }
+}
