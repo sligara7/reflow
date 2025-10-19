@@ -1,10 +1,12 @@
 {
   "workflow_metadata": {
-    "version": "2.1.0",
+    "version": "2.2.0",
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
-    "last_updated": "2025-10-17",
+    "last_updated": "2025-10-18",
     "based_on": "UAF 1.2 architecture framework with automated context management",
-    "changelog": "v2.1.0: Added path resolution for portability, fixed duplicate D2 decision, streamlined context management",
+    "changelog": "v2.2.0: Complete separation of systems from reflow tooling - systems can be anywhere on filesystem, no more nested repository conflicts",
+    "IMPORTANT": "Systems are now completely separate from reflow tooling directory to avoid git repository nesting conflicts",
+    "usage_pattern": "Implement workflow in <reflow_path>/decision_flow.json on system in <system_path>",
     "preserves": [
       "architecture_workflow.json",
       "service_development_workflow.json",
@@ -39,73 +41,77 @@
   },
   "workflow_start_instructions": {
     "description": "How to start the reflow workflow for a new system or system-of-systems",
-    "system_location_options": {
-      "option_1_separate_location": {
-        "description": "RECOMMENDED: Keep systems completely separate from reflow tooling",
-        "benefits": [
-          "No nested repository conflicts",
-          "Clean separation between tooling and deliverables",
-          "Each system is its own independent repository",
-          "Prevents accidental cross-contamination of files"
-        ],
-        "setup_steps": [
-          "1. Create system directory anywhere on your machine (e.g., ~/projects/my_system/)",
-          "2. Initialize system structure: mkdir -p my_system/{context,specs/{machine,human},services,docs}",
-          "3. Create initial requirements document in system directory",
-          "4. Run reflow tools with absolute path: python3 /path/to/reflow/tools/<tool>.py /path/to/my_system"
-        ],
-        "example": {
-          "reflow_location": "/home/user/dev/reflow/",
-          "system_location": "/home/user/projects/my_system/",
-          "tool_invocation": "python3 /home/user/dev/reflow/tools/validate_architecture.py /home/user/projects/my_system"
-        }
-      },
-      "option_2_colocated": {
-        "description": "Keep systems in reflow/systems/ for convenience (requires proper .gitignore)",
-        "setup_steps": [
-          "1. Create folder in reflow/systems/ with your system name (e.g., systems/my_system/)",
-          "2. Ensure reflow/.gitignore contains 'systems/*' to prevent tracking",
-          "3. Initialize system as separate git repo: cd systems/my_system && git init",
-          "4. System and reflow remain separate repos despite nested structure"
-        ],
-        "warning": "This approach requires careful .gitignore management to avoid nested repo conflicts"
+    "primary_approach": {
+      "title": "RECOMMENDED: Separate Systems and Reflow Tooling",
+      "description": "Keep systems completely separate from reflow tooling to avoid repository conflicts",
+      "benefits": [
+        "No nested repository conflicts",
+        "Clean separation between tooling and deliverables", 
+        "Each system is its own independent repository",
+        "Prevents accidental cross-contamination of files",
+        "Systems can be anywhere on the filesystem"
+      ],
+      "setup_steps": [
+        "1. Create system directory anywhere on your machine (e.g., ~/projects/my_system/ or /workspace/my_system/)",
+        "2. Initialize system structure: mkdir -p my_system/{context,specs/{machine,human},services,docs}",
+        "3. Create initial requirements document in system directory",
+        "4. Tell your LLM agent: 'Implement workflow in /path/to/reflow/decision_flow.json on system in /path/to/my_system'"
+      ],
+      "example_usage": {
+        "reflow_location": "/home/user/dev/reflow/",
+        "system_location": "/home/user/projects/smart_home_system/",
+        "command_pattern": "Implement workflow in /home/user/dev/reflow/decision_flow.json on system in /home/user/projects/smart_home_system",
+        "tool_invocation_example": "python3 /home/user/dev/reflow/tools/validate_architecture.py /home/user/projects/smart_home_system"
       }
     },
+    "legacy_colocated_approach": {
+      "description": "Keep systems in reflow/systems/ for convenience (NOT RECOMMENDED due to git conflicts)",
+      "warning": "This approach requires careful .gitignore management and may cause nested repository issues",
+      "use_only_if": "You specifically need systems co-located with reflow tooling for some reason"
+    },
+    "command_pattern": {
+      "description": "Standard way to invoke reflow workflows on external systems",
+      "format": "Implement workflow in <absolute_path_to_reflow>/decision_flow.json on system in <absolute_path_to_system>",
+      "examples": [
+        "Implement workflow in /home/user/reflow/decision_flow.json on system in /workspace/my_project",
+        "Implement workflow in ~/dev/reflow/decision_flow.json on system in ~/projects/smart_home"
+      ]
+    },
     "tool_path_handling": {
-      "description": "All reflow tools accept absolute or relative system paths",
+      "description": "All reflow tools work with external system paths",
       "absolute_paths": "Always work: python3 /path/to/reflow/tools/<tool>.py /path/to/system",
-      "relative_paths": "Work if pwd is appropriate: python3 ../../tools/<tool>.py .",
-      "system_path_argument": "Most tools accept system path as first argument or --system-path flag"
+      "system_path_argument": "Most tools accept system path as first argument or --system-path flag",
+      "working_directory": "LLM agent should cd to system directory, then use relative paths within system"
     }
   },
   "CRITICAL_FILE_LOCATIONS": {
     "description": "MANDATORY reading for LLM agents - prevents most common workflow errors",
-    "PRIMARY_RULE": "ALL tracking and context files are ALWAYS located in systems/<system_name>/context/ directory",
+    "PRIMARY_RULE": "ALL tracking and context files are ALWAYS located in <system_path>/context/ directory",
     "NEVER_LOCATIONS": [
       "NEVER in reflow root directory",
-      "NEVER in other system directories",
+      "NEVER in other system directories", 
       "NEVER in specs/, services/, or docs/ directories",
       "NEVER in subdirectories of context/"
     ],
     "ALWAYS_LOCATIONS": {
       "architecture_workflow": [
-        "systems/<system_name>/context/current_focus.md",
-        "systems/<system_name>/context/step_progress_tracker.json",
-        "systems/<system_name>/context/working_memory.json",
-        "systems/<system_name>/context/process_log.md",
-        "systems/<system_name>/context/context_checkpoint.md"
+        "<system_path>/context/current_focus.md",
+        "<system_path>/context/step_progress_tracker.json",
+        "<system_path>/context/working_memory.json",
+        "<system_path>/context/process_log.md",
+        "<system_path>/context/context_checkpoint.md"
       ],
       "development_workflow": [
-        "systems/<system_name>/context/dev_current_focus.md",
-        "systems/<system_name>/context/dev_progress_tracker.json",
-        "systems/<system_name>/context/dev_working_memory.json",
-        "systems/<system_name>/context/dev_process_log.md",
-        "systems/<system_name>/context/dev_context_checkpoint.md"
+        "<system_path>/context/dev_current_focus.md",
+        "<system_path>/context/dev_progress_tracker.json",
+        "<system_path>/context/dev_working_memory.json",
+        "<system_path>/context/dev_process_log.md",
+        "<system_path>/context/dev_context_checkpoint.md"
       ]
     },
     "WORKING_DIRECTORY_REQUIREMENT": {
-      "rule": "LLM agent MUST cd to systems/<system_name>/ at the start of EVERY workflow step",
-      "verification": "Run 'pwd' - output must be /path/to/reflow/systems/<system_name>",
+      "rule": "LLM agent MUST cd to <system_path>/ at the start of EVERY workflow step",
+      "verification": "Run 'pwd' - output must be the absolute path to your system directory",
       "relative_paths": "Once in correct directory, use relative paths: context/current_focus.md, context/dev_progress_tracker.json",
       "common_error": "If you cannot find tracking files, you are in the WRONG DIRECTORY - immediately run pwd and cd to correct location"
     },
@@ -114,9 +120,9 @@
       "diagnosis": "You are in the WRONG DIRECTORY",
       "solution": [
         "1. Run 'pwd' to see current directory",
-        "2. Identify correct system name from user's request",
-        "3. Run 'cd /path/to/reflow/systems/<correct_system_name>'",
-        "4. Verify with 'pwd' - should show /path/to/reflow/systems/<system_name>",
+        "2. Identify correct system path from user's request",
+        "3. Run 'cd /absolute/path/to/system'",
+        "4. Verify with 'pwd' - should show your system's absolute path",
         "5. Run 'ls context/' - should see all tracking files listed above",
         "6. Now you can access files with relative paths: context/dev_progress_tracker.json"
       ]
@@ -266,22 +272,22 @@
       ]
     },
     "system_isolation": {
-      "mandatory_check": "ALWAYS verify working directory is /path/to/reflow/systems/<system_name> before ANY operation",
-      "working_directory_rule": "cd to systems/<system_name> at the start of EVERY step and substep",
-      "path_verification": "pwd must equal /path/to/reflow/systems/<system_name> before file operations",
-      "TRACKING_FILE_LOCATION_REMINDER": "ALL tracking files (current_focus.md, step_progress_tracker.json, dev_progress_tracker.json, etc.) are ALWAYS in systems/<system_name>/context/ directory. If you cannot find them, CHECK YOUR PWD - you are in the wrong directory.",
+      "mandatory_check": "ALWAYS verify working directory is the absolute path to your system before ANY operation",
+      "working_directory_rule": "cd to <system_path> at the start of EVERY step and substep",
+      "path_verification": "pwd must equal the absolute path to your system before file operations",
+      "TRACKING_FILE_LOCATION_REMINDER": "ALL tracking files (current_focus.md, step_progress_tracker.json, dev_progress_tracker.json, etc.) are ALWAYS in <system_path>/context/ directory. If you cannot find them, CHECK YOUR PWD - you are in the wrong directory.",
       "cross_contamination_prevention": [
         "NEVER reference or modify files in other system directories",
-        "All file paths must be relative to current system directory or absolute with verified system_name",
-        "Before reading ANY file, verify it contains the current system_name in its path",
+        "All file paths must be relative to current system directory or absolute with verified system path",
+        "Before reading ANY file, verify you are in the correct system directory",
         "If you find yourself in wrong system directory, STOP immediately and return to correct directory",
         "NEVER copy files between system directories",
         "NEVER reference service architectures from other systems in dependencies",
         "ALL context files must be read from current system directory only",
-        "Verify system_name in working_memory.json matches pwd before every file operation"
+        "Verify system_name in working_memory.json matches your current system"
       ],
-      "context_file_location": "ALL context files (current_focus.md, working_memory.json, etc.) MUST be in systems/<system_name>/context/",
-      "sanity_check": "If system_name from working_memory.json doesn't match pwd, ERROR and STOP"
+      "context_file_location": "ALL context files (current_focus.md, working_memory.json, etc.) MUST be in <system_path>/context/",
+      "sanity_check": "If system_name from working_memory.json doesn't match your current system, ERROR and STOP"
     },
     "refresh_triggers": {
       "operation_count": 4,
@@ -319,27 +325,27 @@
       ]
     },
     "validation_before_every_operation": [
-      "CRITICAL_FIRST: STOP and verify pwd equals /path/to/reflow/systems/<system_name> BEFORE ANY other operation",
+      "CRITICAL_FIRST: STOP and verify pwd equals your system's absolute path BEFORE ANY other operation",
       "CRITICAL_FIRST: If pwd is wrong, execute recovery procedure immediately - DO NOT PROCEED",
       "READ: context/current_focus.md (MUST be in current system's context/ directory)",
       "READ: context/step_progress_tracker.json (MUST be in current system's context/ directory)",
       "VERIFY: Your planned action matches current_step/substep in step_progress_tracker.json",
       "VERIFY: Your planned action aligns with decision_flow.json instructions for this step",
-      "VERIFY: system_name from working_memory.json matches <system_name> in pwd",
+      "VERIFY: system_name from working_memory.json matches your current system",
       "CHECK: operations_since_refresh <= 4",
       "CONFIRM: No files from other systems will be modified",
       "CONFIRM: You are NOT about to generate a report or summary",
-      "NOTE: ALL tracking files are ALWAYS in systems/<system_name>/context/ - NEVER in root or other directories"
+      "NOTE: ALL tracking files are ALWAYS in <system_path>/context/ - NEVER in reflow root or other directories"
     ],
     "refresh_sequence": [
       "PAUSE: Stop all operations",
-      "VERIFY PWD: Run 'pwd' and confirm you are in /path/to/reflow/systems/<system_name>",
+      "VERIFY PWD: Run 'pwd' and confirm you are in your system's absolute path",
       "SAVE: Update context/step_progress_tracker.json and context/working_memory.json IN CURRENT SYSTEM DIRECTORY",
-      "RELOAD: ../../definitions/architectural_definitions.json (from system directory)",
-      "RELOAD: ../../templates/* files (from system directory)",
-      "RELOAD: ../../decision_flow.json (from system directory) - RE-READ CRITICAL_BEHAVIORAL_RULES AND CRITICAL_FILE_LOCATIONS section",
-      "READ: context/current_focus.md (in current system directory: pwd must be systems/<system_name>)",
-      "READ: context/step_progress_tracker.json (in current system directory: pwd must be systems/<system_name>)",
+      "RELOAD: <reflow_path>/definitions/architectural_definitions.json (absolute path to reflow)",
+      "RELOAD: <reflow_path>/templates/* files (absolute path to reflow)",
+      "RELOAD: <reflow_path>/decision_flow.json - RE-READ CRITICAL_BEHAVIORAL_RULES AND CRITICAL_FILE_LOCATIONS section",
+      "READ: context/current_focus.md (in current system directory)",
+      "READ: context/step_progress_tracker.json (in current system directory)",
       "VERIFY: Next action aligns with decision_flow.json instructions for current step",
       "CONFIRM: State system name, step, substep, next action",
       "CONFIRM: Next action does NOT involve generating a report",
@@ -363,15 +369,15 @@
       "Acting as if decision_flow.json guidance is optional"
     ],
     "tracking_files": {
-      "CRITICAL_LOCATION_RULE": "ALL tracking files MUST be in systems/<system_name>/context/ directory. NO EXCEPTIONS.",
-      "process_log": "systems/<system_name>/context/process_log.md",
-      "working_memory": "systems/<system_name>/context/working_memory.json",
-      "progress_tracker": "systems/<system_name>/context/step_progress_tracker.json",
-      "current_focus": "systems/<system_name>/context/current_focus.md",
-      "context_checkpoint": "systems/<system_name>/context/context_checkpoint.md",
-      "dev_progress_tracker": "systems/<system_name>/context/dev_progress_tracker.json (for development workflow)",
-      "dev_current_focus": "systems/<system_name>/context/dev_current_focus.md (for development workflow)",
-      "dev_working_memory": "systems/<system_name>/context/dev_working_memory.json (for development workflow)",
+      "CRITICAL_LOCATION_RULE": "ALL tracking files MUST be in <system_path>/context/ directory. NO EXCEPTIONS.",
+      "process_log": "<system_path>/context/process_log.md",
+      "working_memory": "<system_path>/context/working_memory.json",
+      "progress_tracker": "<system_path>/context/step_progress_tracker.json",
+      "current_focus": "<system_path>/context/current_focus.md",
+      "context_checkpoint": "<system_path>/context/context_checkpoint.md",
+      "dev_progress_tracker": "<system_path>/context/dev_progress_tracker.json (for development workflow)",
+      "dev_current_focus": "<system_path>/context/dev_current_focus.md (for development workflow)",
+      "dev_working_memory": "<system_path>/context/dev_working_memory.json (for development workflow)",
       "note": "All tracking files are in the context/ folder for LLM agent workflow guidance",
       "reinforcement": [
         "NEVER look for tracking files in reflow root directory",
@@ -380,7 +386,7 @@
         "IF you cannot find a tracking file, you are likely in the WRONG DIRECTORY - check pwd immediately",
         "ARCHITECTURE workflow uses: current_focus.md, step_progress_tracker.json, working_memory.json",
         "DEVELOPMENT workflow uses: dev_current_focus.md, dev_progress_tracker.json, dev_working_memory.json",
-        "All variants are ALWAYS in systems/<system_name>/context/ - there is no other location"
+        "All variants are ALWAYS in <system_path>/context/ - there is no other location"
       ]
     },
     "tracking_file_versioning": {
@@ -421,12 +427,12 @@
         "READ context/working_memory.json to reestablish context (file is in current directory's context/ subdirectory)",
         "READ context/current_focus.md to understand current task (file is in current directory's context/ subdirectory)",
         "RESUME work with verified context and document recovery",
-        "REMEMBER: Tracking files are ALWAYS at context/<filename> relative to systems/<system_name>/ directory"
+        "REMEMBER: Tracking files are ALWAYS at context/<filename> relative to <system_path>/ directory"
       ],
       "prevention_examples": {
         "correct_approach": [
-          "cd /path/to/reflow/systems/<system_name>",
-          "pwd  # Verify correct directory - should show /path/to/reflow/systems/<system_name>",
+          "cd /absolute/path/to/your/system",
+          "pwd  # Verify correct directory - should show your system's absolute path",
           "ls context/  # Verify context directory exists with tracking files",
           "cat context/current_focus.md  # Read context from current system (or dev_current_focus.md for development)",
           "cat context/step_progress_tracker.json  # Check progress (or dev_progress_tracker.json for development)",
@@ -512,9 +518,9 @@
         "setup_sequence": [
           "Determine system_name for new system",
           "Create working directory with 4-folder structure:",
-          "  mkdir -p systems/<system_name>/{context,specs/{machine/{service_arch,interfaces,graphs,registries},human/{visualizations,reports,documentation}},services,docs}",
-          "Change to system directory: cd systems/<system_name>", 
-          "Verify isolation: pwd must show systems/<system_name>",
+          "  mkdir -p <system_path>/{context,specs/{machine/{service_arch,interfaces,graphs,registries},human/{visualizations,reports,documentation}},services,docs}",
+          "Change to system directory: cd <system_path>", 
+          "Verify isolation: pwd must show your system's absolute path",
           "Initialize context/working_memory.json with system_name",
           "Initialize context/current_focus.md with initial objectives",
           "Initialize context/step_progress_tracker.json",
@@ -566,7 +572,7 @@
         }
       },
       "initial_context_setup": {
-        "create_working_directory": "systems/<system_name>/ with 4-folder structure",
+        "create_working_directory": "<system_path>/ with 4-folder structure",
         "initialize_tracking_files": [
           "context/working_memory.json from template",
           "context/current_focus.md from template", 
@@ -580,7 +586,7 @@
       "description": "A change to an existing system/service or a new feature",
       "prerequisites_check": {
         "verify": [
-          "Target system exists in systems/<system_name>/",
+          "Target system exists at specified system path",
           "Current architecture artifacts are present",
           "Working memory and progress tracking files exist"
         ],
@@ -589,7 +595,7 @@
       "foundational_validation": {
         "description": "MANDATORY: Validate alignment with foundational documents before any changes",
         "tool": "./tools/validate_foundational_alignment.py",
-        "command": "python3 ./tools/validate_foundational_alignment.py systems/<system_name> --change-proposal <proposal_path>",
+        "command": "python3 <reflow_path>/tools/validate_foundational_alignment.py <system_path> --change-proposal <proposal_path>",
         "required_foundational_documents": [
           "SYSTEM_MISSION_STATEMENT.md",
           "USER_SCENARIOS.md", 
@@ -615,13 +621,13 @@
     "architecture_only_completion": {
       "description": "Architecture is complete and user wants to stop without software development",
       "preconditions": [
-        "systems/<system_name>/build_ready_index.json exists",
+        "<system_path>/services/build_ready_index.json exists",
         "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
         "All validation gates passed"
       ],
       "validation_required": {
-        "template_validation": "python3 ./tools/validate_architecture.py systems/<system_name>",
-        "graph_validation": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+        "template_validation": "python3 <reflow_path>/tools/validate_architecture.py <system_path>",
+        "graph_validation": "python3 <reflow_path>/tools/system_of_systems_graph.py <system_path>/specs/machine/index.json --analyze-issues",
         "handoff_artifacts": [
           "build_ready_index.json",
           "ARCHITECTURE_CONTEXT_SUMMARY.md",
@@ -655,13 +661,13 @@
     "implementation_from_final_specs": {
       "description": "Architecture is complete (build_ready_index.json exists) and software development should begin",
       "preconditions": [
-        "systems/<system_name>/build_ready_index.json exists",
+        "<system_path>/services/build_ready_index.json exists",
         "SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md present",
         "All validation gates passed"
       ],
       "validation_required": {
-        "template_validation": "python3 ./tools/validate_architecture.py systems/<system_name>",
-        "graph_validation": "python3 ./tools/system_of_systems_graph.py systems/<system_name>/index.json --analyze-issues",
+        "template_validation": "python3 <reflow_path>/tools/validate_architecture.py <system_path>",
+        "graph_validation": "python3 <reflow_path>/tools/system_of_systems_graph.py <system_path>/specs/machine/index.json --analyze-issues",
         "handoff_artifacts": [
           "build_ready_index.json",
           "ARCHITECTURE_CONTEXT_SUMMARY.md",
@@ -712,7 +718,7 @@
           }
         },
         "language_selection_tool": "./tools/select_development_languages.py",
-        "output": "systems/<system_name>/development_language_configuration.json"
+        "output": "<system_path>/context/development_language_configuration.json"
       },
       "route_to": "development/Dev-01-InitBootstrap.json"
     },
