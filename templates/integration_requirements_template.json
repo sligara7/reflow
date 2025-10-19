@@ -1,0 +1,96 @@
+{
+  "template_metadata": {
+    "name": "Integration Requirements Template",
+    "version": "1.0.0",
+    "description": "Template for capturing high-level integration requirements and objectives"
+  },
+  "integration_overview": {
+    "integration_name": "<name_of_integrated_system>",
+    "integration_purpose": "<high_level_purpose_and_goals>",
+    "target_capabilities": [
+      "<capability_1>",
+      "<capability_2>"
+    ],
+    "success_criteria": [
+      "<measurable_success_criterion_1>",
+      "<measurable_success_criterion_2>"
+    ]
+  },
+  "stakeholder_requirements": {
+    "primary_stakeholders": [
+      {
+        "role": "<stakeholder_role>",
+        "requirements": [
+          "<requirement_1>",
+          "<requirement_2>"
+        ]
+      }
+    ],
+    "user_scenarios": [
+      {
+        "scenario_name": "<scenario_name>",
+        "description": "<scenario_description>", 
+        "involved_systems": ["<system_1>", "<system_2>"],
+        "expected_outcome": "<expected_result>"
+      }
+    ]
+  },
+  "integration_constraints": {
+    "performance_requirements": {
+      "response_time": "<max_acceptable_response_time>",
+      "throughput": "<required_throughput>",
+      "availability": "<availability_requirement>"
+    },
+    "security_requirements": {
+      "authentication": "<authentication_approach>",
+      "authorization": "<authorization_requirements>",
+      "data_protection": "<data_protection_requirements>"
+    },
+    "operational_constraints": {
+      "deployment_environment": "<deployment_constraints>",
+      "maintenance_windows": "<maintenance_requirements>",
+      "monitoring_requirements": "<monitoring_and_observability_needs>"
+    },
+    "technical_constraints": [
+      "<technical_constraint_1>",
+      "<technical_constraint_2>"
+    ]
+  },
+  "integration_patterns": {
+    "preferred_communication_patterns": [
+      "<synchronous/asynchronous>",
+      "<api_calls/messaging/shared_data>"
+    ],
+    "data_consistency_requirements": "<eventual/strong/weak_consistency>",
+    "error_handling_approach": "<error_handling_strategy>",
+    "transaction_requirements": "<transaction_scope_and_requirements>"
+  },
+  "scope_and_boundaries": {
+    "included_functionality": [
+      "<functionality_1>",
+      "<functionality_2>"
+    ],
+    "excluded_functionality": [
+      "<out_of_scope_item_1>",
+      "<out_of_scope_item_2>"
+    ],
+    "system_boundaries": {
+      "internal_systems": ["<system_1>", "<system_2>"],
+      "external_dependencies": ["<external_system_1>", "<external_system_2>"],
+      "integration_scope": "<scope_description>"
+    }
+  },
+  "assumptions_and_risks": {
+    "key_assumptions": [
+      "<assumption_1>",
+      "<assumption_2>"
+    ],
+    "identified_risks": [
+      {
+        "risk": "<risk_description>",
+        "impact": "<high/medium/low>",
+        "mitigation": "<mitigation_strategy>"
+      }
+    ]
+  }
+}

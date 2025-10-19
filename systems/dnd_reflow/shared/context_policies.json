@@ -1,0 +1,81 @@
+{
+  "version": "0.1.0",
+  "applies_to": [
+    "architecture sub-workflows",
+    "development sub-workflows",
+    "feature_update sub-workflows"
+  ],
+  "refresh_triggers": {
+    "operation_count": 4,
+    "time_minutes": 12,
+    "boundary_transition": true,
+    "degradation_detected": true,
+    "token_pressure": true
+  },
+  "before_every_operation": [
+    "RESOLVE focus file: if active_service known → systems/<system_name>/context/focus/<service>.md else → systems/<system_name>/context/current_focus.md (or dev variant)",
+    "READ resolved focus file",
+    "LOAD systems/<system_name>/context/step_progress_tracker.json (or dev_progress_tracker.json)",
+    "VERIFY pwd == systems/<system_name>",
+    "CHECK operations_since_refresh <= 4",
+    "CHECK gates: systems/<system_name>/context/sync/gates.json for required awaits",
+    "CHECK locks: acquire required exclusive locks under systems/<system_name>/context/sync/locks/ before modifying exclusive resources",
+    "CONFIRM system_name, active step/stage, next action, outstanding gates"
+  ],
+  "refresh_sequence": [
+    "PAUSE all writes",
+    "APPEND current action+rationale to process_log.md (or dev_process_log.md) under context/",
+    "UPDATE progress tracker (step/stage, timestamps, blockers, evidence refs)",
+    "SNAPSHOT context to context_checkpoint.md (or dev_context_checkpoint.md)",
+    "RELOAD authoritative specs: specs/machine/index.json and relevant service specs",
+    "RESTATE: system_name, active unit, next action, gates",
+    "RESET operations_since_refresh to 0"
+  ],
+  "snapshot_management": {
+    "checkpoint_file": "systems/<system_name>/context/context_checkpoint.md",
+    "frequency": "Every 2 operations OR on boundary exit",
+    "sections": [
+      "# Context Checkpoint",
+      "## Active Unit (service/step)",
+      "## Subtasks Remaining",
+      "## Recently Completed",
+      "## Blocking Issues / Risks",
+      "## Evidence Artifacts"
+    ]
+  },
+  "cli": {
+    "non_interactive_only": true,
+    "disallow": ["here-docs", "interactive_repls"],
+    "policy_doc": "reflow/shared/CLI_POLICY.md"
+  },
+  "iteration_principles": [
+    "On validation failure, iterate to the nearest corrective workflow (local fix) before escalating back",
+    "On cross-service contract changes, route to Feature Update FU-02 Arch Re-Engineering",
+    "Resume at the original workflow after successful re-alignment"
+  ],
+  "self_improvement": {
+    "collect_to": "/home/ajs7/project/saa/reflow/process_improvements/inbox/inbox.jsonl",
+    "format": "JSONL - one object per line per /home/ajs7/project/saa/reflow/process_improvements/template.json",
+    "when": [
+      "on_refresh_complete",
+      "on_step_exit",
+      "after_validation_failure_resolved"
+    ],
+    "rules": [
+      "Suggestions MUST be generic and system-agnostic",
+      "No system/service names, no secrets, no external tokens",
+      "Reference only repo-relative evidence paths"
+    ],
+    "fields": [
+      "timestamp",
+      "workflow_area",
+      "sub_id",
+      "category",
+      "suggestion",
+      "rationale",
+      "evidence_refs",
+      "impact",
+      "status=proposed"
+    ]
+  }
+}

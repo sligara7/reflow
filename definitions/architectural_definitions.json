@@ -1,0 +1,151 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "framework": "UAF 1.2",
+    "framework_standard": "ISO/IEC 19540-1:2022 and ISO/IEC 19540-2:2022",
+    "description": "Architectural definitions for LLM-driven system decomposition based on Unified Architecture Framework (UAF) version 1.2",
+    "purpose": "Standardized terminology for service_architecture.json generation and system analysis aligned with UAF 1.2 Domain Metamodel (DMM) and UAF Modeling Language (UAFML)",
+    "last_updated": "2025-10-14",
+    "uaf_components": {
+      "dmm": "Domain Metamodel (DMM) - Part 1: Formal metamodel with VIEW specifications",
+      "uafml": "UAF Modeling Language (UAFML) - Part 2: UML/SysML implementation",
+      "appendices": ["Traceability", "Sample Problem", "Enterprise Architecture Guide"]
+    }
+  },
+  "core_concepts": {
+    "service": {
+      "definition": "Black-box functionality or capability exposed to external consumers",
+      "characteristics": [
+        "Encapsulates internal implementation details",
+        "Provides specific capabilities through well-defined interfaces",
+        "Can be composed of multiple internal components/functions",
+        "Has clear boundaries and responsibilities"
+      ],
+      "uaf_reference": "ServiceFunction and ServiceInterface specifications from UAF 1.2 DMM with enhanced Service-Resource relationships",
+      "examples": [
+        "Queue Server Service",
+        "Device Monitoring Service", 
+        "Coordination Service",
+        "Authentication Service"
+      ]
+    },
+    "interface": {
+      "definition": "Boundary specification for data exchange and communication between services",
+      "characteristics": [
+        "Defines data transport mechanisms and protocols",
+        "Specifies communication patterns (request/response, publish/subscribe, etc.)",
+        "Enables but does not perform data transformations",
+        "External boundaries for system integration"
+      ],
+      "uaf_reference": "ServiceInterface and ResourceServiceInterface contracts from UAF 1.2 with enhanced Service-to-Resource connectivity and Information Element flows",
+      "examples": [
+        "REST API",
+        "WebSocket connection",
+        "EPICS Channel Access protocol",
+        "Redis pub/sub interface",
+        "HTTP/HTTPS endpoints"
+      ]
+    },
+    "function": {
+      "definition": "Internal behavior or operation within a service that transforms inputs to outputs",
+      "characteristics": [
+        "Performs specific data processing or business logic",
+        "Internal to service implementation",
+        "May coordinate with other functions within the same service",
+        "Not directly exposed to external consumers"
+      ],
+      "uaf_reference": "Function specifications from UAF 1.2 DMM with Activity and Behavior modeling patterns",
+      "examples": [
+        "Data validation function",
+        "Message routing function",
+        "Authentication verification function",
+        "State management function"
+      ]
+    }
+  },
+  "hierarchy_levels": {
+    "level_0": {
+      "name": "System Classification",
+      "purpose": "Determine the starting point for decomposition",
+      "options": {
+        "system_of_systems": {
+          "description": "Multiple independent systems working together",
+          "decompose_to": "Level 1: Individual Systems, Level 2: System Components",
+          "example": "Distributed microservices platform"
+        },
+        "individual_system": {
+          "description": "Single cohesive system with multiple components",
+          "decompose_to": "Level 1: Major Components, Level 2: Minor Components",
+          "example": "Web application with frontend, backend, database"
+        },
+        "major_component": {
+          "description": "Large component within a system",
+          "decompose_to": "Level 1: Submodules, Level 2: Functions/Classes",
+          "example": "Authentication service with user management and token handling"
+        }
+      }
+    },
+    "level_1": {
+      "name": "Primary Decomposition",
+      "purpose": "Break down Level 0 into major architectural elements",
+      "characteristics": [
+        "Major functional boundaries",
+        "Independent development possible",
+        "Clear interface definitions required"
+      ]
+    },
+    "level_2": {
+      "name": "Secondary Decomposition", 
+      "purpose": "Break down Level 1 elements into detailed components",
+      "characteristics": [
+        "Detailed implementation guidance",
+        "Service-level specifications",
+        "Interface contract definitions"
+      ]
+    },
+    "level_3": {
+      "name": "Deep Decomposition (Conditional)",
+      "purpose": "Additional decomposition for complex or critical interfaces",
+      "trigger_conditions": [
+        "Interface marked 'recommended' with no existing implementation",
+        "Interface requires >3 method calls or data transformation",
+        "Interface is safety/security critical",
+        "Interface coordinates >2 services",
+        "Interface bridges with external systems",
+        "Interface is performance bottleneck (>5 connections)"
+      ]
+    }
+  },
+  "implementation_status": {
+    "existing": {
+      "definition": "Component is already implemented and operational",
+      "justification_required": "Reference to existing code, deployment, or documentation"
+    },
+    "recommended": {
+      "definition": "Component should be implemented based on analysis",
+      "justification_required": "Rationale for why this component is needed"
+    },
+    "hypothetical": {
+      "definition": "Component might be needed but requires further investigation",
+      "justification_required": "Uncertainty factors and investigation needed"
+    }
+  },
+  "validation_types": {
+    "template_validation": {
+      "purpose": "Ensure all files conform to required JSON schemas",
+      "tool": "validate_architecture.py"
+    },
+    "graph_validation": {
+      "purpose": "Detect architectural issues like cycles and orphaned nodes",
+      "tool": "system_of_systems_graph.py"
+    },
+    "interface_validation": {
+      "purpose": "Verify interface contracts are complete and consistent",
+      "tool": "generate_interface_contracts.py"
+    },
+    "deployment_validation": {
+      "purpose": "Reconcile logical architecture with deployment reality",
+      "method": "Manual analysis of deployment artifacts"
+    }
+  }
+}

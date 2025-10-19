@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "purpose": "Directory conventions for artifact routing used by reflow workflows",
+  "paths": {
+    "context": "systems/<system_name>/context/",
+    "specs_machine": "systems/<system_name>/specs/machine/",
+    "specs_machine_service_root": "systems/<system_name>/specs/machine/service_arch/<service>/",
+    "specs_machine_interfaces": "systems/<system_name>/specs/machine/interfaces/",
+    "specs_machine_graphs": "systems/<system_name>/specs/machine/graphs/",
+    "specs_machine_registries": "systems/<system_name>/specs/machine/registries/",
+    "specs_human": "systems/<system_name>/specs/human/",
+    "specs_human_visuals": "systems/<system_name>/specs/human/visualizations/",
+    "code": "systems/<system_name>/code/"
+  },
+  "compatibility": {
+    "legacy_service_architecture": "systems/<system_name>/<service>/service_architecture.json",
+    "note": "If legacy and reflow locations both exist, index.json should point to the authoritative file under specs/machine/service_arch/<service>/"
+  }
+}
