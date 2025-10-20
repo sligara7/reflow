@@ -500,16 +500,92 @@ def validate_injection(target_path):
         print("❌ Injection validation failed")
         return False
 
+def validate_pre_operation_requirements(reflow_root, target_path):
+    """Validate pre-operation requirements as per modular instruction system."""
+    print("🔍 Pre-Operation Validation (as per instructions/1-behavioral-rules.json)...")
+    
+    # Load behavioral rules
+    behavioral_rules_path = reflow_root / 'instructions' / '1-behavioral-rules.json'
+    if not behavioral_rules_path.exists():
+        print("⚠️  Behavioral rules not found - continuing with basic validation")
+    else:
+        print("✅ Behavioral rules loaded")
+    
+    # Validate working directory
+    current_dir = Path.cwd()
+    if current_dir != reflow_root:
+        print(f"❌ Wrong working directory. Currently in: {current_dir}")
+        print(f"   Must be in reflow root: {reflow_root}")
+        return False
+    
+    # Validate target system directory structure
+    directory_validator = reflow_root / 'tools' / 'validate_directory_structure.py'
+    if directory_validator.exists():
+        print("🏗️  Running directory structure validation...")
+        result = subprocess.run([
+            'python3', str(directory_validator), str(target_path), '--json'
+        ], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            try:
+                validation_data = json.loads(result.stdout)
+                if validation_data.get('validation_passed', False):
+                    print("✅ Target system directory structure is clean")
+                else:
+                    print("⚠️  Target system has directory structure issues")
+                    print("   Consider running: python3 tools/validate_directory_structure.py <target> --auto-clean")
+            except:
+                print("✅ Directory validation completed")
+        else:
+            print("⚠️  Directory validation had issues but continuing...")
+    
+    return True
+
+def validate_post_operation_requirements(reflow_root, target_path):
+    """Validate post-operation requirements as per modular instruction system."""
+    print("\n🔍 Post-Operation Validation (as per instructions/1-behavioral-rules.json)...")
+    
+    # Test embedded environment functionality
+    validate_script = target_path / 'context' / 'bin' / 'validate'
+    if validate_script.exists():
+        print("🧪 Testing embedded environment...")
+        result = subprocess.run(['bash', str(validate_script), 'all'], 
+                              capture_output=True, text=True, cwd=target_path)
+        if result.returncode == 0:
+            print("✅ Embedded environment functional")
+        else:
+            print("⚠️  Embedded environment may have issues")
+            print(f"   Output: {result.stdout[:200]}...")
+    
+    # Validate directory structure after injection
+    directory_validator = reflow_root / 'tools' / 'validate_directory_structure.py'
+    if directory_validator.exists():
+        print("🏗️  Validating directory structure after injection...")
+        result = subprocess.run([
+            'python3', str(directory_validator), str(target_path)
+        ], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print("✅ Directory structure remains clean after injection")
+        else:
+            print("⚠️  Directory structure validation failed")
+            print("   Run: python3 tools/validate_directory_structure.py <target> --auto-clean")
+    
+    return True
+
 def main():
     parser = argparse.ArgumentParser(description='Execute reflow injection workflow')
     parser.add_argument('target_system', help='Path to target system for injection')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be done without executing')
+    parser.add_argument('--skip-validation', action='store_true', help='Skip pre/post operation validation (not recommended)')
     
     args = parser.parse_args()
     target_path = Path(args.target_system).resolve()
     
-    print(f"🚀 Reflow Injection Workflow")
+    print(f"🚀 Reflow Injection Workflow (v1.1.0 - Modular Instructions)")
     print(f"📁 Target System: {target_path}")
+    print(f"📋 Behavioral Rules: Load instructions/1-behavioral-rules.json")
+    print(f"📋 File Locations: Load instructions/2-file-locations.json")
     
     if args.dry_run:
         print("🔍 DRY RUN MODE - No changes will be made")
@@ -517,6 +593,12 @@ def main():
     
     reflow_root = get_reflow_root()
     print(f"📁 Reflow Root: {reflow_root}")
+    
+    # Pre-operation validation (as per behavioral rules)
+    if not args.skip_validation:
+        if not validate_pre_operation_requirements(reflow_root, target_path):
+            print("❌ Pre-operation validation failed")
+            sys.exit(1)
     
     # Execute injection workflow steps
     steps = [
@@ -539,8 +621,16 @@ def main():
             sys.exit(1)
     
     print(f"\n🎉 Injection completed successfully!")
-    print(f"📖 Read usage guide: {target_path}/context/README_EMBEDDED.md")
-    print(f"🧪 Test: cd {target_path} && ./context/bin/validate all")
+    
+    # Post-operation validation (as per behavioral rules)
+    if not args.skip_validation:
+        validate_post_operation_requirements(reflow_root, target_path)
+    
+    print(f"\n📖 Next Steps:")
+    print(f"  1. Read usage guide: {target_path}/context/README_EMBEDDED.md")
+    print(f"  2. Test embedded environment: cd {target_path} && ./context/bin/validate all")
+    print(f"  3. Load behavioral rules: instructions/1-behavioral-rules.json (when using embedded reflow)")
+    print(f"  4. Load file locations: instructions/2-file-locations.json (if file confusion occurs)")
 
 if __name__ == "__main__":
     main()

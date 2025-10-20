@@ -1,12 +1,20 @@
 {
   "workflow_metadata": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Inject complete reflow toolchain into developed system's context folder for standalone operation",
     "last_updated": "2025-10-19",
     "purpose": "Transform developed systems into standalone repositories containing all reflow workflow capabilities within their context folder",
-    "changelog": "v1.0.0: Initial implementation of self-contained system injection",
+    "changelog": "v1.1.0: Integrated modular instruction system for better rule adherence and context management",
     "IMPORTANT": "This workflow injects the entire reflow decision-making and development process into the target system, making it completely self-contained",
     "usage_pattern": "Run from reflow directory on existing developed system to make it standalone",
+    "instruction_system": {
+      "approach": "Uses modular instruction files to prevent context overload and rule violations",
+      "required_modules": [
+        "instructions/1-behavioral-rules.json - CRITICAL: Load before every injection operation",
+        "instructions/2-file-locations.json - Load if file location confusion occurs"
+      ],
+      "enforcement": "Directory structure validation and behavioral rule enforcement integrated throughout workflow"
+    },
     "benefits": [
       "Developed systems become completely standalone with embedded workflow tools",
       "Each system can be pushed to its own GitHub repo with full reflow capabilities",
@@ -49,6 +57,18 @@
     ]
   },
   "prerequisites": {
+    "MANDATORY_PRE_OPERATION_VALIDATION": {
+      "description": "CRITICAL: Must complete before ANY injection operation",
+      "required_steps": [
+        "1. LOAD instructions/1-behavioral-rules.json - Contains mandatory behavioral rules",
+        "2. LOAD instructions/2-file-locations.json - Contains file location requirements",
+        "3. VERIFY pwd equals reflow root directory (where inject_flow.json is located)",
+        "4. VERIFY target system path is absolute and accessible",
+        "5. RUN directory structure validation on target system",
+        "6. CONFIRM no rule violations will occur during injection"
+      ],
+      "failure_action": "STOP injection workflow and address validation issues"
+    },
     "verification": {
       "description": "Verify system readiness for injection",
       "required_artifacts": [
@@ -56,7 +76,13 @@
         "System must have completed at least initial architecture (context/ folder exists)",
         "specs/, services/, docs/ directories should be present"
       ],
-      "working_directory": "Must be run from reflow root directory"
+      "working_directory": "Must be run from reflow root directory",
+      "directory_validation": {
+        "tool": "./tools/validate_directory_structure.py",
+        "command": "python3 tools/validate_directory_structure.py <target_system_path>",
+        "purpose": "Ensure target system maintains clean 4-folder structure",
+        "required": "Target must pass directory validation before injection"
+      }
     },
     "tool": {
       "path": "./tools/validate_injection_readiness.py",
@@ -255,6 +281,25 @@
         "Create EMBEDDED_USAGE.md in system root with quick start guide",
         "Log successful injection in system process log"
       ]
+    },
+    "MANDATORY_POST_OPERATION_VALIDATION": {
+      "description": "CRITICAL: Must complete after injection workflow",
+      "required_steps": [
+        "1. VALIDATE injection completed successfully using validation tools",
+        "2. RUN directory structure validation on target system",
+        "3. VERIFY target system maintains clean 4-folder structure",
+        "4. TEST embedded reflow environment functionality",
+        "5. UPDATE target system's context/process_log.md with injection details",
+        "6. DOCUMENT injection in source reflow process log",
+        "7. VERIFY no prohibited files created during injection",
+        "8. CONFIRM embedded environment follows behavioral rules"
+      ],
+      "validation_commands": [
+        "cd <target_system> && ./context/bin/validate all",
+        "python3 tools/validate_directory_structure.py <target_system>"
+      ],
+      "success_criteria": "All validations pass, embedded environment functional, directories clean",
+      "failure_action": "Review injection logs, fix issues, re-run validation"
     }
   },
   "embedded_operation": {

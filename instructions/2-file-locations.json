@@ -1,0 +1,177 @@
+{
+  "instruction_module": {
+    "id": "2-file-locations", 
+    "version": "1.0.0",
+    "description": "Critical file location rules for ALL reflow workflows - prevents most common workflow errors",
+    "priority": "CRITICAL",
+    "applies_to": [
+      "decision_flow.json workflow",
+      "inject_flow.json workflow",
+      "all architecture workflows", 
+      "all development workflows",
+      "all feature update workflows"
+    ],
+    "usage": "Load when agent shows confusion about where files are located"
+  },
+  "PRIMARY_RULE": "ALL tracking and context files are ALWAYS located in <system_path>/context/ directory",
+  "NEVER_LOCATIONS": [
+    "NEVER in reflow root directory",
+    "NEVER in other system directories", 
+    "NEVER in specs/, services/, or docs/ directories",
+    "NEVER in subdirectories of context/",
+    "NEVER at system root level"
+  ],
+  "ALWAYS_LOCATIONS": {
+    "architecture_workflow_tracking": [
+      "<system_path>/context/current_focus.md",
+      "<system_path>/context/step_progress_tracker.json", 
+      "<system_path>/context/working_memory.json",
+      "<system_path>/context/process_log.md",
+      "<system_path>/context/context_checkpoint.md"
+    ],
+    "development_workflow_tracking": [
+      "<system_path>/context/dev_current_focus.md",
+      "<system_path>/context/dev_progress_tracker.json",
+      "<system_path>/context/dev_working_memory.json",
+      "<system_path>/context/dev_process_log.md", 
+      "<system_path>/context/dev_context_checkpoint.md"
+    ],
+    "injection_workflow_tracking": [
+      "<system_path>/context/injection_progress.json",
+      "<system_path>/context/injection_log.md",
+      "<system_path>/context/backup_info.json"
+    ],
+    "embedded_reflow_structure": {
+      "description": "When reflow is injected into a system, it creates this structure in context/",
+      "locations": [
+        "<system_path>/context/workflows/ - Embedded workflow files",
+        "<system_path>/context/tools/ - Embedded Python tools",
+        "<system_path>/context/templates/ - Embedded templates", 
+        "<system_path>/context/definitions/ - Embedded definitions",
+        "<system_path>/context/tracking/ - Original context files (migrated here)",
+        "<system_path>/context/bin/ - Executable scripts",
+        "<system_path>/context/config/ - Embedded configuration"
+      ]
+    }
+  },
+  "WORKING_DIRECTORY_REQUIREMENT": {
+    "rule": "LLM agent MUST cd to <system_path>/ at the start of EVERY workflow step",
+    "verification": "Run 'pwd' - output must be the absolute path to your system directory",
+    "relative_paths": "Once in correct directory, use relative paths: context/current_focus.md, context/dev_progress_tracker.json",
+    "common_error": "If you cannot find tracking files, you are in the WRONG DIRECTORY - immediately run pwd and cd to correct location"
+  },
+  "QUICK_DIAGNOSIS": {
+    "symptom": "Cannot find decision_flow.json, dev_progress_tracker.json, dev_current_focus.md, or tracking files",
+    "diagnosis": "You are in the WRONG DIRECTORY", 
+    "solution": [
+      "1. Run 'pwd' to see current directory",
+      "2. Identify correct system path from user's request or workflow context",
+      "3. Run 'cd /absolute/path/to/system'",
+      "4. Verify with 'pwd' - should show your system's absolute path",
+      "5. Run 'ls context/' - should see all tracking files listed in ALWAYS_LOCATIONS",
+      "6. Now you can access files with relative paths: context/dev_progress_tracker.json"
+    ]
+  },
+  "INJECTION_SPECIFIC_LOCATIONS": {
+    "description": "File locations specific to inject_flow.json workflow",
+    "source_reflow_locations": [
+      "<reflow_root>/inject_flow.json - Main injection workflow",
+      "<reflow_root>/tools/execute_injection_flow.py - Main injection script",
+      "<reflow_root>/tools/validate_injection_readiness.py - Readiness validator", 
+      "<reflow_root>/tools/inject_workflows.py - Workflow injector",
+      "<reflow_root>/tools/inject_tools.py - Tools injector",
+      "<reflow_root>/tools/create_embedded_scripts.py - Script creator",
+      "<reflow_root>/instructions/ - Modular instruction files"
+    ],
+    "target_system_locations": [
+      "<target_system>/context/workflows/ - WHERE injected workflows go",
+      "<target_system>/context/tools/ - WHERE injected tools go",
+      "<target_system>/context/templates/ - WHERE injected templates go",
+      "<target_system>/context/definitions/ - WHERE injected definitions go",
+      "<target_system>/context/tracking/ - WHERE original context files are moved",
+      "<target_system>/context/bin/ - WHERE executable scripts go",
+      "<target_system>/context/config/ - WHERE embedded config goes"
+    ],
+    "backup_locations": [
+      "<target_system>/context_backup_<timestamp> - WHERE context backup is stored during injection"
+    ]
+  },
+  "SYSTEM_STRUCTURE_REQUIREMENTS": {
+    "description": "Required directory structure for both source and target systems",
+    "standard_reflow_system": [
+      "<system_path>/",
+      "├── context/          # LLM agent tracking files",
+      "├── specs/",
+      "│   ├── machine/       # Machine-readable specs (index.json, service architectures)",
+      "│   └── human/         # Human-readable specs (visualizations, reports)",
+      "├── services/          # Implementation code",
+      "└── docs/              # System documentation"
+    ],
+    "embedded_reflow_system": [
+      "<system_path>/",
+      "├── context/          # Now contains COMPLETE reflow environment",
+      "│   ├── workflows/    # Embedded reflow workflows", 
+      "│   ├── tools/        # Embedded reflow tools",
+      "│   ├── templates/    # Embedded reflow templates",
+      "│   ├── definitions/  # Embedded reflow definitions", 
+      "│   ├── tracking/     # Original context files (moved here)",
+      "│   ├── bin/          # Executable scripts",
+      "│   └── config/       # Embedded configuration",
+      "├── specs/            # Unchanged",
+      "├── services/         # Unchanged",
+      "└── docs/             # Unchanged"
+    ]
+  },
+  "PATH_RESOLUTION_RULES": {
+    "description": "How to resolve paths correctly in different contexts",
+    "from_system_root": {
+      "tracking_files": "context/step_progress_tracker.json, context/working_memory.json",
+      "embedded_workflows": "context/workflows/decision_flow.json",
+      "embedded_tools": "context/tools/validate_architecture.py",
+      "system_specs": "specs/machine/index.json",
+      "system_services": "services/build_ready_index.json"
+    },
+    "from_reflow_root": {
+      "main_workflows": "decision_flow.json, inject_flow.json",
+      "tools": "tools/validate_architecture.py, tools/execute_injection_flow.py",
+      "templates": "templates/working_memory_template.json",
+      "instructions": "instructions/1-behavioral-rules.json"
+    },
+    "absolute_paths": "Always use when invoking tools: python3 /path/to/reflow/tools/tool.py /path/to/system"
+  },
+  "CROSS_CONTAMINATION_PREVENTION": {
+    "description": "Critical rules to prevent mixing files between systems",
+    "mandatory_rules": [
+      "NEVER reference files from other system directories",
+      "NEVER copy tracking files between systems",
+      "NEVER place reflow tools in system directories (except during injection to context/)",
+      "NEVER place system artifacts in reflow root directory",
+      "Always verify system_name in working_memory.json matches current system"
+    ],
+    "isolation_verification": [
+      "Before ANY file operation, verify pwd shows correct system path",
+      "Check system_name in context/working_memory.json matches target system",
+      "Ensure all file paths are relative to current system or absolute with verification"
+    ]
+  },
+  "ERROR_RECOVERY": {
+    "description": "Recovery procedures for file location errors",
+    "wrong_directory_recovery": [
+      "STOP all file operations immediately",
+      "Document error in current directory's context/process_log.md with timestamp", 
+      "Identify correct system name from user's request or workflow context",
+      "Execute: cd /absolute/path/to/correct/system",
+      "Verify: pwd must show correct system's absolute path",
+      "READ context/working_memory.json to reestablish context",
+      "READ context/current_focus.md to understand current task", 
+      "RESUME work with verified context and document recovery"
+    ],
+    "missing_files_recovery": [
+      "If expected tracking files not found in context/, verify directory first",
+      "If in wrong directory, execute wrong_directory_recovery procedure",
+      "If in correct directory but files missing, check context/tracking/ (for embedded systems)",
+      "If files genuinely missing, may need to reinitialize from templates"
+    ]
+  },
+  "REINFORCEMENT": "After completing ANY large task or step, immediately RE-READ this section to reestablish file location awareness"
+}

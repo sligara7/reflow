@@ -1,0 +1,167 @@
+{
+  "instruction_module": {
+    "id": "1-behavioral-rules",
+    "version": "1.0.0",
+    "description": "Non-negotiable behavioral rules for ALL reflow workflows (decision_flow.json, inject_flow.json, etc.)",
+    "priority": "CRITICAL",
+    "applies_to": [
+      "decision_flow.json workflow",
+      "inject_flow.json workflow", 
+      "architecture workflows",
+      "development workflows",
+      "feature update workflows",
+      "injection workflows"
+    ],
+    "usage": "Load BEFORE every workflow operation - these rules are mandatory"
+  },
+  "NEVER_GENERATE_REPORTS": {
+    "description": "ABSOLUTE prohibition on generating reports, summaries, or explanatory documents",
+    "mandatory_rules": [
+      "NEVER generate a report after completing a step or substep",
+      "NEVER summarize what you just did unless explicitly requested by user",
+      "NEVER create 'status update' or 'progress report' documents",
+      "NEVER output commentary about the work completed",
+      "NEVER create files with names containing: report, summary, status, update, overview",
+      "ONLY update tracking files (working_memory.json, step_progress_tracker.json, process_log.md) - no reports",
+      "After completing work: UPDATE tracking files, then STOP. No explanation. No summary. No report."
+    ],
+    "exceptions": "NONE - this rule has no exceptions",
+    "enforcement": "Pre-operation validation must check agent is not about to create report-like files"
+  },
+  "MANDATORY_WORKFLOW_ADHERENCE": {
+    "description": "Strict adherence to workflow instructions without deviation",
+    "mandatory_rules": [
+      "READ decision_flow.json OR inject_flow.json AND current workflow step file BEFORE every action",
+      "VERIFY current step/substep from step_progress_tracker.json matches workflow instructions", 
+      "DO NOT proceed with actions that contradict workflow JSON files - even if they seem helpful",
+      "DO NOT skip steps or substeps defined in workflow files",
+      "DO NOT reinterpret workflow instructions - follow them EXACTLY as written",
+      "If workflow says 'do X', you MUST do X. Not Y. Not X plus helpful extras. Just X.",
+      "Context does NOT refresh between steps - workflow instructions are ALWAYS active",
+      "NEVER assume workflow guidance is 'optional' or 'advisory' - it is MANDATORY"
+    ],
+    "degradation_signals": [
+      "Taking actions not specified in current workflow step",
+      "Adding 'helpful extras' beyond what workflow requires",
+      "Asking questions already answered in workflow files",
+      "Proceeding without consulting step_progress_tracker.json"
+    ]
+  },
+  "DIRECTORY_STRUCTURE_ENFORCEMENT": {
+    "description": "Maintain clean 4-folder structure at system root level",
+    "allowed_root_folders": ["context", "specs", "services", "docs"],
+    "prohibited_at_root": [
+      "*.md files (except system README.md if explicitly needed)",
+      "*.json files (except build_ready_index.json in services/)",
+      "*.txt files", 
+      "*_summary* files",
+      "*_report* files",
+      "*_status* files",
+      "*.backup files",
+      "*.tmp files",
+      "Any folders not in allowed_root_folders list"
+    ],
+    "mandatory_rules": [
+      "NEVER create files in system root directory except in the 4 allowed folders",
+      "NEVER create additional folders at system root level",
+      "ALL workflow artifacts MUST go in appropriate folder: context/, specs/, services/, or docs/",
+      "If unsure where file belongs, put in context/ folder",
+      "Run directory validation before and after major operations"
+    ],
+    "cleanup_requirement": "If prohibited files detected, they MUST be moved to appropriate folder or deleted"
+  },
+  "SYSTEM_ISOLATION_MANDATORY": {
+    "description": "Critical isolation rules to prevent cross-system contamination",
+    "mandatory_rules": [
+      "ALWAYS verify pwd equals target system's absolute path BEFORE any operation",
+      "If pwd is wrong, STOP immediately and navigate to correct system directory",
+      "ALL file paths must be relative to current system directory or absolute with verified system path", 
+      "NEVER reference or modify files in other system directories",
+      "NEVER copy files between system directories",
+      "Verify system_name in working_memory.json matches current system before proceeding"
+    ],
+    "recovery_procedure": [
+      "1. STOP all operations immediately",
+      "2. Run 'pwd' to identify current location",
+      "3. Navigate to correct system: cd <correct_system_path>",
+      "4. Verify with 'pwd' - output must match target system path",
+      "5. Read context/working_memory.json to confirm system_name matches",
+      "6. Resume operations only after verification complete"
+    ]
+  },
+  "CONTEXT_CONTINUITY": {
+    "description": "Maintain workflow context across all interactions",
+    "mandatory_rules": [
+      "Workflow instructions persist across ALL interactions until workflow completion",
+      "You MUST re-read workflow files if you detect yourself violating instructions", 
+      "step_progress_tracker.json is the ONLY source of truth for current position",
+      "working_memory.json contains MANDATORY context that must be consulted before every action",
+      "If uncertain about next action: READ tracker files, READ workflow files, THEN act"
+    ],
+    "degradation_recovery": [
+      "If you feel uncertain about workflow adherence, immediately:",
+      "1. PAUSE current operation",
+      "2. READ step_progress_tracker.json for current position", 
+      "3. READ current workflow file (decision_flow.json or inject_flow.json)",
+      "4. READ this behavioral rules file (1-behavioral-rules.json)",
+      "5. CONFIRM next action aligns with workflow requirements",
+      "6. Resume only after confirmation"
+    ]
+  },
+  "INJECTION_SPECIFIC_RULES": {
+    "description": "Additional rules specific to inject_flow.json workflow",
+    "mandatory_rules": [
+      "NEVER inject reflow tools into a system that already has embedded reflow (check for conflicts first)",
+      "ALWAYS backup existing context before injection (safety requirement)",
+      "VERIFY injection target has proper 4-folder structure before proceeding",
+      "ALL injected files MUST go into context/ subdirectories (workflows/, tools/, templates/, etc.)",
+      "NEVER place injected files at system root level",
+      "VALIDATE injection success before marking operation complete",
+      "DOCUMENT injection in both source reflow and target system process logs"
+    ],
+    "conflict_prevention": [
+      "Check for existing context/workflows/, context/tools/, context/templates/ before injection",
+      "If found, either skip injection (already done) or prompt user for override confirmation",
+      "Never silently overwrite existing embedded reflow installation"
+    ]
+  },
+  "PRE_OPERATION_VALIDATION": {
+    "description": "MANDATORY checks before every workflow operation",
+    "required_steps": [
+      "1. CRITICAL_FIRST: Verify pwd equals target system's absolute path",
+      "2. CRITICAL_FIRST: If pwd is wrong, execute recovery procedure immediately",
+      "3. READ current workflow file (decision_flow.json OR inject_flow.json)", 
+      "4. READ step_progress_tracker.json for current position",
+      "5. VERIFY planned action matches current step requirements",
+      "6. VERIFY planned action will NOT generate reports or prohibited files",
+      "7. VERIFY operation will maintain 4-folder directory structure",
+      "8. CONFIRM no cross-system contamination risk",
+      "9. Proceed ONLY if all validations pass"
+    ],
+    "validation_failure_action": "STOP workflow and address validation issues before proceeding"
+  },
+  "POST_OPERATION_REQUIREMENTS": {
+    "description": "MANDATORY actions after every workflow operation", 
+    "required_steps": [
+      "1. Update context/step_progress_tracker.json with progress",
+      "2. Update context/working_memory.json if context changed",
+      "3. Add entry to context/process_log.md documenting operation",
+      "4. Verify system directory structure remains clean (4 folders only)",
+      "5. If prohibited files detected, move to appropriate folder or delete",
+      "6. STOP - do not generate reports or summaries about the operation"
+    ]
+  },
+  "ENFORCEMENT_MECHANISMS": {
+    "description": "How these rules are enforced in workflows",
+    "automatic_enforcement": [
+      "Pre-operation validation tool: validate_behavioral_compliance.py",
+      "Directory structure validator: validate_directory_structure.py", 
+      "Post-operation cleanup: cleanup_system_directory.py"
+    ],
+    "manual_enforcement": [
+      "Agent must load this file before every workflow operation",
+      "User should interrupt if agent begins generating reports",
+      "Periodic adherence checks during long workflows"
+    ]
+  }
+}
