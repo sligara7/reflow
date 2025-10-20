@@ -1,10 +1,10 @@
 {
   "workflow_metadata": {
-    "version": "2.2.0",
+    "version": "2.3.0",
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
-    "last_updated": "2025-10-18",
+    "last_updated": "2025-10-20",
     "based_on": "UAF 1.2 architecture framework with automated context management",
-    "changelog": "v2.2.0: Complete separation of systems from reflow tooling - systems can be anywhere on filesystem, no more nested repository conflicts",
+    "changelog": "v2.3.0: Added fixed architecture pattern for validation remediation with traceability preservation; v2.2.0: Complete separation of systems from reflow tooling",
     "IMPORTANT": "Systems are now completely separate from reflow tooling directory to avoid git repository nesting conflicts",
     "usage_pattern": "Implement workflow in <reflow_path>/decision_flow.json on system in <system_path>",
     "preserves": [
@@ -82,6 +82,47 @@
       "absolute_paths": "Always work: python3 /path/to/reflow/tools/<tool>.py /path/to/system",
       "system_path_argument": "Most tools accept system path as first argument or --system-path flag",
       "working_directory": "LLM agent should cd to system directory, then use relative paths within system"
+    }
+  },
+  "architectural_patterns": {
+    "description": "Key architectural patterns integrated into the reflow workflow for better traceability and validation",
+    "fixed_service_architecture_pattern": {
+      "purpose": "Preserve original analysis while creating corrected versions during validation remediation",
+      "benefits": [
+        "Complete traceability of architectural decisions and changes",
+        "Preservation of original analysis for comparison and review", 
+        "Clear separation between initial design and validation-driven improvements",
+        "Ability to compare before-and-after states for architectural evolution tracking"
+      ],
+      "implementation": {
+        "original_files": {
+          "location": "specs/machine/service_arch/<service_name>/service_architecture.json",
+          "purpose": "Preserve initial architectural analysis and design decisions",
+          "rule": "NEVER modify these files during validation remediation"
+        },
+        "fixed_files": {
+          "location": "specs/machine/service_arch/<service_name>/fixed_service_architecture.json", 
+          "purpose": "Contain all validation issue resolutions and architectural improvements",
+          "rule": "Create these files to resolve validation issues while preserving originals"
+        },
+        "index_files": {
+          "original_index": "specs/machine/index.json (points to service_architecture.json files)",
+          "fixed_index": "specs/machine/fixed_index.json (points to fixed_service_architecture.json files)",
+          "validation_workflow": "Use fixed_index.json for final validation and system_of_systems_graph.py analysis"
+        }
+      },
+      "workflow_integration": {
+        "creation_phase": "Create service_architecture.json files during initial architecture design",
+        "validation_phase": "Run validation tools on original files to identify issues",
+        "remediation_phase": "Create fixed_service_architecture.json files to resolve identified issues",
+        "final_validation": "Run validation tools on fixed_index.json to confirm all issues resolved",
+        "deliverables": "Both original and fixed files provide complete architectural evolution story"
+      },
+      "tool_commands": {
+        "initial_validation": "python3 tools/validate_architecture.py <system_path> (uses index.json)",
+        "remediation_validation": "python3 tools/validate_architecture.py <system_path> (after creating fixed_index.json)",  
+        "graph_analysis": "python3 tools/system_of_systems_graph.py specs/machine/fixed_index.json --analyze-issues"
+      }
     }
   },
   "CRITICAL_FILE_LOCATIONS": {
@@ -319,9 +360,10 @@
         "Read current_focus.md (no count)",
         "Create service_architecture.json (count = 1)",
         "Run validate_architecture.py (count = 2)",
-        "Modify service_architecture.json to fix issues (count = 3)",
-        "Run validate_architecture.py again (count = 4)",
-        "TRIGGER: Refresh context (count >= 4)"
+        "Create fixed_service_architecture.json to resolve issues (count = 3)",
+        "Create fixed_index.json pointing to fixed architectures (count = 4)",
+        "Run validate_architecture.py on fixed architectures (count = 5)",
+        "TRIGGER: Refresh context (count >= 5)"
       ]
     },
     "validation_before_every_operation": [
@@ -1064,13 +1106,16 @@
             "validation_json": "Structured results with interface consistency, resource isolation, and dependency cycle checks",
             "llm_analysis_required": [
               "Parse validation results JSON to identify failed checks",
-              "For interface_missing: Add missing interfaces to service_architecture.json files",
-              "For interface_mismatch: Align interface definitions with interface_registry.json",
-              "For circular_dependency: Break dependency cycles by refactoring service boundaries",
-              "For shared_resource: Implement proper resource isolation patterns",
-              "For missing_architecture: Create service_architecture.json files for incomplete services",
-              "Update working_memory.json with validation state",
-              "Re-run validation until all checks pass"
+              "PRESERVE ORIGINAL ANALYSIS: Keep existing service_architecture.json files as-is for traceability",
+              "CREATE FIXED VERSIONS: For each service with issues, create fixed_service_architecture.json with resolved problems",
+              "For interface_missing: Add missing interfaces to fixed_service_architecture.json files",
+              "For interface_mismatch: Align interface definitions in fixed_service_architecture.json with interface_registry.json",
+              "For circular_dependency: Break dependency cycles in fixed_service_architecture.json by refactoring service boundaries",
+              "For shared_resource: Implement proper resource isolation patterns in fixed_service_architecture.json",
+              "For missing_architecture: Create both service_architecture.json and fixed_service_architecture.json for incomplete services",
+              "CREATE FIXED INDEX: Create fixed_index.json pointing to fixed_service_architecture.json files for validation",
+              "Update working_memory.json with validation state and remediation approach",
+              "Re-run validation on fixed architecture files until all checks pass"
             ]
           }
         },
@@ -1085,12 +1130,13 @@
             "llm_analysis_required": [
               "Parse issues_json to identify critical/warning issues that require immediate attention",
               "Analyze graph_json to understand system topology and identify missing connections",
-              "For circular_dependencies: Recommend async communication or service responsibility refactoring",
-              "For orphaned_nodes: Verify necessity or add missing interfaces",
-              "For performance_bottlenecks: Suggest load balancing or service decomposition",
-              "For security_gaps: Add authentication/authorization interfaces where missing",
-              "Update service_architecture.json files to resolve identified issues",
-              "Re-run graph validation until critical issues are resolved"
+              "MAINTAIN TRACEABILITY: Use fixed_service_architecture.json files for issue resolution while preserving originals",
+              "For circular_dependencies: Implement async communication or refactor service boundaries in fixed_service_architecture.json",
+              "For orphaned_nodes: Verify necessity or add missing interfaces in fixed_service_architecture.json",
+              "For performance_bottlenecks: Document as architectural decisions in fixed_service_architecture.json with mitigation strategies",
+              "For security_gaps: Add authentication/authorization interfaces in fixed_service_architecture.json where missing",
+              "UPDATE FIXED INDEX: Ensure fixed_index.json points to all fixed_service_architecture.json files",
+              "Re-run graph validation on fixed_index.json until critical issues are resolved"
             ]
           }
         },

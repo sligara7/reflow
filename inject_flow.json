@@ -1,10 +1,10 @@
 {
   "workflow_metadata": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Inject complete reflow toolchain into developed system's context folder for standalone operation",
-    "last_updated": "2025-10-19",
+    "last_updated": "2025-10-20",
     "purpose": "Transform developed systems into standalone repositories containing all reflow workflow capabilities within their context folder",
-    "changelog": "v1.1.0: Integrated modular instruction system for better rule adherence and context management",
+    "changelog": "v1.2.0: Added fixed architecture pattern support for injected validation workflows; v1.1.0: Integrated modular instruction system",
     "IMPORTANT": "This workflow injects the entire reflow decision-making and development process into the target system, making it completely self-contained",
     "usage_pattern": "Run from reflow directory on existing developed system to make it standalone",
     "instruction_system": {
@@ -21,7 +21,28 @@
       "No dependency on external reflow installation",
       "Systems contain complete development workflow within their context folder",
       "Optional cleanup removes workflow artifacts for production delivery"
-    ]
+    ],
+    "injected_architectural_patterns": {
+      "description": "Architectural patterns that will be available in the injected workflow environment",
+      "fixed_service_architecture_pattern": {
+        "availability": "Fully supported in injected systems through embedded decision_flow.json",
+        "purpose": "Injected systems inherit the fixed architecture pattern for validation remediation with traceability",
+        "implementation": {
+          "workflow_files": "context/workflows/decision_flow.json contains complete fixed architecture pattern support",
+          "validation_tools": "context/tools/ contains validate_architecture.py and system_of_systems_graph.py with fixed architecture support",
+          "file_structure": {
+            "original_architectures": "specs/machine/service_arch/<service_name>/service_architecture.json",
+            "fixed_architectures": "specs/machine/service_arch/<service_name>/fixed_service_architecture.json",
+            "index_files": "specs/machine/index.json and specs/machine/fixed_index.json"
+          }
+        },
+        "embedded_commands": {
+          "validation": "./context/bin/validate architecture (uses embedded tools with fixed architecture support)",
+          "graph_analysis": "./context/tools/system_of_systems_graph.py specs/machine/fixed_index.json --analyze-issues",
+          "direct_tool": "python3 ./context/tools/validate_architecture.py . (works from system root)"
+        }
+      }
+    }
   },
   "injection_philosophy": {
     "description": "Transform the developed system into a self-contained workflow environment",
@@ -264,7 +285,9 @@
         "Path adjustments correct in workflow files",
         "Executable scripts have proper permissions",
         "Configuration files valid JSON",
-        "Tracking files migrated successfully to context/tracking/"
+        "Tracking files migrated successfully to context/tracking/",
+        "Fixed architecture pattern support available in embedded decision_flow.json",
+        "Validation tools support both service_architecture.json and fixed_service_architecture.json patterns"
       ],
       "test_execution": {
         "command": "cd <target_system> && ./context/bin/validate all",
