@@ -1,10 +1,10 @@
 {
   "workflow_metadata": {
-    "version": "2.3.0",
+    "version": "2.4.0",
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
-    "last_updated": "2025-10-20",
+    "last_updated": "2024-12-19",
     "based_on": "UAF 1.2 architecture framework with automated context management",
-    "changelog": "v2.3.0: Added fixed architecture pattern for validation remediation with traceability preservation; v2.2.0: Complete separation of systems from reflow tooling",
+    "changelog": "v2.4.0: Added comprehensive LLM agent error prevention guidance to eliminate repetitive tool usage issues; v2.3.0: Added fixed architecture pattern for validation remediation with traceability preservation; v2.2.0: Complete separation of systems from reflow tooling",
     "IMPORTANT": "Systems are now completely separate from reflow tooling directory to avoid git repository nesting conflicts",
     "usage_pattern": "Implement workflow in <reflow_path>/decision_flow.json on system in <system_path>",
     "preserves": [
@@ -82,6 +82,87 @@
       "absolute_paths": "Always work: python3 /path/to/reflow/tools/<tool>.py /path/to/system",
       "system_path_argument": "Most tools accept system path as first argument or --system-path flag",
       "working_directory": "LLM agent should cd to system directory, then use relative paths within system"
+    },
+    "llm_agent_guidance": {
+      "description": "Critical guidance to prevent common LLM agent tool usage errors",
+      "purpose": "Eliminate recurring issues with tool invocation, path resolution, and file format expectations",
+      "common_mistakes": {
+        "path_resolution": {
+          "issue": "Agents frequently use wrong paths or don't understand tool requirements",
+          "solution": "ALWAYS use absolute paths for tool invocation, system path argument",
+          "examples": {
+            "correct": "python3 /home/asligar/git_projects/reflow/tools/system_of_systems_graph.py /home/asligar/git_projects/systems/AA",
+            "incorrect": "python3 system_of_systems_graph.py specs/machine/index.json"
+          }
+        },
+        "file_format_assumptions": {
+          "issue": "Agents assume file formats without checking tool requirements",
+          "solution": "Read tool documentation or error messages to understand expected formats",
+          "critical_formats": {
+            "index.json": "Must have 'components' dictionary with service_id keys pointing to relative paths",
+            "service_architecture.json": "Must be valid JSON with required schema fields",
+            "fixed_index.json": "Should point to fixed_service_architecture.json files for validation"
+          }
+        },
+        "directory_structure": {
+          "issue": "Agents don't understand required directory structures for tools",
+          "solution": "Ensure required directories exist before tool invocation",
+          "requirements": {
+            "system_of_systems_graph.py": "Requires context/, specs/, services/ directories in system root",
+            "validate_architecture.py": "Requires specs/machine/ directory structure",
+            "index.json": "Must point to existing files with correct relative paths"
+          }
+        }
+      },
+      "mandatory_checklist": {
+        "before_tool_invocation": [
+          "Verify tool exists at expected absolute path",
+          "Confirm system path argument is absolute path",
+          "Check required directory structure exists",
+          "Validate input file formats match tool expectations",
+          "Use cd to system directory if tool expects relative paths within system"
+        ],
+        "troubleshooting_failures": [
+          "Read error messages carefully for specific format requirements",
+          "Check if missing directories need to be created",
+          "Verify file contents match expected schema",
+          "Ensure paths in index files point to existing files",
+          "Use absolute paths consistently to avoid working directory confusion"
+        ]
+      },
+      "tool_specific_guidance": {
+        "system_of_systems_graph.py": {
+          "invocation": "python3 /absolute/path/to/reflow/tools/system_of_systems_graph.py /absolute/path/to/system",
+          "requirements": [
+            "System must have context/, specs/, services/ directories",
+            "specs/machine/index.json must exist with 'components' dictionary",
+            "Components must point to valid service_architecture.json files",
+            "All file paths in index.json must be relative from system root"
+          ],
+          "common_errors": [
+            "Missing services/ directory - create empty directory if needed",
+            "Wrong index.json format - must be {'components': {'service_id': 'relative/path'}}", 
+            "Paths not relative from system root - fix path references",
+            "Invalid JSON in service architecture files - validate syntax"
+          ]
+        },
+        "validate_architecture.py": {
+          "invocation": "python3 /absolute/path/to/reflow/tools/validate_architecture.py /absolute/path/to/system",
+          "requirements": [
+            "specs/machine/ directory structure",
+            "Valid service_architecture.json files",
+            "Proper JSON schema compliance"
+          ]
+        }
+      },
+      "debugging_approach": {
+        "step_1": "Use absolute paths for all tool invocations",
+        "step_2": "Verify required directory structure exists",
+        "step_3": "Check file formats match tool expectations",
+        "step_4": "Read error messages for specific requirements",
+        "step_5": "Fix issues systematically rather than guessing",
+        "never_assume": "Don't assume file formats, directory structures, or path requirements"
+      }
     }
   },
   "architectural_patterns": {
@@ -169,6 +250,103 @@
       ]
     },
     "REINFORCEMENT": "After completing ANY large task or step, immediately RE-READ this section to reestablish file location awareness"
+  },
+  "AGENT_ERROR_PREVENTION": {
+    "description": "Comprehensive guidance to eliminate repetitive LLM agent errors with tool usage",
+    "purpose": "Stop agents from making the same mistakes repeatedly - read this BEFORE every tool invocation",
+    "common_error_patterns": {
+      "pattern_1_wrong_working_directory": {
+        "symptoms": [
+          "Tool cannot find files",
+          "'No such file or directory' errors",
+          "Tools run but produce empty or incorrect output"
+        ],
+        "root_cause": "Agent not in correct working directory",
+        "prevention": [
+          "ALWAYS run 'cd /absolute/path/to/system' before ANY tool usage",
+          "ALWAYS verify with 'pwd' - must show system absolute path",
+          "NEVER assume you're in the right directory"
+        ]
+      },
+      "pattern_2_relative_vs_absolute_confusion": {
+        "symptoms": [
+          "Tools cannot find system or files",
+          "Mixing relative and absolute paths incorrectly",
+          "Tool path resolution failures"
+        ],
+        "root_cause": "Inconsistent path usage patterns",
+        "prevention": [
+          "Tool invocation: ALWAYS use absolute paths - python3 /absolute/reflow/path /absolute/system/path",
+          "Within system files: ALWAYS use relative paths from system root",
+          "NEVER mix relative tool paths with absolute system paths"
+        ]
+      },
+      "pattern_3_file_format_assumptions": {
+        "symptoms": [
+          "Tools reject input files",
+          "Schema validation failures",
+          "Unexpected tool behavior"
+        ],
+        "root_cause": "Agent assumes file format without checking requirements",
+        "prevention": [
+          "READ tool error messages completely before retrying",
+          "CHECK required file formats in tool documentation",
+          "VALIDATE JSON syntax before assuming format is correct"
+        ]
+      },
+      "pattern_4_missing_prerequisites": {
+        "symptoms": [
+          "Import errors from tools",
+          "Missing directory structure errors",
+          "Tools cannot find expected files"
+        ],
+        "root_cause": "Agent doesn't verify prerequisites before tool usage",
+        "prevention": [
+          "CHECK directory structure exists before tool invocation",
+          "CREATE missing directories if tools require them",
+          "VERIFY all referenced files actually exist"
+        ]
+      }
+    },
+    "mandatory_pre_tool_checklist": {
+      "step_1_location": "Run 'pwd' and 'cd /absolute/path/to/system' to establish correct working directory",
+      "step_2_tool_path": "Use absolute path for tool: python3 /absolute/path/to/reflow/tools/<tool>.py",
+      "step_3_system_path": "Use absolute path for system argument: /absolute/path/to/system",
+      "step_4_prerequisites": "Verify required directories and files exist",
+      "step_5_format_check": "If tool requires specific file formats, verify format compliance",
+      "step_6_error_handling": "If tool fails, read complete error message before retrying"
+    },
+    "recovery_from_failures": {
+      "when_tool_fails": [
+        "Do NOT immediately retry with same command",
+        "READ the complete error message",
+        "IDENTIFY what the tool actually expects",
+        "FIX the underlying issue (path, format, missing file)",
+        "THEN retry with corrected approach"
+      ],
+      "systematic_troubleshooting": [
+        "Verify you're in correct working directory (pwd)",
+        "Check tool path is absolute and correct",
+        "Verify system path argument is absolute and correct",
+        "Ensure all required files/directories exist",
+        "Validate file formats match tool expectations",
+        "Read error messages for specific requirements"
+      ]
+    },
+    "specific_tool_gotchas": {
+      "system_of_systems_graph.py": {
+        "required_structure": "Must have context/, specs/, services/ directories in system root",
+        "index_format": "index.json must have 'components' dict with service_id keys",
+        "path_requirements": "All paths in index.json must be relative from system root",
+        "common_fix": "Create empty services/ directory if missing"
+      },
+      "validate_architecture.py": {
+        "required_structure": "Must have specs/machine/ directory",
+        "file_format": "service_architecture.json files must be valid JSON with required schema",
+        "common_fix": "Check JSON syntax if tool rejects files"
+      }
+    },
+    "prevention_mindset": "ASSUME NOTHING - verify everything before tool invocation"
   },
   "prerequisites": {
     "required_tools": [
