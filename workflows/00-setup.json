@@ -1,0 +1,323 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "00-setup",
+    "name": "Setup Workflow",
+    "version": "1.0.0",
+    "description": "Initialize system, configure paths, set up environment and foundational documents",
+    "created_from": "decision_flow.json v2.5.0 - extracted Arch-00, Arch-01, and initialization logic",
+    "last_updated": "2025-10-24",
+    "purpose": "Establish all prerequisites for architecture and development workflows"
+  },
+  "path_configuration": {
+    "description": "Critical path setup - all paths must be absolute for tool invocations",
+    "required_paths": {
+      "reflow_root": {
+        "description": "Where reflow tooling is installed (e.g., /home/user/dev/reflow)",
+        "must_contain": ["tools/", "templates/", "definitions/", "workflows/", "workflow_steps/"],
+        "verification": "Check for presence of core directories",
+        "stored_in": "system context/working_memory.json"
+      },
+      "system_root": {
+        "description": "Where the system being developed is located (e.g., /home/user/projects/my_system)",
+        "must_contain": ["context/", "specs/", "docs/"],
+        "created_by": "This workflow",
+        "stored_in": "system context/working_memory.json"
+      },
+      "workflow_steps_path": {
+        "description": "Path to workflow step definitions",
+        "default": "{reflow_root}/workflow_steps",
+        "stored_in": "system context/working_memory.json"
+      },
+      "tools_path": {
+        "description": "Path to reflow tools",
+        "default": "{reflow_root}/tools",
+        "stored_in": "system context/working_memory.json"
+      },
+      "templates_path": {
+        "description": "Path to reflow templates",
+        "default": "{reflow_root}/templates",
+        "stored_in": "system context/working_memory.json"
+      }
+    },
+    "path_best_practices": [
+      "Store reflow tools in one location (e.g., ~/dev/reflow/)",
+      "Store each system in its own location (e.g., ~/projects/system_name/)",
+      "Use absolute paths when invoking tools to avoid confusion",
+      "Within system files, always use relative paths for portability",
+      "Never assume systems are in reflow/systems/ directory"
+    ]
+  },
+  "entry_points": {
+    "new_system": {
+      "id": "new_system",
+      "description": "Starting a brand new system or concept",
+      "trigger": "User wants to create a new system from scratch",
+      "first_step": "S-01"
+    },
+    "new_concept_or_system": {
+      "id": "new_concept_or_system",
+      "description": "New concept that may become one or more systems",
+      "trigger": "User has a new idea to develop",
+      "first_step": "S-01"
+    },
+    "system_of_systems": {
+      "id": "system_of_systems",
+      "description": "Multi-system integration project",
+      "trigger": "User wants to create a system-of-systems architecture",
+      "first_step": "S-01",
+      "optional_step": "S-04"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "S-01",
+      "name": "Path Configuration",
+      "description": "Configure all required paths for reflow operation",
+      "phase": "initialization",
+      "step_file": "workflow_steps/setup/S-01-PathConfiguration.json",
+      "actions": [
+        {
+          "action_id": "S-01-A01",
+          "description": "Identify and validate reflow_root path",
+          "verification": "Ensure reflow_root contains tools/, templates/, definitions/, workflows/",
+          "store_in": "context/working_memory.json under paths.reflow_root"
+        },
+        {
+          "action_id": "S-01-A02",
+          "description": "Identify or create system_root path",
+          "verification": "Confirm system directory exists or create it",
+          "store_in": "context/working_memory.json under paths.system_root"
+        },
+        {
+          "action_id": "S-01-A03",
+          "description": "Derive and store all tool paths",
+          "details": "Calculate paths.tools_path, paths.templates_path, paths.workflow_steps_path, paths.definitions_path",
+          "store_in": "context/working_memory.json"
+        },
+        {
+          "action_id": "S-01-A04",
+          "description": "Run validate_reflow_setup.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_reflow_setup.py {system_root}",
+          "success_criteria": "All validation checks pass"
+        }
+      ],
+      "tools_used": ["validate_reflow_setup.py"],
+      "outputs": ["context/working_memory.json with complete path configuration"],
+      "gates": [],
+      "next_step": "S-02"
+    },
+    {
+      "step_id": "S-02",
+      "name": "Directory Structure Creation",
+      "description": "Create standard system directory structure",
+      "phase": "initialization",
+      "step_file": "workflow_steps/setup/S-02-DirectoryStructure.json",
+      "actions": [
+        {
+          "action_id": "S-02-A01",
+          "description": "Create context/ directory",
+          "purpose": "Store LLM agent tracking files (working_memory.json, step_progress_tracker.json, current_focus.md)",
+          "command": "mkdir -p {system_root}/context"
+        },
+        {
+          "action_id": "S-02-A02",
+          "description": "Create specs/ directory structure",
+          "purpose": "Store machine and human-readable specifications",
+          "command": "mkdir -p {system_root}/specs/{machine,human}/{service_arch,interfaces,graphs,visualizations,documentation,reports}"
+        },
+        {
+          "action_id": "S-02-A03",
+          "description": "Create services/ directory",
+          "purpose": "Store service implementations",
+          "command": "mkdir -p {system_root}/services"
+        },
+        {
+          "action_id": "S-02-A04",
+          "description": "Create docs/ directory",
+          "purpose": "Store foundational documents and system documentation",
+          "command": "mkdir -p {system_root}/docs"
+        },
+        {
+          "action_id": "S-02-A05",
+          "description": "Run validate_directory_structure.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_directory_structure.py {system_root}",
+          "success_criteria": "All required directories exist"
+        }
+      ],
+      "tools_used": ["validate_directory_structure.py"],
+      "outputs": ["Complete system directory structure"],
+      "gates": [],
+      "next_step": "S-03"
+    },
+    {
+      "step_id": "S-03",
+      "name": "Foundational Documents",
+      "description": "Create or validate foundational system documents",
+      "phase": "initialization",
+      "step_file": "workflow_steps/setup/S-03-FoundationalDocuments.json",
+      "actions": [
+        {
+          "action_id": "S-03-A01",
+          "description": "Create or validate SYSTEM_MISSION_STATEMENT.md",
+          "location": "docs/SYSTEM_MISSION_STATEMENT.md",
+          "content_requirements": [
+            "Clear statement of system purpose",
+            "Primary objectives",
+            "Key stakeholders",
+            "Success criteria at high level"
+          ]
+        },
+        {
+          "action_id": "S-03-A02",
+          "description": "Create or validate USER_SCENARIOS.md",
+          "location": "docs/USER_SCENARIOS.md",
+          "content_requirements": [
+            "Detailed user scenarios",
+            "User personas",
+            "Use cases",
+            "User journey maps"
+          ]
+        },
+        {
+          "action_id": "S-03-A03",
+          "description": "Create or validate SUCCESS_CRITERIA.md",
+          "location": "docs/SUCCESS_CRITERIA.md",
+          "content_requirements": [
+            "Measurable success criteria",
+            "Performance requirements",
+            "Functional requirements",
+            "Non-functional requirements"
+          ]
+        },
+        {
+          "action_id": "S-03-A04",
+          "description": "Initialize working_memory.json",
+          "tool": "bootstrap_development_context.py",
+          "command_pattern": "python3 {reflow_root}/tools/bootstrap_development_context.py {system_root}",
+          "creates": [
+            "context/working_memory.json",
+            "context/step_progress_tracker.json",
+            "context/current_focus.md"
+          ]
+        }
+      ],
+      "tools_used": ["bootstrap_development_context.py"],
+      "templates_used": [
+        "working_memory_template.json",
+        "step_progress_tracker_template.json",
+        "current_focus_template.md"
+      ],
+      "outputs": [
+        "docs/SYSTEM_MISSION_STATEMENT.md",
+        "docs/USER_SCENARIOS.md",
+        "docs/SUCCESS_CRITERIA.md",
+        "context/working_memory.json",
+        "context/step_progress_tracker.json",
+        "context/current_focus.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-S-03",
+          "name": "Foundational Documents Complete",
+          "checks": [
+            "All three foundational documents exist",
+            "Documents contain meaningful content (not just templates)",
+            "working_memory.json initialized with correct paths"
+          ]
+        }
+      ],
+      "next_step": "S-04-decision"
+    },
+    {
+      "step_id": "S-04-decision",
+      "name": "System-of-Systems Decision",
+      "description": "Determine if this is a system-of-systems integration project",
+      "phase": "initialization",
+      "decision_type": "user_input",
+      "question": "Is this a system-of-systems integration project (multiple independent systems that need to work together)?",
+      "options": {
+        "yes": {
+          "description": "Multi-system integration required",
+          "next_step": "S-04"
+        },
+        "no": {
+          "description": "Single system or standard service decomposition",
+          "next_step": "complete",
+          "transition_to": "01-systems_engineering"
+        }
+      }
+    },
+    {
+      "step_id": "S-04",
+      "name": "System-of-Systems Decomposition (Optional)",
+      "description": "Decompose high-level concept into multiple independent systems",
+      "phase": "initialization",
+      "optional": true,
+      "step_file": "workflow_steps/setup/S-04-SystemOfSystems.json",
+      "when_to_use": "Multi-system integration projects where systems have independent lifecycles",
+      "actions": [
+        {
+          "action_id": "S-04-A01",
+          "description": "Analyze system-of-systems requirements",
+          "purpose": "Identify independent systems that need integration",
+          "creates": "Initial system-of-systems breakdown"
+        },
+        {
+          "action_id": "S-04-A02",
+          "description": "Define system boundaries",
+          "purpose": "Clarify which capabilities belong to which system",
+          "output": "System boundary definitions"
+        },
+        {
+          "action_id": "S-04-A03",
+          "description": "Identify integration points",
+          "purpose": "Understand how systems will interact",
+          "tool": "identify_integration_points.py (may be used later)"
+        },
+        {
+          "action_id": "S-04-A04",
+          "description": "Create separate system directories",
+          "purpose": "Each system gets its own directory structure",
+          "pattern": "Create {system_root}/../{system_name}/ for each identified system"
+        }
+      ],
+      "tools_used": [],
+      "outputs": [
+        "Multiple system directories (one per system)",
+        "System-of-systems documentation in docs/",
+        "Integration requirements documented"
+      ],
+      "gates": [],
+      "next_step": "complete",
+      "transition_to": "01-systems_engineering",
+      "note": "Each identified system will go through workflows independently, then integrate"
+    }
+  ],
+  "completion": {
+    "description": "Setup workflow complete - system is ready for architecture phase",
+    "outputs_summary": [
+      "System directory structure created",
+      "All paths configured and validated",
+      "Foundational documents created",
+      "Context tracking initialized",
+      "Optional: System-of-systems decomposed"
+    ],
+    "next_workflow": "01-systems_engineering",
+    "transition_command": "workflow_driver.py {system_root} --next-workflow"
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "ALWAYS use absolute paths when invoking tools: python3 {reflow_root}/tools/<tool>.py {system_root}",
+      "Store all path configuration in context/working_memory.json for future reference",
+      "Verify reflow_root contains required directories before proceeding",
+      "Never assume system is located in reflow/systems/ - it can be anywhere",
+      "Use workflow_driver.py to track progress through setup steps"
+    ],
+    "common_mistakes": [
+      "Using relative paths for tool invocation (causes 'file not found' errors)",
+      "Not validating reflow_root directory structure",
+      "Skipping foundational documents (causes issues in later workflows)",
+      "Not initializing working_memory.json with path configuration"
+    ]
+  }
+}

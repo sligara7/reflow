@@ -1,0 +1,442 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "01-systems_engineering",
+    "name": "Systems Engineering & Architecture Workflow",
+    "version": "1.0.0",
+    "description": "Design and validate complete system architecture, create machine-readable architecture products",
+    "created_from": "decision_flow.json v2.5.0 - extracted Arch-02 through Arch-05",
+    "last_updated": "2025-10-24",
+    "purpose": "Create UAF-based service_architecture.json for each service and generate system_of_systems_graph.json",
+    "based_on": "UAF 1.2 architecture framework"
+  },
+  "prerequisites": {
+    "required_workflows": ["00-setup"],
+    "required_files": [
+      "context/working_memory.json (with paths configured)",
+      "docs/SYSTEM_MISSION_STATEMENT.md",
+      "docs/USER_SCENARIOS.md",
+      "docs/SUCCESS_CRITERIA.md"
+    ],
+    "required_directories": [
+      "specs/machine/service_arch/",
+      "specs/machine/interfaces/",
+      "specs/machine/graphs/"
+    ]
+  },
+  "entry_points": {
+    "from_setup": {
+      "id": "from_setup",
+      "description": "Standard entry after completing setup workflow",
+      "first_step": "SE-01"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "SE-01",
+      "name": "System Analysis & Service Decomposition",
+      "description": "Analyze system requirements and decompose into services",
+      "phase": "analysis",
+      "step_file": "workflow_steps/systems_engineering/SE-01-AnalysisAndDecomposition.json",
+      "maps_from": "Arch-02: Analysis and Decomposition",
+      "actions": [
+        {
+          "action_id": "SE-01-A01",
+          "description": "Run feature analysis",
+          "tool": "analyze_features.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_features.py {system_root}",
+          "purpose": "Parse feature requirements and identify required systems/services",
+          "inputs": ["docs/SYSTEM_MISSION_STATEMENT.md", "docs/USER_SCENARIOS.md"],
+          "outputs": ["Initial service breakdown"]
+        },
+        {
+          "action_id": "SE-01-A02",
+          "description": "Classify system hierarchy",
+          "purpose": "Determine if this is a single service, multi-service system, or system-of-systems",
+          "decision_point": "Single service vs multi-service decomposition",
+          "outputs": ["System hierarchy classification"]
+        },
+        {
+          "action_id": "SE-01-A03",
+          "description": "Decompose into services",
+          "purpose": "Break down system into logical services based on business capabilities",
+          "guidance": [
+            "Follow domain-driven design principles",
+            "Identify bounded contexts",
+            "Define service responsibilities",
+            "Ensure services are cohesive and loosely coupled"
+          ],
+          "outputs": ["List of services with responsibilities"]
+        },
+        {
+          "action_id": "SE-01-A04",
+          "description": "Create system decomposition document",
+          "template": "system_decomposition_template.json",
+          "location": "specs/machine/system_decomposition.json",
+          "contains": [
+            "Service list with descriptions",
+            "Service boundaries",
+            "Initial interface requirements",
+            "Data ownership"
+          ]
+        }
+      ],
+      "tools_used": ["analyze_features.py"],
+      "templates_used": ["system_decomposition_template.json"],
+      "outputs": ["specs/machine/system_decomposition.json"],
+      "gates": [],
+      "next_step": "SE-02"
+    },
+    {
+      "step_id": "SE-02",
+      "name": "Service Architecture Specification",
+      "description": "Create UAF-based service_architecture.json for each service",
+      "phase": "architecture",
+      "step_file": "workflow_steps/systems_engineering/SE-02-ServiceArchitecture.json",
+      "maps_from": "Arch-02, Arch-03: Service architecture creation and validation",
+      "actions": [
+        {
+          "action_id": "SE-02-A01",
+          "description": "For each service, create service_architecture.json",
+          "template": "service_architecture_template.json",
+          "location_pattern": "specs/machine/service_arch/{service_name}/service_architecture_v1.json",
+          "uaf_compliance": "UAF 1.2 framework",
+          "required_sections": [
+            "metadata (name, version, description)",
+            "operational_view (capabilities, activities, services)",
+            "system_view (components, interfaces, data_models)",
+            "service_view (service_specs, resources)",
+            "constraints (technical, deployment, security)",
+            "deployment_architecture (environment, infrastructure)"
+          ]
+        },
+        {
+          "action_id": "SE-02-A02",
+          "description": "Define component specifications",
+          "template": "component_specification_complete_template.json",
+          "purpose": "Detailed specification of each component within services",
+          "includes": [
+            "Component responsibilities",
+            "Internal interfaces",
+            "Data structures",
+            "Business logic"
+          ]
+        },
+        {
+          "action_id": "SE-02-A03",
+          "description": "Define interface registry",
+          "template": "interface_registry_enhanced_template.json",
+          "location": "specs/machine/interface_registry.json",
+          "purpose": "Catalog all interfaces between services and external systems",
+          "includes": [
+            "Interface definitions",
+            "Data contracts",
+            "Protocol specifications",
+            "Authentication requirements"
+          ]
+        }
+      ],
+      "tools_used": [],
+      "templates_used": [
+        "service_architecture_template.json",
+        "component_specification_complete_template.json",
+        "interface_registry_enhanced_template.json"
+      ],
+      "outputs": [
+        "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service)",
+        "specs/machine/interface_registry.json"
+      ],
+      "gates": [],
+      "next_step": "SE-03"
+    },
+    {
+      "step_id": "SE-03",
+      "name": "Constraints & Template Validation",
+      "description": "Validate all service architectures against templates and constraints",
+      "phase": "validation",
+      "step_file": "workflow_steps/systems_engineering/SE-03-ConstraintsValidation.json",
+      "maps_from": "Arch-03: Constraints and Template Validation",
+      "actions": [
+        {
+          "action_id": "SE-03-A01",
+          "description": "Run architecture validation for each service",
+          "tool": "validate_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_architecture.py {system_root} --service {service_name}",
+          "purpose": "Ensure service_architecture.json complies with template",
+          "validation_checks": [
+            "All required sections present",
+            "UAF 1.2 compliance",
+            "JSON schema validation",
+            "Referential integrity"
+          ]
+        },
+        {
+          "action_id": "SE-03-A02",
+          "description": "Validate constraints",
+          "checks": [
+            "Technical constraints (language, frameworks, libraries)",
+            "Deployment constraints (cloud provider, container orchestration)",
+            "Security constraints (authentication, authorization, encryption)",
+            "Performance constraints (latency, throughput, scalability)"
+          ]
+        },
+        {
+          "action_id": "SE-03-A03",
+          "description": "Fix validation errors if any",
+          "pattern": "Iterative validation and correction",
+          "note": "Must achieve zero validation errors before proceeding"
+        }
+      ],
+      "tools_used": ["validate_architecture.py"],
+      "outputs": ["Validation reports", "Corrected service_architecture.json files"],
+      "gates": [
+        {
+          "gate_id": "G-SE-03",
+          "name": "Architecture Validation Gate",
+          "checks": [
+            "All service_architecture.json files pass validation",
+            "Zero validation errors",
+            "All required sections populated",
+            "Interface registry complete"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "SE-04"
+    },
+    {
+      "step_id": "SE-04",
+      "name": "Deployment Architecture Reconciliation",
+      "description": "Reconcile logical architecture with deployment architecture",
+      "phase": "architecture",
+      "step_file": "workflow_steps/systems_engineering/SE-04-DeploymentArchitecture.json",
+      "maps_from": "Arch-04: Deployment and Deep Dive",
+      "actions": [
+        {
+          "action_id": "SE-04-A01",
+          "description": "Define deployment environment",
+          "considerations": [
+            "Cloud provider (AWS, Azure, GCP, on-premises)",
+            "Container orchestration (Kubernetes, Docker Swarm, ECS)",
+            "Networking (VPC, subnets, load balancers)",
+            "Storage (databases, object storage, caching)"
+          ],
+          "updates": "deployment_architecture section in service_architecture.json"
+        },
+        {
+          "action_id": "SE-04-A02",
+          "description": "Map logical components to deployment units",
+          "purpose": "Determine how logical services map to containers, VMs, serverless functions",
+          "output": "Deployment mapping in service_architecture.json"
+        },
+        {
+          "action_id": "SE-04-A03",
+          "description": "Define infrastructure requirements",
+          "includes": [
+            "Compute resources (CPU, memory)",
+            "Storage resources (disk, IOPS)",
+            "Network resources (bandwidth, connections)",
+            "Scaling policies (auto-scaling, manual scaling)"
+          ]
+        },
+        {
+          "action_id": "SE-04-A04",
+          "description": "Update service_architecture.json with deployment details",
+          "purpose": "Ensure deployment_architecture section is complete and consistent with logical architecture"
+        }
+      ],
+      "tools_used": [],
+      "outputs": ["Updated service_architecture.json with deployment details"],
+      "gates": [],
+      "next_step": "SE-05"
+    },
+    {
+      "step_id": "SE-05",
+      "name": "Consistency & Specification Verification",
+      "description": "Ensure all specifications are consistent and complete",
+      "phase": "verification",
+      "step_file": "workflow_steps/systems_engineering/SE-05-ConsistencyVerification.json",
+      "maps_from": "Arch-05: Consistency and Specification Verification",
+      "actions": [
+        {
+          "action_id": "SE-05-A01",
+          "description": "Cross-service interface consistency check",
+          "purpose": "Ensure interfaces between services are consistently defined on both sides",
+          "checks": [
+            "Producer-consumer interface agreements",
+            "Data contract consistency",
+            "Protocol compatibility",
+            "Version compatibility"
+          ]
+        },
+        {
+          "action_id": "SE-05-A02",
+          "description": "Validate foundational alignment",
+          "tool": "validate_foundational_alignment.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_foundational_alignment.py {system_root}",
+          "purpose": "Ensure architecture aligns with foundational documents",
+          "checks": [
+            "All user scenarios covered by architecture",
+            "Success criteria addressable by architecture",
+            "Mission statement reflected in design"
+          ]
+        },
+        {
+          "action_id": "SE-05-A03",
+          "description": "Identify integration points",
+          "tool": "identify_integration_points.py",
+          "command_pattern": "python3 {reflow_root}/tools/identify_integration_points.py {system_root}",
+          "purpose": "Detect potential architectural issues (circular dependencies, missing interfaces, etc.)"
+        },
+        {
+          "action_id": "SE-05-A04",
+          "description": "Specification completeness review",
+          "checklist": [
+            "All services have complete service_architecture.json",
+            "All interfaces documented in interface_registry.json",
+            "All components have specifications",
+            "All data models defined",
+            "All constraints captured"
+          ]
+        }
+      ],
+      "tools_used": [
+        "validate_foundational_alignment.py",
+        "identify_integration_points.py"
+      ],
+      "outputs": [
+        "Consistency validation report",
+        "Integration point analysis",
+        "Foundational alignment report"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-SE-05",
+          "name": "Specification Completeness Gate",
+          "checks": [
+            "All specifications complete",
+            "Cross-service consistency verified",
+            "Foundational alignment validated",
+            "No critical integration issues"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "SE-06"
+    },
+    {
+      "step_id": "SE-06",
+      "name": "System Graph Generation",
+      "description": "Generate machine-readable system_of_systems_graph.json",
+      "phase": "artifacts",
+      "step_file": "workflow_steps/systems_engineering/SE-06-GraphGeneration.json",
+      "maps_from": "Part of Arch-06, extracted for machine-readable artifacts",
+      "actions": [
+        {
+          "action_id": "SE-06-A01",
+          "description": "Create index.json",
+          "template": "index_template.json",
+          "location": "specs/machine/index.json",
+          "purpose": "Catalog all machine-readable architecture artifacts",
+          "includes": [
+            "Service list with paths to service_architecture.json",
+            "Interface registry path",
+            "Graph paths",
+            "Version information"
+          ]
+        },
+        {
+          "action_id": "SE-06-A02",
+          "description": "Generate system_of_systems_graph.json",
+          "tool": "system_of_systems_graph.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "purpose": "Create machine-readable representation of system architecture",
+          "inputs": [
+            "specs/machine/index.json",
+            "All service_architecture.json files",
+            "specs/machine/interface_registry.json"
+          ],
+          "outputs": ["specs/machine/graphs/system_of_systems_graph.json"]
+        },
+        {
+          "action_id": "SE-06-A03",
+          "description": "Create version manifest",
+          "location": "specs/machine/version_manifest.json",
+          "purpose": "Track versions of all architecture artifacts",
+          "includes": [
+            "service_architecture.json versions for each service",
+            "interface_registry.json version",
+            "system_of_systems_graph.json version",
+            "Timestamp and change log"
+          ]
+        },
+        {
+          "action_id": "SE-06-A04",
+          "description": "Finalize machine-readable architecture products",
+          "verification": "All required machine-readable files present and valid",
+          "checklist": [
+            "specs/machine/index.json",
+            "specs/machine/service_arch/{service}/service_architecture_v*.json (all services)",
+            "specs/machine/interface_registry.json",
+            "specs/machine/graphs/system_of_systems_graph.json",
+            "specs/machine/version_manifest.json"
+          ]
+        }
+      ],
+      "tools_used": ["system_of_systems_graph.py"],
+      "templates_used": ["index_template.json"],
+      "outputs": [
+        "specs/machine/index.json",
+        "specs/machine/graphs/system_of_systems_graph.json",
+        "specs/machine/version_manifest.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-SE-06",
+          "name": "Architecture Completion Gate",
+          "checks": [
+            "All machine-readable artifacts present",
+            "system_of_systems_graph.json generated successfully",
+            "index.json catalogs all artifacts",
+            "version_manifest.json created"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "complete"
+    }
+  ],
+  "completion": {
+    "description": "Systems engineering & architecture workflow complete - all machine-readable artifacts created",
+    "outputs_summary": [
+      "service_architecture.json for each service (UAF 1.2 compliant)",
+      "system_of_systems_graph.json",
+      "interface_registry.json",
+      "index.json",
+      "version_manifest.json",
+      "All artifacts validated and consistent"
+    ],
+    "next_workflow": "02-artifacts_visualization",
+    "transition_command": "workflow_driver.py {system_root} --next-workflow"
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "ALWAYS use absolute paths from working_memory.json for tool invocations",
+      "Run validate_architecture.py after creating each service_architecture.json",
+      "Ensure UAF 1.2 compliance for all architecture artifacts",
+      "system_of_systems_graph.py requires index.json to be created first",
+      "Do not skip validation gates - they prevent downstream issues"
+    ],
+    "common_mistakes": [
+      "Creating incomplete service_architecture.json (missing required sections)",
+      "Not running validation tools",
+      "Skipping foundational alignment validation",
+      "Generating system_of_systems_graph.json before index.json exists",
+      "Not updating version_manifest.json"
+    ],
+    "quality_gates_mandatory": [
+      "G-SE-03: Architecture Validation Gate",
+      "G-SE-05: Specification Completeness Gate",
+      "G-SE-06: Architecture Completion Gate"
+    ]
+  }
+}

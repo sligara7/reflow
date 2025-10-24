@@ -1,0 +1,91 @@
+{
+  "version": "2.0.0",
+  "description": "Master index for reflow workflows - restructured from monolithic decision_flow.json",
+  "workflows": {
+    "00-setup": {
+      "id": "00-setup",
+      "name": "Setup Workflow",
+      "file": "workflows/00-setup.json",
+      "description": "Initialize system, configure paths, set up environment and foundational documents",
+      "entry_points": ["new_system", "new_concept_or_system", "system_of_systems"],
+      "prerequisites": [],
+      "next_workflow": "01-systems_engineering",
+      "steps_directory": "workflow_steps/setup"
+    },
+    "01-systems_engineering": {
+      "id": "01-systems_engineering",
+      "name": "Systems Engineering & Architecture",
+      "file": "workflows/01-systems_engineering.json",
+      "description": "Design and validate architecture, create service_architecture.json and system_of_systems_graph.json",
+      "entry_points": [],
+      "prerequisites": ["00-setup"],
+      "next_workflow": "02-artifacts_visualization",
+      "steps_directory": "workflow_steps/systems_engineering"
+    },
+    "02-artifacts_visualization": {
+      "id": "02-artifacts_visualization",
+      "name": "Artifacts & Visualization",
+      "file": "workflows/02-artifacts_visualization.json",
+      "description": "Generate human-readable documentation, Mermaid diagrams, ICDs, and visualizations",
+      "entry_points": ["architecture_only_completion"],
+      "prerequisites": ["01-systems_engineering"],
+      "conditional": true,
+      "next_workflow": "03-development",
+      "alternative_next_workflow": null,
+      "steps_directory": "workflow_steps/artifacts_visualization",
+      "notes": "Conditional workflow - ask user if they plan to develop the system"
+    },
+    "03-development": {
+      "id": "03-development",
+      "name": "Development Workflow",
+      "file": "workflows/03-development.json",
+      "description": "Implement services according to architecture specifications",
+      "entry_points": ["implementation_from_final_specs"],
+      "prerequisites": ["02-artifacts_visualization"],
+      "next_workflow": "04-testing_operations",
+      "steps_directory": "workflow_steps/development"
+    },
+    "04-testing_operations": {
+      "id": "04-testing_operations",
+      "name": "Testing & Operations",
+      "file": "workflows/04-testing_operations.json",
+      "description": "Test, validate, deploy, and release the system",
+      "entry_points": [],
+      "prerequisites": ["03-development"],
+      "next_workflow": null,
+      "steps_directory": "workflow_steps/testing_operations"
+    }
+  },
+  "feature_update_workflow": {
+    "id": "feature_update",
+    "name": "Feature Update Workflow",
+    "file": "workflows/feature_update.json",
+    "description": "Handle changes to existing systems with foundational alignment validation",
+    "entry_points": ["feature_or_service_change", "feature_change", "service_change"],
+    "prerequisites": [],
+    "steps_directory": "feature_update",
+    "notes": "Separate workflow for modifying existing systems - includes mandatory foundational alignment checks"
+  },
+  "workflow_order": [
+    "00-setup",
+    "01-systems_engineering",
+    "02-artifacts_visualization",
+    "03-development",
+    "04-testing_operations"
+  ],
+  "paths": {
+    "reflow_root": "Path to reflow installation (configured in setup workflow)",
+    "workflows_directory": "workflows/",
+    "workflow_steps_directory": "workflow_steps/",
+    "tools_directory": "tools/",
+    "templates_directory": "templates/",
+    "definitions_directory": "definitions/",
+    "instructions_directory": "instructions/"
+  },
+  "migration_notes": {
+    "from": "decision_flow.json (monolithic, 128KB)",
+    "to": "5 separate workflow files",
+    "date": "2025-10-24",
+    "reason": "Improve maintainability, modularity, and manageability of workflows"
+  }
+}

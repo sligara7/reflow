@@ -1,0 +1,285 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "feature_update",
+    "name": "Feature Update Workflow",
+    "version": "1.0.0",
+    "description": "Handle changes to existing systems with foundational alignment validation",
+    "created_from": "decision_flow.json v2.5.0 - extracted feature_update workflow",
+    "last_updated": "2025-10-24",
+    "purpose": "Safely update existing systems while maintaining architectural integrity"
+  },
+  "prerequisites": {
+    "required_conditions": [
+      "Existing system with complete architecture",
+      "Foundational documents present",
+      "System currently deployed or in development"
+    ]
+  },
+  "entry_points": {
+    "feature_or_service_change": {
+      "id": "feature_or_service_change",
+      "description": "User wants to change or add features to existing system",
+      "first_step": "FU-01",
+      "mandatory_validation": "Foundational alignment check"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "FU-01",
+      "name": "Change Proposal & Impact Analysis",
+      "description": "Analyze proposed changes and assess impact on existing architecture",
+      "phase": "analysis",
+      "step_file": "workflow_steps/feature_update/FU-01-ChangeProposal.json",
+      "actions": [
+        {
+          "action_id": "FU-01-A01",
+          "description": "Document proposed changes",
+          "location": "docs/changes/CHANGE_PROPOSAL_{timestamp}.md",
+          "includes": [
+            "Feature description",
+            "Business justification",
+            "Expected impact",
+            "Affected services"
+          ]
+        },
+        {
+          "action_id": "FU-01-A02",
+          "description": "Run foundational alignment validation (MANDATORY)",
+          "tool": "validate_foundational_alignment.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_foundational_alignment.py {system_root} --change-proposal docs/changes/CHANGE_PROPOSAL_{timestamp}.md",
+          "purpose": "Ensure changes align with system mission, user scenarios, success criteria",
+          "blocking": true
+        },
+        {
+          "action_id": "FU-01-A03",
+          "description": "Analyze impact on architecture",
+          "analysis_areas": [
+            "Which services affected",
+            "Interface changes required",
+            "Data model changes required",
+            "Deployment changes required",
+            "Breaking changes (yes/no)"
+          ]
+        }
+      ],
+      "tools_used": ["validate_foundational_alignment.py"],
+      "outputs": ["docs/changes/CHANGE_PROPOSAL_{timestamp}.md", "Impact analysis report"],
+      "gates": [
+        {
+          "gate_id": "G-FU-01",
+          "name": "Foundational Alignment Gate",
+          "checks": [
+            "validate_foundational_alignment.py passes",
+            "Changes align with mission statement",
+            "Changes support user scenarios",
+            "Changes don't violate success criteria"
+          ],
+          "blocking": true,
+          "note": "MANDATORY gate - cannot proceed without foundational alignment"
+        }
+      ],
+      "next_step": "FU-02"
+    },
+    {
+      "step_id": "FU-02",
+      "name": "Architecture Re-Engineering & Decomposition",
+      "description": "Update architecture to accommodate changes",
+      "phase": "architecture",
+      "step_file": "workflow_steps/feature_update/FU-02-ArchReengineering.json",
+      "actions": [
+        {
+          "action_id": "FU-02-A01",
+          "description": "Update affected service_architecture.json files",
+          "pattern": "Increment version (e.g., v1 → v2)",
+          "location_pattern": "specs/machine/service_arch/{service}/service_architecture_v{n+1}.json"
+        },
+        {
+          "action_id": "FU-02-A02",
+          "description": "Update interface_registry.json if interfaces changed",
+          "purpose": "Maintain consistency of interface definitions"
+        },
+        {
+          "action_id": "FU-02-A03",
+          "description": "Run validate_architecture.py on updated files",
+          "command_pattern": "python3 {reflow_root}/tools/validate_architecture.py {system_root} --service {service_name}",
+          "success_criteria": "All validations pass"
+        },
+        {
+          "action_id": "FU-02-A04",
+          "description": "Regenerate system_of_systems_graph.json",
+          "tool": "system_of_systems_graph.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "purpose": "Update graph to reflect architecture changes"
+        }
+      ],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "outputs": [
+        "Updated service_architecture.json files (new versions)",
+        "Updated interface_registry.json",
+        "Updated system_of_systems_graph.json"
+      ],
+      "gates": [],
+      "next_step": "FU-03"
+    },
+    {
+      "step_id": "FU-03",
+      "name": "Delta Highlighting & Approval",
+      "description": "Highlight changes and get approval",
+      "phase": "review",
+      "step_file": "workflow_steps/feature_update/FU-03-DeltaAndApproval.json",
+      "actions": [
+        {
+          "action_id": "FU-03-A01",
+          "description": "Generate delta report",
+          "location": "docs/changes/DELTA_REPORT_{timestamp}.md",
+          "includes": [
+            "Architecture changes (old vs new)",
+            "Interface changes",
+            "Breaking changes highlighted",
+            "Migration requirements"
+          ]
+        },
+        {
+          "action_id": "FU-03-A02",
+          "description": "User review and approval",
+          "decision_point": "Proceed with implementation?",
+          "options": ["Approve and implement", "Reject changes", "Request modifications"]
+        }
+      ],
+      "tools_used": [],
+      "outputs": ["docs/changes/DELTA_REPORT_{timestamp}.md"],
+      "gates": [],
+      "next_step": "FU-04"
+    },
+    {
+      "step_id": "FU-04",
+      "name": "Development Bootstrap & Implementation",
+      "description": "Implement approved changes",
+      "phase": "implementation",
+      "step_file": "workflow_steps/feature_update/FU-04-DevBootstrap.json",
+      "actions": [
+        {
+          "action_id": "FU-04-A01",
+          "description": "Update implementation to match new architecture",
+          "pattern": "Follow development workflow steps as needed",
+          "affected_services": "Only services impacted by changes"
+        },
+        {
+          "action_id": "FU-04-A02",
+          "description": "Update tests to cover new functionality",
+          "test_types": ["Unit tests", "Integration tests", "Contract tests"]
+        },
+        {
+          "action_id": "FU-04-A03",
+          "description": "Update documentation",
+          "updates": [
+            "Architecture documentation",
+            "API documentation",
+            "Runbooks (if operational changes)"
+          ]
+        }
+      ],
+      "tools_used": [],
+      "outputs": ["Updated implementation", "Updated tests", "Updated documentation"],
+      "gates": [],
+      "next_step": "FU-05"
+    },
+    {
+      "step_id": "FU-05",
+      "name": "Integration, Validation & Release Preparation",
+      "description": "Validate changes and prepare for release",
+      "phase": "validation",
+      "step_file": "workflow_steps/feature_update/FU-05-IntegrationValidationRelease.json",
+      "actions": [
+        {
+          "action_id": "FU-05-A01",
+          "description": "Run full test suite",
+          "includes": ["All existing tests", "New tests for changes"],
+          "success_criteria": "All tests pass"
+        },
+        {
+          "action_id": "FU-05-A02",
+          "description": "Run regression testing",
+          "purpose": "Ensure existing functionality still works",
+          "success_criteria": "No regressions detected"
+        },
+        {
+          "action_id": "FU-05-A03",
+          "description": "Validate contract compliance",
+          "tool": "verify_component_contract.py",
+          "command_pattern": "python3 {reflow_root}/tools/verify_component_contract.py {system_root} --all-services",
+          "success_criteria": "All contracts verified"
+        },
+        {
+          "action_id": "FU-05-A04",
+          "description": "Prepare release notes",
+          "location": "docs/RELEASE_NOTES_{version}.md",
+          "includes": [
+            "New features",
+            "Bug fixes",
+            "Breaking changes",
+            "Migration guide (if applicable)"
+          ]
+        },
+        {
+          "action_id": "FU-05-A05",
+          "description": "Deploy to staging and validate",
+          "validation": ["Smoke tests", "Integration tests", "User acceptance tests"]
+        }
+      ],
+      "tools_used": ["verify_component_contract.py"],
+      "outputs": [
+        "Test results",
+        "docs/RELEASE_NOTES_{version}.md",
+        "Staging deployment validation"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FU-05",
+          "name": "Release Readiness Gate",
+          "checks": [
+            "All tests passing",
+            "No regressions",
+            "Contract compliance verified",
+            "Release notes complete",
+            "Staging validation successful"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "complete"
+    }
+  ],
+  "completion": {
+    "description": "Feature update workflow complete - changes validated and ready for release",
+    "outputs_summary": [
+      "Updated architecture artifacts (versioned)",
+      "Updated implementation",
+      "Updated tests (all passing)",
+      "Release notes",
+      "Validated in staging"
+    ],
+    "next_steps": [
+      "Deploy to production per release process",
+      "Monitor for issues",
+      "Collect user feedback"
+    ]
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "ALWAYS run validate_foundational_alignment.py before proceeding (gate G-FU-01 is MANDATORY)",
+      "Version all updated service_architecture.json files (don't overwrite)",
+      "Highlight breaking changes clearly in delta report",
+      "Run regression testing to catch unintended side effects",
+      "Update system_of_systems_graph.json after architecture changes"
+    ],
+    "common_mistakes": [
+      "Skipping foundational alignment validation",
+      "Overwriting old architecture versions instead of creating new versions",
+      "Not identifying breaking changes",
+      "Skipping regression testing",
+      "Not updating documentation"
+    ],
+    "mandatory_gate": "G-FU-01 (Foundational Alignment Gate) cannot be bypassed"
+  }
+}
