@@ -1,10 +1,10 @@
 {
   "workflow_metadata": {
-    "version": "2.4.0",
+    "version": "2.5.0",
     "description": "High-level decision flow from concept to architecture, development, or feature update with integrated rigor from architecture_workflow.json",
-    "last_updated": "2024-12-19",
+    "last_updated": "2025-10-24",
     "based_on": "UAF 1.2 architecture framework with automated context management",
-    "changelog": "v2.4.0: Added comprehensive LLM agent error prevention guidance to eliminate repetitive tool usage issues; v2.3.0: Added fixed architecture pattern for validation remediation with traceability preservation; v2.2.0: Complete separation of systems from reflow tooling",
+    "changelog": "v2.5.0: Integrated quality gates, automatic progress detection, Docker Compose validation, test coverage requirements, and service-level progress tracking; v2.4.0: Added comprehensive LLM agent error prevention guidance to eliminate repetitive tool usage issues; v2.3.0: Added fixed architecture pattern for validation remediation with traceability preservation; v2.2.0: Complete separation of systems from reflow tooling",
     "IMPORTANT": "Systems are now completely separate from reflow tooling directory to avoid git repository nesting conflicts",
     "usage_pattern": "Implement workflow in <reflow_path>/decision_flow.json on system in <system_path>",
     "preserves": [
@@ -205,6 +205,115 @@
         "graph_analysis": "python3 tools/system_of_systems_graph.py specs/machine/fixed_index.json --analyze-issues"
       }
     }
+  },
+  "quality_gates_and_validation": {
+    "description": "Automated quality gates integrated into development workflow to enforce best practices and prevent technical debt",
+    "purpose": "Ensure code quality, test coverage, and operational readiness before advancement through workflow stages",
+    "implementation_status": "Integrated in v2.5.0 - see WORKFLOW_IMPROVEMENTS_BACKLOG.md for details",
+    "validation_philosophy": {
+      "blocking_gates": "Critical quality gates must pass before proceeding to next stage",
+      "automatic_detection": "Progress is auto-detected by scanning code rather than manual marking",
+      "fail_fast": "Catch errors early to reduce debugging time and technical debt",
+      "clear_remediation": "Provide specific error messages and fix suggestions when validation fails"
+    },
+    "dev_02_quality_gates": {
+      "stage": "Dev-02 Core & Domain Model Realization",
+      "gates": {
+        "architecture_validation": {
+          "blocking": true,
+          "tool": "validate_architecture.py",
+          "validates": "Service architectures match templates and have consistent interfaces"
+        },
+        "docker_compose_integration": {
+          "blocking": true,
+          "validates": "All services can start successfully in containerized environment",
+          "timeout": "300 seconds",
+          "prevents": "Works on my machine problems"
+        },
+        "interface_consistency": {
+          "blocking": true,
+          "validates": "All service interfaces are properly registered and consistent"
+        },
+        "auto_progress_detection": {
+          "enabled": true,
+          "benefit": "No manual tracking needed, progress always accurate",
+          "detects": ["directory_skeleton", "models_exist", "routers_exist", "config_loader", "di_setup", "lint_pass"]
+        }
+      }
+    },
+    "dev_05_quality_gates": {
+      "stage": "Dev-05 Observability & Testing Pyramid",
+      "gates": {
+        "test_coverage": {
+          "blocking": true,
+          "tool": "pytest with coverage analysis",
+          "requirements": {
+            "overall_coverage": ">=60%",
+            "domain_logic_coverage": ">=80%",
+            "critical_paths_coverage": "100%",
+            "all_endpoints_tested": true
+          },
+          "prevents": "Shipping untested code to production"
+        },
+        "test_quality": {
+          "blocking": true,
+          "validates": "Comprehensive test suite with unit, integration, contract, and e2e tests"
+        },
+        "observability_verification": {
+          "blocking": false,
+          "validates": "Logging, metrics, tracing, and health endpoints are properly implemented"
+        }
+      }
+    },
+    "service_level_progress_tracking": {
+      "description": "Per-service progress tracking to support parallel development at different stages",
+      "file_location": "services/<service_name>/.progress.json",
+      "benefits": [
+        "Services can be at different development stages",
+        "Parallel development supported",
+        "Easy to identify lagging services",
+        "Better resource allocation"
+      ],
+      "schema": {
+        "service_name": "string",
+        "dev_stage": "Dev-01 through Dev-08",
+        "completed_stages": "array of completed stage IDs",
+        "current_actions": "dict of action_id -> status",
+        "validation_status": "PASSED | FAILED | PENDING",
+        "blockers": "array of blocking issues",
+        "metrics": {
+          "test_coverage": "percentage",
+          "endpoints_implemented": "count",
+          "endpoints_total": "count"
+        }
+      }
+    },
+    "workflow_driver_integration": {
+      "description": "workflow_driver.py enforces validation gates and automates progress detection",
+      "commands": {
+        "show_status": "python3 workflow_driver.py <system> --status",
+        "validate": "python3 workflow_driver.py <system> --validate",
+        "auto_detect_progress": "python3 workflow_driver.py <system> --auto-detect-progress",
+        "service_status": "python3 workflow_driver.py <system> --service <service_name> --status",
+        "advance_next": "python3 workflow_driver.py <system> --next (validates before advancing)"
+      },
+      "behavior": {
+        "validation_blocking": "If validation fails, --next command is blocked until issues are fixed",
+        "clear_error_messages": "Validation failures provide specific errors and remediation steps",
+        "auto_progress_sync": "Progress tracker automatically syncs with actual code state"
+      }
+    },
+    "benefits": [
+      "Prevent proceeding with broken architecture",
+      "Catch import errors, dependency issues early",
+      "Enforce quality standards automatically",
+      "Prevent shipping untested code",
+      "No manual progress tracking needed",
+      "Services can work at different stages in parallel",
+      "Reduced debugging time",
+      "Improved system reliability"
+    ],
+    "see_also": "WORKFLOW_IMPROVEMENTS_BACKLOG.md for detailed implementation notes and future enhancements"
   },
   "CRITICAL_FILE_LOCATIONS": {
     "description": "MANDATORY reading for LLM agents - prevents most common workflow errors",

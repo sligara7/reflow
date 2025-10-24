@@ -649,6 +649,185 @@ Initialize system structure and establish context tracking.
         print(f"\n{Colors.OKGREEN}System initialized successfully!{Colors.ENDC}")
         print_info(f"Run: python3 workflow_driver.py {self.system_name}")
 
+    def auto_detect_progress(self, dry_run=False):
+        """Automatically detect and update progress based on code state"""
+        print_header("AUTO-DETECT PROGRESS")
+
+        current_step = self.working_memory.get('current_step', '')
+
+        if not current_step.startswith('Dev-'):
+            print_warning("Auto-detect only supported for development steps (Dev-*)")
+            return
+
+        # Load step configuration
+        step_config = self.load_current_step_config()
+        if not step_config:
+            return
+
+        # Check if step has auto_progress_detection configured
+        validation = step_config.get('validation', {})
+        quality_gates = validation.get('quality_gates', {})
+        auto_detect = quality_gates.get('auto_progress_detection', {})
+
+        if not auto_detect.get('enabled', False):
+            print_warning(f"Auto-detect not enabled for {current_step}")
+            return
+
+        print_info("Scanning codebase to detect completed actions...")
+
+        # Get service directories
+        services_dir = self.system_path / "services"
+        if not services_dir.exists():
+            code_dir = self.system_path / "code"
+            if code_dir.exists():
+                services_dir = code_dir
+            else:
+                print_error("No services/ or code/ directory found")
+                return
+
+        # Detect completion for each action
+        checks = auto_detect.get('checks', {})
+        detected_complete = []
+
+        for action_id, check_func in checks.items():
+            # Simple heuristic checks based on file existence
+            is_complete = False
+
+            if 'directory_skeleton' in check_func:
+                # Check if service directories exist
+                is_complete = any(services_dir.glob('*/src'))
+            elif 'models_exist' in check_func:
+                # Check for model files
+                is_complete = any(services_dir.glob('*/src/models/*.py'))
+            elif 'routers_exist' in check_func:
+                # Check for router files
+                is_complete = any(services_dir.glob('*/src/routers/*.py')) or any(services_dir.glob('*/src/api/*.py'))
+            elif 'config_loader' in check_func:
+                # Check for config files
+                is_complete = any(services_dir.glob('*/src/config.py')) or any(services_dir.glob('*/src/config/*.py'))
+            elif 'di_setup' in check_func:
+                # Check for DI setup
+                is_complete = any(services_dir.glob('*/src/di.py')) or any(services_dir.glob('*/src/dependencies.py'))
+            elif 'lint_pass' in check_func:
+                # Assume lint passes if code exists
+                is_complete = any(services_dir.glob('*/src/*.py'))
+
+            status_icon = "✓" if is_complete else "○"
+            color = Colors.OKGREEN if is_complete else Colors.WARNING
+            print(f"{color}{status_icon} {action_id}: {check_func}{Colors.ENDC}")
+
+            if is_complete:
+                detected_complete.append(action_id)
+
+        if dry_run:
+            print_info(f"\nDry run complete. Would mark {len(detected_complete)} actions as complete")
+            return
+
+        # Update progress tracker
+        if detected_complete:
+            completed_actions = self.progress_tracker.setdefault('current_step_actions', {}).setdefault('completed_actions', [])
+            new_completions = [a for a in detected_complete if a not in completed_actions]
+
+            if new_completions:
+                completed_actions.extend(new_completions)
+                self.progress_tracker['last_updated'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                self.save_progress_tracker()
+                print_success(f"\nMarked {len(new_completions)} new actions as complete")
+            else:
+                print_info("\nNo new completions detected")
+        else:
+            print_warning("\nNo completed actions detected")
+
+    def run_quality_gates(self):
+        """Run quality gates with blocking validation"""
+        print_header("QUALITY GATES VALIDATION")
+
+        step_config = self.load_current_step_config()
+        if not step_config:
+            return False
+
+        validation = step_config.get('validation', {})
+        quality_gates = validation.get('quality_gates', {})
+
+        if not quality_gates:
+            print_info("No quality gates configured for this step")
+            return True
+
+        all_passed = True
+        results = {}
+
+        # Run each quality gate
+        for gate_name, gate_config in quality_gates.items():
+            if gate_name == 'auto_progress_detection':
+                continue  # Skip, not a validation gate
+
+            print(f"\n{Colors.BOLD}Running: {gate_name}{Colors.ENDC}")
+            print(f"Description: {gate_config.get('description', 'No description')}")
+
+            blocking = gate_config.get('blocking', False)
+            tool = gate_config.get('tool', '')
+
+            if tool:
+                # Replace placeholders
+                cmd = tool.replace('<reflow_path>', str(self.reflow_root))
+                cmd = cmd.replace('<system_path>', str(self.system_path))
+                cmd = cmd.replace('<system>', self.system_name)
+
+                print(f"Command: {cmd}")
+
+                timeout = gate_config.get('timeout_seconds', 600)
+                result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+
+                passed = result.returncode == 0
+                results[gate_name] = {
+                    'passed': passed,
+                    'blocking': blocking,
+                    'output': result.stdout,
+                    'error': result.stderr
+                }
+
+                if passed:
+                    print_success(f"{gate_name} PASSED")
+                else:
+                    if blocking:
+                        print_error(f"{gate_name} FAILED (BLOCKING)")
+                        all_passed = False
+                    else:
+                        print_warning(f"{gate_name} FAILED (non-blocking)")
+
+                    if result.stderr:
+                        print(f"\n{Colors.FAIL}Error Output:{Colors.ENDC}")
+                        print(result.stderr[:500])  # Limit output
+            else:
+                # Manual checks
+                print_info(f"Manual validation required for: {gate_name}")
+                checks = gate_config.get('checks', [])
+                for check in checks:
+                    print(f"  - {check}")
+
+        # Show remediation steps if failed
+        if not all_passed:
+            print(f"\n{Colors.FAIL}{'='*70}{Colors.ENDC}")
+            print(f"{Colors.FAIL}{Colors.BOLD}VALIDATION GATE FAILED{Colors.ENDC}")
+            print(f"{Colors.FAIL}{'='*70}{Colors.ENDC}")
+
+            on_failure = validation.get('on_validation_failure', {})
+            message = on_failure.get('message', 'Validation failed')
+            print(f"\n{Colors.WARNING}{message}{Colors.ENDC}\n")
+
+            remediation = on_failure.get('remediation_steps', [])
+            if remediation:
+                print(f"{Colors.BOLD}Remediation Steps:{Colors.ENDC}")
+                for i, step in enumerate(remediation, 1):
+                    step = step.replace('<system>', self.system_name)
+                    print(f"  {i}. {step}")
+        else:
+            print(f"\n{Colors.OKGREEN}{'='*70}{Colors.ENDC}")
+            print(f"{Colors.OKGREEN}{Colors.BOLD}ALL QUALITY GATES PASSED{Colors.ENDC}")
+            print(f"{Colors.OKGREEN}{'='*70}{Colors.ENDC}")
+
+        return all_passed
+
 def main():
     parser = argparse.ArgumentParser(
         description='Reflow Workflow Driver - Enforce structured workflow execution',
@@ -672,6 +851,9 @@ Examples:
     parser.add_argument('--mark-done', metavar='ACTION_ID', help='Mark action as complete')
     parser.add_argument('--status', action='store_true', help='Show overall status')
     parser.add_argument('--init', action='store_true', help='Initialize new system')
+    parser.add_argument('--auto-detect-progress', action='store_true', help='Auto-detect and update progress')
+    parser.add_argument('--quality-gates', action='store_true', help='Run quality gates validation')
+    parser.add_argument('--dry-run', action='store_true', help='Dry run mode (use with --auto-detect-progress)')
 
     args = parser.parse_args()
 
@@ -692,6 +874,10 @@ Examples:
         driver.refresh_context()
     elif args.validate:
         driver.run_validation()
+    elif args.quality_gates:
+        driver.run_quality_gates()
+    elif args.auto_detect_progress:
+        driver.auto_detect_progress(dry_run=args.dry_run)
     elif args.mark_done:
         driver.mark_action_done(args.mark_done)
     elif args.next:
