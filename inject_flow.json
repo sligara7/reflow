@@ -565,25 +565,41 @@
       "recommendation": "Automatic detection with configuration fallback"
     }
   },
-  "success_criteria": {
+  "OPERATIONAL_TEST_REQUIREMENTS": {
+    "CRITICAL_NOTE": "inject_flow.json is NOT production ready until operational testing passes",
+    "current_status": "Developmental testing complete - operational testing required",
+    "BOT_required": {
+      "description": "Basic Operational Test must pass before claiming standalone capability",
+      "test_scenario": "operational_tests/injection_flow/BOT_scenario.md",
+      "success_criteria": [
+        "Injection process completes without manual intervention",
+        "Exported system works in fresh environment without external reflow",
+        "New user can use embedded environment for development",
+        "All embedded tools and workflows functional"
+      ],
+      "failure_action": "Fix issues and re-test until BOT passes reliably"
+    },
+    "COT_required": {
+      "description": "Comprehensive Operational Test with multiple users required before widespread adoption",
+      "participants": "3-5 external users without reflow experience",
+      "success_criteria": "80% success rate with complex system injections"
+    }
+  },
+  "developmental_testing_complete": {
+    "description": "Internal validation completed - technical functionality verified in controlled environment",
     "functional": [
       "System can execute full reflow workflows using only embedded tools",
-      "All validation tools work correctly in embedded mode",
+      "All validation tools work correctly in embedded mode", 
       "Development workflows function identically to external reflow",
       "Tracking and context management work seamlessly"
     ],
-    "operational": [
-      "System can be cloned and used immediately without external dependencies",
-      "Team members can collaborate using embedded environment",
-      "Updates and maintenance possible through embedded tools",
-      "Clean removal option available for production deployment"
-    ],
-    "integration": [
+    "technical_integration": [
       "Embedded environment integrates with existing Git workflows",
       "GitHub export works with embedded reflow included or excluded",
       "Continuous integration compatible with embedded tools",
       "Documentation and usage clear for new team members"
-    ]
+    ],
+    "NOTE": "These criteria represent developmental testing only - NOT operational readiness"
   },
   "usage_examples": {
     "basic_injection": {
