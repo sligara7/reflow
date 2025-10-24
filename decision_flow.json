@@ -167,6 +167,74 @@
   },
   "architectural_patterns": {
     "description": "Key architectural patterns integrated into the reflow workflow for better traceability and validation",
+    "versioned_service_architecture_pattern": {
+      "purpose": "Track architectural evolution through versioned service architecture files with complete traceability",
+      "versioning_scheme": {
+        "format": "SemVer + Date: v{major}.{minor}.{patch}-{YYYYMMDD}",
+        "examples": [
+          "service_architecture_v1.0.0-20251024.json",
+          "service_architecture_v1.2.3-20251024.json",
+          "system_description_v1.0.0-20251024.md",
+          "system_description_v1.2.3-20251024.md"
+        ],
+        "versioning_rules": {
+          "major": "Breaking changes to service interfaces or fundamental architecture",
+          "minor": "New features, capabilities, or non-breaking interface additions",
+          "patch": "Bug fixes, clarifications, or minor improvements",
+          "date": "Creation/modification date in YYYYMMDD format for temporal tracking"
+        }
+      },
+      "benefits": [
+        "Complete architectural evolution history with version tracking",
+        "Ability to validate mixed-version architecture combinations", 
+        "Temporal tracking of architectural decisions and changes",
+        "Support for rollback and comparison across versions",
+        "Flexible index management for different architecture scenarios"
+      ],
+      "file_structure": {
+        "versioned_architectures": {
+          "location": "specs/machine/service_arch/<service_name>/",
+          "files": [
+            "service_architecture_v{version}-{date}.json",
+            "service_architecture.json (symlink to latest version)"
+          ],
+          "purpose": "Maintain complete version history while providing easy access to current version"
+        },
+        "versioned_human_docs": {
+          "location": "specs/human/service_arch/<service_name>/",
+          "files": [
+            "system_description_v{version}-{date}.md", 
+            "system_description.md (symlink to latest version)"
+          ],
+          "purpose": "Human-readable documentation that matches architecture versions"
+        },
+        "version_indexes": {
+          "location": "specs/machine/",
+          "files": [
+            "index.json (points to latest versions by default)",
+            "index_v{version}-{date}.json (points to specific version combinations)",
+            "version_manifest.json (tracks all available versions per service)"
+          ],
+          "purpose": "Flexible architecture composition and version management"
+        }
+      },
+      "workflow_integration": {
+        "creation_phase": "Create initial service_architecture_v1.0.0-{date}.json files",
+        "versioning_phase": "When updating architecture, create new versioned files instead of modifying existing",
+        "human_documentation_phase": "Create matching system_description_v{version}-{date}.md for each architecture version",
+        "validation_phase": "Run validation tools on specific version combinations via versioned indexes",
+        "evolution_tracking": "Maintain version_manifest.json to track architectural evolution",
+        "deliverables": "Complete version history with human and machine readable documentation"
+      },
+      "tool_commands": {
+        "create_new_version": "Create service_architecture_v{version}-{date}.json with incremented version",
+        "update_symlinks": "Update service_architecture.json and system_description.md symlinks to latest versions",
+        "create_version_index": "Generate index_v{version}-{date}.json for specific architecture version combination",
+        "validate_version_mix": "python3 tools/validate_architecture.py <system_path> --index index_v{version}-{date}.json",
+        "graph_version_analysis": "python3 tools/system_of_systems_graph.py specs/machine/index_v{version}-{date}.json --analyze-versions",
+        "version_manifest_update": "Update version_manifest.json with new version metadata"
+      }
+    },
     "fixed_service_architecture_pattern": {
       "purpose": "Preserve original analysis while creating corrected versions during validation remediation",
       "benefits": [
@@ -194,16 +262,108 @@
       },
       "workflow_integration": {
         "creation_phase": "Create service_architecture.json files during initial architecture design",
+        "human_documentation_phase": "Create human-readable system_description.md files for each service_architecture.json",
         "validation_phase": "Run validation tools on original files to identify issues",
         "remediation_phase": "Create fixed_service_architecture.json files to resolve identified issues",
         "final_validation": "Run validation tools on fixed_index.json to confirm all issues resolved",
-        "deliverables": "Both original and fixed files provide complete architectural evolution story"
+        "deliverables": "Both original and fixed files provide complete architectural evolution story, plus human-readable documentation"
       },
       "tool_commands": {
         "initial_validation": "python3 tools/validate_architecture.py <system_path> (uses index.json)",
+        "human_documentation_creation": "For each service in specs/machine/service_arch/<service_name>/service_architecture.json, create specs/human/service_arch/<service_name>/system_description.md with human-readable translation",
         "remediation_validation": "python3 tools/validate_architecture.py <system_path> (after creating fixed_index.json)",  
         "graph_analysis": "python3 tools/system_of_systems_graph.py specs/machine/fixed_index.json --analyze-issues"
       }
+    }
+  },
+  "version_management_workflow": {
+    "description": "Comprehensive version management for service architectures enabling evolution tracking and mixed-version validation",
+    "purpose": "Support architectural evolution while maintaining complete traceability and enabling flexible architecture composition",
+    "workflow_operations": {
+      "initial_architecture_creation": {
+        "steps": [
+          "Create service_architecture_v1.0.0-{YYYYMMDD}.json for new service",
+          "Create system_description_v1.0.0-{YYYYMMDD}.md with human-readable documentation",
+          "Create symlinks: service_architecture.json -> service_architecture_v1.0.0-{date}.json",
+          "Create symlinks: system_description.md -> system_description_v1.0.0-{date}.md",
+          "Update version_manifest.json with new service version entry",
+          "Update index.json to point to latest version symlinks"
+        ]
+      },
+      "architecture_evolution": {
+        "trigger": "When updating existing service architecture",
+        "version_increment_rules": {
+          "major": "Breaking interface changes, fundamental architecture changes",
+          "minor": "New capabilities, non-breaking interface additions",
+          "patch": "Bug fixes, clarifications, documentation improvements"
+        },
+        "steps": [
+          "Determine appropriate version increment (major.minor.patch)",
+          "Create service_architecture_v{new_version}-{YYYYMMDD}.json",
+          "Create system_description_v{new_version}-{YYYYMMDD}.md",
+          "Update symlinks to point to new versions",
+          "Update version_manifest.json with new version metadata",
+          "Update index.json to reference latest versions",
+          "Run validation tools on new version",
+          "Optional: Create versioned index for specific version combinations"
+        ]
+      },
+      "mixed_version_validation": {
+        "purpose": "Validate architecture with specific combinations of service versions",
+        "steps": [
+          "Create index_v{scenario}-{date}.json with desired version combinations",
+          "Run python3 tools/validate_architecture.py --index index_v{scenario}-{date}.json", 
+          "Run python3 tools/system_of_systems_graph.py index_v{scenario}-{date}.json",
+          "Analyze compatibility and integration issues",
+          "Document validation results for version combination"
+        ]
+      }
+    },
+    "version_manifest_schema": {
+      "description": "JSON structure for tracking all versions of service architectures",
+      "format": {
+        "services": {
+          "<service_name>": {
+            "latest_version": "v1.2.3-20251024",
+            "versions": [
+              {
+                "version": "v1.0.0-20251020",
+                "architecture_file": "service_architecture_v1.0.0-20251020.json",
+                "documentation_file": "system_description_v1.0.0-20251020.md",
+                "created_date": "2025-10-20",
+                "change_type": "initial",
+                "description": "Initial architecture definition"
+              },
+              {
+                "version": "v1.2.3-20251024", 
+                "architecture_file": "service_architecture_v1.2.3-20251024.json",
+                "documentation_file": "system_description_v1.2.3-20251024.md",
+                "created_date": "2025-10-24",
+                "change_type": "minor",
+                "description": "Added new API endpoints and enhanced security"
+              }
+            ]
+          }
+        },
+        "version_indexes": [
+          {
+            "name": "latest",
+            "file": "index.json",
+            "description": "Points to latest versions of all services"
+          },
+          {
+            "name": "v1.0-baseline-20251020", 
+            "file": "index_v1.0-baseline-20251020.json",
+            "description": "Initial architecture baseline for comparison"
+          }
+        ]
+      }
+    },
+    "integration_with_existing_patterns": {
+      "fixed_architecture_pattern": "Fixed architecture files work with versioned system - create fixed_service_architecture_v{version}-{date}.json when needed",
+      "validation_tools": "All existing validation tools enhanced to accept --index parameter for version-specific validation",
+      "human_documentation": "Human documentation versions must match architecture versions for consistency",
+      "rollback_support": "Easy rollback by updating symlinks and index.json to point to previous versions"
     }
   },
   "quality_gates_and_validation": {
@@ -819,14 +979,19 @@
             ],
             "specs/": {
               "machine/": [
-                "index.json - System component index",
+                "index.json - System component index (points to latest versions)",
+                "version_manifest.json - Tracks all available versions per service",
+                "index_v{version}-{date}.json - Version-specific component indexes",
                 "interface_registry.json - Interface definitions registry",
                 "system_of_systems_graph.json - System topology",
-                "service_arch/<service_name>/service_architecture.json - Per-service architecture",
+                "service_arch/<service_name>/service_architecture_v{version}-{date}.json - Versioned per-service architecture",
+                "service_arch/<service_name>/service_architecture.json - Symlink to latest version",
                 "interfaces/ - Interface Contract Documents (ICDs)",
                 "graphs/ - Machine-readable graph data"
               ],
               "human/": [
+                "service_arch/<service_name>/system_description_v{version}-{date}.md - Versioned human-readable documentation",
+                "service_arch/<service_name>/system_description.md - Symlink to latest version",
                 "visualizations/ - Human-readable diagrams and charts",
                 "reports/ - Analysis and summary reports",
                 "documentation/ - Human-oriented documentation"
@@ -847,12 +1012,13 @@
         "setup_sequence": [
           "Determine system_name for new system",
           "Create working directory with 4-folder structure:",
-          "  mkdir -p <system_path>/{context,specs/{machine/{service_arch,interfaces,graphs,registries},human/{visualizations,reports,documentation}},services,docs}",
+          "  mkdir -p <system_path>/{context,specs/{machine/{service_arch,interfaces,graphs,registries},human/{service_arch,visualizations,reports,documentation}},services,docs}",
           "Change to system directory: cd <system_path>", 
           "Verify isolation: pwd must show your system's absolute path",
           "Initialize context/working_memory.json with system_name",
           "Initialize context/current_focus.md with initial objectives",
           "Initialize context/step_progress_tracker.json",
+          "Initialize specs/machine/version_manifest.json with empty service version tracking",
           "Document setup in context/process_log.md"
         ]
       },
@@ -1380,7 +1546,10 @@
         "systems/<system_name>/build_ready_index.json",
         "ARCHITECTURE_CONTEXT_SUMMARY.md",
         "interfaces/* ICDs",
-        "specs/machine/index.json with 'components' key",
+        "specs/machine/index.json with 'components' key (points to latest versions)",
+        "specs/machine/version_manifest.json with complete version tracking",
+        "specs/machine/service_arch/<service_name>/service_architecture_v{version}-{date}.json versioned files",
+        "specs/human/service_arch/<service_name>/system_description_v{version}-{date}.md versioned documentation",
         "All validation gates passed"
       ],
       "validation_checks": {
