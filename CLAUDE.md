@@ -49,9 +49,105 @@ Reflow operates on a **separation principle**:
 
 ## Getting Started
 
-### 1. Quick Start Command
+### ⭐ Recommended: Web-Based Usage (PRIMARY METHOD)
 
-Tell your LLM agent:
+**Reflow is designed for web-based, cloud-first development.** This is now the **PRIMARY** usage pattern, with local machine usage as an alternative.
+
+#### Why Web-Based?
+
+1. **Zero Local Setup**: Never touches user's local machine
+2. **Context Preservation**: Web services (Claude.ai, Codespaces) store conversation history
+3. **Multi-Day Projects**: Resume work seamlessly across sessions
+4. **Device Agnostic**: Work from laptop, tablet, or phone
+5. **Direct GitHub Integration**: Push/pull directly to GitHub repos
+6. **Context Folder**: Your system repo's `context/` folder tracks exact progress
+
+#### Web-Based Quick Start
+
+**Option A: Claude.ai (Web) - EASIEST**
+
+User creates GitHub repo, then says to Claude:
+```
+Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+on system in github.com/yourname/my_system_repo
+```
+
+**How it works:**
+1. Claude reads Reflow repo from GitHub (workflows, templates, tools)
+2. Claude reads/writes to user's system repo on GitHub
+3. All artifacts committed to user's system repo
+4. Context stored in `context/working_memory.json` in system repo
+5. Conversation history persists in Claude.ai
+
+**Resuming work (next day/session):**
+```
+Continue workflow from context/working_memory.json in github.com/yourname/my_system_repo
+```
+
+**Option B: GitHub Codespaces - FULL DEV ENVIRONMENT**
+
+User opens Codespace, then:
+```
+Implement workflow in /workspaces/reflow/workflows/00-setup.json
+on system in /workspaces/my_system
+```
+
+**How it works:**
+1. Codespace clones both reflow and system repos
+2. Full Linux environment with git, Python, all tools
+3. Can use Claude Code CLI or Claude.ai in another tab
+4. Commits push directly to GitHub
+5. Context preserved in system repo
+
+**Option C: Other Web IDEs**
+
+Works with Gitpod, Repl.it, Google Colab (with manual repo management), etc.
+
+#### 🔑 Context Preservation for Multi-Day Projects
+
+**CRITICAL**: Users often work on projects across multiple days/sessions. Context is preserved in **TWO WAYS**:
+
+1. **`context/working_memory.json` (in system repo)** - MUST READ THIS FIRST
+   ```json
+   {
+     "current_workflow": "01-systems_engineering",
+     "current_step": "SE-02",
+     "paths": {
+       "reflow_root": "github.com/sligara7/reflow",
+       "system_root": "github.com/yourname/my_system"
+     },
+     "operations_since_refresh": 2
+   }
+   ```
+
+2. **Conversation History (in web service)**
+   - Claude.ai: Conversations persist indefinitely
+   - Codespaces: Terminal history preserved in session
+   - User can say "continue from yesterday" or "what's next?"
+
+**When user returns next day:**
+```
+User: "Continue workflow from context/working_memory.json in github.com/yourname/my_system"
+
+LLM Agent Process:
+1. Read context/working_memory.json from GitHub
+2. Identify current_workflow and current_step
+3. Load paths (reflow_root, system_root)
+4. Continue from exact step where user left off
+5. Update context after each operation
+```
+
+**IMPORTANT**: Always read `context/working_memory.json` FIRST before any operation. It tells you exactly where the project is.
+
+### Alternative: Local Machine Usage (SECONDARY METHOD)
+
+<details>
+<summary>Click to expand local machine instructions</summary>
+
+Local machine usage is still supported but is now the **alternative** approach:
+
+#### Local Quick Start
+
 ```
 Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
 ```
@@ -61,7 +157,13 @@ Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path
 Implement workflow in /home/user/dev/reflow/workflows/00-setup.json on system in /home/user/projects/smart_home
 ```
 
-### 2. The 6 Workflows (In Order)
+**Key Distinction**:
+- Reflow tooling: `/home/user/dev/reflow/` (read-only reference)
+- Your system: `/home/user/projects/smart_home/` (where you work)
+
+</details>
+
+### The 6 Workflows (In Order)
 
 Reflow v3.0 consists of **6 focused workflows** that execute sequentially:
 
@@ -855,37 +957,120 @@ kill -9 <PID>                # Kill specific process
 
 ## Common Patterns
 
-### Pattern 1: New Greenfield System
+### Pattern 1: Web-Based New Greenfield System (PRIMARY)
+
+**User Journey:**
 ```
-1. Create system directory: mkdir ~/projects/my_system
-2. Start workflow: "Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system"
-3. Progress through all 5 workflows sequentially
-4. Result: Fully designed, documented, and optionally implemented system
+Day 1: Initial Setup and Architecture
+1. User creates GitHub repo: github.com/yourname/smart_home_system
+2. User adds README with system description
+3. User opens claude.ai
+4. User: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+         on system in github.com/yourname/smart_home_system"
+5. Claude executes setup, framework selection, initial architecture
+6. All context saved in github.com/yourname/smart_home_system/context/working_memory.json
+
+Day 2: Continue Systems Engineering
+1. User opens claude.ai (conversation persists!)
+2. User: "Continue workflow from context/working_memory.json
+         in github.com/yourname/smart_home_system"
+3. Claude reads context, resumes from exact step
+4. Continue through systems engineering workflow
+
+Days 3-N: Development and Operations
+1. Same pattern: open Claude, "continue workflow from context/working_memory.json"
+2. Claude always reads context first, knows exactly where project is
+3. Progress through: 01-systems_engineering → 02-artifacts_visualization →
+   03-development → 04-testing_operations
+
+Result: Fully designed, documented, implemented system - never touched local machine
 ```
 
-### Pattern 2: Architecture-Only (No Code)
+**LLM Agent Best Practices:**
+1. **ALWAYS** read `context/working_memory.json` first when user says "continue"
+2. Check `current_workflow` and `current_step` to know where to resume
+3. Update context after each operation
+4. Commit changes to GitHub after major milestones
+5. Reference conversation history if user says "continue from yesterday"
+
+### Pattern 2: Web-Based Architecture-Only (No Code)
+
+**User Journey:**
 ```
-1. Run 00-setup
-2. Run 01-systems_engineering
-3. Run 02-artifacts_visualization (choose "architecture-only" option)
-4. Result: Complete architecture specifications and documentation
+Day 1: Setup and Architecture Design
+1. User creates GitHub repo with system description
+2. User: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+         on system in github.com/yourname/my_system"
+3. Progress through systems engineering workflow
+
+Day 2: Documentation and Visualization
+1. User: "Continue workflow from context/working_memory.json in github.com/yourname/my_system"
+2. At 02-artifacts_visualization, choose "architecture-only" option
+3. Generate diagrams, ICDs, documentation
+4. STOP after workflow 02 (do not proceed to development)
+
+Result: Complete architecture specs, diagrams, ICDs - no service code
+Progression: 00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → END
 ```
 
-### Pattern 3: System-of-Systems Integration
+### Pattern 3: Resuming After Break (Critical Pattern!)
+
+**Scenario**: User worked on project 3 days ago, wants to continue
+
+**User Message:**
 ```
-1. Run 00-setup
-2. For multi-system integration, may use S-04-SystemOfSystems.json step
-3. Run standard workflows
-4. Result: Unified architecture for multiple integrated systems
+"Continue workflow from context/working_memory.json in github.com/yourname/my_system"
 ```
 
-### Pattern 4: Feature Update
+**LLM Agent Process:**
 ```
-1. Use feature_update.json workflow
+1. Read github.com/yourname/my_system/context/working_memory.json
+2. Extract:
+   - current_workflow: "01-systems_engineering"
+   - current_step: "SE-02-A03"
+   - paths: reflow_root, system_root
+   - operations_since_refresh: 5
+3. Check if context refresh needed (>4 operations → refresh)
+4. Load current workflow: github.com/sligara7/reflow/workflows/01-systems_engineering.json
+5. Resume from SE-02-A03
+6. Update context after each operation
+7. Commit to GitHub at milestones
+```
+
+**CRITICAL**: Context folder IS the source of truth. Conversation history is supplemental.
+
+### Pattern 4: Feature Update (Existing System)
+
+**Web-Based:**
+```
+User: "Implement workflow in github.com/sligara7/reflow/workflows/feature_update.json
+       on system in github.com/yourname/my_system"
+
+Process:
+1. Read existing architecture from system repo
 2. Propose changes, validate impact
 3. Update architecture with versioning
-4. Result: Updated system with backward compatibility tracking
+4. Generate updated ICDs, diagrams
+5. Commit to GitHub
+
+Result: Updated system with backward compatibility tracking
 ```
+
+### Pattern 5: Local Machine (ALTERNATIVE - if web not available)
+
+<details>
+<summary>Click to expand local patterns</summary>
+
+```
+1. Clone reflow: git clone https://github.com/sligara7/reflow
+2. Create system directory: mkdir ~/projects/my_system
+3. Start workflow: "Implement workflow in /home/user/dev/reflow/workflows/00-setup.json
+                    on system in ~/projects/my_system"
+4. Resume work: "Continue workflow from context/working_memory.json in ~/projects/my_system"
+5. Result: Fully designed, documented, and optionally implemented system
+```
+
+</details>
 
 ## Multi-Language Support
 
@@ -990,22 +1175,52 @@ The `system_of_systems_graph.py` tool now detects architectural consistency issu
 
 ## Summary for LLM Agents
 
-1. **Reflow is a library**: Read-only reference, don't modify
-2. **Your system is separate**: Work happens in your system directory
-3. **Start with 00-setup**: Always configure paths first
-4. **6 workflows in sequence**: Follow the progression
-5. **Optional features available**: Git automation, development research, enhanced validation
-6. **Context is critical**: Maintain working_memory.json
-7. **Versioning matters**: Use semantic versioning for architecture
-8. **Quality gates enforced**: Validate before advancing
-9. **v3.0.1 is current**: Ignore archived v2.x files
+### Primary Approach: Web-Based Usage
+
+1. **Web-based is PRIMARY**: Users create GitHub repo, you read from `github.com/sligara7/reflow` and write to their repo
+2. **Context is SOURCE OF TRUTH**: ALWAYS read `context/working_memory.json` FIRST when user says "continue"
+3. **Multi-day projects are normal**: User may work for 10 minutes today, resume 3 days later - context preserves state
+4. **Two context mechanisms**:
+   - `context/working_memory.json` in system repo (PRIMARY - read this first!)
+   - Conversation history in web service (SUPPLEMENTAL - reference if user mentions)
+5. **Reflow is read-only reference**: Read workflows/templates from GitHub, never modify them
+6. **Your system is separate**: All work happens in user's system repo (`github.com/username/system_name`)
+7. **Start with 00-setup**: First workflow configures paths, framework, structure
+8. **6 workflows in sequence**: 00-setup → 01-systems_engineering → 02-artifacts_visualization → 03-development → 04-testing_operations (+ feature_update)
+9. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
+10. **v3.3.0 is current**: Operational environment design, IT requirements, versioning
+
+### Secondary Approach: Local Machine
+
+Local usage is alternative if user explicitly requests it or web not available.
 
 ---
 
-**Ready to Start?**
+**Ready to Start (Web-Based)?**
 
 ```
-Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
+User creates GitHub repo, then says:
+"Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+ on system in github.com/yourname/your_system_repo"
+```
+
+**Resuming Work (Multi-Day Projects)?**
+
+```
+User says:
+"Continue workflow from context/working_memory.json in github.com/yourname/your_system_repo"
+
+Your process:
+1. Read context/working_memory.json from their repo
+2. Check current_workflow and current_step
+3. Resume from exact step
+4. Update context after operations
+```
+
+**Local Machine (Alternative)?**
+
+```
+"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system"
 ```
 
 Good luck building complex systems! 🚀

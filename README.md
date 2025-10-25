@@ -28,45 +28,93 @@ A **framework-agnostic** systems engineering workflow for LLM agents to design, 
 
 ## :rocket: Quick Start
 
-### 1. Create Your System Folder
-Create a new folder anywhere on your system (separate from reflow tooling):
-```bash
-mkdir ~/projects/my_system
-# or anywhere else you prefer: /workspace/my_system, etc.
+### :cloud: Web-Based (Recommended)
+
+**Never touches your local machine - everything in the cloud!**
+
+#### 1. Create Your System Repo on GitHub
+```
+1. Go to github.com → New Repository
+2. Name: my_system (or smart_home_system, etc.)
+3. Add README with system description:
+   - What system you want to engineer
+   - High-level requirements and goals
+   - Any existing systems to integrate
+4. Create repository
 ```
 
-### 2. Describe Your System
-Inside your system folder, create a text document describing:
-- What system or system-of-systems you want to engineer
-- High-level requirements and goals
-- Any existing systems that need integration
+#### 2. Open in Web-Based Environment
 
-Example:
-```bash
-echo "Smart Home Automation System - integrate lighting, security, HVAC, and entertainment systems" > ~/projects/my_system/system_description.txt
+**Option A: Claude Code (Web)** - Easiest
+```
+1. Go to claude.ai
+2. Start new conversation
+3. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+   on system in github.com/yourname/my_system"
+4. Claude reads both repos and executes workflow
 ```
 
-### 3. Start with Setup Workflow
-Tell your LLM agent:
+**Option B: GitHub Codespaces** - Full Dev Environment
 ```
-Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system
+1. Open your system repo on github.com
+2. Click "Code" → "Codespaces" → "Create codespace"
+3. In terminal: git clone https://github.com/sligara7/reflow
+4. Install Claude Code CLI (optional) or use Claude.ai in another tab
+5. Say: "Implement workflow in /workspaces/reflow/workflows/00-setup.json
+   on system in /workspaces/my_system"
 ```
 
-The setup workflow will:
-- Configure all paths (reflow_root, system_root, tools_path)
-- **Select architectural framework** (UAF, Biology, Social, Ecological, CAS, or Custom)
-- Create the proper folder structure
-- Initialize foundational documents
-- Prepare for architecture and development
-
-### 4. Progress Through Workflows
-After setup, you'll progress through 5 focused workflows:
+#### 3. Progress Through Workflows
+After setup, continue with:
 ```
 00-setup → 01-systems_engineering → 02-artifacts_visualization →
 03-development → 04-testing_operations
 ```
 
-Each workflow is focused, manageable, and builds on the previous one.
+#### 4. Resuming Work (Next Day/Session)
+Your system repo has a `context/` folder that tracks progress:
+```
+"Continue workflow from context/working_memory.json in github.com/yourname/my_system"
+```
+The context folder remembers:
+- Which workflow you're on
+- Which step you're at
+- All paths and configurations
+- Operations since last refresh
+
+**Web-based services store conversations** - you can also reference previous chat history!
+
+---
+
+### :computer: Local Machine (Alternative)
+
+<details>
+<summary><b>Click to expand local machine instructions</b></summary>
+
+#### 1. Clone Reflow
+```bash
+git clone https://github.com/sligara7/reflow
+cd reflow
+```
+
+#### 2. Create System Folder
+```bash
+mkdir ~/projects/my_system
+echo "Smart Home System - integrate lighting, security, HVAC" > ~/projects/my_system/system_description.txt
+```
+
+#### 3. Start Workflow
+With Claude Code CLI or VS Code with Claude/GPT:
+```
+Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system
+```
+
+#### 4. Resuming Work
+```
+Continue workflow from context/working_memory.json in ~/projects/my_system
+```
+
+</details>
 
 ## :globe_with_meridians: Supported Frameworks
 
@@ -313,30 +361,83 @@ Each system gets a standardized structure:
 
 ## :bulb: Common Usage Patterns
 
-### New System (Full Development)
-```bash
-# Start with setup
-"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system"
+### :cloud: New System (Web-Based - Recommended)
+```
+Day 1: Initial Architecture
+1. Create GitHub repo: github.com/yourname/smart_home_system
+2. Add README with system description
+3. Open claude.ai or GitHub Codespaces
+4. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+   on system in github.com/yourname/smart_home_system"
+5. Continue through systems engineering workflow
 
-# Progress through all workflows
-# 00-setup → 01-systems_engineering → 02-artifacts_visualization →
-# 03-development → 04-testing_operations
+Day 2: Continue Development
+1. Open claude.ai (conversation persists!) or new Codespace
+2. Say: "Continue workflow from context/working_memory.json
+   in github.com/yourname/smart_home_system"
+3. Claude picks up exactly where you left off
+4. All progress tracked in context/ folder
+
+Benefits:
+✅ Never touches local machine
+✅ Work from any device (laptop, tablet, phone)
+✅ Conversation history preserved
+✅ Context folder tracks progress
+✅ Direct GitHub integration
 ```
 
-### Architecture Only (No Development)
-```bash
-# Run through architecture workflows
-"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system"
+### :cloud: Architecture Only (Web-Based)
+```
+Use case: Generate architecture specs, no code implementation
 
-# At artifacts workflow, choose "architecture-only"
-# 00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → END
+1. Create GitHub repo with system description
+2. Run: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+   on system in github.com/yourname/my_system"
+3. At artifacts workflow, choose "architecture-only"
+4. Result: Complete architecture specs, diagrams, ICDs (no service code)
+
+Progression: 00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → END
+```
+
+### :cloud: Resuming Multi-Day Projects
+```
+Context is preserved in TWO ways:
+
+1. context/working_memory.json (in your system repo)
+   - Current workflow and step
+   - All paths and configurations
+   - Operations counter
+
+2. Conversation history (in web-based services)
+   - Claude.ai: Conversations persist indefinitely
+   - Codespaces: Terminal history preserved
+   - Can reference "continue from yesterday" or "what's next?"
+
+Command to resume:
+"Continue workflow from context/working_memory.json in github.com/yourname/my_system"
 ```
 
 ### Feature Update (Existing System)
+```
+"Implement workflow in github.com/sligara7/reflow/workflows/feature_update.json
+on system in github.com/yourname/my_system"
+```
+
+### :computer: Local Machine Usage
+<details>
+<summary>Click to expand local patterns</summary>
+
 ```bash
-# Use feature update workflow
+# New system
+"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/projects/my_system"
+
+# Resume work
+"Continue workflow from context/working_memory.json in ~/projects/my_system"
+
+# Feature update
 "Implement workflow in /path/to/reflow/workflows/feature_update.json on system in ~/projects/my_system"
 ```
+</details>
 
 ---
 
