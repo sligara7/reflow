@@ -50,6 +50,12 @@
         "Deployment architecture",
         "Sequence diagrams"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": true,
+        "rationale": "IT systems with network services require port assignments to prevent conflicts",
+        "container_orchestration_applicable": true,
+        "deployment_types": ["docker", "kubernetes", "bare_metal", "cloud_vms"]
+      },
       "recommended_analyses": {
         "high_priority": {
           "dag": {
@@ -142,6 +148,12 @@
         "Bayesian networks",
         "Stoichiometric models"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": false,
+        "rationale": "Biological systems are not IT systems and don't have network ports",
+        "container_orchestration_applicable": false,
+        "deployment_types": ["simulation", "modeling_software", "computational_analysis"]
+      },
       "recommended_analyses": {
         "high_priority": {
           "cycles": {
@@ -240,6 +252,12 @@
         "Clustering coefficient",
         "Community modularity"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": false,
+        "rationale": "Social networks are abstract models of relationships, not IT systems requiring network ports",
+        "container_orchestration_applicable": false,
+        "deployment_types": ["analysis_software", "visualization_tools", "simulation"]
+      },
       "recommended_analyses": {
         "high_priority": {
           "centrality": {
@@ -337,6 +355,12 @@
         "Parasitism",
         "Commensalism"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": false,
+        "rationale": "Ecological systems are natural systems, not IT infrastructure requiring network ports",
+        "container_orchestration_applicable": false,
+        "deployment_types": ["ecological_modeling_software", "simulation", "field_data_analysis"]
+      },
       "recommended_analyses": {
         "high_priority": {
           "flow": {
@@ -441,6 +465,12 @@
         "Non-linear dynamics",
         "Multiscale interactions"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": false,
+        "rationale": "Complex adaptive systems are abstract models of emergent behavior, not networked IT systems",
+        "container_orchestration_applicable": false,
+        "deployment_types": ["agent_based_modeling", "simulation", "computational_models"]
+      },
       "recommended_analyses": {
         "high_priority": {
           "cycles": {
@@ -533,6 +563,13 @@
         "LLM generates appropriate templates",
         "User reviews and approves framework"
       ],
+      "deployment_characteristics": {
+        "port_management_applicable": "conditional",
+        "rationale": "Depends on whether custom framework models IT systems. LLM should determine during framework creation.",
+        "container_orchestration_applicable": "conditional",
+        "deployment_types": ["varies_by_domain"],
+        "decision_guidance": "If custom framework is for networked IT systems (e.g., cyber-physical), set port_management_applicable=true. Otherwise false."
+      },
       "recommended_analyses": {
         "high_priority": {
           "centrality": {

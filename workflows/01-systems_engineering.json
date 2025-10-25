@@ -216,11 +216,19 @@
         },
         {
           "action_id": "SE-02-A04",
-          "description": "Assign ports and create port registry",
+          "description": "Assign ports and create port registry (CONDITIONAL - only for IT systems)",
+          "condition": {
+            "check": "framework_registry.json -> frameworks[framework_id].deployment_characteristics.port_management_applicable == true",
+            "if_true": "Execute port assignment and create port_registry.json",
+            "if_false": "Skip this action - non-IT systems don't need network ports",
+            "applicable_frameworks": ["uaf"],
+            "not_applicable_frameworks": ["systems_biology", "social_network", "ecological", "complex_adaptive"],
+            "custom_framework": "Check deployment_characteristics.port_management_applicable during framework setup"
+          },
           "template": "port_registry_template.json",
           "location": "specs/machine/port_registry.json",
-          "purpose": "Prevent port conflicts by assigning unique ports to each service upfront",
-          "rationale": "Port conflicts cause 'Address already in use' errors during deployment. Solving this architecturally prevents operational issues.",
+          "purpose": "Prevent port conflicts by assigning unique ports to each IT service upfront",
+          "rationale": "Port conflicts cause 'Address already in use' errors during deployment. Solving this architecturally prevents operational issues. Only applicable to IT systems with network services.",
           "port_assignment_strategy": {
             "step_1": "Categorize each service (application|internal|data|infrastructure)",
             "step_2": "Assign primary port based on category range (app:8000-8099, internal:8100-8199, etc.)",
@@ -365,10 +373,16 @@
         },
         {
           "action_id": "SE-03-A04",
-          "description": "Validate port registry for conflicts",
+          "description": "Validate port registry for conflicts (CONDITIONAL - only if port_registry.json exists)",
+          "condition": {
+            "check": "framework_registry.json -> frameworks[framework_id].deployment_characteristics.port_management_applicable == true",
+            "if_true": "Validate port_registry.json for conflicts",
+            "if_false": "Skip this action - port registry not applicable for non-IT systems",
+            "note": "This action only runs if SE-02-A04 was executed (i.e., port_registry.json exists)"
+          },
           "tool": "validate_port_registry.py",
           "command_pattern": "python3 {reflow_root}/tools/validate_port_registry.py {system_root}/specs/machine/port_registry.json",
-          "purpose": "Ensure no port conflicts exist before development begins",
+          "purpose": "Ensure no port conflicts exist before development begins (IT systems only)",
           "validation_checks": [
             "PC-01: No duplicate primary ports across services",
             "PC-02: No port overlap between any service ports (primary, metrics, admin)",
@@ -405,12 +419,15 @@
           "gate_id": "G-SE-03",
           "name": "Architecture Validation Gate",
           "checks": [
-            "All service_architecture.json files pass validation",
+            "All architecture files pass validation",
             "Zero validation errors",
             "All required sections populated",
             "Interface registry complete",
-            "Port registry validated with zero port conflicts"
+            "Port registry validated with zero port conflicts (if applicable to framework)"
           ],
+          "conditional_checks": {
+            "port_registry_validation": "Only required if deployment_characteristics.port_management_applicable == true (i.e., UAF framework)"
+          },
           "blocking": true
         }
       ],

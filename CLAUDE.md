@@ -435,11 +435,29 @@ Results appear in `system_of_systems_graph.json` under `networkx_analysis` secti
 - **DAG**: Topological ordering (good for UAF dependencies, metabolic pathways)
 - **Flow**: Maximum throughput and bottlenecks
 
-## Port Management (CRITICAL for UAF Systems!)
+## Port Management (UAF/IT Systems ONLY)
 
-### Problem: Port Conflicts in Deployment
+### ⚠️ Applicability: Information Technology Systems Only
 
-**Common Issue**: Services fail to start with "Address already in use" because:
+**Port management applies ONLY to**:
+- ✅ UAF framework (IT systems with network services)
+- ✅ Custom frameworks modeling networked IT systems
+
+**Port management does NOT apply to**:
+- ❌ Systems Biology (gene networks don't have ports)
+- ❌ Social Network Analysis (social graphs don't have ports)
+- ❌ Ecological Systems (food webs don't have ports)
+- ❌ Complex Adaptive Systems (abstract models don't have ports)
+
+**How to check**: Read `framework_registry.json` → `frameworks[framework_id].deployment_characteristics.port_management_applicable`
+- If `true` → Execute SE-02-A04 (port assignment) and SE-03-A04 (port validation)
+- If `false` → Skip both actions, proceed to next step
+
+---
+
+### Problem: Port Conflicts in Deployment (UAF Systems)
+
+**Common Issue**: IT services fail to start with "Address already in use" because:
 - Previous containers not shutdown (leftover from testing)
 - Multiple services assigned same port
 - Conflicts with well-known ports (PostgreSQL 5432, Redis 6379, etc.)
