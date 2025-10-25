@@ -101,6 +101,10 @@ on system in github.com/yourname/my_system_repo
 
 **Cost & Requirements:**
 - Requires Claude Pro ($20/month) or Max subscription
+- **CRITICAL for PRIVATE repos**: Must install Claude GitHub app in all repositories
+  - Install at: https://github.com/apps/claude-code
+  - For public repos: App installation recommended but may not be required
+  - For private repos: App installation is **required** or Claude Code cannot access the repo
 - GitHub integration setup required
 
 **Resuming work (next day/session):**

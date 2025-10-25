@@ -60,13 +60,20 @@ A **framework-agnostic** systems engineering workflow for LLM agents to design, 
 **Option B: Claude Code (Web)** - Anthropic's Web IDE
 ```
 1. Go to https://claude.ai/code (requires Claude Pro or Max subscription)
-2. Start new project
-3. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+2. Install Claude GitHub app in your repositories:
+   - For PRIVATE repos: Must install Claude GitHub app (required)
+   - For PUBLIC repos: App installation recommended but may not be required
+   - Install at: https://github.com/apps/claude-code
+3. Start new project
+4. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
    on system in github.com/yourname/my_system"
-4. Claude Code reads both repos and executes workflow
+5. Claude Code reads both repos and executes workflow
 ```
 - **Cost**: Claude Pro ($20/month) or Max subscription required
-- **Requirements**: Claude Pro/Max subscription, GitHub integration
+- **Requirements**:
+  - Claude Pro/Max subscription
+  - Claude GitHub app installed in all repos you want to use (especially private repos)
+  - GitHub integration configured
 
 **Option C: Other Web-Based Code Environments**
 - **OpenAI Codex**: Similar functionality (subscription required)
