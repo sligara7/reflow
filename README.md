@@ -166,6 +166,34 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 
 ---
 
+## :chart_with_upwards_trend: Network Analysis Selection
+
+Reflow **automatically recommends** appropriate NetworkX analyses based on your chosen framework:
+
+### Framework-Specific Recommendations
+
+| Framework | Recommended Analyses | Why |
+|-----------|---------------------|-----|
+| **UAF** | `--centrality --dag --scc --community` | Verify no circular deps, find critical services |
+| **Biology** | `--cycles --centrality --community --scc` | Feedback loops, hub genes, gene modules |
+| **Social** | `--centrality --community --clustering` | Influencers, social groups, cohesion |
+| **Ecological** | `--flow --centrality --connectivity` | Energy flow, keystone species, robustness ⚠️ **Requires edge weights!** |
+| **CAS** | `--cycles --community --scc --centrality` | Feedback, emergent clusters, co-evolution |
+
+### When to Add Edge Weights
+
+**Flow analysis REQUIRES edge weights.** Add `weight` field to edges in architecture files:
+
+- **UAF**: `request_rate` (req/sec) or `data_volume` (MB/sec)
+- **Biology**: `reaction_rate` (molecules/sec) or `binding_affinity`
+- **Social**: `interaction_frequency` or `relationship_strength` (0-1)
+- **Ecological**: `energy_transfer_rate` (kcal/m²/year) or `biomass_flow`
+- **CAS**: `flow_rate` or `interaction_strength`
+
+See `definitions/framework_registry.json` and `definitions/analysis_selection_guide.json` for complete guidance.
+
+---
+
 ## :sparkles: Key Benefits
 
 ### :new: Optional Automation Features (v3.0.1)

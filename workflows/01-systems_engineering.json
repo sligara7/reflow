@@ -482,28 +482,61 @@
         },
         {
           "action_id": "SE-06-A02",
-          "description": "Generate and Validate system_of_systems_graph.json - with issue resolution loop",
-          "tool": "system_of_systems_graph.py",
-          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}/specs/machine/index.json --analyze-issues",
-          "purpose": "Create machine-readable representation and validate system-level coherence with architectural issue detection",
+          "description": "Generate and Validate system_of_systems_graph.json with framework-specific analysis selection",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/machine/index.json --detect-gaps --analyze-issues [SELECTED_ANALYSIS_FLAGS]",
+          "purpose": "Create framework-agnostic graph with comprehensive NetworkX analysis and validation",
+          "analysis_selection_guidance": {
+            "step_1": "Read framework_id from working_memory.json -> framework_configuration.framework_id",
+            "step_2": "Load {reflow_root}/definitions/framework_registry.json -> frameworks[framework_id].recommended_analyses",
+            "step_3": "Review {reflow_root}/definitions/analysis_selection_guide.json for detailed descriptions",
+            "step_4": "Select analyses based on framework recommendations (high_priority + medium_priority as appropriate)",
+            "step_5": "Check if any selected analyses require edge weights (e.g., flow analysis)",
+            "step_6": "If edge weights required but missing: either add weights to architecture files OR skip that analysis",
+            "step_7": "Construct command with appropriate flags: --centrality --community --cycles --scc --dag --flow etc.",
+            "step_8": "Update working_memory.json -> analysis_configuration with selected analyses",
+            "framework_specific_examples": {
+              "uaf": "--centrality --dag --scc --community --connectivity (verifies no circular deps, finds critical services)",
+              "systems_biology": "--cycles --centrality --community --scc (finds feedback loops, hub genes, modules)",
+              "social_network": "--centrality --community --clustering --connectivity (finds influencers, groups, cohesion)",
+              "ecological": "--flow --centrality --connectivity --community --cycles (REQUIRES edge weights for energy flow!)",
+              "complex_adaptive": "--cycles --community --scc --centrality (finds feedback, emergent clusters)"
+            },
+            "edge_weight_guidance": {
+              "when_needed": "Flow analysis REQUIRES edge weights. Other analyses benefit from weights but work without them.",
+              "how_to_add": "Add 'weight' field to each interface/interaction/relationship in architecture files",
+              "semantic_meaning_by_framework": {
+                "uaf": "request_rate (req/sec) or data_volume (MB/sec)",
+                "systems_biology": "reaction_rate (molecules/sec) or binding_affinity (Kd)",
+                "social_network": "interaction_frequency (contacts/week) or relationship_strength (0-1 scale)",
+                "ecological": "energy_transfer_rate (kcal/m²/year) or biomass_flow (kg/year)",
+                "complex_adaptive": "flow_rate or interaction_strength"
+              }
+            }
+          },
           "inputs": [
             "specs/machine/index.json",
-            "All service_architecture.json files (via symlinks)",
-            "specs/machine/interface_registry.json"
+            "All architecture files (service_architecture.json, component_architecture.json, etc via symlinks)",
+            "specs/machine/interface_registry.json",
+            "working_memory.json -> framework_configuration",
+            "{reflow_root}/definitions/framework_registry.json",
+            "{reflow_root}/definitions/analysis_selection_guide.json"
           ],
           "outputs": [
-            "specs/machine/graphs/system_of_systems_graph.json",
-            "specs/machine/architecture_issues.json"
+            "specs/machine/graphs/system_of_systems_graph.json (with comprehensive NetworkX analysis)",
+            "specs/machine/architecture_issues.json",
+            "working_memory.json updated with analysis_configuration"
           ],
           "validation_loop": {
             "description": "CRITICAL - This tool doesn't just generate a file, it VALIDATES the system architecture",
-            "step_1": "Run system_of_systems_graph.py",
-            "step_2": "Examine tool output for errors, warnings, and inconsistencies",
-            "step_3": "Analyze generated graph for system-level issues",
-            "step_4": "Fix issues in source architecture files (service_architecture.json or interface_registry.json)",
-            "step_5": "Re-run system_of_systems_graph.py",
-            "step_6": "If issues remain, LOOP back to step_2",
-            "step_7": "If graph generation succeeds with zero errors/warnings, proceed",
+            "step_1": "Select appropriate analyses based on framework (see analysis_selection_guidance above)",
+            "step_2": "Run system_of_systems_graph_v2.py with selected analysis flags",
+            "step_3": "Examine tool output for errors, warnings, and inconsistencies",
+            "step_4": "Analyze generated graph for system-level issues",
+            "step_5": "Fix issues in source architecture files (architecture.json files or interface_registry.json)",
+            "step_6": "Re-run system_of_systems_graph_v2.py with same flags",
+            "step_7": "If issues remain, LOOP back to step_3",
+            "step_8": "If graph generation succeeds with zero errors/warnings, proceed",
             "termination": "Loop until clean OR max 5 iterations (then escalate to user)"
           },
           "system_level_issues_to_check": [
@@ -579,20 +612,27 @@
             }
           ],
           "llm_agent_instructions": [
-            "DO NOT just run the tool and assume success - READ the output carefully",
-            "DO NOT proceed if tool reports warnings or errors - fix them first",
-            "CRITICAL: Read architecture_issues.json generated by --analyze-issues flag for architectural problems",
-            "CHECK async_sync_consistency section: async HTTP services MUST use async database drivers",
-            "PAY ATTENTION to system-level coherence - can all services actually work together?",
-            "VALIDATE that the graph makes architectural sense - visualize the connections",
-            "If graph shows unexpected patterns (too many connections, isolated services), investigate why",
-            "Use graph as validation of your architectural decisions - does it match your intent?"
+            "STEP 1: Select analyses appropriate for your framework - see analysis_selection_guidance above",
+            "STEP 2: Check if flow analysis is needed - if yes, ensure edge weights are included in architecture files",
+            "STEP 3: Construct command with framework-appropriate analysis flags (e.g., for UAF: --centrality --dag --scc --community)",
+            "STEP 4: Run system_of_systems_graph_v2.py with selected flags, --detect-gaps, and --analyze-issues",
+            "STEP 5: READ the tool output carefully - it contains valuable graph analysis results",
+            "STEP 6: Review architecture_issues.json for architectural problems (circular deps, orphans, async/sync issues)",
+            "STEP 7: Review knowledge_gaps section for missing nodes or edges (\"dark matter\" components)",
+            "STEP 8: Update working_memory.json -> analysis_configuration with selected analyses and rationale",
+            "DO NOT just run the tool and assume success - ANALYZE the results",
+            "DO NOT proceed if tool reports errors - fix them first",
+            "CRITICAL: async HTTP services MUST use async database drivers (check async_sync_consistency)",
+            "Use NetworkX analysis results to validate architecture quality (centrality, clustering, modularity)"
           ],
           "success_criteria": [
-            "system_of_systems_graph.py completes without errors",
+            "system_of_systems_graph_v2.py completes without errors",
+            "Framework-appropriate analyses selected and run successfully",
             "Generated graph shows cohesive system (no orphans, no unexplained cycles)",
-            "All interfaces properly connected between services",
-            "System architecture makes logical sense at holistic level"
+            "All interfaces properly connected between components",
+            "NetworkX analysis results make sense for this system type",
+            "Knowledge gap detection reveals no critical missing components",
+            "working_memory.json updated with analysis_configuration"
           ]
         },
         {

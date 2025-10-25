@@ -14,6 +14,35 @@
     "workflow_steps_path": "/absolute/path/to/reflow/workflow_steps",
     "note": "These paths are set during Setup workflow (00-setup) and must NEVER be hardcoded elsewhere"
   },
+  "framework_configuration": {
+    "framework_id": "FRAMEWORK_ID (uaf|systems_biology|social_network|ecological|complex_adaptive|custom)",
+    "framework_name": "FRAMEWORK_DISPLAY_NAME",
+    "component_term": "TERM_FOR_NODES (service|component|agent|species|adaptive_agent)",
+    "connection_term": "TERM_FOR_EDGES (interface|interaction|relationship|ecological_interaction)",
+    "architecture_file_type": "FILE_TYPE (service_architecture.json|component_architecture.json|agent_profile.json|etc)",
+    "selected_framework_rationale": "WHY_THIS_FRAMEWORK_WAS_CHOSEN",
+    "note": "Set during Setup workflow step S-01A (Framework Selection)"
+  },
+  "analysis_configuration": {
+    "selected_analyses": {
+      "centrality": false,
+      "paths": false,
+      "connectivity": false,
+      "clustering": false,
+      "properties": false,
+      "community": false,
+      "cycles": false,
+      "scc": false,
+      "dag": false,
+      "flow": false
+    },
+    "analysis_rationale": "WHY_THESE_ANALYSES_WERE_SELECTED (based on framework recommendations)",
+    "edge_weights_included": false,
+    "edge_weight_semantic": "WHAT_WEIGHTS_REPRESENT (e.g., request_rate, reaction_rate, interaction_frequency, energy_flow)",
+    "knowledge_gap_detection_enabled": false,
+    "architectural_issues_detection_enabled": false,
+    "note": "Set during Systems Engineering workflow step SE-06 (Graph Generation)"
+  },
   "context_management": {
     "operations_since_refresh": 0,
     "refresh_threshold": 5,

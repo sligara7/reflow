@@ -356,6 +356,85 @@ Over **36 templates** for:
 - Component specs (`component_specification_complete_template.json`)
 - Progress tracking, focus documents, registries, etc.
 
+## Network Analysis Selection (IMPORTANT!)
+
+### When to Select Analyses (Step SE-06)
+
+During **graph generation in SE-06**, you MUST select appropriate NetworkX analyses based on your framework:
+
+**Decision Process**:
+1. Read `framework_id` from `working_memory.json -> framework_configuration.framework_id`
+2. Load `{reflow_root}/definitions/framework_registry.json` → find your framework's `recommended_analyses`
+3. Review `{reflow_root}/definitions/analysis_selection_guide.json` for detailed descriptions
+4. Select **high_priority + medium_priority** analyses for your framework
+5. Check if any require edge weights (especially **flow analysis**)
+6. Construct command: `python3 system_of_systems_graph_v2.py index.json --detect-gaps --[FLAGS]`
+7. Update `working_memory.json -> analysis_configuration`
+
+### Framework-Specific Analysis Recommendations
+
+**UAF Systems** (Microservices, IT systems):
+```bash
+--centrality --dag --scc --community --connectivity
+# Why: Verify no circular deps, find critical services, identify deployment groups
+```
+
+**Systems Biology** (Gene networks, metabolic pathways):
+```bash
+--cycles --centrality --community --scc
+# Why: Feedback loops are critical, find hub genes, gene modules, coupled regulators
+```
+
+**Social Networks** (Organizations, communities):
+```bash
+--centrality --community --clustering --connectivity
+# Why: Find influencers, social groups, measure cohesion, identify bridges
+```
+
+**Ecological Systems** (Food webs, ecosystems):
+```bash
+--flow --centrality --connectivity --community --cycles
+# Why: Energy flow is fundamental, keystone species, robustness, nutrient cycles
+# CRITICAL: Requires edge weights (energy_transfer_rate or biomass_flow)!
+```
+
+**Complex Adaptive Systems** (Markets, emergent systems):
+```bash
+--cycles --community --scc --centrality
+# Why: Feedback loops drive adaptation, emergent clusters, co-evolving groups
+```
+
+### Edge Weight Requirements
+
+**When Flow Analysis is Selected**:
+- **MUST add** `weight` field to edges in architecture files
+- Semantic meaning depends on framework:
+  - UAF: `request_rate` (req/sec) or `data_volume` (MB/sec)
+  - Biology: `reaction_rate` (molecules/sec) or `binding_affinity`
+  - Social: `interaction_frequency` (contacts/week) or `relationship_strength` (0-1)
+  - Ecological: `energy_transfer_rate` (kcal/m²/year) or `biomass_flow` (kg/year)
+  - CAS: `flow_rate` or `interaction_strength`
+
+**Example** (adding weights to UAF interface):
+```json
+{
+  "name": "character_api",
+  "direction": "consumed",
+  "connected_services": ["character_service"],
+  "weight": 1000,
+  "weight_semantic": "request_rate_per_second"
+}
+```
+
+### Analysis Output Interpretation
+
+Results appear in `system_of_systems_graph.json` under `networkx_analysis` section:
+- **Centrality**: High scores = critical/influential nodes
+- **Community**: Modularity score + community assignments
+- **Cycles**: Feedback loops (expected in biology/CAS, problematic in UAF)
+- **DAG**: Topological ordering (good for UAF dependencies, metabolic pathways)
+- **Flow**: Maximum throughput and bottlenecks
+
 ## Common Patterns
 
 ### Pattern 1: New Greenfield System

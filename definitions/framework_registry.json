@@ -49,7 +49,45 @@
         "Interface contract diagrams",
         "Deployment architecture",
         "Sequence diagrams"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "dag": {
+            "reason": "Verify no circular dependencies in service architecture",
+            "use_cases": ["Deployment ordering", "Build sequence", "Dependency management"],
+            "required_fields": []
+          },
+          "scc": {
+            "reason": "Detect tightly coupled service clusters that violate clean architecture",
+            "use_cases": ["Identify microservice boundaries", "Find coupling issues"],
+            "required_fields": []
+          },
+          "centrality": {
+            "reason": "Identify critical services and potential single points of failure",
+            "use_cases": ["Scalability planning", "Resilience analysis", "Load balancing"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "connectivity": {
+            "reason": "Ensure system remains functional if services fail",
+            "use_cases": ["Fault tolerance", "Redundancy planning"],
+            "required_fields": []
+          },
+          "community": {
+            "reason": "Detect natural service groupings for deployment",
+            "use_cases": ["Microservice decomposition", "Service mesh planning"],
+            "required_fields": []
+          }
+        },
+        "optional": {
+          "flow": {
+            "reason": "Analyze request throughput and capacity",
+            "use_cases": ["Performance bottleneck detection", "Traffic routing"],
+            "required_fields": ["interfaces.weight (request volume or data rate)"]
+          }
+        }
+      }
     },
     "systems_biology": {
       "framework_id": "systems_biology",
@@ -103,7 +141,50 @@
         "Agent-based models",
         "Bayesian networks",
         "Stoichiometric models"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "cycles": {
+            "reason": "Feedback loops are fundamental to biological regulation",
+            "use_cases": ["Identify regulatory circuits", "Find homeostatic mechanisms", "Detect oscillators"],
+            "required_fields": []
+          },
+          "community": {
+            "reason": "Biological systems organize into functional modules",
+            "use_cases": ["Gene modules", "Protein complexes", "Metabolic subsystems"],
+            "required_fields": []
+          },
+          "centrality": {
+            "reason": "Identify hub genes, master regulators, and critical proteins",
+            "use_cases": ["Drug targets", "Disease genes", "Essential proteins"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "dag": {
+            "reason": "Analyze signal transduction cascades and metabolic pathways",
+            "use_cases": ["Pathway analysis", "Signaling flow", "Metabolic flux"],
+            "required_fields": []
+          },
+          "connectivity": {
+            "reason": "Assess network robustness and resilience",
+            "use_cases": ["System resilience", "Compensatory pathways", "Redundancy"],
+            "required_fields": []
+          }
+        },
+        "optional": {
+          "flow": {
+            "reason": "Model metabolic flux or signal strength propagation",
+            "use_cases": ["Flux balance analysis", "Signal amplification", "Energy flow"],
+            "required_fields": ["interactions.weight (reaction rate, binding affinity, or signal strength)"]
+          },
+          "scc": {
+            "reason": "Find strongly coupled regulatory modules",
+            "use_cases": ["Bistable switches", "Oscillatory networks"],
+            "required_fields": []
+          }
+        }
+      }
     },
     "social_network": {
       "framework_id": "social_network",
@@ -158,7 +239,50 @@
         "PageRank",
         "Clustering coefficient",
         "Community modularity"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "centrality": {
+            "reason": "Core of SNA - identify influential, connected, and bridge agents",
+            "use_cases": ["Influence ranking", "Key opinion leaders", "Information brokers", "Gatekeepers"],
+            "required_fields": []
+          },
+          "community": {
+            "reason": "Detect social groups, cliques, and echo chambers",
+            "use_cases": ["Team formation", "Department boundaries", "Social cohesion", "Polarization"],
+            "required_fields": []
+          },
+          "clustering": {
+            "reason": "Measure social cohesion and triadic closure",
+            "use_cases": ["Group density", "Friend-of-friend patterns", "Social capital"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "connectivity": {
+            "reason": "Identify bridges and structural holes",
+            "use_cases": ["Boundary spanners", "Information bottlenecks", "Network fragmentation"],
+            "required_fields": []
+          },
+          "paths": {
+            "reason": "Measure social distance and reachability",
+            "use_cases": ["Six degrees of separation", "Information reach", "Social proximity"],
+            "required_fields": []
+          }
+        },
+        "optional": {
+          "flow": {
+            "reason": "Model information or influence diffusion",
+            "use_cases": ["Viral spread", "Opinion cascades", "Resource flow"],
+            "required_fields": ["relationships.weight (interaction frequency or influence strength)"]
+          },
+          "cycles": {
+            "reason": "Detect reciprocal relationships and feedback loops",
+            "use_cases": ["Mutual friendships", "Influence cycles"],
+            "required_fields": []
+          }
+        }
+      }
     },
     "ecological": {
       "framework_id": "ecological",
@@ -212,7 +336,55 @@
         "Mutualism",
         "Parasitism",
         "Commensalism"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "flow": {
+            "reason": "Energy and biomass transfer is fundamental to ecosystem function",
+            "use_cases": ["Trophic efficiency", "Energy budgets", "Biomass pyramids"],
+            "required_fields": ["interactions.weight (energy transfer rate or biomass flow)"]
+          },
+          "centrality": {
+            "reason": "Identify keystone species and critical ecosystem nodes",
+            "use_cases": ["Keystone species", "Trophic importance", "Conservation priority"],
+            "required_fields": []
+          },
+          "connectivity": {
+            "reason": "Assess ecosystem resilience and stability",
+            "use_cases": ["Food web robustness", "Extinction cascades", "Redundancy"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "community": {
+            "reason": "Identify functional groups and trophic modules",
+            "use_cases": ["Trophic levels", "Guilds", "Functional groups"],
+            "required_fields": []
+          },
+          "cycles": {
+            "reason": "Detect nutrient cycles and material loops",
+            "use_cases": ["Nutrient cycling", "Decomposition loops", "Recycling pathways"],
+            "required_fields": []
+          },
+          "paths": {
+            "reason": "Trace energy pathways and trophic chains",
+            "use_cases": ["Food chain length", "Trophic cascades", "Indirect effects"],
+            "required_fields": []
+          }
+        },
+        "optional": {
+          "dag": {
+            "reason": "Analyze hierarchical trophic structure (if no omnivory)",
+            "use_cases": ["Trophic hierarchy", "Food chain ordering"],
+            "required_fields": []
+          },
+          "clustering": {
+            "reason": "Measure compartmentalization and modularity",
+            "use_cases": ["Habitat partitioning", "Trophic modules"],
+            "required_fields": []
+          }
+        }
+      }
     },
     "complex_adaptive": {
       "framework_id": "complex_adaptive",
@@ -268,7 +440,55 @@
         "Adaptation",
         "Non-linear dynamics",
         "Multiscale interactions"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "cycles": {
+            "reason": "Feedback loops drive adaptation and emergent behavior",
+            "use_cases": ["Reinforcing loops", "Balancing loops", "Self-regulation", "Tipping points"],
+            "required_fields": []
+          },
+          "community": {
+            "reason": "Detect emergent clustering and self-organized groups",
+            "use_cases": ["Spontaneous organization", "Phase transitions", "Collective behavior"],
+            "required_fields": []
+          },
+          "scc": {
+            "reason": "Identify co-evolving agent clusters",
+            "use_cases": ["Coupled dynamics", "Co-evolution", "Mutual adaptation"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "centrality": {
+            "reason": "Find critical nodes that disproportionately affect system behavior",
+            "use_cases": ["Leverage points", "Systemic interventions", "Criticality"],
+            "required_fields": []
+          },
+          "connectivity": {
+            "reason": "Assess resilience to perturbations and shocks",
+            "use_cases": ["System stability", "Robustness", "Regime shifts"],
+            "required_fields": []
+          },
+          "paths": {
+            "reason": "Trace causal chains and cascade effects",
+            "use_cases": ["Propagation dynamics", "Cascade failures", "Contagion"],
+            "required_fields": []
+          }
+        },
+        "optional": {
+          "flow": {
+            "reason": "Model resource or information flow through adaptive network",
+            "use_cases": ["Market dynamics", "Traffic flow", "Information cascades"],
+            "required_fields": ["interactions.weight (flow rate or interaction strength)"]
+          },
+          "clustering": {
+            "reason": "Measure local cohesion and modularity",
+            "use_cases": ["Local order", "Hierarchical structure"],
+            "required_fields": []
+          }
+        }
+      }
     },
     "custom": {
       "framework_id": "custom",
@@ -312,7 +532,37 @@
         "LLM creates custom definitions file",
         "LLM generates appropriate templates",
         "User reviews and approves framework"
-      ]
+      ],
+      "recommended_analyses": {
+        "high_priority": {
+          "centrality": {
+            "reason": "General importance ranking applicable to most systems",
+            "use_cases": ["Identify critical nodes"],
+            "required_fields": []
+          },
+          "connectivity": {
+            "reason": "Basic structural analysis of system resilience",
+            "use_cases": ["System robustness"],
+            "required_fields": []
+          }
+        },
+        "medium_priority": {
+          "community": {
+            "reason": "Detect natural groupings in most network types",
+            "use_cases": ["Subsystem boundaries"],
+            "required_fields": []
+          },
+          "paths": {
+            "reason": "Basic reachability and distance analysis",
+            "use_cases": ["System navigation"],
+            "required_fields": []
+          }
+        },
+        "domain_specific": {
+          "llm_research_required": true,
+          "instructions": "LLM should research domain literature to determine which additional analyses are appropriate (cycles, dag, scc, flow, clustering). Consider domain characteristics: Is system hierarchical (use dag)? Does it have feedback (use cycles, scc)? Are flows/capacities important (use flow)?"
+        }
+      }
     }
   },
   "framework_selection_guidance": {
