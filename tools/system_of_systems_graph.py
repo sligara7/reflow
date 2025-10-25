@@ -224,7 +224,8 @@ def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
         'missing_interfaces': [],
         'inconsistent_protocols': [],
         'security_gaps': [],
-        'performance_bottlenecks': []
+        'performance_bottlenecks': [],
+        'async_sync_consistency': []
     }
     
     # 1. Detect circular dependencies
@@ -313,9 +314,117 @@ def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
                 'outgoing_protocols': list(outgoing_protocols),
                 'description': f"Node '{node}' uses multiple communication protocols",
                 'severity': 'info',
-                'recommendation': 'Consider standardizing on fewer protocols for consistency'
+                'recommendation': 'Consider standardizing on fewer communication protocols for consistency'
             })
-    
+
+    # 6. Check for async/sync framework consistency
+    for node in G.nodes():
+        node_data = G.nodes[node].get('raw', {})
+        deployment = node_data.get('deployment', {})
+        interfaces = node_data.get('interfaces', [])
+
+        # Detect async HTTP framework (uvicorn/FastAPI indicates async)
+        uses_async_http = deployment.get('python_uvicorn', False)
+
+        # Detect database/storage interfaces
+        storage_interfaces = []
+        for interface in interfaces:
+            if isinstance(interface, dict):
+                interface_type = interface.get('interface_type', '')
+                interface_name = interface.get('name', '').lower()
+                if 'storage' in interface_type or 'database' in interface_name or 'storage' in interface_name:
+                    storage_interfaces.append(interface)
+
+        # Check for sync/async consistency issues
+        if uses_async_http and storage_interfaces:
+            # Service uses async HTTP - check if database layer is also async
+            # Look for indicators in interface descriptions or implementation notes
+            has_sync_db_indicator = False
+            has_async_db_indicator = False
+            has_explicit_db_driver = False
+
+            for storage in storage_interfaces:
+                description = storage.get('description', '').lower()
+                implementation_notes = storage.get('implementation_status', '').lower()
+
+                # Check for explicit sync indicators
+                if any(keyword in description for keyword in ['psycopg2', 'pymongo', 'mysql-connector', 'sqlite3']):
+                    has_sync_db_indicator = True
+                    has_explicit_db_driver = True
+
+                # Check for async indicators
+                if any(keyword in description for keyword in ['asyncpg', 'motor', 'async sqlalchemy', 'aiosqlite', 'aiomysql', 'asyncio', 'aiopg']):
+                    has_async_db_indicator = True
+                    has_explicit_db_driver = True
+
+                # Check for ambiguous indicators (could be sync or async)
+                if any(keyword in description for keyword in ['sqlalchemy', 'database', 'postgresql', 'mysql', 'mongodb']):
+                    if not has_explicit_db_driver:
+                        # Generic database mention without specific driver - could be issue
+                        pass
+
+            # If async HTTP but sync DB indicators OR no driver specification, flag as potential issue
+            if has_sync_db_indicator and not has_async_db_indicator:
+                # Definite sync DB with async HTTP - clear warning
+                issues['async_sync_consistency'].append({
+                    'node': node,
+                    'description': f"Service '{node}' uses async HTTP framework (uvicorn) but uses synchronous database driver",
+                    'severity': 'warning',
+                    'recommendation': 'Replace synchronous database driver with async equivalent to avoid blocking the event loop',
+                    'details': {
+                        'async_http': True,
+                        'storage_interfaces': [s.get('name') for s in storage_interfaces],
+                        'current_pattern': 'async HTTP + sync database (blocks event loop)',
+                        'suggested_async_drivers': {
+                            'PostgreSQL': 'asyncpg or databases with async SQLAlchemy',
+                            'MongoDB': 'motor (async MongoDB driver)',
+                            'MySQL': 'aiomysql with async SQLAlchemy',
+                            'SQLite': 'aiosqlite'
+                        }
+                    }
+                })
+            elif not has_explicit_db_driver and not has_async_db_indicator:
+                # No explicit driver mentioned - flag for clarification
+                issues['async_sync_consistency'].append({
+                    'node': node,
+                    'description': f"Service '{node}' uses async HTTP framework (uvicorn) but database driver not explicitly specified in architecture",
+                    'severity': 'info',
+                    'recommendation': 'Update service_architecture.json to explicitly specify async database driver in interface description (e.g., "asyncpg", "motor", "async SQLAlchemy")',
+                    'details': {
+                        'async_http': True,
+                        'storage_interfaces': [s.get('name') for s in storage_interfaces],
+                        'current_pattern': 'async HTTP + unspecified database driver',
+                        'action_required': 'Clarify database driver choice in architecture documentation',
+                        'suggested_async_drivers': {
+                            'PostgreSQL': 'asyncpg or databases library with async SQLAlchemy',
+                            'MongoDB': 'motor (async MongoDB driver)',
+                            'MySQL': 'aiomysql with async SQLAlchemy',
+                            'SQLite': 'aiosqlite',
+                            'Redis': 'aioredis'
+                        }
+                    }
+                })
+
+        # Check for unnecessary async in sync services
+        if not uses_async_http and storage_interfaces:
+            has_async_db_indicator = False
+            for storage in storage_interfaces:
+                description = storage.get('description', '').lower()
+                if any(keyword in description for keyword in ['asyncpg', 'motor', 'async sqlalchemy', 'aiosqlite', 'aiomysql']):
+                    has_async_db_indicator = True
+
+            if has_async_db_indicator:
+                issues['async_sync_consistency'].append({
+                    'node': node,
+                    'description': f"Service '{node}' uses synchronous HTTP framework but may use async database operations",
+                    'severity': 'info',
+                    'recommendation': 'Consider using sync database drivers for consistency, or switch to async HTTP framework (uvicorn/FastAPI) to leverage async database benefits',
+                    'details': {
+                        'async_http': False,
+                        'storage_interfaces': [s.get('name') for s in storage_interfaces]
+                    }
+                })
+
     return issues
 
 def export_issues_report(issues: Dict, out_path: str):
@@ -362,7 +471,8 @@ def export_issues_report(issues: Dict, out_path: str):
                 'orphaned_nodes': 'Either remove unused services or add missing interface connections',
                 'performance_bottlenecks': 'Split high-connectivity services or add load balancing/caching layers',
                 'security_gaps': 'Add authentication/authorization interfaces for services that handle user data',
-                'inconsistent_protocols': 'Standardize on fewer communication protocols (e.g., REST, gRPC, message queues)'
+                'inconsistent_protocols': 'Standardize on fewer communication protocols (e.g., REST, gRPC, message queues)',
+                'async_sync_consistency': 'Align async/sync patterns: async HTTP frameworks (uvicorn/FastAPI) require async database drivers (asyncpg, motor, async SQLAlchemy) to avoid blocking the event loop. Update service_architecture.json interfaces to specify async database drivers.'
             }
         }
     }
