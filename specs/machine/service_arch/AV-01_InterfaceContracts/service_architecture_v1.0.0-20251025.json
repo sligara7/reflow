@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "service_name": "AV-01: Interface Contract Generation",
+    "step_id": "AV-01",
+    "workflow": "02-artifacts_visualization",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Generate Interface Contract Documents (ICDs) for all component interfaces",
+    "purpose": "Create formal contracts defining interface specifications, data models, and behaviors",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "av_01_interfacecontracts"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "component_architectures_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Reads all service_architecture.json files",
+        "artifact_pattern": "specs/machine/service_arch/{component_name}/service_architecture.json"
+      },
+      {
+        "name": "interface_registry_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads centralized interface registry",
+        "artifact": "specs/machine/interfaces/interface_registry.json"
+      },
+      {
+        "name": "system_graph_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-06_SystemGraph"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads system graph for interface relationships",
+        "artifact": "specs/machine/graphs/system_of_systems_graph.json"
+      },
+      {
+        "name": "icd_templates",
+        "direction": "consumed",
+        "connected_services": [
+          "reflow_templates"
+        ],
+        "interface_type": "json_template",
+        "description": "Loads interface contract template",
+        "artifact": "templates/interface_contract_complete_template.json"
+      },
+      {
+        "name": "interface_contracts_output",
+        "direction": "produced",
+        "connected_services": [
+          "D-01_DevelopmentInit",
+          "D-02_ServiceImplementation"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Produces Interface Contract Documents for each interface",
+        "artifact_pattern": "specs/machine/interfaces/{interface_name}_contract_v1.0.0-{date}.json",
+        "data_model": {
+          "metadata": "interface identification, version, date",
+          "specification": {
+            "interface_type": "REST, message_queue, database, etc.",
+            "protocol": "HTTP, AMQP, gRPC, etc.",
+            "data_model": "JSON schema or data structure",
+            "operations": "array of operations (GET, POST, etc.)",
+            "error_handling": "error codes and messages"
+          },
+          "behavior": {
+            "preconditions": "conditions before invocation",
+            "postconditions": "conditions after invocation",
+            "invariants": "conditions always true"
+          },
+          "quality_attributes": {
+            "performance": "latency, throughput targets",
+            "reliability": "availability, fault tolerance",
+            "security": "authentication, authorization"
+          }
+        },
+        "criticality": "HIGH - Defines implementation contracts"
+      },
+      {
+        "name": "icd_index",
+        "direction": "produced",
+        "connected_services": [
+          "D-01_DevelopmentInit"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Index of all generated ICDs",
+        "artifact": "specs/machine/interfaces/icd_index.json"
+      }
+    ],
+    "components": [
+      {
+        "name": "InterfaceExtractor",
+        "type": "data_component",
+        "responsibilities": [
+          "Extract interfaces from architectures",
+          "Identify producers and consumers",
+          "Map interface relationships"
+        ]
+      },
+      {
+        "name": "ContractTemplateLoader",
+        "type": "template_component",
+        "responsibilities": [
+          "Load ICD template",
+          "Validate template structure"
+        ]
+      },
+      {
+        "name": "DataModelGenerator",
+        "type": "logic_component",
+        "responsibilities": [
+          "Generate JSON schemas for data models",
+          "Define operation signatures",
+          "Specify error models"
+        ]
+      },
+      {
+        "name": "BehaviorSpecifier",
+        "type": "logic_component",
+        "responsibilities": [
+          "Define preconditions",
+          "Define postconditions",
+          "Define invariants",
+          "Specify state transitions"
+        ]
+      },
+      {
+        "name": "QualityAttributeDefiner",
+        "type": "architecture_component",
+        "responsibilities": [
+          "Define performance requirements",
+          "Specify reliability targets",
+          "Define security requirements"
+        ]
+      },
+      {
+        "name": "ContractGenerator",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Generate ICD JSON files",
+          "Apply versioning",
+          "Create icd_index.json"
+        ]
+      },
+      {
+        "name": "ContractValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate contract completeness",
+          "Check data model validity",
+          "Verify interface consistency"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "AV-01-A01: Load interface registry and architecture files",
+      "AV-01-A02: Execute generate_interface_contracts.py tool",
+      "AV-01-A03: For each interface, generate data model specifications",
+      "AV-01-A04: Define behavior specifications (pre/post/invariants)",
+      "AV-01-A05: Define quality attributes (performance, reliability, security)",
+      "AV-01-A06: Generate versioned ICD JSON files",
+      "AV-01-A07: Create icd_index.json",
+      "AV-01-A08: Validate contract completeness"
+    ],
+    "capabilities": [
+      "Interface contract generation",
+      "Data model specification",
+      "Behavior modeling",
+      "Quality attribute definition",
+      "Contract validation"
+    ],
+    "tools": [
+      "generate_interface_contracts.py"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "SE-06_SystemGraph"
+      ],
+      "prerequisite_artifacts": [
+        "specs/machine/service_arch/{component}/service_architecture.json (all components)",
+        "specs/machine/interfaces/interface_registry.json",
+        "specs/machine/graphs/system_of_systems_graph.json"
+      ],
+      "note": "Requires validated architectures and system graph"
+    },
+    "outputs_required_by": [
+      "D-01_DevelopmentInit",
+      "D-02_ServiceImplementation",
+      "Testing workflows"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session with Python tool execution",
+    "estimated_duration": "15-30 minutes (depends on number of interfaces)",
+    "user_interaction_required": false,
+    "user_inputs": [],
+    "command_template": "python3 generate_interface_contracts.py <system_root>"
+  }
+}

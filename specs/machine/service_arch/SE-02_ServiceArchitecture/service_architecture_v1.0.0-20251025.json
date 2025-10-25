@@ -1,0 +1,198 @@
+{
+  "metadata": {
+    "service_name": "SE-02: Service Architecture",
+    "step_id": "SE-02",
+    "workflow": "01-systems_engineering",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Create detailed architecture files for each component with interfaces, operational views, and constraints",
+    "purpose": "Transform component list into complete architectural specifications",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "se_02_servicearchitecture"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "system_decomposition_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-01_SystemAnalysis"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads system_decomposition.json for component list",
+        "artifact": "specs/machine/system_decomposition.json"
+      },
+      {
+        "name": "architecture_templates",
+        "direction": "consumed",
+        "connected_services": [
+          "reflow_templates"
+        ],
+        "interface_type": "json_templates",
+        "description": "Loads framework-specific architecture templates",
+        "artifacts": [
+          "templates/service_architecture_template.json",
+          "templates/component_architecture_template.json"
+        ]
+      },
+      {
+        "name": "working_memory_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-01_PathConfiguration"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads framework configuration from working_memory.json",
+        "data_model": {
+          "framework_configuration": {
+            "framework_id": "string",
+            "component_terminology": "string"
+          }
+        }
+      },
+      {
+        "name": "component_architectures",
+        "direction": "produced",
+        "connected_services": [
+          "SE-06_SystemGraph",
+          "AV-01_InterfaceContracts"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Produces service_architecture_v*.json for each component",
+        "artifact_pattern": "specs/machine/service_arch/{component_name}/service_architecture_v1.0.0-{date}.json",
+        "data_model": {
+          "metadata": "service identification and versioning",
+          "system_view": "interfaces (consumed/produced), components",
+          "operational_view": "activities, capabilities",
+          "constraints": "dependencies, outputs",
+          "deployment": "execution context"
+        },
+        "criticality": "CRITICAL - Core architectural artifacts"
+      },
+      {
+        "name": "interface_registry",
+        "direction": "produced",
+        "connected_services": [
+          "SE-06_SystemGraph",
+          "AV-01_InterfaceContracts"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Creates centralized interface registry",
+        "artifact": "specs/machine/interfaces/interface_registry.json",
+        "data_model": {
+          "interfaces": [
+            {
+              "interface_id": "string",
+              "producer_component": "string",
+              "consumer_components": [
+                "array of strings"
+              ],
+              "data_model": "object"
+            }
+          ]
+        }
+      }
+    ],
+    "components": [
+      {
+        "name": "TemplateLoader",
+        "type": "template_component",
+        "responsibilities": [
+          "Load architecture templates",
+          "Select template based on framework",
+          "Validate template structure"
+        ]
+      },
+      {
+        "name": "InterfaceDesigner",
+        "type": "architecture_component",
+        "responsibilities": [
+          "Design consumed interfaces",
+          "Design produced interfaces",
+          "Define data models",
+          "Establish interface contracts"
+        ]
+      },
+      {
+        "name": "ComponentModeler",
+        "type": "architecture_component",
+        "responsibilities": [
+          "Define internal components",
+          "Allocate responsibilities",
+          "Model operational activities",
+          "Define capabilities"
+        ]
+      },
+      {
+        "name": "ArchitectureGenerator",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Generate service_architecture files",
+          "Apply versioning (semantic version + date)",
+          "Create symlinks to current version"
+        ]
+      },
+      {
+        "name": "InterfaceRegistrar",
+        "type": "registry_component",
+        "responsibilities": [
+          "Collect all interfaces",
+          "Build interface registry",
+          "Detect interface conflicts"
+        ]
+      },
+      {
+        "name": "ArchitectureValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate architecture completeness",
+          "Check interface consistency",
+          "Verify framework compliance"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "SE-02-A01: Load architecture templates and framework configuration",
+      "SE-02-A02: For each component, design consumed interfaces",
+      "SE-02-A03: For each component, design produced interfaces",
+      "SE-02-A04: Define internal component structure",
+      "SE-02-A05: Model operational activities and capabilities",
+      "SE-02-A06: Define constraints and dependencies",
+      "SE-02-A07: Generate versioned service_architecture files",
+      "SE-02-A08: Create interface_registry.json",
+      "SE-02-A09: Validate architecture completeness"
+    ],
+    "capabilities": [
+      "Interface design",
+      "Component modeling",
+      "Architecture validation",
+      "Registry management",
+      "Semantic versioning"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "SE-01_SystemAnalysis"
+      ],
+      "prerequisite_artifacts": [
+        "specs/machine/system_decomposition.json",
+        "context/working_memory.json (with framework_configuration)"
+      ],
+      "note": "Requires system decomposition before architecture design"
+    },
+    "outputs_required_by": [
+      "SE-06_SystemGraph",
+      "AV-01_InterfaceContracts",
+      "D-01_DevelopmentInit"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session",
+    "estimated_duration": "30-90 minutes (depends on number of components)",
+    "user_interaction_required": false,
+    "user_inputs": []
+  }
+}

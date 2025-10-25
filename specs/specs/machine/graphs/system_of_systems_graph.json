@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "generated": "2025-10-25T21:26:03.310402",
+    "framework": "UAF 1.2",
+    "framework_id": "uaf",
+    "component_term": "service",
+    "connection_term": "interface",
+    "num_nodes": 0,
+    "num_edges": 0,
+    "tool_version": "2.0"
+  },
+  "graph": {
+    "directed": true,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [],
+    "links": []
+  },
+  "knowledge_gaps": {
+    "orphaned_interfaces": [],
+    "unmet_dependencies": [],
+    "implied_mediators": [],
+    "structural_holes": [],
+    "unexplained_outputs": [],
+    "missing_bidirectional": []
+  },
+  "knowledge_gaps_summary": {
+    "total_gaps": 0,
+    "by_type": {
+      "orphaned_interfaces": 0,
+      "unmet_dependencies": 0,
+      "implied_mediators": 0,
+      "structural_holes": 0,
+      "unexplained_outputs": 0,
+      "missing_bidirectional": 0
+    }
+  },
+  "graph_analysis": {
+    "centrality": {
+      "degree_centrality": {},
+      "betweenness_centrality": {},
+      "closeness_centrality": {},
+      "eigenvector_centrality": "Error computing eigenvector centrality (may not converge)",
+      "pagerank": "Error computing PageRank",
+      "top_nodes": {
+        "degree_centrality": [],
+        "betweenness_centrality": [],
+        "closeness_centrality": [],
+        "top_nodes": [
+          [
+            "degree_centrality",
+            []
+          ],
+          [
+            "betweenness_centrality",
+            []
+          ],
+          [
+            "closeness_centrality",
+            []
+          ]
+        ]
+      }
+    },
+    "connectivity": {
+      "num_components": 0,
+      "component_sizes": [],
+      "largest_component_size": 0
+    },
+    "communities": {
+      "louvain_communities": "Error in Louvain: division by zero",
+      "label_propagation": {
+        "num_communities": 0,
+        "sizes": []
+      },
+      "girvan_newman": {
+        "iterations": 1,
+        "final_num_communities": 0,
+        "note": "Limited to 3 iterations for performance"
+      }
+    },
+    "cycles": {
+      "has_cycles": false,
+      "cycle_count": 0,
+      "cycle_length_distribution": {},
+      "cycles": [],
+      "cycle_basis": {
+        "num_fundamental_cycles": 0,
+        "basis_cycles": []
+      },
+      "feedback_loops": {
+        "count": 0,
+        "examples": []
+      }
+    },
+    "strongly_connected": {
+      "is_strongly_connected": "Error checking strong connectivity",
+      "num_sccs": 0,
+      "scc_sizes": [],
+      "largest_scc_size": 0,
+      "largest_scc_nodes": [],
+      "single_node_sccs": 0,
+      "multi_node_sccs": 0,
+      "condensation": {
+        "num_nodes": 0,
+        "num_edges": 0,
+        "is_dag": true,
+        "note": "Each node represents an SCC from original graph"
+      }
+    },
+    "dag": {
+      "is_dag": true,
+      "topological_sort": [],
+      "num_nodes_sorted": 0,
+      "longest_path": {
+        "path": [],
+        "length": -1,
+        "weighted_length": 0
+      },
+      "topological_levels": {
+        "num_levels": 0,
+        "nodes_per_level": [],
+        "levels": []
+      },
+      "antichains": {
+        "count": 1,
+        "note": "Sets of nodes with no ordering relationship"
+      }
+    }
+  }
+}

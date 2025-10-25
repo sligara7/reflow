@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "service_name": "S-03: Foundational Documents",
+    "step_id": "S-03",
+    "workflow": "00-setup",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Create foundational documents that define system mission, user scenarios, and success criteria",
+    "purpose": "Establish system purpose and requirements before architecture design",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "s_03_foundationaldocuments"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "working_memory_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-01_PathConfiguration"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads working_memory.json for path configuration",
+        "data_model": {
+          "paths": {
+            "reflow_root": "string",
+            "system_root": "string",
+            "templates_path": "string"
+          }
+        }
+      },
+      {
+        "name": "user_input_requirements",
+        "direction": "consumed",
+        "connected_services": [
+          "external_user"
+        ],
+        "interface_type": "user_interaction",
+        "description": "User provides system mission, scenarios, and success criteria",
+        "data_model": {
+          "system_mission": "string (2-3 paragraphs)",
+          "user_scenarios": "array of scenario objects",
+          "success_criteria": "array of measurable criteria"
+        }
+      },
+      {
+        "name": "foundational_documents",
+        "direction": "produced",
+        "connected_services": [
+          "SE-01_SystemAnalysis",
+          "all_subsequent_steps"
+        ],
+        "interface_type": "markdown_artifacts",
+        "description": "Creates three foundational markdown documents in docs/",
+        "artifacts": [
+          "docs/SYSTEM_MISSION_STATEMENT.md",
+          "docs/USER_SCENARIOS.md",
+          "docs/SUCCESS_CRITERIA.md"
+        ],
+        "criticality": "CRITICAL - Defines system purpose and requirements"
+      },
+      {
+        "name": "context_initialization",
+        "direction": "produced",
+        "connected_services": [
+          "all_subsequent_steps"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Initializes context tracking files",
+        "artifacts": [
+          "context/current_focus.md",
+          "context/step_progress_tracker.json"
+        ]
+      }
+    ],
+    "components": [
+      {
+        "name": "DocumentTemplateLoader",
+        "type": "template_component",
+        "responsibilities": [
+          "Load foundational document templates",
+          "Validate template structure"
+        ]
+      },
+      {
+        "name": "UserRequirementsCollector",
+        "type": "interaction_component",
+        "responsibilities": [
+          "Gather system mission from user",
+          "Collect user scenarios",
+          "Define success criteria"
+        ]
+      },
+      {
+        "name": "DocumentGenerator",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Generate SYSTEM_MISSION_STATEMENT.md",
+          "Generate USER_SCENARIOS.md",
+          "Generate SUCCESS_CRITERIA.md"
+        ]
+      },
+      {
+        "name": "ContextInitializer",
+        "type": "context_component",
+        "responsibilities": [
+          "Initialize current_focus.md",
+          "Initialize step_progress_tracker.json",
+          "Update working_memory.json"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "S-03-A01: Load foundational document templates",
+      "S-03-A02: Gather system mission from user",
+      "S-03-A03: Collect user scenarios and personas",
+      "S-03-A04: Define measurable success criteria",
+      "S-03-A05: Generate SYSTEM_MISSION_STATEMENT.md",
+      "S-03-A06: Generate USER_SCENARIOS.md",
+      "S-03-A07: Generate SUCCESS_CRITERIA.md",
+      "S-03-A08: Initialize context tracking files"
+    ],
+    "capabilities": [
+      "Requirements elicitation",
+      "Document generation from templates",
+      "Context tracking initialization",
+      "Success criteria definition"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "S-01_PathConfiguration"
+      ],
+      "prerequisite_artifacts": [
+        "context/working_memory.json"
+      ],
+      "note": "Requires path configuration before creating documents"
+    },
+    "outputs_required_by": [
+      "SE-01_SystemAnalysis",
+      "SE-02_ServiceArchitecture",
+      "All architecture and development steps"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session",
+    "estimated_duration": "10-15 minutes",
+    "user_interaction_required": true,
+    "user_inputs": [
+      "System mission statement",
+      "User scenarios",
+      "Success criteria"
+    ]
+  }
+}

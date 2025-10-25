@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "service_name": "S-01: Path Configuration",
+    "step_id": "S-01",
+    "workflow": "00-setup",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Configure all required paths for reflow operation - identifies reflow_root, system_root, and derives tool paths",
+    "purpose": "Foundational step that establishes path configuration stored in working_memory.json",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "s_01_pathconfiguration"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "user_input_paths",
+        "direction": "consumed",
+        "connected_services": [
+          "external_user"
+        ],
+        "interface_type": "user_interaction",
+        "description": "User provides reflow_root and system_root paths",
+        "data_model": {
+          "reflow_root": "string (absolute path)",
+          "system_root": "string (absolute path)"
+        }
+      },
+      {
+        "name": "reflow_directory_structure",
+        "direction": "consumed",
+        "connected_services": [
+          "reflow_filesystem"
+        ],
+        "interface_type": "filesystem_read",
+        "description": "Validates presence of tools/, templates/, workflows/ directories",
+        "validation": [
+          "tools/ exists",
+          "templates/ exists",
+          "workflows/ exists",
+          "definitions/ exists"
+        ]
+      },
+      {
+        "name": "working_memory_output",
+        "direction": "produced",
+        "connected_services": [
+          "S-03_FoundationalDocuments",
+          "SE-01_SystemAnalysis",
+          "all_subsequent_steps"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Creates context/working_memory.json with path configuration",
+        "data_model": {
+          "path_configuration": {
+            "reflow_root": "string",
+            "system_root": "string",
+            "tools_path": "string",
+            "templates_path": "string",
+            "workflow_steps_path": "string",
+            "definitions_path": "string"
+          }
+        },
+        "criticality": "CRITICAL - All subsequent steps depend on this artifact"
+      }
+    ],
+    "components": [
+      {
+        "name": "PathValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate reflow_root structure",
+          "Validate system_root existence",
+          "Check directory permissions"
+        ]
+      },
+      {
+        "name": "PathDeriver",
+        "type": "logic_component",
+        "responsibilities": [
+          "Derive tools_path from reflow_root",
+          "Derive templates_path",
+          "Derive workflow_steps_path",
+          "Derive definitions_path"
+        ]
+      },
+      {
+        "name": "WorkingMemoryInitializer",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Create context/ directory",
+          "Initialize working_memory.json",
+          "Store path configuration"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "S-01-A01: Identify and validate reflow_root path",
+      "S-01-A02: Identify or create system_root path",
+      "S-01-A03: Derive and store all tool paths",
+      "S-01-A04: Run validate_reflow_setup.py"
+    ],
+    "capabilities": [
+      "Path validation",
+      "Directory structure verification",
+      "Working memory initialization"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [],
+      "prerequisite_artifacts": [],
+      "note": "This is the first step - no dependencies"
+    },
+    "outputs_required_by": [
+      "S-03_FoundationalDocuments",
+      "SE-01_SystemAnalysis",
+      "All subsequent workflow steps"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session",
+    "estimated_duration": "2-5 minutes",
+    "user_interaction_required": true,
+    "user_inputs": [
+      "reflow_root path",
+      "system_root path"
+    ]
+  }
+}

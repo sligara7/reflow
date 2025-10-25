@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "service_name": "SE-01: System Analysis",
+    "step_id": "SE-01",
+    "workflow": "01-systems_engineering",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Analyze system requirements and decompose into services/components based on selected framework",
+    "purpose": "Transform requirements into architectural decomposition (list of services/components)",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "se_01_systemanalysis"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "foundational_documents_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-03_FoundationalDocuments"
+        ],
+        "interface_type": "markdown_artifacts",
+        "description": "Reads foundational documents for system understanding",
+        "artifacts": [
+          "docs/SYSTEM_MISSION_STATEMENT.md",
+          "docs/USER_SCENARIOS.md",
+          "docs/SUCCESS_CRITERIA.md"
+        ]
+      },
+      {
+        "name": "working_memory_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-01_PathConfiguration"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads working_memory.json for paths and framework configuration",
+        "data_model": {
+          "framework_configuration": {
+            "framework_id": "string (uaf_1_2, systems_biology, social_network, etc.)",
+            "framework_name": "string",
+            "component_terminology": "string (services, genes, agents, etc.)"
+          }
+        }
+      },
+      {
+        "name": "framework_definition",
+        "direction": "consumed",
+        "connected_services": [
+          "reflow_definitions"
+        ],
+        "interface_type": "json_reference",
+        "description": "Reads framework definition for component modeling guidance",
+        "artifact": "definitions/framework_registry.json"
+      },
+      {
+        "name": "system_decomposition_output",
+        "direction": "produced",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Produces system decomposition with component list",
+        "artifact": "specs/machine/system_decomposition.json",
+        "data_model": {
+          "components": [
+            {
+              "component_id": "string",
+              "component_name": "string",
+              "component_type": "string (based on framework)",
+              "description": "string",
+              "primary_responsibilities": [
+                "array of strings"
+              ]
+            }
+          ]
+        },
+        "criticality": "CRITICAL - Defines architectural scope"
+      }
+    ],
+    "components": [
+      {
+        "name": "RequirementsAnalyzer",
+        "type": "analysis_component",
+        "responsibilities": [
+          "Parse foundational documents",
+          "Extract functional requirements",
+          "Identify key capabilities"
+        ]
+      },
+      {
+        "name": "FrameworkAdapter",
+        "type": "logic_component",
+        "responsibilities": [
+          "Load framework definition",
+          "Map requirements to framework constructs",
+          "Apply framework-specific decomposition patterns"
+        ]
+      },
+      {
+        "name": "SystemDecomposer",
+        "type": "architecture_component",
+        "responsibilities": [
+          "Identify component boundaries",
+          "Apply single responsibility principle",
+          "Define component types and relationships"
+        ]
+      },
+      {
+        "name": "DecompositionValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate component coverage",
+          "Check for overlapping responsibilities",
+          "Ensure framework compliance"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "SE-01-A01: Load foundational documents and framework definition",
+      "SE-01-A02: Analyze system requirements and identify key capabilities",
+      "SE-01-A03: Apply framework-specific decomposition patterns",
+      "SE-01-A04: Define component boundaries and responsibilities",
+      "SE-01-A05: Generate system_decomposition.json",
+      "SE-01-A06: Validate decomposition completeness"
+    ],
+    "capabilities": [
+      "Requirements analysis",
+      "Framework-agnostic decomposition",
+      "Component boundary definition",
+      "Responsibility allocation"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "S-03_FoundationalDocuments"
+      ],
+      "prerequisite_artifacts": [
+        "docs/SYSTEM_MISSION_STATEMENT.md",
+        "docs/USER_SCENARIOS.md",
+        "docs/SUCCESS_CRITERIA.md",
+        "context/working_memory.json (with framework_configuration)"
+      ],
+      "note": "Requires foundational documents and framework selection"
+    },
+    "outputs_required_by": [
+      "SE-02_ServiceArchitecture",
+      "All subsequent architecture steps"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session",
+    "estimated_duration": "15-30 minutes",
+    "user_interaction_required": false,
+    "user_inputs": []
+  }
+}

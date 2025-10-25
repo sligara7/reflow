@@ -1,0 +1,193 @@
+{
+  "workflow_step_inventory": {
+    "00-setup": [
+      {
+        "step_id": "S-01",
+        "name": "Path Configuration",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "S-01A",
+        "name": "Architectural Framework Selection",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "S-02",
+        "name": "Directory Structure Creation",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "S-03",
+        "name": "Foundational Documents",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "S-04-decision",
+        "name": "System-of-Systems Decision",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "S-04",
+        "name": "System-of-Systems Decomposition (Optional)",
+        "phase": "initialization"
+      }
+    ],
+    "01-systems_engineering": [
+      {
+        "step_id": "SE-01",
+        "name": "System Analysis & Service Decomposition",
+        "phase": "analysis"
+      },
+      {
+        "step_id": "SE-02",
+        "name": "Service Architecture Specification",
+        "phase": "architecture"
+      },
+      {
+        "step_id": "SE-03",
+        "name": "Constraints & Template Validation",
+        "phase": "validation"
+      },
+      {
+        "step_id": "SE-04",
+        "name": "Deployment Architecture Reconciliation",
+        "phase": "architecture"
+      },
+      {
+        "step_id": "SE-05",
+        "name": "Consistency & Specification Verification",
+        "phase": "verification"
+      },
+      {
+        "step_id": "SE-06",
+        "name": "System Graph Generation",
+        "phase": "artifacts"
+      },
+      {
+        "step_id": "SE-07",
+        "name": "Architecture Evolution (OPTIONAL - For Updates)",
+        "phase": "evolution"
+      },
+      {
+        "step_id": "SE-08",
+        "name": "Mixed-Version Validation (OPTIONAL)",
+        "phase": "validation"
+      }
+    ],
+    "02-artifacts_visualization": [
+      {
+        "step_id": "AV-00-decision",
+        "name": "Development Intent Decision",
+        "phase": "decision"
+      },
+      {
+        "step_id": "AV-01",
+        "name": "Interface Contract Documents (ICDs)",
+        "phase": "artifacts"
+      },
+      {
+        "step_id": "AV-02",
+        "name": "Mermaid Diagrams & Visualizations",
+        "phase": "visualization"
+      },
+      {
+        "step_id": "AV-03",
+        "name": "Human-Readable Documentation",
+        "phase": "documentation"
+      },
+      {
+        "step_id": "AV-04",
+        "name": "Architecture-Only Handoff Package",
+        "phase": "handoff"
+      }
+    ],
+    "03-development": [
+      {
+        "step_id": "D-01",
+        "name": "Initialization & Environment Bootstrap",
+        "phase": "initialization"
+      },
+      {
+        "step_id": "D-02",
+        "name": "Core & Domain Model Realization",
+        "phase": "implementation"
+      },
+      {
+        "step_id": "D-03",
+        "name": "Persistence & Migration Enablement",
+        "phase": "implementation"
+      },
+      {
+        "step_id": "D-04",
+        "name": "Integration Surfaces & Security Hardening",
+        "phase": "implementation"
+      },
+      {
+        "step_id": "D-05",
+        "name": "Observability & Testing Pyramid",
+        "phase": "quality"
+      },
+      {
+        "step_id": "D-Post",
+        "name": "Feedback Loop Initialization",
+        "phase": "feedback"
+      }
+    ],
+    "04-testing_operations": [
+      {
+        "step_id": "TO-01",
+        "name": "Development Test Execution (DTE)",
+        "phase": "testing"
+      },
+      {
+        "step_id": "TO-02",
+        "name": "CI/CD Setup & Automation",
+        "phase": "automation"
+      },
+      {
+        "step_id": "TO-03",
+        "name": "Deployment Validation",
+        "phase": "deployment"
+      },
+      {
+        "step_id": "TO-04",
+        "name": "Operational Readiness",
+        "phase": "operations"
+      },
+      {
+        "step_id": "TO-05",
+        "name": "Operational Testing & Release",
+        "phase": "release"
+      }
+    ],
+    "feature_update": [
+      {
+        "step_id": "FU-01",
+        "name": "Change Proposal & Impact Analysis",
+        "phase": "analysis"
+      },
+      {
+        "step_id": "FU-02",
+        "name": "Architecture Re-Engineering & Decomposition",
+        "phase": "architecture"
+      },
+      {
+        "step_id": "FU-03",
+        "name": "Delta Highlighting & Approval",
+        "phase": "review"
+      },
+      {
+        "step_id": "FU-04",
+        "name": "Development Bootstrap & Implementation",
+        "phase": "implementation"
+      },
+      {
+        "step_id": "FU-05",
+        "name": "Integration, Validation & Release Preparation",
+        "phase": "validation"
+      }
+    ]
+  },
+  "total_steps": 35,
+  "timestamp": "2025-10-25"
+}

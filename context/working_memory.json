@@ -1,0 +1,92 @@
+{
+  "template_version": "2.0",
+  "system_name": "Reflow Workflow System",
+  "current_workflow": "01-systems_engineering",
+  "current_step": "SE-01",
+  "current_substep": "SE-01-A01",
+  "path_configuration": {
+    "reflow_root": "/home/user/reflow",
+    "system_root": "/home/user/reflow",
+    "tools_path": "/home/user/reflow/tools",
+    "templates_path": "/home/user/reflow/templates",
+    "workflow_steps_path": "/home/user/reflow/workflow_steps",
+    "definitions_path": "/home/user/reflow/definitions",
+    "note": "Meta-analysis: Reflow is both the tooling AND the system being analyzed"
+  },
+  "framework_configuration": {
+    "framework_id": "uaf",
+    "framework_name": "UAF 1.2 - Unified Architecture Framework",
+    "component_term": "workflow_step",
+    "connection_term": "data_artifact",
+    "architecture_file_type": "service_architecture.json",
+    "selected_framework_rationale": "UAF is most appropriate for this meta-analysis because workflow steps function as 'services' that consume and produce data artifacts. Each step has inputs (previous artifacts), processing logic (actions), and outputs (new artifacts). This maps cleanly to UAF's service-oriented architecture.",
+    "note": "Treating workflow steps as services with data artifact interfaces"
+  },
+  "analysis_configuration": {
+    "selected_analyses": {
+      "centrality": true,
+      "paths": true,
+      "connectivity": true,
+      "clustering": false,
+      "properties": true,
+      "community": true,
+      "cycles": true,
+      "scc": true,
+      "dag": true,
+      "flow": false
+    },
+    "analysis_rationale": "Selected analyses to detect: critical workflow steps (centrality), workflow dependencies (dag), circular dependencies (cycles), isolated steps (connectivity), workflow phases (scc), and modular groupings (community)",
+    "edge_weights_included": false,
+    "edge_weight_semantic": "N/A",
+    "knowledge_gap_detection_enabled": true,
+    "architectural_issues_detection_enabled": true,
+    "note": "Will identify orphaned steps, missing handoffs, implicit dependencies"
+  },
+  "context_management": {
+    "operations_since_refresh": 1,
+    "refresh_threshold": 5,
+    "last_refresh_timestamp": "2025-10-25 21:15:00",
+    "total_refreshes_this_workflow": 0,
+    "refresh_triggers": {
+      "threshold_triggered": 0,
+      "degradation_triggered": 0,
+      "manual_triggered": 0
+    },
+    "degradation_signals_detected": [],
+    "last_degradation_signal": null,
+    "context_health": "HEALTHY"
+  },
+  "hierarchy_level": "LEVEL_0",
+  "component_list": [],
+  "external_systems": [],
+  "global_constraints": {},
+  "progress_summary": {
+    "completed_steps": ["S-01", "S-01A", "S-02", "S-03"],
+    "current_focus": "Systems Engineering: Creating architecture representations for Reflow workflow steps",
+    "next_action": "Identify and enumerate all workflow steps across 6 workflows to create component list",
+    "validation_status": "PENDING"
+  },
+  "artifact_status": {
+    "service_architectures_created": 0,
+    "interfaces_deduced": 0,
+    "icds_generated": false,
+    "index_json_updated": false,
+    "interface_registry_created": false,
+    "validation_passed": false
+  },
+  "workflow_metrics": {
+    "workflow_start_time": "2025-10-25 21:15:00",
+    "current_step_start_time": "2025-10-25 21:15:00",
+    "total_operations": 1,
+    "total_tool_invocations": 0,
+    "total_validations": 0,
+    "validation_failures": 0,
+    "rework_cycles": 0
+  },
+  "context_metadata": {
+    "working_directory": "/home/user/reflow",
+    "last_validation_timestamp": null,
+    "pwd_verified_timestamp": "2025-10-25 21:15:00",
+    "pwd_verification_count": 1
+  }
+}
