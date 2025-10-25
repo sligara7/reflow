@@ -236,6 +236,7 @@ See `definitions/framework_registry.json` and `definitions/analysis_selection_gu
 ### Development Support
 - **Multi-language**: Support for Python, Java, TypeScript, Go, Rust, and more
 - **Validation**: Automated architecture validation and consistency checking
+- **Port Management**: Architectural port assignment prevents "Address already in use" deployment errors
 - **Documentation**: Auto-generated system documentation and interface contracts
 - **Testing**: Comprehensive testing pyramid with coverage enforcement
 
@@ -272,6 +273,7 @@ Each system gets a standardized structure:
 │   ├── machine/                # Machine-readable
 │   │   ├── service_arch/      # service_architecture.json files
 │   │   ├── interfaces/        # Interface Contract Documents
+│   │   ├── port_registry.json # Centralized port assignments (prevents conflicts!)
 │   │   └── graphs/            # system_of_systems_graph.json
 │   └── human/                  # Human-readable
 │       ├── visualizations/    # Mermaid diagrams
@@ -295,6 +297,7 @@ Each system gets a standardized structure:
 - `service_architecture.json` for each service (UAF 1.2 compliant)
 - `system_of_systems_graph.json` (complete system graph)
 - `interface_registry.json` (all interfaces cataloged)
+- `port_registry.json` (port assignments - prevents deployment conflicts!)
 - Interface Contract Documents (ICDs) for all APIs
 - `version_manifest.json` (artifact versioning)
 

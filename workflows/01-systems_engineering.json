@@ -213,17 +213,65 @@
             "Protocol specifications",
             "Authentication requirements"
           ]
+        },
+        {
+          "action_id": "SE-02-A04",
+          "description": "Assign ports and create port registry",
+          "template": "port_registry_template.json",
+          "location": "specs/machine/port_registry.json",
+          "purpose": "Prevent port conflicts by assigning unique ports to each service upfront",
+          "rationale": "Port conflicts cause 'Address already in use' errors during deployment. Solving this architecturally prevents operational issues.",
+          "port_assignment_strategy": {
+            "step_1": "Categorize each service (application|internal|data|infrastructure)",
+            "step_2": "Assign primary port based on category range (app:8000-8099, internal:8100-8199, etc.)",
+            "step_3": "Ensure no duplicate port assignments",
+            "step_4": "Assign secondary ports if needed (metrics: 9000+, admin: localhost only)",
+            "step_5": "Update each service_architecture.json -> deployment.ports with assigned port",
+            "step_6": "Create/update port_registry.json with complete port mapping"
+          },
+          "port_allocation_examples": {
+            "first_application_service": 8000,
+            "second_application_service": 8001,
+            "first_internal_service": 8100,
+            "postgres_database": 5432,
+            "redis_cache": 6379,
+            "metrics_endpoint_pattern": "primary_port + 1000 (e.g., 8000 → 9000)"
+          },
+          "validation": {
+            "tool": "validate_port_registry.py",
+            "run_after_creation": true,
+            "must_pass": "No port conflicts allowed before proceeding to development"
+          },
+          "updates_to_service_architecture": {
+            "location": "service_architecture.json -> deployment.ports.primary.port",
+            "required_fields": [
+              "port (integer)",
+              "protocol (HTTP|gRPC|TCP|UDP)",
+              "purpose (description)",
+              "binding (0.0.0.0 for all interfaces, 127.0.0.1 for localhost only)",
+              "public_facing (boolean)"
+            ]
+          },
+          "docker_implications": {
+            "docker_mapping": "Typically host_port == container_port for simplicity",
+            "example": "Service on port 8000 → docker-compose: '8000:8000'",
+            "conflict_prevention": "Port registry ensures no two containers map to same host port"
+          }
         }
       ],
-      "tools_used": [],
+      "tools_used": [
+        "validate_port_registry.py"
+      ],
       "templates_used": [
         "service_architecture_template.json",
         "component_specification_complete_template.json",
-        "interface_registry_enhanced_template.json"
+        "interface_registry_enhanced_template.json",
+        "port_registry_template.json"
       ],
       "outputs": [
-        "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service)",
-        "specs/machine/interface_registry.json"
+        "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service) - with port assignments",
+        "specs/machine/interface_registry.json",
+        "specs/machine/port_registry.json"
       ],
       "gates": [],
       "next_step": "SE-03"
@@ -314,10 +362,44 @@
             "Track iteration count - if exceeding 5 iterations, review your approach"
           ],
           "success_criteria": "validate_architecture.py returns zero errors for the service"
+        },
+        {
+          "action_id": "SE-03-A04",
+          "description": "Validate port registry for conflicts",
+          "tool": "validate_port_registry.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_port_registry.py {system_root}/specs/machine/port_registry.json",
+          "purpose": "Ensure no port conflicts exist before development begins",
+          "validation_checks": [
+            "PC-01: No duplicate primary ports across services",
+            "PC-02: No port overlap between any service ports (primary, metrics, admin)",
+            "PC-03: Ports within designated ranges (app:8000-8099, internal:8100-8199, etc.)",
+            "PC-04: Avoid privileged ports below 1024",
+            "PC-05: Docker host-container port mapping consistency"
+          ],
+          "common_port_conflicts": {
+            "duplicate_primary_ports": {
+              "symptom": "Two services assigned same primary port (e.g., both on 8000)",
+              "fix": "Reassign second service to next available port in range",
+              "prevention": "Use sequential allocation within ranges"
+            },
+            "metrics_conflicts_with_primary": {
+              "symptom": "Service A metrics port (9001) conflicts with Service B primary (9001)",
+              "fix": "Shift metrics ports to separate range or use primary+1000 pattern",
+              "prevention": "Standardize metrics port allocation pattern"
+            },
+            "well_known_port_conflicts": {
+              "symptom": "Service assigned port 5432 conflicts with PostgreSQL",
+              "fix": "Check third_party_defaults in port_ranges, avoid those ports",
+              "prevention": "Reserve well-known ports for their intended services"
+            }
+          },
+          "success_criteria": "validate_port_registry.py returns zero errors",
+          "blocking": "Yes - port conflicts MUST be resolved before development",
+          "rationale": "Catching port conflicts now prevents 'Address already in use' errors during deployment and testing phases"
         }
       ],
-      "tools_used": ["validate_architecture.py"],
-      "outputs": ["Validation reports", "Corrected service_architecture.json files"],
+      "tools_used": ["validate_architecture.py", "validate_port_registry.py"],
+      "outputs": ["Validation reports", "Corrected service_architecture.json files", "Validated port_registry.json"],
       "gates": [
         {
           "gate_id": "G-SE-03",
@@ -326,7 +408,8 @@
             "All service_architecture.json files pass validation",
             "Zero validation errors",
             "All required sections populated",
-            "Interface registry complete"
+            "Interface registry complete",
+            "Port registry validated with zero port conflicts"
           ],
           "blocking": true
         }

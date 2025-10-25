@@ -37,6 +37,38 @@
     "systemd_service": false,
     "python_uvicorn": false,
     "docker_container": false,
+    "ports": {
+      "primary": {
+        "port": 8000,
+        "protocol": "HTTP",
+        "purpose": "Main API endpoint",
+        "binding": "0.0.0.0",
+        "public_facing": true,
+        "health_check_path": "/health",
+        "note": "Port assigned from port_registry.json - must be unique across all services"
+      },
+      "metrics": {
+        "port": 9000,
+        "protocol": "HTTP",
+        "purpose": "Prometheus metrics",
+        "binding": "0.0.0.0",
+        "public_facing": false,
+        "note": "Optional - only if service exposes metrics"
+      },
+      "admin": {
+        "port": null,
+        "protocol": "HTTP",
+        "purpose": "Admin interface (optional)",
+        "binding": "127.0.0.1",
+        "public_facing": false,
+        "note": "Optional - localhost only if needed"
+      }
+    },
+    "docker_mapping": {
+      "host_port": 8000,
+      "container_port": 8000,
+      "note": "Typically host_port == container_port for simplicity. Defined in port_registry.json."
+    },
     "additional_info": {}
   },
   "performance": {

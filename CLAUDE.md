@@ -435,6 +435,109 @@ Results appear in `system_of_systems_graph.json` under `networkx_analysis` secti
 - **DAG**: Topological ordering (good for UAF dependencies, metabolic pathways)
 - **Flow**: Maximum throughput and bottlenecks
 
+## Port Management (CRITICAL for UAF Systems!)
+
+### Problem: Port Conflicts in Deployment
+
+**Common Issue**: Services fail to start with "Address already in use" because:
+- Previous containers not shutdown (leftover from testing)
+- Multiple services assigned same port
+- Conflicts with well-known ports (PostgreSQL 5432, Redis 6379, etc.)
+
+**Solution**: Architectural port management during SE phase, NOT operational fixing during deployment!
+
+### Port Assignment (Step SE-02-A04)
+
+**When**: During Systems Engineering workflow, after creating service architectures
+
+**Process**:
+1. **Categorize services**:
+   - Application services (user-facing APIs) → 8000-8099
+   - Internal services (background workers) → 8100-8199
+   - Data services (databases, caches) → 8200-8299
+   - Infrastructure (monitoring, logging) → 8300-8399
+
+2. **Assign sequential ports**:
+   - First app service → 8000
+   - Second app service → 8001
+   - First internal service → 8100
+   - etc.
+
+3. **Update architecture files**:
+   - `service_architecture.json` → `deployment.ports.primary.port`
+   - Create `specs/machine/port_registry.json` (centralized mapping)
+
+4. **Validate** (Step SE-03-A04):
+   ```bash
+   python3 validate_port_registry.py <system_root>/specs/machine/port_registry.json
+   ```
+
+### Port Registry Structure
+
+**Location**: `specs/machine/port_registry.json`
+
+**Key sections**:
+- `port_ranges`: Allocation strategy by service category
+- `service_ports`: Each service's primary, metrics, admin ports
+- `port_conflict_detection`: Validation rules (PC-01 through PC-05)
+- `docker_compose_generation`: How to generate docker-compose.yml
+
+**Example entry**:
+```json
+{
+  "character_service": {
+    "service_name": "Character Service",
+    "classification": "application",
+    "ports": {
+      "primary": {
+        "port": 8000,
+        "protocol": "HTTP",
+        "purpose": "REST API",
+        "binding": "0.0.0.0",
+        "public_facing": true,
+        "docker_mapping": {
+          "host_port": 8000,
+          "container_port": 8000
+        }
+      },
+      "metrics": {
+        "port": 9000,
+        "protocol": "HTTP",
+        "purpose": "Prometheus metrics"
+      }
+    }
+  }
+}
+```
+
+### Validation Rules
+
+**PC-01**: No duplicate primary ports (ERROR - blocking)
+**PC-02**: No port overlap between services (ERROR - blocking)
+**PC-03**: Ports within designated ranges (WARNING)
+**PC-04**: Avoid privileged ports <1024 (WARNING)
+**PC-05**: Docker host/container port consistency (INFO)
+
+### Troubleshooting Port Conflicts
+
+**"Address already in use"**:
+```bash
+# Find what's using the port
+docker ps | grep <service>
+netstat -tlnp | grep <port>  # Linux
+lsof -i :<port>              # Mac
+
+# Fix
+docker-compose down          # Stop all containers
+kill -9 <PID>                # Kill specific process
+# Update port_registry.json and reassign conflicting port
+```
+
+**Service can't connect to another service**:
+- In docker-compose: Use service name, NOT localhost: `http://character_service:8000`
+- Verify docker network: `docker network inspect <network>`
+- Check port_registry.json for correct port assignment
+
 ## Common Patterns
 
 ### Pattern 1: New Greenfield System
