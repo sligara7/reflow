@@ -1,0 +1,347 @@
+{
+  "metadata": {
+    "description": "Registry of architectural frameworks supported by Reflow",
+    "version": "1.0.0",
+    "purpose": "Allow system-agnostic modeling by selecting appropriate framework during setup"
+  },
+  "frameworks": {
+    "uaf": {
+      "framework_id": "uaf",
+      "name": "UAF 1.2 - Unified Architecture Framework",
+      "standard": "ISO/IEC 19540-1:2022 and ISO/IEC 19540-2:2022",
+      "domain": "Engineered systems (software, hardware, defense, enterprise architecture)",
+      "definitions_file": "architectural_definitions_uaf.json",
+      "template_file": "service_architecture_template.json",
+      "terminology": {
+        "node": "service",
+        "edge": "interface",
+        "architecture_file": "service_architecture.json",
+        "system_graph": "system_of_systems_graph.json",
+        "node_collection": "services",
+        "edge_collection": "interfaces"
+      },
+      "node_schema": {
+        "primary_type": "ServiceFunction",
+        "id_field": "service_id",
+        "name_field": "service_name",
+        "type_field": "classification",
+        "functions_field": "functions",
+        "interfaces_field": "interfaces",
+        "dependencies_field": "dependencies"
+      },
+      "edge_schema": {
+        "primary_type": "ServiceInterface",
+        "id_field": "name",
+        "type_field": "interface_type",
+        "direction_field": "direction",
+        "protocol_field": "protocol",
+        "connects_to_field": "connected_services"
+      },
+      "best_for": [
+        "Software microservices",
+        "Enterprise IT systems",
+        "Defense systems (DoDAF)",
+        "System-of-systems integration",
+        "Hardware/software co-design"
+      ],
+      "visualization_types": [
+        "Service dependency graph",
+        "Interface contract diagrams",
+        "Deployment architecture",
+        "Sequence diagrams"
+      ]
+    },
+    "systems_biology": {
+      "framework_id": "systems_biology",
+      "name": "Systems Biology Framework",
+      "standard": "Community practice (no formal ISO standard)",
+      "domain": "Biological systems (molecular to ecosystem scale)",
+      "definitions_file": "architectural_definitions_biology.json",
+      "template_file": "biological_component_template.json",
+      "terminology": {
+        "node": "component",
+        "edge": "interaction",
+        "architecture_file": "component_architecture.json",
+        "system_graph": "biological_network.json",
+        "node_collection": "components",
+        "edge_collection": "interactions"
+      },
+      "node_schema": {
+        "primary_type": "BiologicalComponent",
+        "id_field": "component_id",
+        "name_field": "component_name",
+        "type_field": "component_type",
+        "functions_field": "biological_functions",
+        "interfaces_field": "interactions",
+        "dependencies_field": "regulatory_dependencies"
+      },
+      "edge_schema": {
+        "primary_type": "BiologicalInteraction",
+        "id_field": "interaction_id",
+        "type_field": "interaction_type",
+        "direction_field": "directionality",
+        "mechanism_field": "molecular_mechanism",
+        "connects_to_field": "target_components"
+      },
+      "best_for": [
+        "Gene regulatory networks",
+        "Metabolic pathways",
+        "Protein-protein interaction networks",
+        "Cell signaling cascades",
+        "Ecological food webs",
+        "Population dynamics"
+      ],
+      "visualization_types": [
+        "Regulatory network diagrams",
+        "Pathway maps",
+        "Food web diagrams",
+        "Phylogenetic trees"
+      ],
+      "modeling_approaches": [
+        "Boolean networks",
+        "Ordinary differential equations (ODEs)",
+        "Agent-based models",
+        "Bayesian networks",
+        "Stoichiometric models"
+      ]
+    },
+    "social_network": {
+      "framework_id": "social_network",
+      "name": "Social Network Analysis (SNA)",
+      "standard": "Community practice (graph theory foundation)",
+      "domain": "Social systems (organizations, communities, influence networks)",
+      "definitions_file": "architectural_definitions_social.json",
+      "template_file": "agent_profile_template.json",
+      "terminology": {
+        "node": "agent",
+        "edge": "relationship",
+        "architecture_file": "agent_profile.json",
+        "system_graph": "social_network.json",
+        "node_collection": "agents",
+        "edge_collection": "relationships"
+      },
+      "node_schema": {
+        "primary_type": "SocialAgent",
+        "id_field": "agent_id",
+        "name_field": "agent_name",
+        "type_field": "agent_type",
+        "functions_field": "capabilities",
+        "interfaces_field": "relationships",
+        "dependencies_field": "dependencies"
+      },
+      "edge_schema": {
+        "primary_type": "SocialRelationship",
+        "id_field": "relationship_id",
+        "type_field": "relationship_type",
+        "direction_field": "direction",
+        "strength_field": "strength",
+        "connects_to_field": "connected_agents"
+      },
+      "best_for": [
+        "Organizational networks",
+        "Social influence analysis",
+        "Community detection",
+        "Information diffusion",
+        "Collaboration networks",
+        "Market ecosystems"
+      ],
+      "visualization_types": [
+        "Sociograms",
+        "Influence diagrams",
+        "Community structure graphs",
+        "Temporal network evolution"
+      ],
+      "analysis_metrics": [
+        "Degree centrality",
+        "Betweenness centrality",
+        "Closeness centrality",
+        "PageRank",
+        "Clustering coefficient",
+        "Community modularity"
+      ]
+    },
+    "ecological": {
+      "framework_id": "ecological",
+      "name": "Ecological Systems Framework",
+      "standard": "Community practice (ecological modeling)",
+      "domain": "Ecosystems (food webs, nutrient cycles, biodiversity)",
+      "definitions_file": "architectural_definitions_ecology.json",
+      "template_file": "ecological_entity_template.json",
+      "terminology": {
+        "node": "species_or_population",
+        "edge": "ecological_interaction",
+        "architecture_file": "ecological_entity.json",
+        "system_graph": "ecosystem_network.json",
+        "node_collection": "species",
+        "edge_collection": "interactions"
+      },
+      "node_schema": {
+        "primary_type": "EcologicalEntity",
+        "id_field": "entity_id",
+        "name_field": "entity_name",
+        "type_field": "trophic_level",
+        "functions_field": "ecological_functions",
+        "interfaces_field": "interactions",
+        "dependencies_field": "resource_dependencies"
+      },
+      "edge_schema": {
+        "primary_type": "EcologicalInteraction",
+        "id_field": "interaction_id",
+        "type_field": "interaction_type",
+        "direction_field": "energy_flow_direction",
+        "strength_field": "interaction_strength",
+        "connects_to_field": "target_entities"
+      },
+      "best_for": [
+        "Food web modeling",
+        "Nutrient cycling",
+        "Species competition/cooperation",
+        "Ecosystem resilience analysis",
+        "Conservation planning",
+        "Invasive species impact"
+      ],
+      "visualization_types": [
+        "Food web diagrams",
+        "Trophic pyramid",
+        "Nutrient flow diagrams",
+        "Species interaction networks"
+      ],
+      "interaction_types": [
+        "Predation",
+        "Competition",
+        "Mutualism",
+        "Parasitism",
+        "Commensalism"
+      ]
+    },
+    "complex_adaptive": {
+      "framework_id": "complex_adaptive",
+      "name": "Complex Adaptive Systems (CAS)",
+      "standard": "Multidisciplinary framework (Santa Fe Institute tradition)",
+      "domain": "Emergent, self-organizing systems (markets, cities, hybrid systems)",
+      "definitions_file": "architectural_definitions_cas.json",
+      "template_file": "adaptive_agent_template.json",
+      "terminology": {
+        "node": "adaptive_agent",
+        "edge": "interaction",
+        "architecture_file": "adaptive_agent.json",
+        "system_graph": "cas_network.json",
+        "node_collection": "agents",
+        "edge_collection": "interactions"
+      },
+      "node_schema": {
+        "primary_type": "AdaptiveAgent",
+        "id_field": "agent_id",
+        "name_field": "agent_name",
+        "type_field": "agent_type",
+        "functions_field": "behaviors",
+        "interfaces_field": "interactions",
+        "dependencies_field": "resource_dependencies",
+        "adaptation_field": "learning_rules"
+      },
+      "edge_schema": {
+        "primary_type": "AgentInteraction",
+        "id_field": "interaction_id",
+        "type_field": "interaction_type",
+        "direction_field": "direction",
+        "feedback_field": "feedback_type",
+        "connects_to_field": "target_agents"
+      },
+      "best_for": [
+        "Economic markets",
+        "Urban systems",
+        "Immune system modeling",
+        "Traffic flow",
+        "Evolutionary systems",
+        "Multi-agent simulations"
+      ],
+      "visualization_types": [
+        "Agent interaction networks",
+        "Phase space diagrams",
+        "Emergence patterns",
+        "Fitness landscapes"
+      ],
+      "key_concepts": [
+        "Emergence",
+        "Self-organization",
+        "Feedback loops",
+        "Adaptation",
+        "Non-linear dynamics",
+        "Multiscale interactions"
+      ]
+    },
+    "custom": {
+      "framework_id": "custom",
+      "name": "Custom Framework (LLM-Generated)",
+      "standard": "User-defined or LLM-generated",
+      "domain": "Novel or hybrid systems not covered by existing frameworks",
+      "definitions_file": "architectural_definitions_custom.json",
+      "template_file": "custom_node_template.json",
+      "terminology": {
+        "node": "component",
+        "edge": "connection",
+        "architecture_file": "component_architecture.json",
+        "system_graph": "system_graph.json",
+        "node_collection": "components",
+        "edge_collection": "connections"
+      },
+      "node_schema": {
+        "primary_type": "CustomNode",
+        "id_field": "node_id",
+        "name_field": "node_name",
+        "type_field": "node_type",
+        "functions_field": "functions",
+        "interfaces_field": "connections",
+        "dependencies_field": "dependencies"
+      },
+      "edge_schema": {
+        "primary_type": "CustomEdge",
+        "id_field": "connection_id",
+        "type_field": "connection_type",
+        "direction_field": "direction",
+        "connects_to_field": "target_nodes"
+      },
+      "best_for": [
+        "Hybrid systems (e.g., cyber-physical-social)",
+        "Novel research domains",
+        "Experimental modeling",
+        "Domain-specific requirements"
+      ],
+      "setup_requirements": [
+        "LLM researches domain literature",
+        "LLM creates custom definitions file",
+        "LLM generates appropriate templates",
+        "User reviews and approves framework"
+      ]
+    }
+  },
+  "framework_selection_guidance": {
+    "decision_tree": {
+      "engineered_system": "uaf",
+      "biological_system": "systems_biology",
+      "social_system": "social_network",
+      "ecological_system": "ecological",
+      "emergent_system": "complex_adaptive",
+      "novel_system": "custom"
+    },
+    "questions_to_ask": [
+      "Is this a human-engineered system (software, hardware)?",
+      "Does it involve biological components (genes, proteins, organisms)?",
+      "Is it primarily a social network (people, organizations, communities)?",
+      "Is it an ecological system (species, populations, ecosystems)?",
+      "Does it exhibit emergent, self-organizing behavior?",
+      "Is it a hybrid or novel system type?"
+    ]
+  },
+  "cross_framework_compatibility": {
+    "description": "All frameworks map to the same core abstraction (nodes + edges)",
+    "core_abstraction_file": "core_abstraction.json",
+    "graph_tool": "system_of_systems_graph.py",
+    "universal_analysis": [
+      "Graph topology (centrality, clustering, paths)",
+      "Knowledge gap detection",
+      "Validation (circular dependencies, orphaned nodes)",
+      "Visualization (networkx-based diagrams)"
+    ]
+  }
+}

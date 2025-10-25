@@ -1,10 +1,32 @@
 # Reflow - Systems Engineering Workflow
 
-A comprehensive systems engineering workflow for designing, architecting, and developing complex systems and system-of-systems.
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/anthropics/reflow)
+[![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
+[![Frameworks](https://img.shields.io/badge/frameworks-6%2B-green.svg)](#supported-frameworks)
 
-**Version 3.0.0** - Now with modular workflows for better maintainability!
+A comprehensive, **framework-agnostic** systems engineering workflow for designing, architecting, and developing complex systems across multiple domains.
 
-## Quick Start
+**:tada: Version 3.1.0** - Now framework-agnostic! Model software systems (UAF), biological networks, social systems, ecosystems, and more with the same workflow!
+
+---
+
+## :book: Table of Contents
+
+- [Quick Start](#quick-start)
+- [Supported Frameworks](#supported-frameworks)
+- [The 5 Workflows](#the-5-workflows)
+- [Key Benefits](#key-benefits)
+- [Directory Structure](#directory-structure)
+- [What You Get](#what-you-get)
+- [Usage Patterns](#common-usage-patterns)
+- [Documentation](#documentation)
+- [Requirements](#requirements)
+- [Version History](#version-history)
+- [Contributing](#contributing)
+- [License](#license)
+
+## :rocket: Quick Start
 
 ### 1. Create Your System Folder
 Create a new folder anywhere on your system (separate from reflow tooling):
@@ -32,6 +54,7 @@ Implement workflow in /path/to/reflow/workflows/00-setup.json on system in ~/pro
 
 The setup workflow will:
 - Configure all paths (reflow_root, system_root, tools_path)
+- **Select architectural framework** (UAF, Biology, Social, Ecological, CAS, or Custom)
 - Create the proper folder structure
 - Initialize foundational documents
 - Prepare for architecture and development
@@ -45,26 +68,78 @@ After setup, you'll progress through 5 focused workflows:
 
 Each workflow is focused, manageable, and builds on the previous one.
 
-## The 5 Workflows
+## :globe_with_meridians: Supported Frameworks
+
+Reflow is **framework-agnostic** - it works with multiple architectural frameworks across different domains. All frameworks map to the same core abstraction: **nodes (components) + edges (connections)**.
+
+### :desktop_computer: UAF 1.2 - Unified Architecture Framework (Default)
+- **Best for**: Software systems, hardware, enterprise architecture, defense systems
+- **Nodes**: Services, components
+- **Edges**: Interfaces, dependencies
+- **Examples**: Microservices, IoT systems, DoDAF architectures
+- **Standard**: ISO/IEC 19540-1:2022
+
+### :dna: Systems Biology Framework
+- **Best for**: Gene networks, metabolic pathways, protein interactions, ecosystems
+- **Nodes**: Genes, proteins, metabolites, species, populations
+- **Edges**: Activation, inhibition, catalysis, predation, mutualism
+- **Examples**: p53 regulatory network, glycolysis pathway, food webs
+- **Analysis**: Boolean networks, ODEs, agent-based models
+
+### :busts_in_silhouette: Social Network Analysis (SNA)
+- **Best for**: Organizations, communities, influence networks
+- **Nodes**: Individuals, groups, organizations, roles
+- **Edges**: Friendships, collaborations, communication, influence
+- **Examples**: Corporate org charts, social media analysis, team networks
+- **Analysis**: Centrality, community detection, information diffusion
+
+### :deciduous_tree: Ecological Systems Framework
+- **Best for**: Food webs, species interactions, ecosystem dynamics
+- **Nodes**: Species, populations, functional groups
+- **Edges**: Predation, competition, mutualism, parasitism
+- **Examples**: Yellowstone wolf-elk-vegetation cascade, coral reef ecosystems
+- **Analysis**: Trophic levels, resilience, biodiversity
+
+### :recycle: Complex Adaptive Systems (CAS)
+- **Best for**: Emergent systems, markets, cities, hybrid systems
+- **Nodes**: Adaptive agents with learning rules
+- **Edges**: Interactions with feedback
+- **Examples**: Stock markets, urban traffic, ant colonies
+- **Analysis**: Emergence, self-organization, multiscale dynamics
+
+### :wrench: Custom Framework (LLM-Generated)
+- **Best for**: Novel domains, hybrid systems, experimental research
+- **Process**: LLM researches domain and creates custom framework
+- **Examples**: Cyber-physical-social systems, unique research domains
+
+**Framework selection happens in step S-01A during setup workflow.**
+
+---
+
+## :gear: The 5 Workflows
 
 Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 
-### 1️⃣ **Setup** (`workflows/00-setup.json`)
+### :one: Setup (`workflows/00-setup.json`)
 - Configure paths (reflow_root, system_root, tools)
+- **NEW**: Select architectural framework (UAF, Biology, Social, Ecological, CAS, Custom)
 - Create directory structure
 - Initialize foundational documents
+- **Optional**: Enable automatic git commits at workflow milestones
 - **Duration**: 10-15 minutes
 
-### 2️⃣ **Systems Engineering** (`workflows/01-systems_engineering.json`)
-- Design architecture (UAF 1.2 compliant)
-- Create **versioned** `service_architecture_v{version}-{date}.json` for each service
-- Generate `system_of_systems_graph.json`
+### :two: Systems Engineering (`workflows/01-systems_engineering.json`)
+- Design architecture using selected framework
+- Create **versioned** component architecture files (`*_architecture_v{version}-{date}.json`)
+- Generate **framework-agnostic** `system_of_systems_graph.json` using NetworkX
+- **NEW**: Knowledge gap detection (missing nodes, edges, "dark matter" components)
 - Create `version_manifest.json` for tracking architecture history
-- Validate architecture constraints
-- **New**: SE-07 (Architecture Evolution) and SE-08 (Mixed-Version Validation)
+- Validate architecture constraints (circular dependencies, orphaned nodes, structural holes)
+- Generate `architecture_issues.json` with structured recommendations
+- **NEW**: Comprehensive graph analysis (centrality, paths, connectivity, clustering)
 - **Duration**: 2-4 hours
 
-### 3️⃣ **Artifacts & Visualization** (`workflows/02-artifacts_visualization.json`)
+### :three: Artifacts & Visualization (`workflows/02-artifacts_visualization.json`)
 - Generate Interface Contract Documents (ICDs)
 - Create Mermaid diagrams (system, service, sequence, deployment)
 - Generate **versioned** architecture documentation (`system_description_v{version}-{date}.md`)
@@ -72,30 +147,45 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 - **Conditional**: Skip if architecture-only
 - **Duration**: 1-2 hours
 
-### 4️⃣ **Development** (`workflows/03-development.json`)
+### :four: Development (`workflows/03-development.json`)
+- **Optional**: Research current development best practices (dependency mgmt, CI/CD, testing, security)
 - Implement services according to architecture
+- Modern tooling recommendations (poetry vs requirements.txt, ruff vs pylint, etc.)
 - 80% test coverage enforcement
 - Observability instrumentation
 - **Duration**: Days to weeks
 
-### 5️⃣ **Testing & Operations** (`workflows/04-testing_operations.json`)
+### :five: Testing & Operations (`workflows/04-testing_operations.json`)
 - CI/CD pipeline setup
 - Docker Compose validation
 - Operational testing (DTE, OTE)
 - Release certification
 - **Duration**: 1-2 weeks
 
-**Bonus**: `workflows/feature_update.json` for updating existing systems
+**:gift: Bonus**: `workflows/feature_update.json` for updating existing systems
 
-## Key Benefits
+---
 
-### Modular Workflows (NEW in v3.0!)
+## :sparkles: Key Benefits
+
+### :new: Optional Automation Features (v3.0.1)
+
+<details>
+<summary><b>Click to expand optional features</b></summary>
+
+- :arrow_forward: **Git Automation**: Automatic commits and pushes at workflow milestones (~36 commits for full workflow)
+- :mag: **Development Research**: Quick 5-10 min research of current best practices before coding
+- :white_check_mark: **Enhanced Validation**: Automatic detection of async/sync mismatches and architectural issues
+
+</details>
+
+### Modular Workflows (v3.0)
 - **Focused Workflows**: Each workflow has a clear purpose (80% easier to navigate)
 - **Independent Updates**: Modify one workflow without affecting others
 - **Clear Progress**: Know exactly where you are in the process
 - **Flexible Execution**: Skip workflows as needed (e.g., architecture-only)
 
-### Architecture Versioning (NEW in v3.0!)
+### Architecture Versioning (v3.0)
 - **Complete History**: All architecture versions preserved with semantic versioning
 - **Rollback Support**: Restore previous versions via symlinks
 - **Version Tracking**: `version_manifest.json` tracks all changes and rationale
@@ -121,7 +211,9 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 - **Documentation**: Auto-generated system documentation and interface contracts
 - **Testing**: Comprehensive testing pyramid with coverage enforcement
 
-## Reflow Directory Structure
+---
+
+## :file_folder: Directory Structure
 
 ### Reflow Tooling (One Place)
 ```
@@ -167,7 +259,9 @@ Each system gets a standardized structure:
     └── SUCCESS_CRITERIA.md
 ```
 
-## What You Get
+---
+
+## :package: What You Get
 
 ### Machine-Readable Artifacts
 - `service_architecture.json` for each service (UAF 1.2 compliant)
@@ -197,7 +291,9 @@ Each system gets a standardized structure:
 - Regression testing
 - Security and performance testing
 
-## Common Usage Patterns
+---
+
+## :bulb: Common Usage Patterns
 
 ### New System (Full Development)
 ```bash
@@ -224,26 +320,139 @@ Each system gets a standardized structure:
 "Implement workflow in /path/to/reflow/workflows/feature_update.json on system in ~/projects/my_system"
 ```
 
-## Documentation
+---
 
-- **[NEW_STRUCTURE_README.md](docs/restructuring/NEW_STRUCTURE_README.md)** - Quick reference for new workflow structure
-- **[RESTRUCTURING_DESIGN.md](docs/restructuring/RESTRUCTURING_DESIGN.md)** - Detailed design rationale
-- **[MIGRATION_GUIDE.md](docs/restructuring/MIGRATION_GUIDE.md)** - Migration from v2.x to v3.0
+## :books: Documentation
+
+### Workflow Structure
+- :page_facing_up: [NEW_STRUCTURE_README.md](docs/restructuring/NEW_STRUCTURE_README.md) - Quick reference for new workflow structure
+- :page_facing_up: [RESTRUCTURING_DESIGN.md](docs/restructuring/RESTRUCTURING_DESIGN.md) - Detailed design rationale
+- :page_facing_up: [MIGRATION_GUIDE.md](docs/restructuring/MIGRATION_GUIDE.md) - Migration from v2.x to v3.0
+
+### New Features (v3.0.1)
+- :page_facing_up: [GIT_AUTOMATION_GUIDE.md](docs/GIT_AUTOMATION_GUIDE.md) - Setup and usage of automatic git commits
+- :page_facing_up: [DEVELOPMENT_RESEARCH_FEATURE.md](docs/DEVELOPMENT_RESEARCH_FEATURE.md) - Development best practices research
+
+<details>
+<summary>Archived v2.x documentation</summary>
 
 For archived v2.x documentation, see `docs/archive/` and `docs/old_documentation/`.
 
-## Requirements
-- Python 3.8+ with dependencies: `networkx`
-- LLM agent capable of following structured JSON workflows
-- Docker (optional, for deployment validation)
-
-## Version History
-
-- **v3.0.0 (2025-10-24)**: Restructured into 5 modular workflows for better maintainability
-- **v2.5.0 and earlier**: Monolithic decision_flow.json (now archived as decision_flow.json.old)
+</details>
 
 ---
 
-*Built on UAF 1.2 architecture framework with automated context management*
+## :wrench: Requirements
 
-**🆕 Version 3.0 brings modular workflows, better path management, and comprehensive documentation!**
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| Python | 3.8+ | Core runtime |
+| networkx | latest | Graph operations |
+| LLM Agent | Claude/GPT-4 | Workflow execution |
+| Docker | optional | Deployment validation |
+
+<details>
+<summary>Installation</summary>
+
+```bash
+# Clone the repository
+git clone https://github.com/anthropics/reflow.git
+cd reflow
+
+# Install Python dependencies
+pip install networkx
+
+# Verify installation
+python3 -c "import networkx; print('✓ Dependencies installed')"
+```
+
+</details>
+
+---
+
+## :memo: Version History
+
+<details open>
+<summary><b>v3.1.0 (2025-10-25)</b> - Latest</summary>
+
+- :globe_with_meridians: **Framework-agnostic architecture** - Support for 6+ frameworks (UAF, Biology, Social, Ecological, CAS, Custom)
+- :dna: Systems Biology framework for gene networks, metabolic pathways, ecosystems
+- :busts_in_silhouette: Social Network Analysis framework for organizations and communities
+- :deciduous_tree: Ecological Systems framework for food webs and species interactions
+- :mag: **Knowledge gap detection** - Identifies missing nodes/edges (like "dark matter" in systems)
+- :chart_with_upwards_trend: **Comprehensive NetworkX analysis** - 20+ graph algorithms (centrality, paths, connectivity, clustering)
+- :wrench: New tool: `system_of_systems_graph_v2.py` (988 lines, framework-agnostic)
+- :file_folder: Framework selection in setup workflow (step S-01A)
+
+</details>
+
+<details>
+<summary>v3.0.1 (2025-10-24)</summary>
+
+- :white_check_mark: Added optional git automation (automatic commits at workflow milestones)
+- :mag: Added optional development best practices research (5-10 min quick search)
+- :shield: Enhanced architecture validation (async/sync consistency, architectural issues detection)
+- :book: Updated documentation with feature guides
+
+</details>
+
+<details>
+<summary>v3.0.0 (2025-10-24)</summary>
+
+- :recycle: Restructured into 5 modular workflows for better maintainability
+- :file_folder: Improved directory structure and path management
+- :bookmark: Added architecture versioning with semantic versioning
+
+</details>
+
+<details>
+<summary>v2.5.0 and earlier</summary>
+
+Monolithic `decision_flow.json` (now archived as `decision_flow.json.old`)
+
+</details>
+
+---
+
+## :handshake: Contributing
+
+We welcome contributions! Here's how you can help:
+
+- [ ] Report bugs or issues
+- [ ] Suggest new features or improvements
+- [ ] Improve documentation
+- [ ] Submit pull requests
+
+> [!NOTE]
+> For major changes, please open an issue first to discuss what you would like to change.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines (if available).
+
+---
+
+## :page_with_curl: License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## :star2: Acknowledgments
+
+Built on:
+- **Multiple architectural frameworks** - UAF 1.2, Systems Biology, SNA, Ecological Systems, CAS
+- **NetworkX** - Graph analysis and algorithms
+- **Systems Engineering** best practices
+- **Clean Architecture** principles
+- **Automated context management** for LLM agents
+
+---
+
+<div align="center">
+
+**:sparkles: Version 3.1.0 - Now framework-agnostic! Model any complex system across multiple domains! :sparkles:**
+
+Made with :heart: for systems engineers, biologists, social scientists, ecologists, and LLM agents
+
+[Documentation](docs/) • [Issues](https://github.com/anthropics/reflow/issues) • [Discussions](https://github.com/anthropics/reflow/discussions)
+
+</div>

@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.0.0
-**Last Updated**: 2025-10-24
+**Version**: 3.1.0
+**Last Updated**: 2025-10-25
 
 ## What is Reflow?
 
-Reflow is a **systems engineering workflow framework** designed specifically for LLM agents to design, architect, and develop complex systems and system-of-systems. It provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+Reflow is a **framework-agnostic systems engineering workflow** designed specifically for LLM agents to design, architect, and develop complex systems across multiple domains. It provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.1.0**: Support for 6+ architectural frameworks - UAF 1.2 (software/hardware), Systems Biology (gene networks, ecosystems), Social Network Analysis (organizations, communities), Ecological Systems (food webs), Complex Adaptive Systems (markets, emergent systems), and Custom frameworks.
 
 ## Critical Information for LLM Agents
 
@@ -86,20 +88,64 @@ Each workflow file contains:
 - **Completion**: Next workflow to transition to
 - **Quality Gates**: Validation requirements
 
+## Supported Frameworks (NEW in v3.1.0!)
+
+Reflow is **framework-agnostic** - all frameworks map to the same core abstraction: **nodes (components) + edges (connections)**. This allows the same workflow and tools to work across vastly different domains.
+
+### UAF 1.2 - Unified Architecture Framework (DEFAULT)
+- **Domain**: Engineered systems (software, hardware, enterprise, defense)
+- **Nodes**: Services, components
+- **Edges**: Interfaces, dependencies
+- **Standard**: ISO/IEC 19540-1:2022
+- **Use for**: Microservices, IoT, DoDAF/MODAF architectures
+
+### Systems Biology Framework
+- **Domain**: Biological systems (molecular to ecosystem scale)
+- **Nodes**: Genes, proteins, metabolites, species, populations
+- **Edges**: Activation, inhibition, catalysis, predation, mutualism
+- **Use for**: Gene regulatory networks, metabolic pathways, food webs
+
+### Social Network Analysis (SNA)
+- **Domain**: Social systems, organizations, communities
+- **Nodes**: Individuals, groups, organizations, roles
+- **Edges**: Friendships, collaborations, communication, influence
+- **Use for**: Organizational structure, social media analysis, collaboration networks
+
+### Ecological Systems Framework
+- **Domain**: Ecosystems, species interactions
+- **Nodes**: Species, populations, functional groups
+- **Edges**: Predation, competition, mutualism, parasitism
+- **Use for**: Food web modeling, conservation planning, ecosystem resilience
+
+### Complex Adaptive Systems (CAS)
+- **Domain**: Emergent, self-organizing systems
+- **Nodes**: Adaptive agents with learning rules
+- **Edges**: Interactions with feedback loops
+- **Use for**: Economic markets, urban systems, multi-agent simulations
+
+### Custom Framework (LLM-Generated)
+- **Domain**: Novel or hybrid systems
+- **Process**: LLM researches domain and creates custom framework definition
+- **Use for**: Cyber-physical-social systems, experimental domains
+
+**Framework selection**: Happens in step S-01A of setup workflow. LLM agents should choose the framework that best matches the system domain.
+
 ## Workflow Progression
 
 ### Typical New System Flow
 
 1. **Start**: Run `00-setup.json`
    - Configure all paths (reflow_root, system_root, tools_path)
+   - **NEW**: Select architectural framework (S-01A) - UAF, Biology, Social, Ecological, CAS, or Custom
    - Create directory structure
    - Initialize `context/working_memory.json`
+   - OPTIONAL: Configure git automation (S-03-A06)
 
 2. **Architecture**: Run `01-systems_engineering.json`
-   - Design service architectures (UAF 1.2)
+   - Design component architectures using selected framework
    - Create `service_architecture_v{version}-{date}.json` for each service
-   - Generate `system_of_systems_graph.json`
-   - Validate architecture constraints
+   - Generate `system_of_systems_graph.json` with architectural issue detection
+   - Validate architecture constraints (including async/sync consistency)
 
 3. **Documentation**: Run `02-artifacts_visualization.json`
    - Generate Interface Contract Documents (ICDs)
@@ -107,6 +153,7 @@ Each workflow file contains:
    - Generate versioned documentation
 
 4. **Build**: Run `03-development.json` (optional)
+   - OPTIONAL: Research modern development best practices (D-01-A00)
    - Implement services
    - 80% test coverage required
    - Observability instrumentation
@@ -151,14 +198,21 @@ Reflow uses **working memory** for context tracking:
 - Update it after completing actions
 - Refresh context every 4 operations
 
-### Architecture Versioning (NEW in v3.0!)
+### Architecture Versioning (v3.0+)
 
 All architecture files use **semantic versioning**:
 
 ```
+# UAF framework example:
 service_architecture_v1.0.0-20251024.json    ← Versioned file
 service_architecture.json                     ← Symlink to current version
+
+# Systems Biology framework example:
+component_architecture_v1.0.0-20251025.json  ← Versioned file
+component_architecture.json                   ← Symlink to current version
 ```
+
+**Note**: File naming depends on selected framework (service_architecture, component_architecture, agent_profile, etc.)
 
 **Benefits**:
 - Complete history preserved
@@ -257,11 +311,17 @@ Reflow enforces **10 quality gates** (7 blocking):
 
 ## Tools Available (in /path/to/reflow/tools/)
 
-Reflow provides **22 Python tools** including:
+Reflow provides **23 Python tools** including:
 
-**Architecture**:
-- `validate_architecture.py` - Validate service_architecture.json against UAF 1.2
-- `system_of_systems_graph.py` - Generate system integration graph
+**Architecture** (Framework-Agnostic):
+- `validate_architecture.py` - Validate architecture files against framework schemas
+- `system_of_systems_graph_v2.py` - **NEW!** Framework-agnostic graph generation with:
+  - Universal node/edge schema (works across all frameworks)
+  - **Knowledge gap detection** (6 gap types: orphaned interfaces, missing nodes, "dark matter" mediators, structural holes, etc.)
+  - **Comprehensive NetworkX analysis** (20+ algorithms: centrality, paths, connectivity, clustering)
+  - Supports UAF, Biology, Social, Ecological, CAS, and Custom frameworks
+  - Usage: `python3 system_of_systems_graph_v2.py index.json --detect-gaps --analyze-all`
+- `system_of_systems_graph.py` - Legacy tool (v1, UAF-only, still works for backward compatibility)
 - `generate_interface_contracts.py` - Create ICDs from architecture
 
 **Development**:
@@ -332,6 +392,8 @@ Reflow supports:
 - **docs/restructuring/NEW_STRUCTURE_README.md** - Quick reference
 - **docs/restructuring/RESTRUCTURING_DESIGN.md** - Design rationale
 - **docs/restructuring/MIGRATION_GUIDE.md** - v2.x to v3.0 migration
+- **docs/GIT_AUTOMATION_GUIDE.md** - Git automation setup and usage
+- **docs/DEVELOPMENT_RESEARCH_FEATURE.md** - Development best practices research
 
 ## Architecture Framework
 
@@ -341,16 +403,94 @@ Reflow is based on:
 - Clean architecture principles
 - Automated validation and quality gates
 
+## New Features (v3.0.1 - October 2024)
+
+### 🔄 Git Automation (OPTIONAL)
+
+**Step**: S-03-A06 in `00-setup.json`
+
+Reflow can automatically commit and push your work to a git repository at key milestones:
+
+- **When**: Optional setup during S-03-A06
+- **Asks user**: "Would you like to enable automatic git commits?"
+- **If Yes**: Configure git remote, branch, and author
+- **Commits**: ~36 automatic commits throughout workflows at logical checkpoints
+- **Benefits**: Automatic backup, version history, collaboration, recovery
+
+**Commit schedule**:
+- After each service architecture (SE-02)
+- After system graph validation (SE-06)
+- After documentation generation (AV-03)
+- After each service implementation (D-03)
+- After CI/CD setup (TO-02)
+
+**Documentation**: See `docs/GIT_AUTOMATION_GUIDE.md` for complete details
+
+---
+
+### 🔍 Development Best Practices Research (OPTIONAL)
+
+**Step**: D-01-A00 in `03-development.json`
+
+Before setting up development tooling, optionally research current industry standards:
+
+- **When**: Optional at start of D-01
+- **Asks user**: "Would you like to research current best practices?"
+- **Time**: 5-10 minutes (quick search, top results)
+- **Research areas**: Dependency management, containers, CI/CD, security, testing, linting, observability, build systems
+- **Output**: `context/development_tooling_research_{date}.md`
+- **Benefits**: Use modern tools (poetry vs requirements.txt, ruff vs pylint, etc.)
+
+**Example findings**:
+- Python: Use poetry/hatchling instead of requirements.txt
+- JavaScript: Use pnpm/yarn instead of npm
+- Linting: Use ruff (10-100x faster than alternatives)
+
+**Documentation**: See `docs/DEVELOPMENT_RESEARCH_FEATURE.md`
+
+---
+
+### 🏗️ Enhanced Architecture Validation
+
+**Step**: SE-06 in `01-systems_engineering.json`
+
+The `system_of_systems_graph.py` tool now detects architectural consistency issues:
+
+- **New detection**: Async/sync framework mismatches
+- **Checks**: Async HTTP services (uvicorn) should use async database drivers (asyncpg, motor)
+- **Output**: `specs/machine/architecture_issues.json` with structured recommendations
+- **Severity levels**: Critical, Warning, Info
+- **Benefits**: Catch architecture problems early, before implementation
+
+**Example issue detected**:
+```json
+{
+  "node": "character_service",
+  "description": "Uses async HTTP but database driver not specified",
+  "severity": "info",
+  "recommendation": "Use asyncpg or async SQLAlchemy"
+}
+```
+
+**Catches issues like**:
+- Mixing sync database with async HTTP (blocks event loop)
+- Circular dependencies between services
+- Missing interface definitions
+- Security boundary violations
+
+---
+
 ## Summary for LLM Agents
 
 1. **Reflow is a library**: Read-only reference, don't modify
 2. **Your system is separate**: Work happens in your system directory
 3. **Start with 00-setup**: Always configure paths first
 4. **6 workflows in sequence**: Follow the progression
-5. **Context is critical**: Maintain working_memory.json
-6. **Versioning matters**: Use semantic versioning for architecture
-7. **Quality gates enforced**: Validate before advancing
-8. **v3.0 is current**: Ignore archived v2.x files
+5. **Optional features available**: Git automation, development research, enhanced validation
+6. **Context is critical**: Maintain working_memory.json
+7. **Versioning matters**: Use semantic versioning for architecture
+8. **Quality gates enforced**: Validate before advancing
+9. **v3.0.1 is current**: Ignore archived v2.x files
 
 ---
 

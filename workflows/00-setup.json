@@ -177,7 +177,139 @@
       "tools_used": ["validate_reflow_setup.py"],
       "outputs": ["context/working_memory.json with complete path configuration"],
       "gates": [],
-      "next_step": "S-02"
+      "next_step": "S-01A"
+    },
+    {
+      "step_id": "S-01A",
+      "name": "Architectural Framework Selection",
+      "description": "Select the architectural framework appropriate for the system being modeled",
+      "phase": "initialization",
+      "step_file": "workflow_steps/setup/S-01A-FrameworkSelection.json",
+      "rationale": "Different systems (engineered, biological, social, ecological) require different architectural frameworks. UAF 1.2 is ideal for engineered systems, but biological systems benefit from Systems Biology frameworks, social systems from SNA, etc.",
+      "actions": [
+        {
+          "action_id": "S-01A-A01",
+          "description": "Present framework options to user",
+          "user_prompt": {
+            "question": "Which architectural framework best describes your system?",
+            "guidance": "Choose based on the primary nature of your system",
+            "options": {
+              "uaf": {
+                "display_name": "UAF 1.2 - Unified Architecture Framework (DEFAULT)",
+                "best_for": "Engineered systems: software services, hardware systems, enterprise architecture, defense systems (DoDAF/MODAF)",
+                "node_term": "service",
+                "edge_term": "interface",
+                "examples": "Microservices architecture, IoT systems, enterprise IT, system-of-systems integration"
+              },
+              "systems_biology": {
+                "display_name": "Systems Biology Framework",
+                "best_for": "Biological systems: gene networks, metabolic pathways, protein interactions, ecological food webs",
+                "node_term": "component",
+                "edge_term": "interaction",
+                "examples": "Gene regulatory networks, metabolic pathway modeling, protein-protein interactions, ecosystem dynamics"
+              },
+              "social_network": {
+                "display_name": "Social Network Analysis (SNA)",
+                "best_for": "Social systems: organizations, communities, influence networks, collaboration networks",
+                "node_term": "agent",
+                "edge_term": "relationship",
+                "examples": "Organizational structure, social media networks, team collaboration, community analysis"
+              },
+              "ecological": {
+                "display_name": "Ecological Systems Framework",
+                "best_for": "Ecosystems: food webs, species interactions, population dynamics, conservation planning",
+                "node_term": "species/population",
+                "edge_term": "ecological_interaction",
+                "examples": "Food web modeling, predator-prey dynamics, ecosystem resilience, biodiversity analysis"
+              },
+              "complex_adaptive": {
+                "display_name": "Complex Adaptive Systems (CAS)",
+                "best_for": "Emergent, self-organizing systems: markets, cities, hybrid systems with feedback and adaptation",
+                "node_term": "adaptive_agent",
+                "edge_term": "interaction",
+                "examples": "Economic markets, urban systems, traffic flow, multi-agent simulations"
+              },
+              "custom": {
+                "display_name": "Custom Framework (LLM-Generated)",
+                "best_for": "Novel or hybrid systems not covered by existing frameworks",
+                "node_term": "component (user-defined)",
+                "edge_term": "connection (user-defined)",
+                "examples": "Cyber-physical-social systems, experimental domains, unique research areas",
+                "requires_llm_research": true
+              }
+            },
+            "default": "uaf",
+            "help_text": "This determines terminology, templates, and validation rules. All frameworks use the same core abstraction (nodes + edges) and can be analyzed with networkx graph tools."
+          }
+        },
+        {
+          "action_id": "S-01A-A02",
+          "description": "Load selected framework definition",
+          "command_pattern": "Read framework_registry.json and architectural_definitions_{framework}.json",
+          "file_locations": [
+            "{reflow_root}/definitions/framework_registry.json",
+            "{reflow_root}/definitions/architectural_definitions_{selected_framework}.json"
+          ],
+          "note": "If custom framework selected, LLM researches domain and creates custom definitions file"
+        },
+        {
+          "action_id": "S-01A-A03",
+          "description": "Update working_memory.json with framework selection",
+          "updates": {
+            "architectural_framework": "{selected_framework_id}",
+            "framework_name": "{framework_display_name}",
+            "component_term": "{node_term}",
+            "connection_term": "{edge_term}",
+            "definitions_path": "{reflow_root}/definitions/architectural_definitions_{framework}.json",
+            "template_file": "{framework_template_file}",
+            "architecture_file_name": "{framework_architecture_file_name}"
+          },
+          "store_in": "context/working_memory.json"
+        },
+        {
+          "action_id": "S-01A-A04",
+          "description": "If custom framework: LLM research and definition creation",
+          "condition": "selected_framework == 'custom'",
+          "if_custom": {
+            "research_steps": [
+              "1. Ask user to describe the system domain and key entities",
+              "2. Research domain literature (web search for 5-10 min)",
+              "3. Identify common modeling approaches for this domain",
+              "4. Create architectural_definitions_custom.json following pattern of other frameworks",
+              "5. Create custom_node_template.json for architecture files",
+              "6. User reviews and approves generated framework"
+            ],
+            "research_areas": [
+              "Standard modeling approaches for this domain",
+              "Common terminology (what are the 'nodes'? what are the 'edges'?)",
+              "Validation criteria specific to this domain",
+              "Quality attributes relevant to this system type"
+            ],
+            "output_files": [
+              "{reflow_root}/definitions/architectural_definitions_custom.json",
+              "{reflow_root}/templates/custom_node_template.json"
+            ]
+          }
+        },
+        {
+          "action_id": "S-01A-A05",
+          "description": "Display framework confirmation",
+          "output_message": "Framework selected: {framework_name}\\nYour system will use '{component_term}' nodes connected by '{connection_term}' edges.\\nDefinitions: {definitions_path}\\nTemplate: {template_file}"
+        }
+      ],
+      "tools_used": [],
+      "outputs": [
+        "context/working_memory.json updated with framework selection",
+        "Optionally: architectural_definitions_custom.json (if custom selected)"
+      ],
+      "gates": [],
+      "next_step": "S-02",
+      "notes": [
+        "All frameworks map to the same core abstraction (nodes with functions + edges with interactions)",
+        "Framework choice affects terminology and templates but not core workflow structure",
+        "Tools like system_of_systems_graph.py work across all frameworks via framework adapters",
+        "UAF 1.2 is default and recommended for most engineered systems"
+      ]
     },
     {
       "step_id": "S-02",
