@@ -65,11 +65,17 @@ reflow/
 
 **Key Responsibilities**:
 - System analysis and service decomposition
-- Create `service_architecture.json` for each service (UAF 1.2)
+- Create **versioned** `service_architecture_v{version}-{date}.json` for each service (UAF 1.2)
+- Create symlinks to latest versions
 - Validate architectural constraints
 - Reconcile logical vs deployment architecture
 - Generate `system_of_systems_graph.json`
+- Create `version_manifest.json` for tracking architecture history
 - Finalize machine-readable architecture artifacts
+
+**New Features (v3.0.0)**:
+- **SE-07**: Architecture Evolution workflow (update existing architectures with versioning)
+- **SE-08**: Mixed-Version Validation workflow (test specific version combinations)
 
 **Prerequisites**: `00-setup`
 
@@ -84,9 +90,14 @@ reflow/
 - Ask if user plans to develop (conditional workflow)
 - Generate Interface Contract Documents (ICDs)
 - Generate Mermaid diagrams (system, service, sequence, deployment)
-- Create human-readable architecture documentation
+- Create **versioned** human-readable architecture documentation (`system_description_v{version}-{date}.md`)
+- Create symlinks to latest human docs
 - Create Architecture Decision Records (ADRs)
 - Generate reports and handoff documentation
+
+**New Features (v3.0.0)**:
+- Human documentation now version-paired with architecture files
+- Each architecture version gets a matching human doc version
 
 **Conditional**: Skip detailed artifacts if architecture-only
 
@@ -137,9 +148,17 @@ reflow/
 **Key Responsibilities**:
 - Change proposal and impact analysis
 - **MANDATORY**: Foundational alignment validation
-- Architecture re-engineering
+- **Architecture re-engineering with versioning** (follows SE-07 workflow)
+- **Semantic versioning decisions** (major/minor/patch based on impact)
 - Delta highlighting and approval
 - Implementation and validation
+
+**New Features (v3.0.0)**:
+- Automatic versioning of updated architecture files
+- Creates new versioned files, never overwrites old versions
+- Updates symlinks to point to new versions
+- Creates matching versioned human documentation
+- Updates version_manifest.json with change history
 
 **Entry Points**: `feature_or_service_change`
 
@@ -174,6 +193,24 @@ reflow/
 - Entry points and prerequisites explicit
 - Quality gates well-defined
 - LLM agent guidance included
+
+### 6. **Architecture Versioning** ✨ NEW
+- **Versioned architecture files**: `service_architecture_v{version}-{date}.json`
+- **Semantic versioning**: major.minor.patch with clear rules
+- **Symlink management**: Latest version always accessible
+- **Human doc pairing**: `system_description_v{version}-{date}.md` matches architecture
+- **Complete history**: All versions preserved, never deleted
+- **Rollback support**: Restore previous versions via symlinks
+- **Architecture Evolution**: SE-07 workflow for updating architectures
+- **Mixed-Version Validation**: SE-08 workflow for testing version combinations
+- **Version tracking**: `version_manifest.json` tracks all versions and changes
+
+**Benefits**:
+- Track architecture evolution over time
+- Test compatibility between specific service versions
+- Safely rollback to previous versions
+- Understand what changed and when
+- Support gradual rollouts with mixed versions
 
 ---
 

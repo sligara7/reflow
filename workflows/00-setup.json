@@ -68,6 +68,79 @@
       "optional_step": "S-04"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic retrieval, degradation detection, systematic rule enforcement",
+      "usage": "Use rag_agent_wrapper.py to wrap queries: python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual context management below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (file creation, tool execution, artifact generation)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately",
+      "rag_alternative": "RAG provides automatic periodic refresh every 4 operations or 12 minutes"
+    },
+    "degradation_signals_watch_for": [
+      "Asking about system name (it's in working_memory.json)",
+      "Forgetting current step",
+      "Working in wrong directory (pwd != system_root)",
+      "Using wrong template format",
+      "Repetitive errors (same error 2+ times)",
+      "Generating unwanted reports or summaries"
+    ],
+    "degradation_detection_tools": {
+      "rag_automatic": "If RAG enabled, use: python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} analyze --response response.txt",
+      "manual": "If RAG not enabled, watch for degradation signals above and manually trigger refresh"
+    },
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and step_progress_tracker.json",
+      "4. RELOAD - Read workflow file, definitions, templates (OR use RAG wrapper for automatic injection)",
+      "5. READ - current_focus.md and step_progress_tracker.json",
+      "6. CONFIRM - State system name, workflow, step, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read current_focus.md (OR use RAG wrapper for automatic context)",
+      "Read step_progress_tracker.json",
+      "Verify action matches current step",
+      "Check operations_since_refresh <= 4"
+    ],
+    "rag_tools_available": [
+      "rag_agent_wrapper.py wrap - Wrap query with relevant context",
+      "rag_agent_wrapper.py analyze - Detect degradation in responses",
+      "rag_agent_wrapper.py validate - Pre-operation validation",
+      "rag_agent_wrapper.py refresh - Force context refresh",
+      "generate_rag_embeddings.py --force-rebuild - Rebuild embeddings if workflows updated"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Time efficiency", "Error patterns", "Quality gate effectiveness", "Tool performance", "Documentation gaps"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_00-setup_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "What was confusing?",
+        "What could be automated?",
+        "What took longer than expected?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "S-01",
@@ -199,13 +272,95 @@
             "context/step_progress_tracker.json",
             "context/current_focus.md"
           ]
+        },
+        {
+          "action_id": "S-03-A05",
+          "description": "Initialize RAG-Enhanced Context Management (OPTIONAL but RECOMMENDED)",
+          "purpose": "Set up automatic context retrieval to prevent drift and enforce workflow adherence",
+          "tool": "generate_rag_embeddings.py",
+          "optional": true,
+          "recommended": "Strongly recommended to prevent context drift and systematic workflow enforcement",
+          "setup_steps": [
+            {
+              "step": 1,
+              "action": "Install RAG dependencies",
+              "command": "pip install sentence-transformers faiss-cpu numpy",
+              "check": "python3 -c 'import sentence_transformers, faiss, numpy'"
+            },
+            {
+              "step": 2,
+              "action": "Copy RAG configuration template",
+              "command": "cp {reflow_root}/templates/rag_context_config_template.json {system_root}/context/rag_context_config.json"
+            },
+            {
+              "step": 3,
+              "action": "Edit RAG config and set system_name",
+              "file": "{system_root}/context/rag_context_config.json",
+              "update": "Set system_name field to match actual system name"
+            },
+            {
+              "step": 4,
+              "action": "Generate embeddings for knowledge bases",
+              "command": "python3 {reflow_root}/tools/generate_rag_embeddings.py {system_root}",
+              "creates": [
+                "context/embeddings/decision_flow_embeddings.pkl",
+                "context/embeddings/workflow_steps_embeddings.pkl",
+                "context/embeddings/tool_reference_embeddings.pkl",
+                "context/embeddings/architectural_definitions_embeddings.pkl",
+                "context/embeddings/generation_summary.json"
+              ],
+              "duration": "1-3 minutes depending on workflow size"
+            },
+            {
+              "step": 5,
+              "action": "Verify RAG setup",
+              "command": "cat {system_root}/context/embeddings/generation_summary.json",
+              "success_criteria": "All knowledge bases generated successfully"
+            }
+          ],
+          "benefits": [
+            "Automatic context injection based on workflow state",
+            "Degradation detection (report generation, workflow violations)",
+            "Systematic enforcement of critical behavioral rules",
+            "Token-efficient context retrieval (2000-8000 tokens vs 5000-10000 manual)",
+            "Prevents LLM agents from forgetting workflow instructions"
+          ],
+          "rag_features": {
+            "knowledge_bases": [
+              "decision_flow_kb (workflow instructions and critical rules)",
+              "workflow_steps_kb (step-specific guidance)",
+              "tool_reference_kb (tool documentation)",
+              "architectural_definitions_kb (UAF 1.2 terms)",
+              "system_context_kb (runtime state)"
+            ],
+            "retrieval_strategies": [
+              "on_step_start - Load workflow instructions for current step",
+              "on_degradation_detected - Inject corrective context",
+              "on_tool_execution - Load tool usage documentation",
+              "on_user_query - Semantic search across all knowledge bases",
+              "periodic_refresh - Auto-refresh every 4 operations or 12 minutes"
+            ],
+            "degradation_patterns": [
+              "report_generation_attempt - Detects unwanted report generation",
+              "workflow_violation - Detects skipping steps or ignoring workflow",
+              "system_isolation_breach - Detects wrong directory or cross-system access",
+              "context_confusion - Detects forgetting system name or current step"
+            ]
+          },
+          "usage_in_workflows": {
+            "manual_mode": "LLM agent manually reads working_memory.json and current_focus.md",
+            "rag_enhanced_mode": "Use rag_agent_wrapper.py to automatically inject relevant context",
+            "example": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'Start next step' --strategy on_step_start"
+          },
+          "reference": "See {reflow_root}/docs/RAG_CONTEXT_MANAGEMENT.md for complete documentation"
         }
       ],
-      "tools_used": ["bootstrap_development_context.py"],
+      "tools_used": ["bootstrap_development_context.py", "generate_rag_embeddings.py (optional)"],
       "templates_used": [
         "working_memory_template.json",
         "step_progress_tracker_template.json",
-        "current_focus_template.md"
+        "current_focus_template.md",
+        "rag_context_config_template.json (optional)"
       ],
       "outputs": [
         "docs/SYSTEM_MISSION_STATEMENT.md",

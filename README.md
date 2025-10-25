@@ -57,15 +57,18 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 
 ### 2️⃣ **Systems Engineering** (`workflows/01-systems_engineering.json`)
 - Design architecture (UAF 1.2 compliant)
-- Create `service_architecture.json` for each service
+- Create **versioned** `service_architecture_v{version}-{date}.json` for each service
 - Generate `system_of_systems_graph.json`
+- Create `version_manifest.json` for tracking architecture history
 - Validate architecture constraints
+- **New**: SE-07 (Architecture Evolution) and SE-08 (Mixed-Version Validation)
 - **Duration**: 2-4 hours
 
 ### 3️⃣ **Artifacts & Visualization** (`workflows/02-artifacts_visualization.json`)
 - Generate Interface Contract Documents (ICDs)
 - Create Mermaid diagrams (system, service, sequence, deployment)
-- Generate architecture documentation
+- Generate **versioned** architecture documentation (`system_description_v{version}-{date}.md`)
+- Human docs are version-paired with architecture files
 - **Conditional**: Skip if architecture-only
 - **Duration**: 1-2 hours
 
@@ -91,6 +94,14 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 - **Independent Updates**: Modify one workflow without affecting others
 - **Clear Progress**: Know exactly where you are in the process
 - **Flexible Execution**: Skip workflows as needed (e.g., architecture-only)
+
+### Architecture Versioning (NEW in v3.0!)
+- **Complete History**: All architecture versions preserved with semantic versioning
+- **Rollback Support**: Restore previous versions via symlinks
+- **Version Tracking**: `version_manifest.json` tracks all changes and rationale
+- **Human Docs Paired**: Documentation versions match architecture versions exactly
+- **Mixed-Version Testing**: Test specific combinations of service versions
+- **Architecture Evolution**: Dedicated workflow (SE-07) for updating architectures
 
 ### Clean Separation
 - **No Repository Conflicts**: Systems are completely separate from reflow tooling

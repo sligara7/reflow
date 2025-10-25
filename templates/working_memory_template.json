@@ -1,11 +1,39 @@
 {
-  "template_version": "1.0",
-  "template_description": "Template for working_memory.json - context tracking during architecture workflow",
+  "template_version": "2.0",
+  "template_description": "Template for working_memory.json - context tracking with context management v3.0",
+  "template_notes": "Version 2.0 adds comprehensive context management fields for preventing context drift and token exhaustion",
   "system_name": "REPLACE_WITH_SYSTEM_NAME",
+  "current_workflow": "CURRENT_WORKFLOW_ID (e.g., 01-systems_engineering)",
   "current_step": "CURRENT_STEP_ID",
   "current_substep": "CURRENT_SUBSTEP_ID",
-  "operations_since_refresh": 0,
-  "last_refresh_timestamp": "YYYY-MM-DD HH:MM:SS",
+  "path_configuration": {
+    "reflow_root": "/absolute/path/to/reflow",
+    "system_root": "/absolute/path/to/system",
+    "tools_path": "/absolute/path/to/reflow/tools",
+    "templates_path": "/absolute/path/to/reflow/templates",
+    "workflow_steps_path": "/absolute/path/to/reflow/workflow_steps",
+    "note": "These paths are set during Setup workflow (00-setup) and must NEVER be hardcoded elsewhere"
+  },
+  "context_management": {
+    "operations_since_refresh": 0,
+    "refresh_threshold": 5,
+    "last_refresh_timestamp": "YYYY-MM-DD HH:MM:SS",
+    "total_refreshes_this_workflow": 0,
+    "refresh_triggers": {
+      "threshold_triggered": 0,
+      "degradation_triggered": 0,
+      "manual_triggered": 0
+    },
+    "degradation_signals_detected": [],
+    "last_degradation_signal": null,
+    "context_health": "HEALTHY|DEGRADING|CRITICAL",
+    "notes": [
+      "Increment operations_since_refresh after each real operation (see context_management_template.json)",
+      "When operations_since_refresh >= 5, execute context refresh sequence",
+      "When degradation signal detected, execute refresh immediately regardless of counter",
+      "After refresh, reset operations_since_refresh to 0 and update last_refresh_timestamp"
+    ]
+  },
   "hierarchy_level": "LEVEL_0_CLASSIFICATION",
   "component_list": [],
   "external_systems": [],
@@ -24,10 +52,21 @@
     "interface_registry_created": false,
     "validation_passed": false
   },
+  "workflow_metrics": {
+    "workflow_start_time": "YYYY-MM-DD HH:MM:SS",
+    "current_step_start_time": "YYYY-MM-DD HH:MM:SS",
+    "total_operations": 0,
+    "total_tool_invocations": 0,
+    "total_validations": 0,
+    "validation_failures": 0,
+    "rework_cycles": 0,
+    "note": "These metrics feed into self-improvement - track diligently"
+  },
   "context_metadata": {
     "working_directory": "systems/<system_name>",
     "last_validation_timestamp": null,
-    "degradation_signals": [],
-    "refresh_triggers_met": []
+    "pwd_verified_timestamp": null,
+    "pwd_verification_count": 0,
+    "note": "pwd should be verified before EVERY significant operation"
   }
 }

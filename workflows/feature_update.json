@@ -23,6 +23,68 @@
       "mandatory_validation": "Foundational alignment check"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic context refresh, degradation detection, token-efficient retrieval",
+      "usage": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual operations counter and refresh sequence below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (file modification, tool execution, validation)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately"
+    },
+    "degradation_signals_watch_for": [
+      "Forgetting which service being updated",
+      "Modifying wrong version of architecture",
+      "Skipping foundational alignment validation (MANDATORY)",
+      "Creating breaking changes without version increment",
+      "Working in wrong directory (pwd != system_root)"
+    ],
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and step_progress_tracker.json",
+      "4. RELOAD - Read workflow file, existing architecture, change proposal",
+      "5. READ - current_focus.md and step_progress_tracker.json",
+      "6. CONFIRM - State system name, service being updated, change type, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read current_focus.md",
+      "Read step_progress_tracker.json",
+      "Verify foundational alignment passed (MANDATORY)",
+      "Check operations_since_refresh <= 4",
+      "Verify creating new version, not overwriting old"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Impact analysis accuracy", "Version increment decisions", "Regression test effectiveness", "Change documentation quality"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_feature_update_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "Was impact analysis accurate?",
+        "Were version increments appropriate?",
+        "Did regression testing catch issues?",
+        "What took longer than expected?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "FU-01",
@@ -89,26 +151,58 @@
       "actions": [
         {
           "action_id": "FU-02-A01",
-          "description": "Update affected service_architecture.json files",
-          "pattern": "Increment version (e.g., v1 → v2)",
-          "location_pattern": "specs/machine/service_arch/{service}/service_architecture_v{n+1}.json"
+          "description": "Update affected service_architecture.json files using VERSIONING",
+          "versioning_workflow": "Follow SE-07 (Architecture Evolution) workflow for each affected service",
+          "semantic_versioning_decision": {
+            "determine_version_increment": "Based on impact analysis from FU-01-A03",
+            "major": "If breaking changes identified → increment major version (v1.x.x → v2.0.0)",
+            "minor": "If new capabilities added (non-breaking) → increment minor (v1.0.x → v1.1.0)",
+            "patch": "If bug fixes or clarifications only → increment patch (v1.0.0 → v1.0.1)"
+          },
+          "procedure": {
+            "step_1": "Determine version increment for each affected service",
+            "step_2": "Create new versioned file: service_architecture_v{new_version}-{YYYYMMDD}.json",
+            "step_3": "Copy current version and make changes in new file",
+            "step_4": "Update symlink to point to new version",
+            "step_5": "Update version_manifest.json (add new version entry, update latest_version)",
+            "step_6": "Preserve old version (NEVER delete)"
+          },
+          "location_pattern": "specs/machine/service_arch/{service}/service_architecture_v{new_version}-{YYYYMMDD}.json",
+          "reference": "See SE-07 in systems_engineering workflow for detailed versioning procedures"
         },
         {
           "action_id": "FU-02-A02",
           "description": "Update interface_registry.json if interfaces changed",
-          "purpose": "Maintain consistency of interface definitions"
+          "purpose": "Maintain consistency of interface definitions",
+          "note": "Interface registry typically has single version, but can be versioned if major system-wide interface changes"
         },
         {
           "action_id": "FU-02-A03",
-          "description": "Run validate_architecture.py on updated files",
-          "command_pattern": "python3 {reflow_root}/tools/validate_architecture.py {system_root} --service {service_name}",
-          "success_criteria": "All validations pass"
+          "description": "Update human-readable documentation with new version",
+          "versioning": "Create system_description_v{new_version}-{YYYYMMDD}.md to match architecture version",
+          "pairing_rule": "Human doc version MUST match architecture version exactly",
+          "symlink_update": "Update system_description.md symlink to point to new version",
+          "reference": "See AV-03-A02 in artifacts workflow for human doc versioning",
+          "includes": [
+            "Document what changed from previous version",
+            "Explain rationale for changes",
+            "Highlight breaking changes clearly",
+            "Provide migration guidance if applicable"
+          ]
         },
         {
           "action_id": "FU-02-A04",
+          "description": "Run validate_architecture.py on updated files",
+          "command_pattern": "python3 {reflow_root}/tools/validate_architecture.py {system_root}",
+          "note": "Validates via symlinks, so validates new version",
+          "success_criteria": "All validations pass"
+        },
+        {
+          "action_id": "FU-02-A05",
           "description": "Regenerate system_of_systems_graph.json",
           "tool": "system_of_systems_graph.py",
           "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "note": "Uses symlinks from index.json, so automatically reflects new versions",
           "purpose": "Update graph to reflect architecture changes"
         }
       ],

@@ -30,6 +30,69 @@
       "first_step": "D-01"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic context refresh, degradation detection, token-efficient retrieval",
+      "usage": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual operations counter and refresh sequence below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (file creation, tool execution, code implementation)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately"
+    },
+    "degradation_signals_watch_for": [
+      "Implementing code for undefined interface",
+      "Modifying API without updating contracts",
+      "Writing tests for non-existent endpoints",
+      "Schema drift between code and data models",
+      "Working in wrong directory (pwd != system_root)",
+      "Forgetting which service being implemented"
+    ],
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and dev_progress_tracker.json",
+      "4. RELOAD - Read workflow file, service_architecture files, interface_registry.json",
+      "5. READ - dev_current_focus.md and dev_progress_tracker.json",
+      "6. CONFIRM - State system name, service being developed, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read dev_current_focus.md",
+      "Read dev_progress_tracker.json",
+      "Verify implementing defined interface/component",
+      "Check operations_since_refresh <= 4",
+      "Verify changes align with service_architecture.json"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Time efficiency", "Code quality", "Test coverage", "Build success rate", "Integration issues"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_03-development_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "What patterns emerged across services?",
+        "What caused most build/test failures?",
+        "What took longer than expected?",
+        "How could code generation be improved?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "D-01",

@@ -32,6 +32,67 @@
       "preset_choice": "architecture_only"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic context refresh, degradation detection, token-efficient retrieval",
+      "usage": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual operations counter and refresh sequence below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (file creation, tool execution, artifact generation)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately"
+    },
+    "degradation_signals_watch_for": [
+      "Asking about system name (it's in working_memory.json)",
+      "Forgetting current step",
+      "Working in wrong directory (pwd != system_root)",
+      "Creating diagrams for wrong system",
+      "Generating documentation that doesn't match architecture"
+    ],
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and step_progress_tracker.json",
+      "4. RELOAD - Read workflow file, service_architecture files, templates",
+      "5. READ - current_focus.md and step_progress_tracker.json",
+      "6. CONFIRM - State system name, workflow, step, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read current_focus.md",
+      "Read step_progress_tracker.json",
+      "Verify action matches current step",
+      "Check operations_since_refresh <= 4"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Time efficiency", "Documentation clarity", "Diagram generation time", "ICD completeness", "Tool effectiveness"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_02-artifacts_visualization_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "Were generated diagrams accurate and helpful?",
+        "What documentation was missing?",
+        "What took longer than expected?",
+        "How could diagram generation be improved?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "AV-00-decision",
@@ -182,16 +243,38 @@
         },
         {
           "action_id": "AV-03-A02",
-          "description": "Generate per-service architecture documents",
-          "location_pattern": "specs/human/service_arch/{service_name}_architecture.md",
+          "description": "Generate VERSIONED per-service human-readable documentation",
+          "versioning": {
+            "filename_format": "system_description_v{major}.{minor}.{patch}-{YYYYMMDD}.md",
+            "must_match_architecture_version": true,
+            "pairing_rule": "MUST create human doc for EVERY architecture version",
+            "example": "system_description_v1.0.0-20251024.md (pairs with service_architecture_v1.0.0-20251024.json)"
+          },
+          "location_pattern": "specs/human/service_arch/{service_name}/system_description_v{version}-{YYYYMMDD}.md",
+          "symlink_creation": {
+            "create": "system_description.md",
+            "points_to": "system_description_v{latest_version}-{YYYYMMDD}.md",
+            "purpose": "Easy access to latest human-readable docs",
+            "command": "ln -s system_description_v{version}-{date}.md system_description.md"
+          },
+          "translation_source": "Translate from service_architecture_v{version}-{YYYYMMDD}.json (same version)",
+          "preservation_rule": "NEVER delete old versions - maintain complete documentation history",
           "includes": [
-            "Service purpose and responsibilities",
-            "Component breakdown",
-            "Interface specifications",
-            "Data models",
-            "Deployment requirements"
+            "Service purpose and responsibilities (plain English)",
+            "Component breakdown (non-technical explanation)",
+            "Interface specifications (with examples and use cases)",
+            "Data models (human-readable descriptions)",
+            "Deployment requirements (clear language)",
+            "Architecture decisions and rationale",
+            "Version history and what changed from previous version"
           ],
-          "source": "service_architecture.json for each service"
+          "format_requirements": [
+            "Written for human consumption, not machines",
+            "Use clear, non-jargon language where possible",
+            "Include examples and diagrams where helpful",
+            "Explain WHY not just WHAT",
+            "Cross-reference to machine-readable architecture"
+          ]
         },
         {
           "action_id": "AV-03-A03",

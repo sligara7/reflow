@@ -30,6 +30,69 @@
       "first_step": "SE-01"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic context refresh, degradation detection, token-efficient retrieval",
+      "usage": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual operations counter and refresh sequence below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (file creation, tool execution, artifact generation)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately"
+    },
+    "degradation_signals_watch_for": [
+      "Asking about system name (it's in working_memory.json)",
+      "Forgetting current step",
+      "Working in wrong directory (pwd != system_root)",
+      "Using wrong template format",
+      "Creating artifacts in wrong locations",
+      "Implementing features not in service_architecture.json"
+    ],
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and step_progress_tracker.json",
+      "4. RELOAD - Read workflow file, architectural_definitions.json, templates",
+      "5. READ - current_focus.md and step_progress_tracker.json",
+      "6. CONFIRM - State system name, workflow, step, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read current_focus.md",
+      "Read step_progress_tracker.json",
+      "Verify action matches current step",
+      "Check operations_since_refresh <= 4",
+      "Verify not about to generate report/summary (do real work)"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Time efficiency", "Error patterns", "Quality gate effectiveness", "Tool performance", "Architecture validation issues"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_01-systems_engineering_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "What architecture decisions were difficult?",
+        "Which validation gave false positives/negatives?",
+        "What took longer than expected?",
+        "What could be automated?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "SE-01",
@@ -96,9 +159,26 @@
       "actions": [
         {
           "action_id": "SE-02-A01",
-          "description": "For each service, create service_architecture.json",
+          "description": "For each service, create VERSIONED service_architecture.json",
           "template": "service_architecture_template.json",
-          "location_pattern": "specs/machine/service_arch/{service_name}/service_architecture_v1.json",
+          "versioning": {
+            "filename_format": "service_architecture_v{major}.{minor}.{patch}-{YYYYMMDD}.json",
+            "initial_version": "v1.0.0-{date}",
+            "semantic_versioning": {
+              "major": "Breaking interface changes, fundamental architecture changes",
+              "minor": "New capabilities, non-breaking interface additions",
+              "patch": "Bug fixes, clarifications, documentation improvements"
+            },
+            "example": "service_architecture_v1.0.0-20251024.json"
+          },
+          "location_pattern": "specs/machine/service_arch/{service_name}/service_architecture_v1.0.0-{YYYYMMDD}.json",
+          "symlink_creation": {
+            "create": "service_architecture.json",
+            "points_to": "service_architecture_v1.0.0-{YYYYMMDD}.json",
+            "purpose": "Tools use symlink to always reference latest version",
+            "command": "ln -s service_architecture_v1.0.0-{date}.json service_architecture.json"
+          },
+          "preservation_rule": "NEVER delete old versions - they are historical record and enable rollback",
           "uaf_compliance": "UAF 1.2 framework",
           "required_sections": [
             "metadata (name, version, description)",
@@ -181,9 +261,59 @@
         },
         {
           "action_id": "SE-03-A03",
-          "description": "Fix validation errors if any",
-          "pattern": "Iterative validation and correction",
-          "note": "Must achieve zero validation errors before proceeding"
+          "description": "Issue Resolution Loop - Fix validation errors iteratively",
+          "pattern": "MANDATORY LOOP - Do not skip this",
+          "loop_structure": {
+            "step_1": "Run validate_architecture.py for service",
+            "step_2": "Capture and analyze ALL errors and warnings from tool output",
+            "step_3": "Categorize issues (missing sections, type errors, UAF violations, referential integrity)",
+            "step_4": "Fix issues by category (see common_issues below)",
+            "step_5": "Re-run validate_architecture.py on same service",
+            "step_6": "If errors remain, LOOP back to step_2",
+            "step_7": "If validation passes (zero errors), move to next service",
+            "termination": "Loop continues until zero errors OR max 5 iterations (then escalate to user)"
+          },
+          "common_issues_and_fixes": [
+            {
+              "issue": "Missing required section (e.g., data_models, deployment_architecture)",
+              "fix": "Add section from template, populate with service-specific content",
+              "tool_reference": "Check templates/service_architecture_template.json for required structure"
+            },
+            {
+              "issue": "Invalid JSON structure or syntax",
+              "fix": "Fix JSON syntax errors, ensure valid brackets/braces/commas",
+              "verification": "Use JSON validator before re-running architecture validation"
+            },
+            {
+              "issue": "UAF 1.2 compliance violation",
+              "fix": "Review definitions/architectural_definitions.json for UAF requirements, update architecture accordingly",
+              "examples": "Wrong classification, missing mandatory fields, incorrect nesting"
+            },
+            {
+              "issue": "Referential integrity error (interface not found in registry)",
+              "fix": "Either add missing interface to interface_registry.json OR correct interface reference in service_architecture.json",
+              "cross_check": "Verify interface exists in specs/machine/interface_registry.json"
+            },
+            {
+              "issue": "Type mismatch (field expects array but got string)",
+              "fix": "Correct field type to match template schema",
+              "tool_reference": "Check template for correct types"
+            },
+            {
+              "issue": "Empty or placeholder values in required fields",
+              "fix": "Replace placeholders with actual architectural decisions",
+              "examples": "REPLACE_WITH_X, TBD, TODO must be replaced with real values"
+            }
+          ],
+          "llm_agent_instructions": [
+            "DO NOT proceed to next service until current service passes validation",
+            "DO NOT skip errors - every error must be fixed",
+            "DO NOT assume validation passes - always check tool output",
+            "READ the actual error messages from validate_architecture.py carefully",
+            "If same error appears 3+ times, re-read template and definitions to understand requirement",
+            "Track iteration count - if exceeding 5 iterations, review your approach"
+          ],
+          "success_criteria": "validate_architecture.py returns zero errors for the service"
         }
       ],
       "tools_used": ["validate_architecture.py"],
@@ -333,41 +463,154 @@
       "actions": [
         {
           "action_id": "SE-06-A01",
-          "description": "Create index.json",
+          "description": "Create index.json (points to symlinks for latest versions)",
           "template": "index_template.json",
           "location": "specs/machine/index.json",
-          "purpose": "Catalog all machine-readable architecture artifacts",
+          "purpose": "Catalog all machine-readable architecture artifacts using symlinks",
           "includes": [
-            "Service list with paths to service_architecture.json",
+            "Service list with paths to service_architecture.json SYMLINKS (not versioned files)",
             "Interface registry path",
             "Graph paths",
             "Version information"
-          ]
+          ],
+          "path_format": {
+            "use_symlinks": true,
+            "example": "specs/machine/service_arch/auth_service/service_architecture.json",
+            "note": "Path points to symlink, which points to latest versioned file",
+            "benefit": "Tools always use latest version without updating index.json"
+          }
         },
         {
           "action_id": "SE-06-A02",
-          "description": "Generate system_of_systems_graph.json",
+          "description": "Generate and Validate system_of_systems_graph.json - with issue resolution loop",
           "tool": "system_of_systems_graph.py",
           "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
-          "purpose": "Create machine-readable representation of system architecture",
+          "purpose": "Create machine-readable representation and validate system-level coherence",
           "inputs": [
             "specs/machine/index.json",
-            "All service_architecture.json files",
+            "All service_architecture.json files (via symlinks)",
             "specs/machine/interface_registry.json"
           ],
-          "outputs": ["specs/machine/graphs/system_of_systems_graph.json"]
+          "outputs": ["specs/machine/graphs/system_of_systems_graph.json"],
+          "validation_loop": {
+            "description": "CRITICAL - This tool doesn't just generate a file, it VALIDATES the system architecture",
+            "step_1": "Run system_of_systems_graph.py",
+            "step_2": "Examine tool output for errors, warnings, and inconsistencies",
+            "step_3": "Analyze generated graph for system-level issues",
+            "step_4": "Fix issues in source architecture files (service_architecture.json or interface_registry.json)",
+            "step_5": "Re-run system_of_systems_graph.py",
+            "step_6": "If issues remain, LOOP back to step_2",
+            "step_7": "If graph generation succeeds with zero errors/warnings, proceed",
+            "termination": "Loop until clean OR max 5 iterations (then escalate to user)"
+          },
+          "system_level_issues_to_check": [
+            {
+              "issue": "Circular dependencies between services",
+              "detection": "Tool may report circular dependency chains or graph shows cycles",
+              "fix": "Refactor service boundaries to break circular dependency - one service must not depend on the other, or introduce event-driven decoupling",
+              "architectural_principle": "Services should form a DAG (directed acyclic graph)"
+            },
+            {
+              "issue": "Interface mismatches between services",
+              "detection": "Service A calls interface X on Service B, but Service B doesn't expose interface X",
+              "fix": "Either add missing interface to Service B's architecture OR correct Service A's dependency declaration",
+              "cross_reference": "Check interface_registry.json and service dependencies sections"
+            },
+            {
+              "issue": "Missing interface definitions in registry",
+              "detection": "Graph references interface but interface_registry.json doesn't contain it",
+              "fix": "Add interface definition to interface_registry.json with complete contract",
+              "ensure": "Interface has request/response schemas, authentication requirements, protocols"
+            },
+            {
+              "issue": "Inconsistent interface versions",
+              "detection": "Two services reference same interface but with different version requirements",
+              "fix": "Align interface versions OR clearly document version compatibility requirements",
+              "version_strategy": "Use semantic versioning to manage compatibility"
+            },
+            {
+              "issue": "Orphaned services (no incoming or outgoing dependencies)",
+              "detection": "Service appears in system but has no connections to other services",
+              "fix": "Either connect service to system OR remove if it's not actually part of this system",
+              "validate": "Every service should have a clear role in at least one user scenario"
+            },
+            {
+              "issue": "Data model conflicts",
+              "detection": "Multiple services define same entity with different schemas",
+              "fix": "Establish canonical data model ownership - one service owns entity definition, others reference it",
+              "pattern": "Follow domain-driven design bounded context principles"
+            },
+            {
+              "issue": "Missing external system declarations",
+              "detection": "Services depend on external systems not declared in external_systems",
+              "fix": "Add external system to system-level external_systems list with integration details",
+              "documentation": "Document external dependencies explicitly"
+            },
+            {
+              "issue": "Security boundary violations",
+              "detection": "Public-facing service directly accessing database service without auth layer",
+              "fix": "Introduce security boundaries - authentication/authorization services between public and private services",
+              "principle": "Defense in depth - multiple security layers"
+            }
+          ],
+          "llm_agent_instructions": [
+            "DO NOT just run the tool and assume success - READ the output carefully",
+            "DO NOT proceed if tool reports warnings or errors - fix them first",
+            "PAY ATTENTION to system-level coherence - can all services actually work together?",
+            "VALIDATE that the graph makes architectural sense - visualize the connections",
+            "If graph shows unexpected patterns (too many connections, isolated services), investigate why",
+            "Use graph as validation of your architectural decisions - does it match your intent?"
+          ],
+          "success_criteria": [
+            "system_of_systems_graph.py completes without errors",
+            "Generated graph shows cohesive system (no orphans, no unexplained cycles)",
+            "All interfaces properly connected between services",
+            "System architecture makes logical sense at holistic level"
+          ]
         },
         {
           "action_id": "SE-06-A03",
-          "description": "Create version manifest",
+          "description": "Create comprehensive version_manifest.json",
+          "template": "version_manifest_template.json",
           "location": "specs/machine/version_manifest.json",
-          "purpose": "Track versions of all architecture artifacts",
-          "includes": [
-            "service_architecture.json versions for each service",
-            "interface_registry.json version",
-            "system_of_systems_graph.json version",
-            "Timestamp and change log"
-          ]
+          "purpose": "Track complete version history of all architecture artifacts",
+          "schema": {
+            "services": {
+              "{service_name}": {
+                "latest_version": "v1.0.0-{YYYYMMDD}",
+                "versions": [
+                  {
+                    "version": "v1.0.0-{YYYYMMDD}",
+                    "architecture_file": "service_architecture_v1.0.0-{YYYYMMDD}.json",
+                    "documentation_file": "system_description_v1.0.0-{YYYYMMDD}.md",
+                    "created_date": "YYYY-MM-DD",
+                    "change_type": "initial | major | minor | patch",
+                    "description": "What changed in this version"
+                  }
+                ]
+              }
+            },
+            "version_indexes": [
+              {
+                "name": "latest",
+                "file": "index.json",
+                "description": "Points to latest versions of all services via symlinks"
+              }
+            ],
+            "system_graphs": [
+              {
+                "version": "latest",
+                "file": "system_of_systems_graph.json",
+                "index_used": "index.json",
+                "generated_date": "YYYY-MM-DD"
+              }
+            ]
+          },
+          "update_pattern": {
+            "initial_creation": "Add entry for each service at v1.0.0-{date}",
+            "on_update": "Add new version entry, update latest_version field",
+            "preservation": "Never remove old version entries - maintain complete history"
+          }
         },
         {
           "action_id": "SE-06-A04",
@@ -402,6 +645,208 @@
           "blocking": true
         }
       ],
+      "next_step": "complete",
+      "note": "For architecture updates, see SE-07 (optional); for mixed-version testing, see SE-08 (optional)"
+    },
+    {
+      "step_id": "SE-07",
+      "name": "Architecture Evolution (OPTIONAL - For Updates)",
+      "description": "Update existing architecture with proper versioning",
+      "phase": "evolution",
+      "optional": true,
+      "when_to_use": "When updating existing service architecture to new version",
+      "step_file": "workflow_steps/systems_engineering/SE-07-ArchitectureEvolution.json",
+      "actions": [
+        {
+          "action_id": "SE-07-A01",
+          "description": "Determine appropriate version increment",
+          "semantic_versioning_rules": {
+            "major": "Breaking interface changes, fundamental architecture changes (v1.x.x → v2.0.0)",
+            "minor": "New capabilities, non-breaking interface additions (v1.0.x → v1.1.0)",
+            "patch": "Bug fixes, clarifications, documentation improvements (v1.0.0 → v1.0.1)"
+          },
+          "examples": {
+            "major_change": "Changed authentication API from JWT to OAuth 2.0 (breaks clients)",
+            "minor_change": "Added new optional API endpoint (backward compatible)",
+            "patch_change": "Fixed typo in architecture description"
+          },
+          "output": "New version number: v{major}.{minor}.{patch}-{YYYYMMDD}"
+        },
+        {
+          "action_id": "SE-07-A02",
+          "description": "Create new versioned architecture file",
+          "pattern": "service_architecture_v{new_version}-{YYYYMMDD}.json",
+          "location": "specs/machine/service_arch/{service_name}/",
+          "preservation_rule": "NEVER delete or overwrite old version - copy and modify",
+          "command_example": "cp service_architecture_v1.0.0-20251024.json service_architecture_v2.0.0-20251030.json"
+        },
+        {
+          "action_id": "SE-07-A03",
+          "description": "Update architecture content in new version file",
+          "purpose": "Make actual architecture changes in new versioned file",
+          "note": "Old version remains unchanged for rollback and comparison"
+        },
+        {
+          "action_id": "SE-07-A04",
+          "description": "Update symlink to point to new version",
+          "commands": [
+            "cd specs/machine/service_arch/{service_name}",
+            "rm service_architecture.json",
+            "ln -s service_architecture_v{new_version}-{YYYYMMDD}.json service_architecture.json"
+          ],
+          "purpose": "Tools now automatically use new version via symlink"
+        },
+        {
+          "action_id": "SE-07-A05",
+          "description": "Update version_manifest.json",
+          "actions": [
+            "Add new version entry to versions array for this service",
+            "Update latest_version field to point to new version",
+            "Set change_type (major/minor/patch)",
+            "Add description of what changed"
+          ],
+          "preservation": "Keep all old version entries - never delete history"
+        },
+        {
+          "action_id": "SE-07-A06",
+          "description": "Run validation on new version",
+          "tool": "validate_architecture.py",
+          "command": "python3 {reflow_root}/tools/validate_architecture.py {system_root}",
+          "note": "Validates via symlink, so validates new version",
+          "success_criteria": "All validations pass"
+        },
+        {
+          "action_id": "SE-07-A07",
+          "description": "Regenerate system_of_systems_graph.json",
+          "tool": "system_of_systems_graph.py",
+          "command": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "note": "Uses symlinks from index.json, so automatically uses new version"
+        },
+        {
+          "action_id": "SE-07-A08",
+          "description": "Update human-readable documentation (if exists)",
+          "note": "See artifacts workflow (AV-03-A02) for creating versioned system_description.md",
+          "pairing_rule": "Human doc version must match architecture version"
+        }
+      ],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "outputs": [
+        "New versioned service_architecture.json file",
+        "Updated symlink",
+        "Updated version_manifest.json",
+        "Regenerated system_of_systems_graph.json"
+      ],
+      "rollback_support": {
+        "description": "Easy rollback to previous version if issues found",
+        "procedure": [
+          "Update symlink to point back to old version",
+          "Update version_manifest.json latest_version field",
+          "Regenerate system_of_systems_graph.json",
+          "All historical versions preserved"
+        ]
+      },
+      "gates": [],
+      "next_step": "complete"
+    },
+    {
+      "step_id": "SE-08",
+      "name": "Mixed-Version Validation (OPTIONAL)",
+      "description": "Test specific combinations of service versions",
+      "phase": "validation",
+      "optional": true,
+      "when_to_use": "Testing partial upgrades, compatibility across versions, deployment scenarios",
+      "step_file": "workflow_steps/systems_engineering/SE-08-MixedVersionValidation.json",
+      "use_cases": [
+        "Validate auth_service v2.0 works with api_gateway v1.0 before deploying",
+        "Test compatibility of different service version combinations",
+        "Create baseline snapshots for regression testing",
+        "Document known-good version combinations"
+      ],
+      "actions": [
+        {
+          "action_id": "SE-08-A01",
+          "description": "Create version-specific index file",
+          "naming_convention": "index_v{scenario_description}-{YYYYMMDD}.json",
+          "location": "specs/machine/index_v{scenario}-{date}.json",
+          "example_filename": "index_v2.0-auth-v1.0-gateway-20251030.json",
+          "content_structure": {
+            "components": {
+              "{service_name}": "specs/machine/service_arch/{service}/service_architecture_v{specific_version}-{date}.json"
+            },
+            "version_scenario": {
+              "name": "Descriptive scenario name",
+              "created_date": "YYYY-MM-DD",
+              "purpose": "Why this version combination is being tested",
+              "services_versions": {
+                "{service_name}": "v{version}-{date}"
+              }
+            }
+          },
+          "note": "Points directly to specific versioned files (not symlinks)"
+        },
+        {
+          "action_id": "SE-08-A02",
+          "description": "Run validation on version-specific index",
+          "tool": "validate_architecture.py",
+          "command": "python3 {reflow_root}/tools/validate_architecture.py {system_root} --index specs/machine/index_v{scenario}-{date}.json",
+          "purpose": "Validate this specific combination of service versions",
+          "checks": [
+            "Interface contract compatibility",
+            "Breaking changes between versions",
+            "Integration issues",
+            "Dependency conflicts"
+          ]
+        },
+        {
+          "action_id": "SE-08-A03",
+          "description": "Generate version-specific system graph",
+          "tool": "system_of_systems_graph.py",
+          "command": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}/specs/machine/index_v{scenario}-{date}.json --output specs/machine/graphs/system_of_systems_graph_v{scenario}-{date}.json",
+          "purpose": "Create graph showing this specific version combination",
+          "output": "specs/machine/graphs/system_of_systems_graph_v{scenario}-{date}.json"
+        },
+        {
+          "action_id": "SE-08-A04",
+          "description": "Analyze compatibility issues",
+          "analysis_areas": [
+            "Interface mismatches between service versions",
+            "Breaking changes causing integration failures",
+            "Deprecated features still in use",
+            "Version dependency conflicts"
+          ],
+          "output": "Compatibility analysis report"
+        },
+        {
+          "action_id": "SE-08-A05",
+          "description": "Document validation results",
+          "location": "specs/human/reports/VERSION_COMPATIBILITY_v{scenario}-{date}.md",
+          "includes": [
+            "Version combination tested",
+            "Validation results (pass/fail)",
+            "Compatibility issues found",
+            "Recommendations (safe to deploy / needs fixes)",
+            "Rollback plan if deployed"
+          ]
+        },
+        {
+          "action_id": "SE-08-A06",
+          "description": "Update version_manifest.json with new index and graph",
+          "actions": [
+            "Add entry to version_indexes array",
+            "Add entry to system_graphs array",
+            "Link index to corresponding graph"
+          ],
+          "purpose": "Track all tested version combinations"
+        }
+      ],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "outputs": [
+        "Version-specific index file",
+        "Version-specific system graph",
+        "Compatibility analysis report",
+        "Updated version_manifest.json"
+      ],
+      "gates": [],
       "next_step": "complete"
     }
   ],
@@ -426,17 +871,48 @@
       "system_of_systems_graph.py requires index.json to be created first",
       "Do not skip validation gates - they prevent downstream issues"
     ],
+    "validation_loop_critical": [
+      "VALIDATION TOOLS ARE NOT OPTIONAL - They are the centerpiece of workflow quality",
+      "DO NOT just run validation tools and move on - FIX ALL ISSUES they discover",
+      "MANDATORY: Use issue resolution loops in SE-03-A03 and SE-06-A02",
+      "READ tool output carefully - errors and warnings indicate real problems",
+      "ITERATE until validation passes with ZERO errors - not 'mostly works'",
+      "Each validation failure is an architectural issue that MUST be resolved",
+      "validate_architecture.py: Fix service-level issues (missing sections, type errors, UAF violations)",
+      "system_of_systems_graph.py: Fix system-level issues (circular deps, interface mismatches, orphaned services)",
+      "Maximum 5 iterations per validation loop - if exceeding, escalate to user for guidance",
+      "Success criteria: Tool completes with zero errors AND architecture makes logical sense"
+    ],
+    "tool_usage_patterns": {
+      "validate_architecture.py": {
+        "when": "After creating/modifying any service_architecture.json",
+        "pattern": "Run → Analyze errors → Fix → Re-run → Verify clean",
+        "do_not": "Skip errors, assume validation passes, proceed with warnings",
+        "common_fixes": "Add missing sections, fix JSON syntax, correct UAF violations, resolve referential integrity"
+      },
+      "system_of_systems_graph.py": {
+        "when": "After all services defined and index.json created",
+        "pattern": "Run → Analyze graph and output → Fix system-level issues → Re-run → Verify coherence",
+        "do_not": "Just check that file was created, ignore warnings, skip graph analysis",
+        "common_fixes": "Break circular dependencies, add missing interfaces, fix interface mismatches, connect orphaned services"
+      }
+    },
     "common_mistakes": [
       "Creating incomplete service_architecture.json (missing required sections)",
       "Not running validation tools",
+      "Running validation tools but not fixing issues they find",
+      "Assuming validation passed without checking tool output",
+      "Proceeding with validation warnings or errors",
+      "Not iterating validation loops until clean",
       "Skipping foundational alignment validation",
       "Generating system_of_systems_graph.json before index.json exists",
+      "Not analyzing system_of_systems_graph.json for coherence issues",
       "Not updating version_manifest.json"
     ],
     "quality_gates_mandatory": [
-      "G-SE-03: Architecture Validation Gate",
-      "G-SE-05: Specification Completeness Gate",
-      "G-SE-06: Architecture Completion Gate"
+      "G-SE-03: Architecture Validation Gate (BLOCKING - validates all architectures pass)",
+      "G-SE-05: Specification Completeness Gate (BLOCKING - validates consistency)",
+      "G-SE-06: Architecture Completion Gate (BLOCKING - validates system coherence)"
     ]
   }
 }

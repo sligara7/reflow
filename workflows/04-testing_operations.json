@@ -29,6 +29,68 @@
       "first_step": "TO-01"
     }
   },
+  "context_management": {
+    "description": "Prevent context drift and token exhaustion during workflow execution",
+    "template_reference": "See templates/context_management_template.json for complete details",
+    "rag_enhanced_mode": {
+      "description": "RECOMMENDED - Use RAG for automatic context injection and degradation detection",
+      "setup": "Initialize in S-03-A05 (Setup workflow)",
+      "benefits": "Automatic context refresh, degradation detection, token-efficient retrieval",
+      "usage": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'your query' --strategy on_step_start",
+      "fallback": "If RAG not set up, use manual operations counter and refresh sequence below"
+    },
+    "operations_counter": {
+      "threshold": 5,
+      "tracking_location": "context/working_memory.json (operations_since_refresh field)",
+      "rule": "Increment after each real operation (test execution, pipeline setup, deployment)",
+      "refresh_trigger": "When >= 5, execute refresh sequence immediately"
+    },
+    "degradation_signals_watch_for": [
+      "Running tests against wrong environment",
+      "Deploying to wrong target",
+      "Skipping mandatory quality gates",
+      "Working in wrong directory (pwd != system_root)",
+      "Forgetting which deployment stage (DTE/OTE/Prod)"
+    ],
+    "refresh_sequence_summary": [
+      "1. PAUSE - Stop all operations",
+      "2. VERIFY PWD - Confirm in correct directory",
+      "3. SAVE STATE - Update working_memory.json and step_progress_tracker.json",
+      "4. RELOAD - Read workflow file, deployment configs, test plans",
+      "5. READ - current_focus.md and step_progress_tracker.json",
+      "6. CONFIRM - State system name, deployment stage, next action",
+      "7. RESET - Set operations_since_refresh = 0",
+      "8. RESUME - Continue with confirmed action"
+    ],
+    "pre_operation_checklist": [
+      "Verify pwd equals system_root",
+      "Read current_focus.md",
+      "Read step_progress_tracker.json",
+      "Verify deploying to correct environment",
+      "Check operations_since_refresh <= 4",
+      "Verify not skipping quality gates"
+    ]
+  },
+  "self_improvement": {
+    "description": "Continuous workflow improvement through observation and metrics",
+    "template_reference": "See templates/self_improvement_template.json for complete details",
+    "during_execution": {
+      "observe": ["Test execution time", "Deployment speed", "Test flakiness", "Pipeline reliability", "Operational readiness"],
+      "document": "Log observations to context/process_log.md with timestamps",
+      "track_metrics": "Update context/workflow_metrics.json after each step"
+    },
+    "after_completion": {
+      "retrospective_file": "context/workflow_retrospective_04-testing_operations_{date}.md",
+      "key_questions": [
+        "What worked well?",
+        "What tests were flaky or slow?",
+        "What deployment issues occurred?",
+        "What took longer than expected?",
+        "How could testing/deployment be improved?"
+      ],
+      "improvement_submission": "Add entries to WORKFLOW_IMPROVEMENTS_BACKLOG.md"
+    }
+  },
   "workflow_steps": [
     {
       "step_id": "TO-01",

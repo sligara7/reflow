@@ -14,6 +14,7 @@ Reflow has been **restructured from a monolithic `decision_flow.json` into 5 sep
 - ✅ Clear separation of concerns
 - ✅ Easy to maintain and update
 - ✅ Better path management
+- ✅ Architecture versioning with complete history and rollback support
 
 ---
 
@@ -96,10 +97,15 @@ reflow/
 **What it does**: Design architecture, create service specs, generate graphs
 
 **Key outputs**:
-- `service_architecture.json` for each service (UAF 1.2)
+- `service_architecture_v{version}-{date}.json` for each service (UAF 1.2, versioned)
+- `service_architecture.json` (symlink to latest version)
 - `system_of_systems_graph.json`
 - `interface_registry.json`
 - `index.json` and `version_manifest.json`
+
+**New steps**:
+- **SE-07**: Architecture Evolution (update existing architectures with proper versioning)
+- **SE-08**: Mixed-Version Validation (test specific service version combinations)
 
 **Duration**: 2-4 hours (depends on complexity)
 
@@ -109,10 +115,14 @@ reflow/
 **What it does**: Create human-readable docs, diagrams, and handoff materials
 
 **Key outputs**:
+- `system_description_v{version}-{date}.md` (versioned human-readable docs per service)
+- `system_description.md` (symlink to latest version)
 - Interface Contract Documents (ICDs)
 - Mermaid diagrams (system, service, sequence, deployment)
 - Architecture documentation
 - Architecture Decision Records (ADRs)
+
+**Versioning note**: Human docs are version-paired with architecture files
 
 **Conditional**: Skip detailed artifacts if architecture-only
 
@@ -152,11 +162,15 @@ reflow/
 
 **Key features**:
 - Mandatory foundational alignment validation
-- Architecture versioning
+- **Architecture versioning** (follows SE-07 workflow, creates new versioned files)
+- **Semantic versioning decisions** (major/minor/patch based on impact)
 - Delta analysis
 - Regression testing
+- Human doc versioning (paired with architecture updates)
 
 **When to use**: Modifying existing systems
+
+**Versioning behavior**: Creates new versioned files, never overwrites old versions
 
 ---
 
@@ -226,6 +240,32 @@ Each workflow includes:
 - Quality gates
 - LLM agent guidance
 
+### 5. **Architecture Versioning** ✨
+Complete version tracking and management:
+- **Versioned filenames**: `service_architecture_v1.0.0-20251024.json`
+- **Semantic versioning**: major.minor.patch with clear rules
+- **Symlink management**: Latest version always accessible via `service_architecture.json`
+- **Human doc pairing**: `system_description_v1.0.0-20251024.md` matches architecture version
+- **Architecture Evolution** (SE-07): Workflow for updating existing architectures
+- **Mixed-Version Validation** (SE-08): Test specific service version combinations
+- **Rollback support**: Restore previous versions by updating symlinks
+- **Complete history**: All versions preserved, never deleted
+
+**Example version evolution**:
+```
+Initial:     service_architecture_v1.0.0-20251024.json → service_architecture.json (symlink)
+Bug fix:     service_architecture_v1.0.1-20251025.json → service_architecture.json (updated symlink)
+New feature: service_architecture_v1.1.0-20251030.json → service_architecture.json (updated symlink)
+Breaking:    service_architecture_v2.0.0-20251115.json → service_architecture.json (updated symlink)
+```
+
+**Version tracking**: All versions tracked in `version_manifest.json` with:
+- Version history
+- Change descriptions
+- Breaking change indicators
+- Rollback procedures
+- Mixed-version test scenarios
+
 ---
 
 ## ⚠️ Important Notes
@@ -257,8 +297,8 @@ See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for:
 | Workflow | Machine-Readable | Human-Readable |
 |----------|-----------------|----------------|
 | **Setup** | `working_memory.json`<br>`step_progress_tracker.json` | Foundational docs<br>(mission, scenarios, criteria) |
-| **Systems Engineering** | `service_architecture.json` (per service)<br>`system_of_systems_graph.json`<br>`interface_registry.json`<br>`index.json` | (none - see Artifacts workflow) |
-| **Artifacts & Viz** | Interface Contract Docs (ICDs) | Mermaid diagrams<br>Architecture docs<br>ADRs<br>Reports |
+| **Systems Engineering** | `service_architecture_v{version}-{date}.json` (versioned)<br>`service_architecture.json` (symlink to latest)<br>`system_of_systems_graph.json`<br>`interface_registry.json`<br>`index.json`<br>`version_manifest.json` | (none - see Artifacts workflow) |
+| **Artifacts & Viz** | Interface Contract Docs (ICDs) | `system_description_v{version}-{date}.md` (versioned)<br>`system_description.md` (symlink to latest)<br>Mermaid diagrams<br>Architecture docs<br>ADRs<br>Reports |
 | **Development** | Source code<br>Tests<br>`build_ready_index.json` | Code documentation<br>Development notes |
 | **Testing & Ops** | `dte_artifacts.json`<br>`ote_artifacts.json`<br>CI/CD configs | Runbooks<br>SLOs<br>Release certification |
 
