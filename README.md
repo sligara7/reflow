@@ -1,13 +1,13 @@
 # Reflow - Systems Engineering Workflow
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/anthropics/reflow)
+[![Version](https://img.shields.io/badge/version-3.3.0-blue.svg)](https://github.com/anthropics/reflow)
 [![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 [![Frameworks](https://img.shields.io/badge/frameworks-6%2B-green.svg)](#supported-frameworks)
 
-A comprehensive, **framework-agnostic** systems engineering workflow for designing, architecting, and developing complex systems across multiple domains.
+A **framework-agnostic** systems engineering workflow for LLM agents to design, architect, and develop complex systems. Model software systems (UAF), biological networks, social systems, ecosystems, and more.
 
-**:tada: Version 3.1.0** - Now framework-agnostic! Model software systems (UAF), biological networks, social systems, ecosystems, and more with the same workflow!
+**:tada: Version 3.3.0** - Production-ready systems from day one! Design for real operational environments UPFRONT - not as an afterthought.
 
 ---
 
@@ -194,61 +194,34 @@ See `definitions/framework_registry.json` and `definitions/analysis_selection_gu
 
 ---
 
-## :sparkles: Key Benefits
+## :sparkles: Why Reflow?
 
-### :new: Optional Automation Features (v3.0.1)
+### :globe_with_meridians: Framework-Agnostic (v3.1.0)
+Model **any complex system** - software (UAF), biological networks, social systems, ecosystems, or create your own custom framework.
 
-<details>
-<summary><b>Click to expand optional features</b></summary>
+### :rocket: Production-Ready from Day One (v3.3.0)
+**Design for real operational environments UPFRONT** - not as an afterthought that causes budget overages:
+- **10 IT Considerations**: Service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing
+- **Real-World Conditions**: Design for failures, attacks, load spikes, network partitions (not benign vacuum environments)
+- **Testing Strategy Defined Early**: Systems engineering phase defines which tests to run and why; testing phase executes them
+- **Prevents Costly Retrofitting**: Addressing operational environment upfront prevents 10-100x cost overruns
 
-- :arrow_forward: **Git Automation**: Automatic commits and pushes at workflow milestones (~36 commits for full workflow)
-- :mag: **Development Research**: Quick 5-10 min research of current best practices before coding
-- :white_check_mark: **Enhanced Validation**: Automatic detection of async/sync mismatches and architectural issues
+### :shield: Enterprise Requirements Built-In (v3.2.0)
+For UAF/IT systems with human users:
+- **Security**: Authentication, authorization, API gateway, rate limiting, encryption, audit logging
+- **Deployment**: One-command deployment, automated rollback, health checks, monitoring
+- **UX**: Intuitive APIs, clear error messages, comprehensive documentation
 
-</details>
-
-### Modular Workflows (v3.0)
-- **Focused Workflows**: Each workflow has a clear purpose (80% easier to navigate)
-- **Independent Updates**: Modify one workflow without affecting others
-- **Clear Progress**: Know exactly where you are in the process
-- **Flexible Execution**: Skip workflows as needed (e.g., architecture-only)
-
-### Architecture Versioning (v3.0)
+### :bookmark: Architecture Versioning (v3.0)
 - **Complete History**: All architecture versions preserved with semantic versioning
 - **Rollback Support**: Restore previous versions via symlinks
-- **Version Tracking**: `version_manifest.json` tracks all changes and rationale
-- **Human Docs Paired**: Documentation versions match architecture versions exactly
-- **Mixed-Version Testing**: Test specific combinations of service versions
-- **Architecture Evolution**: Dedicated workflow (SE-07) for updating architectures
+- **Version Tracking**: Track changes, rationale, and evolution over time
 
-### Clean Separation
-- **No Repository Conflicts**: Systems are completely separate from reflow tooling
-- **Independent Repositories**: Each system can be its own git repository
-- **Flexible Locations**: Systems can be anywhere on your filesystem
-- **Path Management**: All paths configured upfront in Setup workflow
-
-### System Architecture
-- **New Systems**: Complete systems engineering from concept to implementation
-- **System-of-Systems**: Integrate multiple existing systems
-- **Feature Updates**: Modify existing architectures safely with mandatory validation
-- **Quality Gates**: 10 explicit quality gates (7 blocking) prevent issues
-
-### Development Support
-- **Multi-language**: Support for Python, Java, TypeScript, Go, Rust, and more
-- **Validation**: Automated architecture validation and consistency checking
-- **Operational Environment Design (NEW in v3.3.0!)**: For UAF/IT systems - design for REAL operational conditions UPFRONT
-  - **10 IT Considerations**: Service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing
-  - **Real-World Conditions**: Design for failures, attacks, load spikes, network issues (not benign vacuum)
-  - **Testing Strategy Upfront**: Define which tests to run and why during SE phase; testing phase executes them
-  - **Cost Impact**: Prevents budget overages and program delays from retrofitting production-readiness
-- **IT System Requirements (v3.2.0)**: For UAF systems with human users - enforce security, deployment ease, and UX upfront
-  - **Security Architecture**: Authentication, authorization, API gateway, rate limiting, encryption, audit logging
-  - **Deployment Architecture**: One-command deployment, automated rollback, monitoring, health checks
-  - **UX & API Design**: Intuitive APIs, clear errors, comprehensive docs, user-friendly experience
-  - **Orphaned Service Detection**: Detect services defined but not implemented (e.g., API gateway scaffolding)
-- **Port Management**: Architectural port assignment prevents "Address already in use" deployment errors
-- **Documentation**: Auto-generated system documentation and interface contracts
-- **Testing**: Comprehensive testing pyramid with coverage enforcement
+### :gear: Modular & Flexible
+- **5 Focused Workflows**: Each with clear purpose (setup, architecture, artifacts, development, operations)
+- **Skip What You Don't Need**: Architecture-only? Stop after workflow 2
+- **Clean Separation**: Your system directory is completely separate from reflow tooling
+- **Quality Gates**: 10 explicit gates (7 blocking) ensure quality
 
 ---
 
@@ -418,44 +391,49 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 ## :memo: Version History
 
 <details open>
-<summary><b>v3.1.0 (2025-10-25)</b> - Latest</summary>
+<summary><b>v3.3.0 (2025-10-25)</b> - Latest</summary>
 
-- :globe_with_meridians: **Framework-agnostic architecture** - Support for 6+ frameworks (UAF, Biology, Social, Ecological, CAS, Custom)
-- :dna: Systems Biology framework for gene networks, metabolic pathways, ecosystems
-- :busts_in_silhouette: Social Network Analysis framework for organizations and communities
-- :deciduous_tree: Ecological Systems framework for food webs and species interactions
-- :mag: **Knowledge gap detection** - Identifies missing nodes/edges (like "dark matter" in systems)
-- :chart_with_upwards_trend: **Comprehensive NetworkX analysis** - 25+ graph algorithms across 10 categories
-  - Core analysis: centrality, paths, connectivity, clustering, properties
-  - Advanced analysis: community detection, cycle detection, SCCs, DAG analysis, flow analysis
-- :wrench: New tool: `system_of_systems_graph_v2.py` (1370+ lines, framework-agnostic)
-- :file_folder: Framework selection in setup workflow (step S-01A)
+- :rocket: **Operational Environment Design** - Design for REAL operational conditions UPFRONT (not as afterthought)
+  - 10 IT considerations: service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing
+  - Real-world conditions: failures, attacks, load spikes, network issues
+  - Testing strategy defined during SE phase (testing phase executes it)
+  - Prevents budget overages from retrofitting production-readiness (10-100x cost savings)
+- :file_folder: New template: `operational_environment_template.json` (1100+ lines)
+- :gear: Updated SE workflow with operational environment design and validation steps (SE-02-A08, SE-03-A08)
 
 </details>
 
 <details>
-<summary>v3.0.1 (2025-10-24)</summary>
+<summary>v3.2.0 (2025-10-25)</summary>
 
-- :white_check_mark: Added optional git automation (automatic commits at workflow milestones)
-- :mag: Added optional development best practices research (5-10 min quick search)
-- :shield: Enhanced architecture validation (async/sync consistency, architectural issues detection)
-- :book: Updated documentation with feature guides
-
-</details>
-
-<details>
-<summary>v3.0.0 (2025-10-24)</summary>
-
-- :recycle: Restructured into 5 modular workflows for better maintainability
-- :file_folder: Improved directory structure and path management
-- :bookmark: Added architecture versioning with semantic versioning
+- :shield: **IT System Requirements** - Security, deployment, UX enforced upfront for UAF systems with human users
+- :mag: Orphaned service detection
+- :wrench: Port management at architecture level
 
 </details>
 
 <details>
-<summary>v2.5.0 and earlier</summary>
+<summary>v3.1.0 (2025-10-25)</summary>
 
-Monolithic `decision_flow.json` (now archived as `decision_flow.json.old`)
+- :globe_with_meridians: **Framework-agnostic** - Support for 6+ frameworks (UAF, Biology, Social, Ecological, CAS, Custom)
+- :chart_with_upwards_trend: **Comprehensive graph analysis** - 25+ NetworkX algorithms
+- :mag: Knowledge gap detection (missing nodes/edges)
+
+</details>
+
+<details>
+<summary>v3.0.x (2025-10-24)</summary>
+
+- :recycle: Restructured into 5 modular workflows
+- :bookmark: Architecture versioning with semantic versioning
+- :white_check_mark: Optional git automation and development research
+
+</details>
+
+<details>
+<summary>v2.x and earlier</summary>
+
+Monolithic `decision_flow.json` (now archived)
 
 </details>
 
@@ -496,9 +474,9 @@ Built on:
 
 <div align="center">
 
-**:sparkles: Version 3.1.0 - Now framework-agnostic! Model any complex system across multiple domains! :sparkles:**
+**:sparkles: Version 3.3.0 - Production-ready systems from day one! :sparkles:**
 
-Made with :heart: for systems engineers, biologists, social scientists, ecologists, and LLM agents
+Made with :heart: for systems engineers and LLM agents
 
 [Documentation](docs/) • [Issues](https://github.com/anthropics/reflow/issues) • [Discussions](https://github.com/anthropics/reflow/discussions)
 
