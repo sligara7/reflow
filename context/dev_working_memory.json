@@ -1,0 +1,40 @@
+{
+  "template_version": "1.0",
+  "system_name": "Reflow Workflow System",
+  "development_mode": "meta-analysis",
+  "current_workflow": "03-development",
+  "current_step": "D-02",
+  "development_context": {
+    "services_being_developed": {
+      "workflows": {
+        "type": "JSON workflow definitions",
+        "count": 6,
+        "location": "workflows/",
+        "status": "validation_pending"
+      },
+      "tools": {
+        "type": "Python CLI tools",
+        "count": 16,
+        "location": "tools/",
+        "status": "quality_analysis_pending"
+      },
+      "templates": {
+        "type": "JSON templates",
+        "count": "36+",
+        "location": "templates/",
+        "status": "completeness_check_pending"
+      }
+    },
+    "development_approach": "validate_existing_implementation",
+    "note": "Meta-analysis: Not implementing new code, validating existing tools/workflows/templates"
+  },
+  "paths": {
+    "reflow_root": "/home/user/reflow",
+    "system_root": "/home/user/reflow",
+    "tools_path": "/home/user/reflow/tools",
+    "workflows_path": "/home/user/reflow/workflows",
+    "templates_path": "/home/user/reflow/templates"
+  },
+  "operations_since_refresh": 1,
+  "last_refresh": "2025-10-25 22:30:00"
+}
