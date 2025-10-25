@@ -226,10 +226,10 @@ Each system gets a standardized structure:
 
 ## Documentation
 
-- **[NEW_STRUCTURE_README.md](NEW_STRUCTURE_README.md)** - Quick reference for new workflow structure
-- **[RESTRUCTURING_DESIGN.md](RESTRUCTURING_DESIGN.md)** - Detailed design rationale
-- **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Migration from v2.x to v3.0
-- **[how_to_use.md](how_to_use.md)** - Detailed usage instructions
+- **[how_to_use.md](how_to_use.md)** - Detailed usage instructions for workflow_driver.py
+- **[NEW_STRUCTURE_README.md](docs/restructuring/NEW_STRUCTURE_README.md)** - Quick reference for new workflow structure
+- **[RESTRUCTURING_DESIGN.md](docs/restructuring/RESTRUCTURING_DESIGN.md)** - Detailed design rationale
+- **[MIGRATION_GUIDE.md](docs/restructuring/MIGRATION_GUIDE.md)** - Migration from v2.x to v3.0
 
 ## Requirements
 - Python 3.8+ with dependencies: `networkx`
