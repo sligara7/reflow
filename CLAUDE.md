@@ -1,6 +1,6 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.2.0
+**Version**: 3.3.0
 **Last Updated**: 2025-10-25
 
 ## What is Reflow?
@@ -606,6 +606,131 @@ Before proceeding from SE-03 validation gate, verify:
 - [ ] Deployment documented in README with step-by-step instructions
 
 **Rationale**: These requirements are NOT optional polish - they are fundamental to IT system success in modern, interconnected environments. Designing security, deployment ease, and UX upfront prevents expensive retrofitting and ensures competitive advantage.
+
+## Operational Environment Design (UAF/IT Systems Going to Production) - CRITICAL!
+
+### ⚠️ Systems Don't Operate in Vacuums - Design for Reality UPFRONT
+
+**CRITICAL PRINCIPLE**: Operational environment is an **ARCHITECTURAL DECISION** made during systems engineering, NOT an operational problem solved during testing.
+
+**User Quote**: "The real operational environment must be considered upfront in designing the system. Most systems function in a world that affects the system indirectly or directly - systems rarely operate in a benign, vacuum environment. Typically, this causes huge budget overages and costly delays in a program."
+
+**Two-Phase Relationship**:
+1. **Systems Engineering Phase (NOW)**: Design for real operational environment, decide which tests needed, establish success criteria
+2. **Testing Phase (Later)**: Execute tests planned during SE phase, validate system survives operational conditions
+
+**Testing phase does NOT define new tests** - those are architectural decisions made NOW.
+
+### 🌍 Real Operational Environment Conditions
+
+Systems will face (design for these, don't hope they won't happen):
+- **Network failures and partitions** → Circuit breakers, timeouts, retries
+- **Resource exhaustion** (CPU, memory, disk) → Resource limits, graceful degradation
+- **Cascading failures** → Bulkheads, fail-fast, rate limiting
+- **Traffic spikes** → Auto-scaling, queuing, caching
+- **Security attacks** (DDoS, injection, credential stuffing) → WAF, rate limiting, input validation
+- **Data corruption** → Validation, checksums, backup/restore
+- **Third-party outages** → Fallbacks, circuit breakers, cached responses
+- **Configuration drift** → IaC, validation, immutable infrastructure
+
+### 📋 10 IT-Specific Operational Considerations (UPFRONT Design)
+
+**Applicability**: UAF/IT systems going to production
+
+**When**: Step SE-02-A08 (during architecture design)
+
+**Template**: `operational_environment_template.json` (1100+ lines)
+
+**The 10 Considerations**:
+
+1. **Service Decomposition & Boundaries**
+   - DDD bounded contexts, single responsibility per service
+   - Data ownership (dedicated DB per service, no shared databases)
+   - Inter-service communication (synchronous REST vs asynchronous events)
+   - **Why upfront**: Service boundaries affect scalability, deployment independence, team organization - can't be easily changed
+
+2. **Containerization & Packaging**
+   - Docker from day one, multi-stage Dockerfiles
+   - Orchestration choice (ECS vs EKS vs docker-compose) - justify simplicity vs features
+   - Image scanning (Trivy, Snyk), base image selection
+   - **Why upfront**: Determines deployment portability, environment consistency, CI/CD pipeline design
+
+3. **Infrastructure as Code & Automation**
+   - Ansible for deployment automation (deploy.yml, rollback.yml, provision.yml)
+   - Terraform for AWS provisioning (VPCs, EC2, RDS, S3)
+   - Environment separation (dev/staging/prod in separate VPCs or AWS accounts)
+   - **Why upfront**: Enables reproducible deployments, disaster recovery, prevents manual configuration errors
+
+4. **CI/CD Pipeline Integration**
+   - Git workflow (gitflow, trunk-based), pipeline stages (build, test, deploy)
+   - Automated testing strategy (unit, integration, security, performance)
+   - Semantic versioning, secrets injection
+   - **Why upfront**: Pipeline design determines deployment velocity, quality gates, rollback speed
+
+5. **Scalability & Resilience**
+   - Horizontal scaling (auto-scaling groups, target tracking)
+   - Circuit breakers (Resilience4j), retries with exponential backoff, timeouts
+   - Bulkheads, state management (stateless services, external state storage)
+   - **Why upfront**: Resilience patterns prevent cascading failures - design for 10x growth from start
+
+6. **Security & Compliance**
+   - IAM roles (not hard-coded credentials), Secrets Manager
+   - VPC design (public/private subnets), security groups, WAF
+   - Encryption (TLS 1.2+, KMS), compliance (GDPR, HIPAA, PCI-DSS)
+   - **Why upfront**: Security architecture determines compliance eligibility, audit capabilities - retrofitting is expensive
+
+7. **Monitoring, Logging, Observability**
+   - Metrics (Prometheus /metrics endpoint), structured JSON logging
+   - Correlation IDs (request_id for tracing), distributed tracing
+   - Alerting (critical vs warning), dashboards, performance baselines
+   - **Why upfront**: Observability strategy determines debuggability, incident response time - no observability = blind operations
+
+8. **Service Discovery & Networking**
+   - Discovery mechanism (AWS Cloud Map, Consul, Kubernetes DNS)
+   - API Gateway (single entry point), latency optimization (same VPC/AZ)
+   - CDN, connection pooling
+   - **Why upfront**: Service discovery enables dynamic scaling - hardcoded IPs break auto-scaling
+
+9. **Cost Management & Optimization**
+   - Right-sizing instances, spot instances, reserved instances
+   - Auto-scaling to zero (non-prod), serverless options (Lambda, Fargate)
+   - Tagging for cost allocation
+   - **Why upfront**: Cost optimization designed in prevents runaway cloud costs
+
+10. **Testing & Rollback Strategies**
+    - Define which tests to run (unit, integration, performance, security, chaos, operational)
+    - Canary deployments, feature flags, backup/DR, rollback procedures
+    - **Why upfront**: Testing strategy defined NOW determines quality gates - testing phase executes this plan
+
+### 🧪 Testing Strategy Defined During SE Phase
+
+**IMPORTANT**: Testing phase (workflow 04) executes tests defined here - it does NOT invent new tests.
+
+**Test Types to Plan**:
+- **Unit Tests**: 80% coverage, run on every commit
+- **Integration Tests**: Service interactions via real APIs/databases in isolated environment
+- **Performance Tests**: Load at 2x, 5x, 10x traffic; success criteria: p95 < 500ms at 5x
+- **Security Tests**: OWASP Top 10, penetration testing, dependency scanning
+- **Chaos Tests**: Inject failures (kill instances, network latency, resource exhaustion)
+- **Operational Tests**: Multi-AZ failover, database failover, auto-scaling, backup/restore
+
+**Success Criteria Established NOW**:
+- Availability target: 99.9%, 99.95%, 99.99%?
+- Recovery Time Objective (RTO): 1 hour, 4 hours?
+- Recovery Point Objective (RPO): 15 minutes, 1 hour data loss?
+- Performance baselines: p50 < 100ms, p95 < 500ms, p99 < 1000ms
+
+### ✅ Operational Environment Validation (SE-03-A08) - BLOCKING
+
+Before proceeding from SE-03, validate:
+- [ ] All 10 considerations addressed (not TBD or "will decide later")
+- [ ] Real-world failure conditions explicitly designed for (not ideal conditions)
+- [ ] Testing strategy complete with test types and success criteria defined
+- [ ] Concrete technology choices made (not just "we'll use monitoring")
+- [ ] Relationship between SE phase (design) and testing phase (execute) clear
+- [ ] Design focuses on scalability, reliability, security, maintainability for production
+
+**Cost Impact**: NOT considering operational environment upfront causes **budget overages and costly program delays**. Retrofitting production-readiness is **10-100x more expensive** than designing for it.
 
 ## Port Management (UAF/IT Systems ONLY)
 

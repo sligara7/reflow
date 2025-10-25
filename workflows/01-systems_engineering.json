@@ -386,6 +386,89 @@
             "blocking": "UX and API design must be reviewed before implementation",
             "modern_world_requirement": "IT systems compete on user experience. Clunky APIs and confusing UX lose users to competitors."
           }
+        },
+        {
+          "action_id": "SE-02-A08",
+          "description": "Design operational environment (CONDITIONAL - required for UAF/IT systems going to production)",
+          "condition": {
+            "check": "framework_id == 'uaf' AND system will be deployed to production",
+            "if_true": "Create operational_environment.json defining real-world operational conditions, scalability, resilience, testing strategy",
+            "if_false": "Skip - research prototypes or non-IT frameworks don't need operational environment design",
+            "applicable_frameworks": ["uaf"]
+          },
+          "template": "operational_environment_template.json",
+          "location": "specs/machine/operational_environment.json",
+          "purpose": "Design for REAL operational environment (not benign vacuum) UPFRONT during architecture. Define which tests to run, why, and success criteria. Testing phase executes tests defined here.",
+          "rationale": "Systems don't operate in ideal conditions - they face failures, attacks, load spikes, network partitions. NOT considering operational environment upfront causes budget overages and costly program delays.",
+          "critical_principle": "Operational environment is an ARCHITECTURAL DECISION, not an operational problem. Testing phase (workflow 04) EXECUTES tests defined here, it does NOT define new tests.",
+          "required_sections_10_considerations": [
+            {
+              "consideration": "1. Service Decomposition & Boundaries",
+              "content": "DDD bounded contexts, single responsibility per service, data ownership (dedicated DB per service), inter-service communication (sync REST vs async events)",
+              "upfront_decision": "Service boundaries affect scalability, deployment independence, team organization. Can't be easily changed after implementation."
+            },
+            {
+              "consideration": "2. Containerization & Packaging",
+              "content": "Docker from day one, multi-stage Dockerfiles, orchestration choice (ECS vs EKS), image scanning, runtime dependencies",
+              "upfront_decision": "Containerization strategy determines deployment portability, environment consistency, CI/CD pipeline design."
+            },
+            {
+              "consideration": "3. Infrastructure as Code & Automation",
+              "content": "Ansible for deployment automation, Terraform for AWS provisioning, environment separation (dev/staging/prod), dynamic inventories",
+              "upfront_decision": "IaC enables reproducible deployments, disaster recovery, environment parity. Manual infrastructure is error-prone."
+            },
+            {
+              "consideration": "4. CI/CD Pipeline Integration",
+              "content": "Git workflow, automated testing (unit, integration, security, performance), semantic versioning, secrets injection",
+              "upfront_decision": "Pipeline design determines deployment velocity, quality gates, rollback speed. Complex pipelines slow iteration."
+            },
+            {
+              "consideration": "5. Scalability & Resilience",
+              "content": "Horizontal scaling, circuit breakers, retries with backoff, timeouts, bulkheads, state management (stateless services, external state storage)",
+              "upfront_decision": "Resilience patterns prevent cascading failures. Stateful services limit scalability. Design for 10x growth from start."
+            },
+            {
+              "consideration": "6. Security & Compliance",
+              "content": "IAM roles (not credentials), Secrets Manager, VPC design (public/private subnets), security groups, WAF, mTLS, encryption (TLS 1.2+, KMS), compliance (GDPR, HIPAA, PCI-DSS)",
+              "upfront_decision": "Security architecture determines compliance eligibility, data residency, audit capabilities. Retrofitting security is expensive."
+            },
+            {
+              "consideration": "7. Monitoring, Logging, Observability",
+              "content": "Metrics (Prometheus /metrics), structured JSON logging, correlation IDs, distributed tracing, alerting (critical vs warning), dashboards, performance baselines",
+              "upfront_decision": "Observability strategy determines debuggability, incident response time, proactive issue detection. No observability = blind operations."
+            },
+            {
+              "consideration": "8. Service Discovery & Networking",
+              "content": "Discovery mechanism (Cloud Map, Consul, K8s DNS), API Gateway (single entry point), latency optimization (same VPC/AZ), CDN, connection pooling",
+              "upfront_decision": "Service discovery enables dynamic scaling. Hardcoded IPs break auto-scaling. API Gateway enforces consistent auth/rate limiting."
+            },
+            {
+              "consideration": "9. Cost Management & Optimization",
+              "content": "Right-sizing instances, spot instances for non-critical, reserved instances for baseline, auto-scaling to zero, serverless options (Lambda, Fargate), tagging for cost allocation",
+              "upfront_decision": "Cost optimization designed in prevents runaway cloud costs. Post-deployment optimization is reactive and limited."
+            },
+            {
+              "consideration": "10. Testing & Rollback Strategies",
+              "content": "Define which tests to run (unit, integration, performance, security, chaos, operational), canary deployments, feature flags, backup/DR, rollback procedures",
+              "upfront_decision": "Testing strategy defined NOW determines quality gates, operational readiness. Testing phase EXECUTES these tests, doesn't invent them."
+            }
+          ],
+          "operational_environment_conditions": {
+            "real_world_not_vacuum": "Systems face network failures, resource exhaustion, cascading failures, traffic spikes, security attacks, data corruption, third-party outages, configuration drift",
+            "design_response": "Circuit breakers, timeouts, retries, bulkheads, auto-scaling, rate limiting, WAF, input validation, data validation, fallbacks, IaC",
+            "test_plan": "Chaos engineering, load testing, spike testing, fault injection, penetration testing, configuration drift detection"
+          },
+          "testing_phase_relationship": {
+            "systems_engineering_phase": "Define operational environment, decide which tests needed, design for real-world conditions, establish success criteria",
+            "testing_phase": "Execute tests planned during SE phase, validate system survives operational conditions, measure against baselines",
+            "critical_distinction": "Testing phase does NOT define new tests - those are architectural decisions made NOW. Testing phase validates architecture works."
+          },
+          "upfront_emphasis": {
+            "critical": "Operational environment is NOT deferred to testing phase. Real operational conditions (failures, attacks, load) designed for NOW.",
+            "blocking": "Operational environment design must be validated before SE-03 gate",
+            "cost_impact": "NOT considering operational environment upfront causes budget overages and costly program delays (10-100x more expensive to retrofit)",
+            "production_readiness": "Focus on scalability, reliability, security, maintainability in production from day one"
+          }
         }
       ],
       "tools_used": [
@@ -398,7 +481,8 @@
         "port_registry_template.json",
         "security_architecture_template.json",
         "deployment_architecture_template.json",
-        "ux_api_design_template.json"
+        "ux_api_design_template.json",
+        "operational_environment_template.json"
       ],
       "outputs": [
         "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service) - with port assignments",
@@ -406,7 +490,8 @@
         "specs/machine/port_registry.json",
         "specs/machine/security_architecture.json (if UAF with human users)",
         "specs/machine/deployment_architecture.json (if UAF/IT system)",
-        "specs/machine/ux_api_design.json (if UAF with human users/external APIs)"
+        "specs/machine/ux_api_design.json (if UAF with human users/external APIs)",
+        "specs/machine/operational_environment.json (if UAF/IT system going to production)"
       ],
       "gates": [],
       "next_step": "SE-03"
@@ -720,10 +805,123 @@
           "success_criteria": "UX and API design enables users to succeed quickly with minimal friction",
           "blocking": "Yes - poor UX/API design decisions are expensive to fix after launch",
           "rationale": "User experience determines adoption, retention, and competitive advantage"
+        },
+        {
+          "action_id": "SE-03-A08",
+          "description": "Validate operational environment design (CONDITIONAL - if operational_environment.json exists)",
+          "condition": {
+            "check": "operational_environment.json exists in specs/machine/",
+            "if_true": "Validate operational environment addresses all 10 considerations and real-world conditions",
+            "if_false": "Skip - operational environment not required for prototypes or non-IT systems"
+          },
+          "validation_type": "Manual review + checklist validation",
+          "validation_checks_10_considerations": [
+            {
+              "check": "1. Service Decomposition & Boundaries",
+              "validation": "Bounded contexts defined, single responsibility per service, data ownership clear (no shared databases), communication patterns chosen (sync vs async)"
+            },
+            {
+              "check": "2. Containerization & Packaging",
+              "validation": "Docker strategy defined, base images selected, multi-stage builds planned, orchestration choice justified (ECS vs EKS vs docker-compose)"
+            },
+            {
+              "check": "3. Infrastructure as Code & Automation",
+              "validation": "Ansible playbooks planned (deploy, rollback, provision), environment separation defined (dev/staging/prod), dynamic inventory configured"
+            },
+            {
+              "check": "4. CI/CD Pipeline Integration",
+              "validation": "Git workflow defined, pipeline stages clear (build, test, deploy), automated testing strategy complete, versioning scheme chosen"
+            },
+            {
+              "check": "5. Scalability & Resilience",
+              "validation": "Horizontal scaling strategy defined, fault tolerance patterns chosen (circuit breakers, retries, timeouts), state management clear (stateless vs stateful)"
+            },
+            {
+              "check": "6. Security & Compliance",
+              "validation": "IAM roles defined, secrets management strategy clear, VPC design complete, encryption specified (TLS, KMS), compliance requirements addressed"
+            },
+            {
+              "check": "7. Monitoring, Logging, Observability",
+              "validation": "Metrics defined (/metrics endpoint), logging strategy clear (JSON, correlation IDs), alerting configured (critical vs warning), dashboards planned"
+            },
+            {
+              "check": "8. Service Discovery & Networking",
+              "validation": "Discovery mechanism chosen (Cloud Map, Consul, K8s DNS), API Gateway defined, latency optimization considered"
+            },
+            {
+              "check": "9. Cost Management & Optimization",
+              "validation": "Resource sizing estimated, cost optimization strategies defined (spot instances, reserved instances, auto-scaling), tagging strategy clear"
+            },
+            {
+              "check": "10. Testing & Rollback Strategies",
+              "validation": "Test types defined (unit, integration, performance, security, chaos, operational), rollback procedures documented, backup/DR strategy clear"
+            }
+          ],
+          "operational_environment_conditions_validation": {
+            "real_world_failures_addressed": [
+              "Network failures and partitions → circuit breakers, timeouts, retries",
+              "Resource exhaustion → resource limits, graceful degradation, monitoring",
+              "Cascading failures → bulkheads, fail-fast, rate limiting",
+              "Traffic spikes → auto-scaling, queuing, caching",
+              "Security attacks → WAF, rate limiting, input validation, audit logging",
+              "Data corruption → validation, checksums, backup/restore",
+              "Third-party outages → fallbacks, circuit breakers, cached responses",
+              "Configuration drift → IaC, validation, immutable infrastructure"
+            ],
+            "test_plan_completeness": "Chaos engineering, load testing, fault injection, penetration testing planned with success criteria"
+          },
+          "testing_phase_relationship_validation": {
+            "critical_check": "Operational environment defines WHICH tests to run and WHY. Testing phase (workflow 04) executes these tests - it doesn't invent new ones.",
+            "validation_questions": [
+              "Are test types clearly defined (unit, integration, performance, security, chaos, operational)?",
+              "Are success criteria established for each test type?",
+              "Are operational test scenarios defined (multi-AZ failover, database failover, auto-scaling, backup/restore)?",
+              "Is it clear that testing phase executes this plan, not creates a new one?"
+            ]
+          },
+          "common_issues": {
+            "missing_consideration": {
+              "symptom": "One or more of the 10 considerations not addressed",
+              "fix": "Complete all 10 sections in operational_environment.json",
+              "impact": "Incomplete operational design leads to production issues and emergency fixes"
+            },
+            "vague_strategies": {
+              "symptom": "Strategies described generically without specific choices (e.g., 'we'll use monitoring' without defining metrics)",
+              "fix": "Make concrete decisions: specific tools, specific metrics, specific thresholds",
+              "impact": "Vague designs lead to implementation inconsistencies and rework"
+            },
+            "ideal_conditions_only": {
+              "symptom": "Design assumes perfect conditions, doesn't address failures",
+              "fix": "Define operational_environment_conditions with real failure scenarios and design responses",
+              "impact": "System fails in production under real-world stress"
+            },
+            "testing_strategy_missing": {
+              "symptom": "No clear definition of which tests to run or success criteria",
+              "fix": "Complete testing_rollback_strategies section with specific test types and criteria",
+              "impact": "Testing phase doesn't know what to validate, important scenarios missed"
+            },
+            "deferred_decisions": {
+              "symptom": "Critical decisions marked as 'TBD' or 'will decide later'",
+              "fix": "Make architectural decisions NOW - deferring to testing/operations is too late",
+              "impact": "Budget overages and costly program delays from retrofitting production-readiness"
+            }
+          },
+          "review_questions": [
+            "Does operational environment address ALL 10 considerations (service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing)?",
+            "Are real-world failure conditions (not ideal conditions) explicitly designed for?",
+            "Is it clear which tests will run in testing phase and why?",
+            "Are success criteria established for operational readiness?",
+            "Have concrete technology choices been made (not just 'we'll use monitoring')?",
+            "Is the relationship between SE phase (design) and testing phase (execute) clear?",
+            "Does design focus on scalability, reliability, security, maintainability for production?"
+          },
+          "success_criteria": "Operational environment comprehensively addresses all 10 considerations, designs for real-world failures, defines complete testing strategy with success criteria",
+          "blocking": "Yes - incomplete operational environment leads to production issues, budget overages, and program delays",
+          "rationale": "Operational environment is architectural decision made NOW. NOT considering it upfront causes 10-100x cost increase to retrofit."
         }
       ],
       "tools_used": ["validate_architecture.py", "validate_port_registry.py"],
-      "outputs": ["Validation reports", "Corrected service_architecture.json files", "Validated port_registry.json", "Validated security_architecture.json", "Validated deployment_architecture.json", "Validated ux_api_design.json"],
+      "outputs": ["Validation reports", "Corrected service_architecture.json files", "Validated port_registry.json", "Validated security_architecture.json", "Validated deployment_architecture.json", "Validated ux_api_design.json", "Validated operational_environment.json"],
       "gates": [
         {
           "gate_id": "G-SE-03",
@@ -736,24 +934,33 @@
             "Port registry validated with zero port conflicts (if applicable to framework)",
             "Security architecture validated (if UAF with human users) - BLOCKING",
             "Deployment architecture validated (if UAF/IT system) - BLOCKING",
-            "UX and API design validated (if UAF with human users/external APIs) - BLOCKING"
+            "UX and API design validated (if UAF with human users/external APIs) - BLOCKING",
+            "Operational environment validated (if UAF going to production) - BLOCKING - addresses all 10 considerations and real-world failures"
           ],
           "conditional_checks": {
             "port_registry_validation": "Only required if deployment_characteristics.port_management_applicable == true (i.e., UAF framework)",
             "security_architecture_validation": "Required if framework_id == 'uaf' AND (human users OR external APIs)",
             "deployment_architecture_validation": "Required if framework_id == 'uaf' AND deployment_characteristics.port_management_applicable == true",
-            "ux_api_design_validation": "Required if framework_id == 'uaf' AND (human users OR external APIs)"
+            "ux_api_design_validation": "Required if framework_id == 'uaf' AND (human users OR external APIs)",
+            "operational_environment_validation": "Required if framework_id == 'uaf' AND system going to production (NOT for prototypes)"
           },
           "upfront_emphasis_gate": {
-            "purpose": "Enforce that security, deployment ease, and UX are designed UPFRONT, not as afterthoughts",
-            "blocking_rationale": "IT systems in modern, interconnected world MUST prioritize security, ease of deployment, and positive user experience from the start",
+            "purpose": "Enforce that security, deployment ease, UX, AND operational environment are designed UPFRONT, not as afterthoughts",
+            "blocking_rationale": "IT systems in modern, interconnected world MUST be designed for REAL operational conditions from the start. Systems don't operate in benign, vacuum environments.",
             "modern_world_requirements": [
               "Security: Authentication, authorization, encryption, audit logging designed before any code written",
               "Deployment: One-command deployment, automated rollback, comprehensive monitoring designed before development",
               "UX: Intuitive APIs, clear errors, comprehensive docs designed before implementation",
-              "API Gateway: If human users/external APIs, gateway MUST exist and be fully implemented (not orphaned)"
+              "API Gateway: If human users/external APIs, gateway MUST exist and be fully implemented (not orphaned)",
+              "Operational Environment: Design for failures, attacks, load spikes, network issues UPFRONT. Define which tests to run and why during SE phase."
             ],
-            "cost_of_retrofitting": "Fixing security vulnerabilities, complex deployments, or poor UX after launch is 10-100x more expensive than designing correctly upfront"
+            "systems_engineering_vs_testing_phase": {
+              "se_phase": "Design for real operational environment, define which tests needed, establish success criteria, make architectural decisions",
+              "testing_phase": "Execute tests planned during SE phase, validate system survives operational conditions, measure against baselines",
+              "critical_distinction": "Testing phase does NOT define new tests - those are architectural decisions made NOW during SE phase"
+            },
+            "cost_of_retrofitting": "NOT considering operational environment upfront causes budget overages and costly program delays. Retrofitting production-readiness is 10-100x more expensive than designing for it.",
+            "real_world_conditions": "Systems face network failures, resource exhaustion, cascading failures, traffic spikes, security attacks, data corruption, third-party outages, config drift. Design for these NOW, not hope they don't happen."
           },
           "blocking": true
         }

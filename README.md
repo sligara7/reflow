@@ -236,7 +236,12 @@ See `definitions/framework_registry.json` and `definitions/analysis_selection_gu
 ### Development Support
 - **Multi-language**: Support for Python, Java, TypeScript, Go, Rust, and more
 - **Validation**: Automated architecture validation and consistency checking
-- **IT System Requirements (NEW in v3.2.0!)**: For UAF systems with human users - enforce security, deployment ease, and UX upfront
+- **Operational Environment Design (NEW in v3.3.0!)**: For UAF/IT systems - design for REAL operational conditions UPFRONT
+  - **10 IT Considerations**: Service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing
+  - **Real-World Conditions**: Design for failures, attacks, load spikes, network issues (not benign vacuum)
+  - **Testing Strategy Upfront**: Define which tests to run and why during SE phase; testing phase executes them
+  - **Cost Impact**: Prevents budget overages and program delays from retrofitting production-readiness
+- **IT System Requirements (v3.2.0)**: For UAF systems with human users - enforce security, deployment ease, and UX upfront
   - **Security Architecture**: Authentication, authorization, API gateway, rate limiting, encryption, audit logging
   - **Deployment Architecture**: One-command deployment, automated rollback, monitoring, health checks
   - **UX & API Design**: Intuitive APIs, clear errors, comprehensive docs, user-friendly experience
@@ -282,6 +287,7 @@ Each system gets a standardized structure:
 │   │   ├── security_architecture.json  # Security requirements (UAF with human users)
 │   │   ├── deployment_architecture.json  # Deployment strategy (UAF/IT systems)
 │   │   ├── ux_api_design.json  # UX and API design standards (UAF with human users)
+│   │   ├── operational_environment.json  # Real operational conditions, 10 IT considerations (UAF production systems)
 │   │   └── graphs/            # system_of_systems_graph.json
 │   └── human/                  # Human-readable
 │       ├── visualizations/    # Mermaid diagrams
