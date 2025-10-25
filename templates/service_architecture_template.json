@@ -1,6 +1,8 @@
 {
+  "$schema": "../templates/schemas/service_architecture_schema.json",
   "template_version": "1.0",
   "template_description": "Standard template for service_architecture.json files based on UAF definitions",
+  "CRITICAL_NOTE": "service_id and service_name MUST be at TOP LEVEL (not nested in metadata). Tools expect flat structure.",
   "service_name": "REPLACE_WITH_SERVICE_NAME",
   "service_id": "REPLACE_WITH_SERVICE_ID",
   "hierarchical_tier": "REQUIRED: tier_0_system_of_systems | tier_1_systems | tier_2_components",
@@ -93,6 +95,7 @@
     "trade_offs": "OPTIONAL: Why this approach was chosen over alternatives"
   },
   "INSTRUCTIONS": {
+    "CRITICAL_STRUCTURE_REQUIREMENT": "DO NOT nest service_id/service_name in a 'metadata' object. They MUST be at top level of JSON. Tools (system_of_systems_graph_v2.py) expect: data.get('service_id'), NOT data.get('metadata', {}).get('service_id')",
     "hierarchical_tier_rules": {
       "tier_0_system_of_systems": "Highest level federation of multiple independent systems",
       "tier_1_systems": "Independent systems that can operate standalone",

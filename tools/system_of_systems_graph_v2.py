@@ -1291,6 +1291,7 @@ Supported Frameworks:
 
     parser.add_argument('index_file', help='Path to index.json file')
     parser.add_argument('-o', '--output', help='Output file path (default: system_of_systems_graph.json)')
+    parser.add_argument('--system-root', help='System root directory (if not provided, derived from index.json location or read from working_memory.json)')
 
     # Analysis flags
     parser.add_argument('--detect-gaps', action='store_true',
@@ -1324,11 +1325,40 @@ Supported Frameworks:
 
     args = parser.parse_args()
 
-    # Determine system root from index file path
+    # Determine system root
     index_path = os.path.abspath(args.index_file)
-    system_root = os.path.dirname(os.path.dirname(index_path))  # Go up from specs/machine/
 
-    print(f"System root: {system_root}")
+    if args.system_root:
+        # Use explicitly provided system root
+        system_root = os.path.abspath(args.system_root)
+        print(f"System root: {system_root} (explicitly provided)")
+    else:
+        # Try to read from working_memory.json first
+        possible_wm_paths = [
+            os.path.join(os.path.dirname(os.path.dirname(index_path)), 'context', 'working_memory.json'),
+            os.path.join(os.getcwd(), 'context', 'working_memory.json'),
+        ]
+
+        system_root_from_wm = None
+        for wm_path in possible_wm_paths:
+            if os.path.exists(wm_path):
+                try:
+                    with open(wm_path) as f:
+                        wm_data = json.load(f)
+                    system_root_from_wm = wm_data.get('path_configuration', {}).get('system_root')
+                    if system_root_from_wm:
+                        print(f"System root: {system_root_from_wm} (from working_memory.json)")
+                        break
+                except Exception as e:
+                    pass  # Continue to next option
+
+        if system_root_from_wm:
+            system_root = system_root_from_wm
+        else:
+            # Fall back to deriving from index file path
+            system_root = os.path.dirname(os.path.dirname(index_path))  # Go up from specs/machine/
+            print(f"System root: {system_root} (derived from index.json location)")
+
     print(f"Index file: {index_path}")
 
     # Load framework configuration
