@@ -1,0 +1,31 @@
+{
+  "system_name": "Reflow Workflow System",
+  "description": "Meta-analysis: Framework-agnostic systems engineering workflow execution system for LLM agents",
+  "last_updated": "2025-10-25",
+  "version": "1.0.0",
+  "metadata": {
+    "framework": "UAF",
+    "meta_analysis": true,
+    "meta_analysis_note": "This is a meta-analysis where Reflow analyzes its own workflow structure. Workflow steps are modeled as 'services' and data artifacts as 'interfaces'.",
+    "total_workflow_steps": 35,
+    "representative_sample": 8,
+    "workflows_analyzed": [
+      "00-setup",
+      "01-systems_engineering",
+      "02-artifacts_visualization",
+      "03-development",
+      "04-testing_operations",
+      "feature_update"
+    ]
+  },
+  "components": {
+    "s_01_path_configuration": "machine/service_arch/S-01_PathConfiguration/service_architecture_v1.0.0-20251025.json",
+    "s_03_foundational_documents": "machine/service_arch/S-03_FoundationalDocuments/service_architecture_v1.0.0-20251025.json",
+    "se_01_system_analysis": "machine/service_arch/SE-01_SystemAnalysis/service_architecture_v1.0.0-20251025.json",
+    "se_02_service_architecture": "machine/service_arch/SE-02_ServiceArchitecture/service_architecture_v1.0.0-20251025.json",
+    "se_06_system_graph": "machine/service_arch/SE-06_SystemGraph/service_architecture_v1.0.0-20251025.json",
+    "av_01_interface_contracts": "machine/service_arch/AV-01_InterfaceContracts/service_architecture_v1.0.0-20251025.json",
+    "d_01_development_init": "machine/service_arch/D-01_DevelopmentInit/service_architecture_v1.0.0-20251025.json",
+    "to_02_cicd": "machine/service_arch/TO-02_CICD/service_architecture_v1.0.0-20251025.json"
+  }
+}

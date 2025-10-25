@@ -1,0 +1,227 @@
+{
+  "metadata": {
+    "service_name": "D-01: Development Initialization",
+    "step_id": "D-01",
+    "workflow": "03-development",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Bootstrap development environment with dependencies, directory structure, and tooling",
+    "purpose": "Prepare development environment for service implementation",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "d_01_developmentinit"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "component_architectures_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Reads all service_architecture.json files for implementation requirements",
+        "artifact_pattern": "specs/machine/service_arch/{component_name}/service_architecture.json"
+      },
+      {
+        "name": "interface_contracts_input",
+        "direction": "consumed",
+        "connected_services": [
+          "AV-01_InterfaceContracts"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Reads Interface Contract Documents for implementation contracts",
+        "artifact_pattern": "specs/machine/interfaces/{interface_name}_contract_v*.json"
+      },
+      {
+        "name": "icd_index_input",
+        "direction": "consumed",
+        "connected_services": [
+          "AV-01_InterfaceContracts"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads ICD index for complete contract list",
+        "artifact": "specs/machine/interfaces/icd_index.json"
+      },
+      {
+        "name": "working_memory_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-01_PathConfiguration"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads system_root and programming language",
+        "data_model": {
+          "paths": {
+            "system_root": "string"
+          },
+          "development_configuration": {
+            "primary_language": "string (python, java, typescript, go, rust)"
+          }
+        }
+      },
+      {
+        "name": "development_environment_output",
+        "direction": "produced",
+        "connected_services": [
+          "D-02_ServiceImplementation"
+        ],
+        "interface_type": "filesystem_artifacts",
+        "description": "Creates development environment structure",
+        "artifacts": [
+          "services/{component_name}/src/ (source directories)",
+          "services/{component_name}/tests/ (test directories)",
+          "services/{component_name}/requirements.txt or package.json (dependencies)",
+          "services/{component_name}/Dockerfile (containerization)",
+          "services/{component_name}/README.md (service documentation)"
+        ],
+        "criticality": "HIGH - Enables implementation"
+      },
+      {
+        "name": "dependency_configuration",
+        "direction": "produced",
+        "connected_services": [
+          "D-02_ServiceImplementation"
+        ],
+        "interface_type": "configuration_files",
+        "description": "Generates dependency management files",
+        "artifacts": [
+          "requirements.txt (Python)",
+          "pyproject.toml (Python - poetry)",
+          "package.json (JavaScript/TypeScript)",
+          "go.mod (Go)",
+          "Cargo.toml (Rust)",
+          "pom.xml (Java)"
+        ]
+      },
+      {
+        "name": "development_tooling",
+        "direction": "produced",
+        "connected_services": [
+          "D-02_ServiceImplementation",
+          "TO-01_Testing"
+        ],
+        "interface_type": "configuration_files",
+        "description": "Configures linting, formatting, testing tools",
+        "artifacts": [
+          ".pylintrc or ruff.toml (Python linting)",
+          ".eslintrc (JavaScript/TypeScript linting)",
+          "pytest.ini (Python testing)",
+          "jest.config.js (JavaScript testing)"
+        ]
+      }
+    ],
+    "components": [
+      {
+        "name": "ArchitectureReader",
+        "type": "data_component",
+        "responsibilities": [
+          "Load service architectures",
+          "Load interface contracts",
+          "Extract implementation requirements"
+        ]
+      },
+      {
+        "name": "LanguageDetector",
+        "type": "logic_component",
+        "responsibilities": [
+          "Detect primary programming language",
+          "Identify framework requirements",
+          "Determine runtime environment"
+        ]
+      },
+      {
+        "name": "DirectoryStructureGenerator",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Create services/ directory structure",
+          "Create src/ and tests/ subdirectories",
+          "Generate README templates"
+        ]
+      },
+      {
+        "name": "DependencyResolver",
+        "type": "logic_component",
+        "responsibilities": [
+          "Identify required libraries",
+          "Research modern dependencies (if D-01-A00 enabled)",
+          "Generate dependency files",
+          "Pin versions"
+        ]
+      },
+      {
+        "name": "ToolingConfigurator",
+        "type": "configuration_component",
+        "responsibilities": [
+          "Configure linting tools",
+          "Configure formatters",
+          "Configure testing frameworks",
+          "Configure build tools"
+        ]
+      },
+      {
+        "name": "ContainerizationBootstrapper",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Generate Dockerfiles",
+          "Configure base images",
+          "Setup multi-stage builds"
+        ]
+      },
+      {
+        "name": "DevelopmentValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate directory structure",
+          "Check dependency installation",
+          "Verify tool configuration"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "D-01-A00: OPTIONAL - Research current development best practices",
+      "D-01-A01: Execute bootstrap_development_context.py",
+      "D-01-A02: Generate service directory structure",
+      "D-01-A03: Create dependency management files",
+      "D-01-A04: Configure development tooling (linting, testing)",
+      "D-01-A05: Generate Dockerfiles for each service",
+      "D-01-A06: Install dependencies in virtual environments",
+      "D-01-A07: Validate development environment"
+    ],
+    "capabilities": [
+      "Development environment bootstrapping",
+      "Dependency management",
+      "Tooling configuration",
+      "Containerization setup",
+      "Multi-language support"
+    ],
+    "tools": [
+      "bootstrap_development_context.py"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "AV-01_InterfaceContracts"
+      ],
+      "prerequisite_artifacts": [
+        "specs/machine/service_arch/{component}/service_architecture.json (all components)",
+        "specs/machine/interfaces/{interface}_contract_v*.json (all interfaces)",
+        "specs/machine/interfaces/icd_index.json"
+      ],
+      "note": "Requires architectures and interface contracts before development setup"
+    },
+    "outputs_required_by": [
+      "D-02_ServiceImplementation",
+      "TO-01_Testing"
+    ]
+  },
+  "deployment": {
+    "execution_context": "LLM agent session with filesystem and package management",
+    "estimated_duration": "10-20 minutes",
+    "user_interaction_required": false,
+    "user_inputs": [],
+    "command_template": "python3 bootstrap_development_context.py <system_root>"
+  }
+}
