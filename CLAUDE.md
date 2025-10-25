@@ -1,6 +1,6 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.1.0
+**Version**: 3.2.0
 **Last Updated**: 2025-10-25
 
 ## What is Reflow?
@@ -434,6 +434,178 @@ Results appear in `system_of_systems_graph.json` under `networkx_analysis` secti
 - **Cycles**: Feedback loops (expected in biology/CAS, problematic in UAF)
 - **DAG**: Topological ordering (good for UAF dependencies, metabolic pathways)
 - **Flow**: Maximum throughput and bottlenecks
+
+## IT System Requirements (UAF Systems with Human Users) - CRITICAL!
+
+### ⚠️ Modern, Interconnected World Requirements
+
+**IMPORTANT**: IT systems with human users or external API access **MUST** address three critical requirements **UPFRONT** (not as afterthoughts):
+
+1. **Security** - Authentication, authorization, encryption, audit logging
+2. **Deployment Ease** - One-command deployment, automated rollback, clear documentation
+3. **User Experience** - Intuitive APIs, clear error messages, straightforward positive experience
+
+**Rationale**: IT systems operate in a modern, interconnected world where these requirements are fundamental to success. Retrofitting security, simplifying deployment, or fixing poor UX after launch is **10-100x more expensive** than designing correctly upfront.
+
+### 🔒 Security Architecture (REQUIRED for UAF with Human Users)
+
+**Applicability**:
+- ✅ UAF framework with human users (web apps, mobile apps, admin dashboards)
+- ✅ UAF framework with external API access (third-party developers, integrations)
+- ❌ Internal machine-to-machine microservices (lighter security acceptable)
+
+**When**: Step SE-02-A05 (during architecture design, before any code)
+
+**Template**: `security_architecture_template.json`
+
+**Required Sections**:
+- **Security Posture**: Classification, user types, threat model, compliance requirements
+- **Authentication**: Strategy (JWT, OAuth2, SAML), session management, MFA for privileged users
+- **Authorization**: RBAC/ABAC, roles and permissions, enforcement points (API gateway, service layer)
+- **API Gateway**: **MANDATORY** for human-facing systems (auth, rate limiting, SSL/TLS, CORS)
+- **Rate Limiting**: Prevent abuse (e.g., 100 req/min per user, 5 login attempts per 15 min)
+- **Input Validation**: XSS prevention, SQL injection prevention, schema validation
+- **Encryption**: TLS 1.2+ in-transit, AES-256 at-rest, key management (KMS, Vault)
+- **Audit Logging**: Log auth attempts, data access, admin actions; retention policy; alerting
+
+**API Gateway Requirement**:
+- If system has human users OR external APIs → api_gateway service **MUST** exist
+- API gateway **MUST be fully implemented**, not just scaffolding (orphaned service check in SE-06)
+- Responsibilities: Single entry point, authentication, rate limiting, SSL termination, request validation
+
+**Validation**: Step SE-03-A05 (manual review + automated checks) - **BLOCKING GATE**
+
+**Common Issues**:
+- Missing API gateway or api_gateway defined but not implemented (orphaned service) → **CRITICAL**
+- Weak authentication (no MFA for admins, weak password policy) → **HIGH RISK**
+- No encryption at rest for sensitive data (passwords, PII) → **HIGH RISK**
+- Insufficient rate limiting → **MEDIUM RISK** (vulnerable to DoS, brute force)
+
+### 🚀 Deployment Architecture (REQUIRED for UAF/IT Systems)
+
+**Applicability**:
+- ✅ UAF framework (all IT systems requiring deployment infrastructure)
+- ❌ Non-IT systems (biology, ecology, social networks)
+
+**When**: Step SE-02-A06 (during architecture design)
+
+**Template**: `deployment_architecture_template.json`
+
+**Deployment Philosophy - SIMPLICITY FIRST**:
+- **One-Command Deployment**: System MUST deploy with single command (`docker-compose up -d` OR `kubectl apply -f manifests/`)
+- **Quick Start Time**: New developer can deploy entire system in **< 10 minutes** from git clone
+- **Automated Rollback**: Failed deployments automatically revert in **< 5 minutes**
+- **Clear Documentation**: README.md with step-by-step deployment instructions and expected outputs
+
+**Required Sections**:
+- **Containerization**: Docker/Podman, official base images, image scanning (Trivy, Snyk)
+- **Orchestration**: Docker Compose (default for simplicity) OR Kubernetes (only if scale/HA needed)
+- **CI/CD Pipeline**: Build → Test → Deploy stages; automated testing; rollback on failure
+- **Environment Management**: Dev, staging, production with environment parity
+- **Service Discovery**: DNS, health checks (`/health`), readiness probes (`/ready`)
+- **Monitoring & Observability**: Metrics (Prometheus), logging (centralized), alerting (critical failures)
+- **Backup & DR**: Backup strategy, restore testing, RTO/RPO targets
+
+**Simplicity Guidelines**:
+- **Default to Docker Compose** unless Kubernetes features absolutely necessary
+- Avoid overcomplication - 3-service system doesn't need Kubernetes
+- Document every deployment step - assume reader is new developer
+
+**Validation**: Step SE-03-A06 (manual review + automated checks) - **BLOCKING GATE**
+
+**Common Issues**:
+- Overcomplicated orchestration (using K8s when docker-compose sufficient) → Slows iteration
+- No health checks → Can't detect failures, no automated recovery
+- Manual deployment steps → Error-prone, slow onboarding
+- No rollback strategy → Prolonged outages from failed deployments
+- Missing observability → Blind to system health, can't diagnose issues
+
+### 🎨 User Experience & API Design (REQUIRED for UAF with Human Users/APIs)
+
+**Applicability**:
+- ✅ UAF framework with human users (web/mobile interfaces)
+- ✅ UAF framework with external API consumers (third-party developers)
+- ❌ Internal machine-to-machine systems
+
+**When**: Step SE-02-A07 (during architecture design, before API contracts finalized)
+
+**Template**: `ux_api_design_template.json`
+
+**UX Philosophy**:
+- **Simplicity First**: Intuitive design, clear feedback, error recovery
+- **Time to First Success**: New user completes first action in **< 5 minutes**
+- **API Time to First Call**: Developer makes first successful API call in **< 5 minutes** from reading docs
+- **Task Success Rate**: **> 95%** of users complete common tasks without support
+
+**Required Sections**:
+- **API Design Principles**: RESTful design, consistent naming (snake_case or camelCase), backwards compatibility
+- **REST API Design**: Resource modeling, pagination, filtering, sorting, consistent HTTP methods
+- **Error Handling**: User-friendly messages (not technical jargon), validation errors, recovery guidance
+- **API Documentation**: **MANDATORY** - OpenAPI spec, interactive docs (Swagger UI), getting started guide, code examples (curl, Python, JavaScript)
+- **Versioning**: URL path versioning (`/api/v1/users`) recommended - most visible and explicit
+- **Performance UX**: Response time targets (p95 < 500ms), caching, compression
+- **Rate Limiting UX**: Transparent limits with headers (`X-RateLimit-Remaining`, `Retry-After`)
+- **Authentication UX**: Clear auth flow, easy token management, sandbox environment for testing
+
+**API Gateway Requirement** (CRITICAL):
+- If human users OR external APIs → api_gateway service **MUST** exist in architecture
+- Gateway **MUST be fully implemented** (not orphaned/scaffolding)
+- Responsibilities: Single entry point (`https://api.example.com`), auth enforcement, rate limiting, request validation, SSL/TLS, CORS, request ID tracking
+
+**Validation**: Step SE-03-A07 (manual review + automated checks) - **BLOCKING GATE**
+
+**Common Issues**:
+- Inconsistent API design (mixed naming conventions) → Developer confusion
+- Poor error messages ("500 Internal Server Error" vs "Email is required. Please provide your email.") → Users can't recover
+- Missing API documentation (no OpenAPI, no examples) → Can't use API
+- No API gateway → Inconsistent auth, can't enforce rate limits, poor observability
+- **api_gateway defined but not implemented (orphaned service)** → **CRITICAL** - system non-functional
+- Unclear versioning (query params/headers vs URL path) → Hard to discover
+
+**User Experience Targets**:
+- **Time to first success**: < 5 minutes for new user
+- **API time to first call**: < 5 minutes from reading docs
+- **Task success rate**: > 95% complete common tasks without support
+- **Error recovery**: Errors provide actionable guidance, not just failure messages
+
+### 🎯 Orphaned Service Detection (UAF Systems)
+
+**Problem**: Services defined in architecture but never implemented (scaffolding only)
+
+**Example**: API gateway defined with `service_architecture.json` but only contains empty scaffolding code → System fails because gateway doesn't route requests
+
+**Detection**: Step SE-06 - System of Systems Graph Analysis
+```bash
+python3 system_of_systems_graph_v2.py index.json --analyze-issues
+```
+
+**Checks**:
+- Services with architecture files but no implementation directory
+- Services with implementation directory but only scaffolding (< 50 lines, no functions/classes)
+- Reports as `unimplemented_services` in `architectural_issues.unimplemented_services`
+
+**Prevention**:
+- Mark critical services (especially api_gateway) as mandatory in architecture
+- Validate implementation exists before proceeding to testing/deployment
+- Use CI/CD checks to ensure no orphaned services
+
+### 📋 IT System Requirements Checklist
+
+Before proceeding from SE-03 validation gate, verify:
+
+**For UAF with Human Users OR External APIs**:
+- [ ] `security_architecture.json` created with authentication, authorization, rate limiting, encryption, audit logging
+- [ ] `deployment_architecture.json` created with one-command deployment, health checks, monitoring
+- [ ] `ux_api_design.json` created with API standards, error handling, documentation requirements
+- [ ] API gateway service exists in architecture and will be fully implemented (not orphaned)
+- [ ] All three validated in SE-03-A05, SE-03-A06, SE-03-A07 (BLOCKING)
+
+**For UAF IT Systems (All)**:
+- [ ] `port_registry.json` created and validated (no port conflicts)
+- [ ] Health check endpoints defined (`/health`, `/ready`) for all services
+- [ ] Deployment documented in README with step-by-step instructions
+
+**Rationale**: These requirements are NOT optional polish - they are fundamental to IT system success in modern, interconnected environments. Designing security, deployment ease, and UX upfront prevents expensive retrofitting and ensures competitive advantage.
 
 ## Port Management (UAF/IT Systems ONLY)
 

@@ -236,6 +236,11 @@ See `definitions/framework_registry.json` and `definitions/analysis_selection_gu
 ### Development Support
 - **Multi-language**: Support for Python, Java, TypeScript, Go, Rust, and more
 - **Validation**: Automated architecture validation and consistency checking
+- **IT System Requirements (NEW in v3.2.0!)**: For UAF systems with human users - enforce security, deployment ease, and UX upfront
+  - **Security Architecture**: Authentication, authorization, API gateway, rate limiting, encryption, audit logging
+  - **Deployment Architecture**: One-command deployment, automated rollback, monitoring, health checks
+  - **UX & API Design**: Intuitive APIs, clear errors, comprehensive docs, user-friendly experience
+  - **Orphaned Service Detection**: Detect services defined but not implemented (e.g., API gateway scaffolding)
 - **Port Management**: Architectural port assignment prevents "Address already in use" deployment errors
 - **Documentation**: Auto-generated system documentation and interface contracts
 - **Testing**: Comprehensive testing pyramid with coverage enforcement
@@ -274,6 +279,9 @@ Each system gets a standardized structure:
 │   │   ├── service_arch/      # service_architecture.json files
 │   │   ├── interfaces/        # Interface Contract Documents
 │   │   ├── port_registry.json # Centralized port assignments (prevents conflicts!)
+│   │   ├── security_architecture.json  # Security requirements (UAF with human users)
+│   │   ├── deployment_architecture.json  # Deployment strategy (UAF/IT systems)
+│   │   ├── ux_api_design.json  # UX and API design standards (UAF with human users)
 │   │   └── graphs/            # system_of_systems_graph.json
 │   └── human/                  # Human-readable
 │       ├── visualizations/    # Mermaid diagrams

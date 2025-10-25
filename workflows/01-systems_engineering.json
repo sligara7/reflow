@@ -265,6 +265,127 @@
             "example": "Service on port 8000 → docker-compose: '8000:8000'",
             "conflict_prevention": "Port registry ensures no two containers map to same host port"
           }
+        },
+        {
+          "action_id": "SE-02-A05",
+          "description": "Create security architecture (CONDITIONAL - required for IT systems with human users)",
+          "condition": {
+            "check": "framework_id == 'uaf' AND system has human users OR external API access",
+            "if_true": "Create security_architecture.json with authentication, authorization, and security controls",
+            "if_false": "Skip - internal machine-to-machine systems may have lighter security requirements",
+            "applicable_frameworks": ["uaf"],
+            "user_detection": "Check if any service has 'user_facing: true' OR 'external_api: true' in service_architecture.json"
+          },
+          "template": "security_architecture_template.json",
+          "location": "specs/machine/security_architecture.json",
+          "purpose": "Define comprehensive security architecture UPFRONT - authentication, authorization, API gateway, rate limiting, encryption, audit logging",
+          "rationale": "IT systems in modern, interconnected world must prioritize security from the start. Retrofitting security is expensive and risky.",
+          "required_sections": [
+            "security_posture (classification, user_types, threat_model)",
+            "authentication (strategy, session_management, MFA)",
+            "authorization (RBAC, permissions, enforcement points)",
+            "api_gateway (gateway type, SSL/TLS, CORS, routing)",
+            "rate_limiting (strategy, limits, enforcement)",
+            "input_validation (XSS, SQL injection prevention)",
+            "encryption (in-transit TLS, at-rest AES-256, key management)",
+            "audit_logging (events to log, retention, alerting)"
+          ],
+          "human_user_scenarios": [
+            "Web application with end users → REQUIRED",
+            "Mobile app with authentication → REQUIRED",
+            "Third-party developer API access → REQUIRED",
+            "Admin dashboard → REQUIRED",
+            "Internal microservices only → OPTIONAL (lighter security acceptable)"
+          ],
+          "upfront_emphasis": {
+            "critical": "Security is NOT an afterthought. Design authentication and authorization flows BEFORE implementing any service.",
+            "blocking": "Security architecture must be reviewed and approved before SE-03 validation gate",
+            "user_experience_impact": "Poor security UX (complex auth flows, unclear errors) leads to user abandonment and support tickets"
+          }
+        },
+        {
+          "action_id": "SE-02-A06",
+          "description": "Create deployment architecture (CONDITIONAL - required for IT systems)",
+          "condition": {
+            "check": "framework_id == 'uaf' AND deployment_characteristics.port_management_applicable == true",
+            "if_true": "Create deployment_architecture.json emphasizing ease and simplicity",
+            "if_false": "Skip - non-IT systems (biology, ecology) don't have deployment infrastructure",
+            "applicable_frameworks": ["uaf"]
+          },
+          "template": "deployment_architecture_template.json",
+          "location": "specs/machine/deployment_architecture.json",
+          "purpose": "Design deployment for EASE, SIMPLICITY, and STRAIGHTFORWARD operation. Enable one-command deployment and rapid rollback.",
+          "rationale": "Complex deployment processes slow iteration, increase errors, and frustrate developers. Deployment simplicity is a competitive advantage.",
+          "required_sections": [
+            "deployment_philosophy (one_command_deployment, reproducible, automated_rollback, zero_downtime)",
+            "containerization (Docker/Podman, image standards, scanning)",
+            "orchestration (docker-compose OR kubernetes - choose simpler option)",
+            "ci_cd_pipeline (build, test, deploy stages, automated testing)",
+            "environment_management (dev, staging, prod parity)",
+            "service_discovery (DNS, health checks, readiness/liveness probes)",
+            "monitoring_observability (metrics, logging, tracing, alerting)",
+            "backup_disaster_recovery (backup strategy, restore testing, RTO/RPO)"
+          ],
+          "simplicity_first_principle": {
+            "default": "Use Docker Compose unless Kubernetes features absolutely necessary",
+            "one_command": "System MUST deploy with single command: 'docker-compose up -d' or 'kubectl apply -f manifests/'",
+            "quick_start_time": "Target: New developer can deploy entire system in < 10 minutes from git clone",
+            "documentation": "README.md must have step-by-step deployment instructions with expected outputs"
+          },
+          "upfront_emphasis": {
+            "critical": "Deployment complexity is NOT deferred to later. Design for ease of deployment NOW to enable rapid iteration.",
+            "blocking": "Deployment architecture must be validated before development begins",
+            "developer_experience_impact": "If deployment is painful, developers avoid testing integrated system → integration bugs discovered late"
+          }
+        },
+        {
+          "action_id": "SE-02-A07",
+          "description": "Create UX and API design architecture (CONDITIONAL - required for IT systems with human users or external APIs)",
+          "condition": {
+            "check": "framework_id == 'uaf' AND (system has human users OR external API consumers)",
+            "if_true": "Create ux_api_design.json with user experience principles and API design standards",
+            "if_false": "Skip - internal machine-to-machine systems may not need user-facing design",
+            "applicable_frameworks": ["uaf"],
+            "user_detection": "Check if any service has 'user_facing: true' OR 'external_api: true' OR 'api_gateway' service exists"
+          },
+          "template": "ux_api_design_template.json",
+          "location": "specs/machine/ux_api_design.json",
+          "purpose": "Ensure STRAIGHTFORWARD and POSITIVE user experience. Design intuitive APIs, clear error messages, comprehensive documentation.",
+          "rationale": "Poor UX leads to user abandonment, support burden, and negative reputation. API design affects every integration and can't be easily changed.",
+          "required_sections": [
+            "ux_philosophy (simplicity_first, clear_feedback, error_recovery, accessibility)",
+            "api_design_principles (REST/GraphQL, consistency, backwards_compatibility)",
+            "rest_api_design (resource modeling, query params, pagination, filtering)",
+            "error_handling (user-friendly messages, validation errors, recovery guidance)",
+            "api_documentation (OpenAPI spec, interactive docs, getting started guide, code examples)",
+            "versioning_strategy (url_path versioning, deprecation policy, migration guide)",
+            "performance_ux (response time targets, caching, compression)",
+            "authentication_ux (clear auth flow, token management, sandbox environment)"
+          ],
+          "api_gateway_requirement": {
+            "mandatory": "If system has human users OR external APIs, api_gateway service MUST exist",
+            "responsibilities": [
+              "Single entry point (unified base URL: https://api.example.com)",
+              "Authentication enforcement",
+              "Rate limiting",
+              "Request validation",
+              "SSL/TLS termination",
+              "CORS handling",
+              "Request ID tracking for troubleshooting"
+            ],
+            "orphaned_service_prevention": "api_gateway MUST be implemented, not just scaffolding. Validate in SE-06 graph analysis."
+          },
+          "user_experience_targets": {
+            "time_to_first_success": "New user completes first successful action in < 5 minutes",
+            "api_time_to_first_call": "Developer makes first successful API call in < 5 minutes from reading docs",
+            "task_success_rate": "> 95% of users complete common tasks without support",
+            "error_recovery": "Errors provide actionable guidance, not just failure messages"
+          },
+          "upfront_emphasis": {
+            "critical": "UX is NOT polish added later. Core user flows and API contracts designed NOW prevent costly refactoring.",
+            "blocking": "UX and API design must be reviewed before implementation",
+            "modern_world_requirement": "IT systems compete on user experience. Clunky APIs and confusing UX lose users to competitors."
+          }
         }
       ],
       "tools_used": [
@@ -274,12 +395,18 @@
         "service_architecture_template.json",
         "component_specification_complete_template.json",
         "interface_registry_enhanced_template.json",
-        "port_registry_template.json"
+        "port_registry_template.json",
+        "security_architecture_template.json",
+        "deployment_architecture_template.json",
+        "ux_api_design_template.json"
       ],
       "outputs": [
         "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service) - with port assignments",
         "specs/machine/interface_registry.json",
-        "specs/machine/port_registry.json"
+        "specs/machine/port_registry.json",
+        "specs/machine/security_architecture.json (if UAF with human users)",
+        "specs/machine/deployment_architecture.json (if UAF/IT system)",
+        "specs/machine/ux_api_design.json (if UAF with human users/external APIs)"
       ],
       "gates": [],
       "next_step": "SE-03"
@@ -410,10 +537,193 @@
           "success_criteria": "validate_port_registry.py returns zero errors",
           "blocking": "Yes - port conflicts MUST be resolved before development",
           "rationale": "Catching port conflicts now prevents 'Address already in use' errors during deployment and testing phases"
+        },
+        {
+          "action_id": "SE-03-A05",
+          "description": "Validate security architecture (CONDITIONAL - if security_architecture.json exists)",
+          "condition": {
+            "check": "security_architecture.json exists in specs/machine/",
+            "if_true": "Validate security architecture for completeness and best practices",
+            "if_false": "Skip - security architecture not required for internal-only systems"
+          },
+          "validation_type": "Manual review + automated checks",
+          "validation_checks": [
+            "Authentication strategy defined and appropriate for user types",
+            "Authorization model (RBAC/ABAC) complete with roles and permissions",
+            "API gateway configuration includes SSL/TLS, CORS, rate limiting",
+            "Rate limiting strategy defined with specific limits",
+            "Input validation covers XSS and SQL injection prevention",
+            "Encryption specified for both in-transit (TLS 1.2+) and at-rest (AES-256)",
+            "Audit logging configured with retention policy and alerting",
+            "Security testing approach defined (SAST, dependency scanning)"
+          ],
+          "common_issues": {
+            "weak_authentication": {
+              "symptom": "No MFA for privileged users, weak password policy",
+              "fix": "Enable MFA for admin roles, enforce strong password requirements",
+              "security_impact": "HIGH - weak auth leads to account compromise"
+            },
+            "missing_api_gateway": {
+              "symptom": "Services exposed directly without gateway",
+              "fix": "Add api_gateway service, route all external traffic through it",
+              "security_impact": "CRITICAL - no centralized auth, rate limiting, or request validation"
+            },
+            "insufficient_rate_limiting": {
+              "symptom": "No rate limits or very high limits",
+              "fix": "Define reasonable per-user and per-IP limits (e.g., 100 req/min)",
+              "security_impact": "MEDIUM - vulnerable to DoS and brute force attacks"
+            },
+            "no_encryption_at_rest": {
+              "symptom": "Sensitive data stored in plaintext",
+              "fix": "Identify sensitive fields (passwords, PII, tokens), encrypt with AES-256",
+              "security_impact": "HIGH - data breach exposes sensitive information"
+            }
+          },
+          "review_questions": [
+            "Is the authentication flow simple enough for users to understand?",
+            "Are error messages helpful without exposing security details?",
+            "Is the security approach proportional to the threat model?",
+            "Are there clear procedures for security incidents?",
+            "Is secret management automated and secure?"
+          ],
+          "success_criteria": "Security architecture addresses all threat vectors, follows industry best practices, and provides positive UX",
+          "blocking": "Yes - security gaps MUST be addressed before development",
+          "rationale": "Security vulnerabilities discovered after implementation are 10x more expensive to fix than during design"
+        },
+        {
+          "action_id": "SE-03-A06",
+          "description": "Validate deployment architecture (CONDITIONAL - if deployment_architecture.json exists)",
+          "condition": {
+            "check": "deployment_architecture.json exists in specs/machine/",
+            "if_true": "Validate deployment architecture for ease and completeness",
+            "if_false": "Skip - deployment architecture not required for non-IT systems"
+          },
+          "validation_type": "Manual review + automated checks",
+          "validation_checks": [
+            "Deployment philosophy emphasizes simplicity and ease",
+            "One-command deployment strategy defined (docker-compose up -d OR kubectl apply)",
+            "Containerization with Docker/Podman using official base images",
+            "Orchestration choice justified (docker-compose for simplicity OR kubernetes for scale)",
+            "CI/CD pipeline defined with build, test, deploy stages",
+            "Environment management covers dev, staging, production with parity",
+            "Service discovery mechanism defined (DNS, health checks)",
+            "Monitoring and observability strategy complete (metrics, logging, alerting)",
+            "Backup and disaster recovery with defined RTO/RPO"
+          ],
+          "common_issues": {
+            "overcomplicated_orchestration": {
+              "symptom": "Using Kubernetes for 3-service system that doesn't need it",
+              "fix": "Simplify to docker-compose unless scale/HA features truly needed",
+              "impact": "Increases deployment complexity, slows iteration"
+            },
+            "no_health_checks": {
+              "symptom": "Services don't expose /health or /ready endpoints",
+              "fix": "Add health check endpoints to all services, configure in orchestrator",
+              "impact": "Can't detect service failures, no automated recovery"
+            },
+            "manual_deployment_steps": {
+              "symptom": "Deployment requires multiple manual commands or configuration",
+              "fix": "Automate in single command or script, document in README",
+              "impact": "Error-prone deployments, slow onboarding for new developers"
+            },
+            "no_rollback_strategy": {
+              "symptom": "No defined procedure to revert failed deployments",
+              "fix": "Define rollback command/procedure, test it works",
+              "impact": "Failed deployments cause prolonged outages"
+            },
+            "missing_observability": {
+              "symptom": "No metrics, logging, or alerting defined",
+              "fix": "Add Prometheus metrics, centralized logging, critical alerts",
+              "impact": "Can't diagnose issues, blind to system health"
+            }
+          },
+          "review_questions": [
+            "Can a new developer deploy the entire system in < 10 minutes?",
+            "Is the deployment process documented step-by-step in README?",
+            "Is rollback simple and fast (< 5 minutes)?",
+            "Are health checks comprehensive enough to detect failures?",
+            "Is the infrastructure reproducible (IaC) or manual?",
+            "Are there clear procedures for scaling up/down?"
+          ],
+          "success_criteria": "Deployment is simple, automated, well-documented, and enables rapid iteration",
+          "blocking": "Yes - complex or undocumented deployment will slow development and increase errors",
+          "rationale": "Deployment ease directly impacts development velocity and system reliability"
+        },
+        {
+          "action_id": "SE-03-A07",
+          "description": "Validate UX and API design architecture (CONDITIONAL - if ux_api_design.json exists)",
+          "condition": {
+            "check": "ux_api_design.json exists in specs/machine/",
+            "if_true": "Validate UX and API design for clarity, consistency, and developer-friendliness",
+            "if_false": "Skip - UX/API design not required for internal machine-to-machine systems"
+          },
+          "validation_type": "Manual review + automated checks",
+          "validation_checks": [
+            "UX philosophy defined with clear user types and goals",
+            "API design principles follow REST/GraphQL best practices",
+            "API endpoints follow consistent naming and structure",
+            "Error handling provides user-friendly messages with recovery guidance",
+            "API documentation includes OpenAPI spec, interactive docs, code examples",
+            "Versioning strategy defined (url_path recommended) with deprecation policy",
+            "Performance targets set (p50, p95, p99 latency)",
+            "Rate limiting transparent with clear headers and error messages",
+            "Authentication UX is simple with clear token management",
+            "API gateway defined with responsibilities (auth, rate limiting, routing)"
+          ],
+          "common_issues": {
+            "inconsistent_api_design": {
+              "symptom": "Some endpoints use camelCase, others snake_case; mixed naming conventions",
+              "fix": "Standardize on single convention (snake_case recommended), document in API design",
+              "impact": "Developer confusion, harder to use API"
+            },
+            "poor_error_messages": {
+              "symptom": "Errors like '500 Internal Server Error' or technical jargon",
+              "fix": "Return helpful messages: 'Email is required. Please provide your email address.'",
+              "impact": "Users can't recover from errors, support burden increases"
+            },
+            "missing_api_documentation": {
+              "symptom": "No OpenAPI spec, no interactive docs, no code examples",
+              "fix": "Create OpenAPI 3.0 spec, generate Swagger UI docs, add curl/Python/JS examples",
+              "impact": "Developers can't use API without extensive trial and error"
+            },
+            "no_api_gateway": {
+              "symptom": "Services exposed directly, no unified entry point",
+              "fix": "Add api_gateway service, route all traffic through single base URL",
+              "impact": "Inconsistent auth, can't enforce rate limits, poor observability"
+            },
+            "api_gateway_not_implemented": {
+              "symptom": "api_gateway defined in architecture but only scaffolding exists (orphaned service)",
+              "fix": "Implement api_gateway with routing, auth, rate limiting, SSL termination",
+              "impact": "CRITICAL - system non-functional without working gateway"
+            },
+            "unclear_versioning": {
+              "symptom": "No versioning strategy or using query params/headers (hard to discover)",
+              "fix": "Use url_path versioning (/api/v1/users) - most visible and explicit",
+              "impact": "Breaking changes break all clients, no migration path"
+            }
+          },
+          "review_questions": [
+            "Can a developer make their first successful API call in < 5 minutes from reading docs?",
+            "Are error messages helpful and actionable, not just technical failures?",
+            "Is the API consistent and predictable across all endpoints?",
+            "Does the system have a working API gateway (not just scaffolding)?",
+            "Is API documentation complete with examples for common use cases?",
+            "Can users easily obtain and manage API tokens/credentials?",
+            "Are rate limits clearly communicated with headers and documentation?",
+            "Is the UX simple enough for target user skill level?"
+          ],
+          "api_gateway_validation": {
+            "critical": "If api_gateway service exists in architecture, validate it will be FULLY IMPLEMENTED, not orphaned",
+            "check_in_SE_06": "system_of_systems_graph_v2.py with --analyze-issues will detect orphaned services",
+            "prevention": "Mark api_gateway as critical path service, validate implementation in Development workflow"
+          },
+          "success_criteria": "UX and API design enables users to succeed quickly with minimal friction",
+          "blocking": "Yes - poor UX/API design decisions are expensive to fix after launch",
+          "rationale": "User experience determines adoption, retention, and competitive advantage"
         }
       ],
       "tools_used": ["validate_architecture.py", "validate_port_registry.py"],
-      "outputs": ["Validation reports", "Corrected service_architecture.json files", "Validated port_registry.json"],
+      "outputs": ["Validation reports", "Corrected service_architecture.json files", "Validated port_registry.json", "Validated security_architecture.json", "Validated deployment_architecture.json", "Validated ux_api_design.json"],
       "gates": [
         {
           "gate_id": "G-SE-03",
@@ -423,10 +733,27 @@
             "Zero validation errors",
             "All required sections populated",
             "Interface registry complete",
-            "Port registry validated with zero port conflicts (if applicable to framework)"
+            "Port registry validated with zero port conflicts (if applicable to framework)",
+            "Security architecture validated (if UAF with human users) - BLOCKING",
+            "Deployment architecture validated (if UAF/IT system) - BLOCKING",
+            "UX and API design validated (if UAF with human users/external APIs) - BLOCKING"
           ],
           "conditional_checks": {
-            "port_registry_validation": "Only required if deployment_characteristics.port_management_applicable == true (i.e., UAF framework)"
+            "port_registry_validation": "Only required if deployment_characteristics.port_management_applicable == true (i.e., UAF framework)",
+            "security_architecture_validation": "Required if framework_id == 'uaf' AND (human users OR external APIs)",
+            "deployment_architecture_validation": "Required if framework_id == 'uaf' AND deployment_characteristics.port_management_applicable == true",
+            "ux_api_design_validation": "Required if framework_id == 'uaf' AND (human users OR external APIs)"
+          },
+          "upfront_emphasis_gate": {
+            "purpose": "Enforce that security, deployment ease, and UX are designed UPFRONT, not as afterthoughts",
+            "blocking_rationale": "IT systems in modern, interconnected world MUST prioritize security, ease of deployment, and positive user experience from the start",
+            "modern_world_requirements": [
+              "Security: Authentication, authorization, encryption, audit logging designed before any code written",
+              "Deployment: One-command deployment, automated rollback, comprehensive monitoring designed before development",
+              "UX: Intuitive APIs, clear errors, comprehensive docs designed before implementation",
+              "API Gateway: If human users/external APIs, gateway MUST exist and be fully implemented (not orphaned)"
+            ],
+            "cost_of_retrofitting": "Fixing security vulnerabilities, complex deployments, or poor UX after launch is 10-100x more expensive than designing correctly upfront"
           },
           "blocking": true
         }

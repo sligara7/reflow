@@ -1073,14 +1073,16 @@ def run_all_analysis(G: nx.DiGraph) -> Dict[str, Any]:
 # ARCHITECTURAL ISSUE DETECTION (from v1, enhanced)
 # =============================================================================
 
-def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
+def detect_architectural_issues(G: nx.DiGraph, system_root: Optional[str] = None) -> Dict[str, List[Dict]]:
     """Detect architectural problems (circular deps, orphans, etc.).
 
     Enhanced version from v1 with framework-agnostic support.
+    Includes detection of unimplemented services (scaffolding without code).
     """
     issues = {
         'circular_dependencies': [],
         'orphaned_nodes': [],
+        'unimplemented_services': [],
         'missing_interfaces': [],
         'inconsistent_protocols': [],
         'security_gaps': [],
@@ -1123,6 +1125,65 @@ def detect_architectural_issues(G: nx.DiGraph) -> Dict[str, List[Dict]]:
                 'description': f"Component '{node}' has high fan-in ({in_degree} dependencies)",
                 'recommendation': "Consider load testing, caching, or splitting into multiple components"
             })
+
+    # 4. Unimplemented services (architecture defined but no code)
+    if system_root:
+        services_dir = os.path.join(system_root, 'services')
+        if os.path.exists(services_dir):
+            for node in G.nodes():
+                node_data = G.nodes[node]
+                node_type = node_data.get('type', '')
+
+                # Only check for services/components that should have implementations
+                # Skip external services and interface protocols
+                if node_type in ['external', 'interface_protocol']:
+                    continue
+
+                # Check if implementation directory exists
+                service_impl_dir = os.path.join(services_dir, node)
+
+                if not os.path.exists(service_impl_dir):
+                    issues['unimplemented_services'].append({
+                        'node': node,
+                        'severity': 'error',
+                        'description': f"Service '{node}' has architecture defined but no implementation found",
+                        'expected_path': service_impl_dir,
+                        'recommendation': f"Implement service in {service_impl_dir} or remove from architecture if not needed"
+                    })
+                else:
+                    # Check if directory has actual code (not just scaffolding)
+                    has_code = False
+                    code_extensions = ['.py', '.java', '.ts', '.js', '.go', '.rs', '.cpp', '.c']
+
+                    try:
+                        for root, dirs, files in os.walk(service_impl_dir):
+                            for file in files:
+                                if any(file.endswith(ext) for ext in code_extensions):
+                                    # Check if file has substantial content (more than just imports/scaffolding)
+                                    file_path = os.path.join(root, file)
+                                    try:
+                                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                            content = f.read()
+                                            # Basic heuristic: more than 50 lines or contains "def"/"function"/"class"
+                                            if len(content.splitlines()) > 50 or \
+                                               any(keyword in content for keyword in ['def ', 'function ', 'class ', 'public class', 'func ']):
+                                                has_code = True
+                                                break
+                                    except:
+                                        pass
+                            if has_code:
+                                break
+
+                        if not has_code:
+                            issues['unimplemented_services'].append({
+                                'node': node,
+                                'severity': 'warning',
+                                'description': f"Service '{node}' has scaffolding but appears to lack substantial implementation",
+                                'service_path': service_impl_dir,
+                                'recommendation': f"Complete implementation in {service_impl_dir} or mark as in-progress"
+                            })
+                    except:
+                        pass
 
     return issues
 
@@ -1316,7 +1377,7 @@ Supported Frameworks:
     architectural_issues = None
     if args.analyze_issues:
         print("\nDetecting architectural issues...")
-        architectural_issues = detect_architectural_issues(G)
+        architectural_issues = detect_architectural_issues(G, system_root)
         total_issues = sum(len(v) for v in architectural_issues.values())
         print(f"Detected {total_issues} architectural issues")
         for issue_type, issues in architectural_issues.items():
