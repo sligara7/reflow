@@ -307,7 +307,7 @@
       "notes": [
         "All frameworks map to the same core abstraction (nodes with functions + edges with interactions)",
         "Framework choice affects terminology and templates but not core workflow structure",
-        "Tools like system_of_systems_graph.py work across all frameworks via framework adapters",
+        "Tools like system_of_systems_graph_v2.py work across all frameworks via framework adapters",
         "UAF 1.2 is default and recommended for most engineered systems"
       ]
     },

@@ -1241,7 +1241,7 @@
                 "2. For each flagged service, update service_architecture.json interfaces section",
                 "3. Update interface descriptions to explicitly specify async database drivers",
                 "4. Example: Change 'Internal database for character entities unique to this service' to 'Internal async database (asyncpg) for character entities'",
-                "5. Re-run system_of_systems_graph.py --analyze-issues to verify fix"
+                "5. Re-run system_of_systems_graph_v2.py --analyze-issues to verify fix"
               ]
             }
           ],
@@ -1326,7 +1326,7 @@
           ]
         }
       ],
-      "tools_used": ["system_of_systems_graph.py"],
+      "tools_used": ["system_of_systems_graph_v2.py"],
       "templates_used": ["index_template.json"],
       "outputs": [
         "specs/machine/index.json",
@@ -1419,8 +1419,8 @@
         {
           "action_id": "SE-07-A07",
           "description": "Regenerate system_of_systems_graph.json",
-          "tool": "system_of_systems_graph.py",
-          "command": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "tool": "system_of_systems_graph_v2.py",
+          "command": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}",
           "note": "Uses symlinks from index.json, so automatically uses new version"
         },
         {
@@ -1430,7 +1430,7 @@
           "pairing_rule": "Human doc version must match architecture version"
         }
       ],
-      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph_v2.py"],
       "outputs": [
         "New versioned service_architecture.json file",
         "Updated symlink",
@@ -1501,8 +1501,8 @@
         {
           "action_id": "SE-08-A03",
           "description": "Generate version-specific system graph",
-          "tool": "system_of_systems_graph.py",
-          "command": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}/specs/machine/index_v{scenario}-{date}.json --output specs/machine/graphs/system_of_systems_graph_v{scenario}-{date}.json",
+          "tool": "system_of_systems_graph_v2.py",
+          "command": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/machine/index_v{scenario}-{date}.json --output specs/machine/graphs/system_of_systems_graph_v{scenario}-{date}.json",
           "purpose": "Create graph showing this specific version combination",
           "output": "specs/machine/graphs/system_of_systems_graph_v{scenario}-{date}.json"
         },
@@ -1540,7 +1540,7 @@
           "purpose": "Track all tested version combinations"
         }
       ],
-      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph_v2.py"],
       "outputs": [
         "Version-specific index file",
         "Version-specific system graph",
@@ -1569,7 +1569,7 @@
       "ALWAYS use absolute paths from working_memory.json for tool invocations",
       "Run validate_architecture.py after creating each service_architecture.json",
       "Ensure UAF 1.2 compliance for all architecture artifacts",
-      "system_of_systems_graph.py requires index.json to be created first",
+      "system_of_systems_graph_v2.py requires index.json to be created first",
       "Do not skip validation gates - they prevent downstream issues"
     ],
     "validation_loop_critical": [
@@ -1580,7 +1580,7 @@
       "ITERATE until validation passes with ZERO errors - not 'mostly works'",
       "Each validation failure is an architectural issue that MUST be resolved",
       "validate_architecture.py: Fix service-level issues (missing sections, type errors, UAF violations)",
-      "system_of_systems_graph.py: Fix system-level issues (circular deps, interface mismatches, orphaned services)",
+      "system_of_systems_graph_v2.py: Fix system-level issues (circular deps, interface mismatches, orphaned services)",
       "Maximum 5 iterations per validation loop - if exceeding, escalate to user for guidance",
       "Success criteria: Tool completes with zero errors AND architecture makes logical sense"
     ],
@@ -1591,7 +1591,7 @@
         "do_not": "Skip errors, assume validation passes, proceed with warnings",
         "common_fixes": "Add missing sections, fix JSON syntax, correct UAF violations, resolve referential integrity"
       },
-      "system_of_systems_graph.py": {
+      "system_of_systems_graph_v2.py": {
         "when": "After all services defined and index.json created",
         "pattern": "Run → Analyze graph and output → Fix system-level issues → Re-run → Verify coherence",
         "do_not": "Just check that file was created, ignore warnings, skip graph analysis",
