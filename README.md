@@ -136,7 +136,7 @@ Reflow uses **5 separate, focused workflows** instead of one monolithic file:
 - Create `version_manifest.json` for tracking architecture history
 - Validate architecture constraints (circular dependencies, orphaned nodes, structural holes)
 - Generate `architecture_issues.json` with structured recommendations
-- **NEW**: Comprehensive graph analysis (centrality, paths, connectivity, clustering)
+- **NEW**: Comprehensive graph analysis (centrality, paths, connectivity, clustering, communities, cycles, SCCs, DAG analysis, flow)
 - **Duration**: 2-4 hours
 
 ### :three: Artifacts & Visualization (`workflows/02-artifacts_visualization.json`)
@@ -380,8 +380,10 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 - :busts_in_silhouette: Social Network Analysis framework for organizations and communities
 - :deciduous_tree: Ecological Systems framework for food webs and species interactions
 - :mag: **Knowledge gap detection** - Identifies missing nodes/edges (like "dark matter" in systems)
-- :chart_with_upwards_trend: **Comprehensive NetworkX analysis** - 20+ graph algorithms (centrality, paths, connectivity, clustering)
-- :wrench: New tool: `system_of_systems_graph_v2.py` (988 lines, framework-agnostic)
+- :chart_with_upwards_trend: **Comprehensive NetworkX analysis** - 25+ graph algorithms across 10 categories
+  - Core analysis: centrality, paths, connectivity, clustering, properties
+  - Advanced analysis: community detection, cycle detection, SCCs, DAG analysis, flow analysis
+- :wrench: New tool: `system_of_systems_graph_v2.py` (1370+ lines, framework-agnostic)
 - :file_folder: Framework selection in setup workflow (step S-01A)
 
 </details>

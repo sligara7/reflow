@@ -318,9 +318,20 @@ Reflow provides **23 Python tools** including:
 - `system_of_systems_graph_v2.py` - **NEW!** Framework-agnostic graph generation with:
   - Universal node/edge schema (works across all frameworks)
   - **Knowledge gap detection** (6 gap types: orphaned interfaces, missing nodes, "dark matter" mediators, structural holes, etc.)
-  - **Comprehensive NetworkX analysis** (20+ algorithms: centrality, paths, connectivity, clustering)
+  - **Comprehensive NetworkX analysis** (25+ algorithms across 10 categories):
+    - Centrality (degree, betweenness, closeness, eigenvector, PageRank)
+    - Paths & distances (shortest paths, diameter, average path length, eccentricity)
+    - Connectivity (components, bridges, node/edge connectivity)
+    - Clustering (coefficient, transitivity, triangles)
+    - Properties (density, assortativity, reciprocity, degree distribution)
+    - **Community detection** (Louvain, label propagation, Girvan-Newman, modularity)
+    - **Cycle detection** (simple cycles, cycle basis, feedback loops, cycle length distribution)
+    - **Strongly connected components** (SCCs, condensation graph, component sizes)
+    - **DAG analysis** (topological sort, longest path, topological levels)
+    - **Flow analysis** (maximum flow, minimum cut, node connectivity)
   - Supports UAF, Biology, Social, Ecological, CAS, and Custom frameworks
   - Usage: `python3 system_of_systems_graph_v2.py index.json --detect-gaps --analyze-all`
+  - Or selectively: `--centrality --community --cycles --scc --dag --flow`
 - `system_of_systems_graph.py` - Legacy tool (v1, UAF-only, still works for backward compatibility)
 - `generate_interface_contracts.py` - Create ICDs from architecture
 

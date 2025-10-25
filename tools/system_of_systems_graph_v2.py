@@ -675,6 +675,355 @@ def analyze_properties(G: nx.DiGraph) -> Dict[str, Any]:
     return results
 
 
+def analyze_communities(G: nx.DiGraph) -> Dict[str, Any]:
+    """Detect communities and modules within the graph.
+
+    Returns:
+        - louvain_communities: Community detection using Louvain algorithm
+        - label_propagation: Fast community detection via label propagation
+        - community_count: Number of communities detected
+        - modularity: Quality of community division
+    """
+    results = {}
+
+    # Convert to undirected for community detection
+    G_undirected = G.to_undirected()
+
+    # Louvain community detection
+    try:
+        import networkx.algorithms.community as nx_comm
+
+        # Louvain (greedy modularity optimization)
+        communities_louvain = list(nx_comm.greedy_modularity_communities(G_undirected))
+        results['louvain_communities'] = {
+            'num_communities': len(communities_louvain),
+            'sizes': [len(c) for c in communities_louvain],
+            'communities': [list(c) for c in communities_louvain[:10]]  # Top 10 only
+        }
+
+        # Calculate modularity
+        results['modularity'] = nx_comm.modularity(G_undirected, communities_louvain)
+
+    except Exception as e:
+        results['louvain_communities'] = f"Error in Louvain: {e}"
+
+    # Label propagation (fast)
+    try:
+        import networkx.algorithms.community as nx_comm
+        communities_lp = list(nx_comm.label_propagation_communities(G_undirected))
+        results['label_propagation'] = {
+            'num_communities': len(communities_lp),
+            'sizes': [len(c) for c in communities_lp]
+        }
+    except Exception as e:
+        results['label_propagation'] = f"Error in label propagation: {e}"
+
+    # Girvan-Newman (slower, limit iterations)
+    try:
+        import networkx.algorithms.community as nx_comm
+        # Only do first few splits for performance
+        comp = nx_comm.girvan_newman(G_undirected)
+        limited_communities = []
+        for i, communities in enumerate(comp):
+            if i >= 3:  # Limit to 3 iterations
+                break
+            limited_communities.append(communities)
+
+        if limited_communities:
+            results['girvan_newman'] = {
+                'iterations': len(limited_communities),
+                'final_num_communities': len(limited_communities[-1]),
+                'note': 'Limited to 3 iterations for performance'
+            }
+    except Exception as e:
+        results['girvan_newman'] = f"Error in Girvan-Newman: {e}"
+
+    return results
+
+
+def analyze_cycles(G: nx.DiGraph) -> Dict[str, Any]:
+    """Find cycles and feedback loops in the graph.
+
+    Returns:
+        - simple_cycles: All elementary cycles
+        - cycle_basis: Fundamental cycles (for undirected)
+        - has_cycles: Boolean indicating if cycles exist
+        - cycle_count: Number of cycles detected
+    """
+    results = {}
+
+    # Find simple cycles (directed)
+    try:
+        cycles = list(nx.simple_cycles(G))
+        results['has_cycles'] = len(cycles) > 0
+        results['cycle_count'] = len(cycles)
+
+        # Categorize by length
+        cycle_lengths = {}
+        for cycle in cycles:
+            length = len(cycle)
+            if length not in cycle_lengths:
+                cycle_lengths[length] = 0
+            cycle_lengths[length] += 1
+
+        results['cycle_length_distribution'] = cycle_lengths
+
+        # Sample cycles (limit output)
+        if len(cycles) <= 20:
+            results['cycles'] = cycles
+        else:
+            results['cycles'] = cycles[:20]
+            results['note'] = f"Showing 20 of {len(cycles)} total cycles"
+
+    except Exception as e:
+        results['simple_cycles'] = f"Error finding cycles: {e}"
+
+    # Cycle basis (for undirected view)
+    try:
+        G_undirected = G.to_undirected()
+        cycle_basis = nx.cycle_basis(G_undirected)
+        results['cycle_basis'] = {
+            'num_fundamental_cycles': len(cycle_basis),
+            'basis_cycles': cycle_basis[:10]  # Limit to 10
+        }
+    except Exception as e:
+        results['cycle_basis'] = f"Error computing cycle basis: {e}"
+
+    # Identify feedback loops (cycles of length 2-4, common in biological/social networks)
+    if 'cycles' in results:
+        feedback_loops = [c for c in cycles if 2 <= len(c) <= 4]
+        results['feedback_loops'] = {
+            'count': len(feedback_loops),
+            'examples': feedback_loops[:10]
+        }
+
+    return results
+
+
+def analyze_strongly_connected(G: nx.DiGraph) -> Dict[str, Any]:
+    """Analyze strongly connected components (mutually reachable nodes).
+
+    Returns:
+        - is_strongly_connected: Boolean for whole graph
+        - num_sccs: Number of strongly connected components
+        - scc_sizes: Size distribution of SCCs
+        - largest_scc: Nodes in largest SCC
+        - condensation_graph: DAG of SCCs
+    """
+    results = {}
+
+    # Check if entire graph is strongly connected
+    try:
+        results['is_strongly_connected'] = nx.is_strongly_connected(G)
+    except:
+        results['is_strongly_connected'] = "Error checking strong connectivity"
+
+    # Find all strongly connected components
+    try:
+        sccs = list(nx.strongly_connected_components(G))
+        results['num_sccs'] = len(sccs)
+
+        # Sort by size
+        sccs_sorted = sorted(sccs, key=len, reverse=True)
+        scc_sizes = [len(scc) for scc in sccs_sorted]
+
+        results['scc_sizes'] = scc_sizes
+        results['largest_scc_size'] = scc_sizes[0] if scc_sizes else 0
+        results['largest_scc_nodes'] = list(sccs_sorted[0]) if sccs_sorted else []
+
+        # If many small SCCs, likely not well-connected
+        single_node_sccs = sum(1 for size in scc_sizes if size == 1)
+        results['single_node_sccs'] = single_node_sccs
+        results['multi_node_sccs'] = len(sccs) - single_node_sccs
+
+    except Exception as e:
+        results['sccs'] = f"Error finding SCCs: {e}"
+
+    # Create condensation graph (DAG of SCCs)
+    try:
+        condensation = nx.condensation(G)
+        results['condensation'] = {
+            'num_nodes': condensation.number_of_nodes(),
+            'num_edges': condensation.number_of_edges(),
+            'is_dag': nx.is_directed_acyclic_graph(condensation),
+            'note': 'Each node represents an SCC from original graph'
+        }
+    except Exception as e:
+        results['condensation'] = f"Error creating condensation: {e}"
+
+    return results
+
+
+def analyze_dag(G: nx.DiGraph) -> Dict[str, Any]:
+    """Analyze directed acyclic graph properties.
+
+    Returns:
+        - is_dag: Boolean indicating if graph is a DAG
+        - topological_sort: Node ordering (if DAG)
+        - longest_path: Longest path through DAG
+        - levels: Nodes grouped by topological level
+    """
+    results = {}
+
+    # Check if DAG
+    try:
+        is_dag = nx.is_directed_acyclic_graph(G)
+        results['is_dag'] = is_dag
+    except:
+        results['is_dag'] = "Error checking DAG property"
+        return results
+
+    if not is_dag:
+        results['note'] = "Graph is not a DAG (contains cycles). Remove cycles for DAG analysis."
+        # Try to identify cycles blocking DAG
+        try:
+            cycles = list(nx.simple_cycles(G))
+            results['blocking_cycles'] = {
+                'count': len(cycles),
+                'sample': cycles[:5]
+            }
+        except:
+            pass
+        return results
+
+    # Topological sort
+    try:
+        topo_sort = list(nx.topological_sort(G))
+        results['topological_sort'] = topo_sort
+        results['num_nodes_sorted'] = len(topo_sort)
+    except Exception as e:
+        results['topological_sort'] = f"Error in topological sort: {e}"
+
+    # Longest path
+    try:
+        longest = nx.dag_longest_path(G)
+        results['longest_path'] = {
+            'path': longest,
+            'length': len(longest) - 1  # Number of edges
+        }
+
+        # Try to compute longest path length with weights if available
+        try:
+            longest_len = nx.dag_longest_path_length(G)
+            results['longest_path']['weighted_length'] = longest_len
+        except:
+            pass
+
+    except Exception as e:
+        results['longest_path'] = f"Error computing longest path: {e}"
+
+    # Topological generations (levels)
+    try:
+        generations = list(nx.topological_generations(G))
+        results['topological_levels'] = {
+            'num_levels': len(generations),
+            'nodes_per_level': [len(gen) for gen in generations],
+            'levels': [list(gen) for gen in generations[:10]]  # Limit to 10 levels
+        }
+    except Exception as e:
+        results['topological_levels'] = f"Error computing levels: {e}"
+
+    # Antichains (nodes with no ordering relation)
+    try:
+        antichains = list(nx.antichains(G))
+        results['antichains'] = {
+            'count': len(antichains),
+            'note': 'Sets of nodes with no ordering relationship'
+        }
+    except Exception as e:
+        results['antichains'] = f"Error finding antichains: {e}"
+
+    return results
+
+
+def analyze_flow(G: nx.DiGraph) -> Dict[str, Any]:
+    """Analyze flow and capacity in the graph.
+
+    Returns:
+        - maximum_flow: Max flow between high-degree nodes
+        - flow_algorithms: Different flow algorithms applied
+        - cut_sets: Minimum cuts
+    """
+    results = {}
+
+    # For flow analysis, we need source and sink nodes
+    # Heuristic: Use nodes with highest out-degree and in-degree
+
+    try:
+        # Find potential sources (high out-degree, low in-degree)
+        out_degrees = dict(G.out_degree())
+        in_degrees = dict(G.in_degree())
+
+        # Source candidates: high out-degree
+        source_candidates = sorted(out_degrees.items(), key=lambda x: x[1], reverse=True)[:5]
+        # Sink candidates: high in-degree
+        sink_candidates = sorted(in_degrees.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        if not source_candidates or not sink_candidates:
+            results['note'] = "No suitable source/sink nodes for flow analysis"
+            return results
+
+        source = source_candidates[0][0]
+        sink = sink_candidates[0][0]
+
+        if source == sink:
+            # Pick different sink
+            sink = sink_candidates[1][0] if len(sink_candidates) > 1 else sink_candidates[0][0]
+
+        results['flow_analysis_nodes'] = {
+            'source': source,
+            'sink': sink,
+            'source_out_degree': out_degrees[source],
+            'sink_in_degree': in_degrees[sink]
+        }
+
+    except Exception as e:
+        results['node_selection'] = f"Error selecting source/sink: {e}"
+        return results
+
+    # Maximum flow (assume capacity=1 for unweighted, or use 'weight' attribute)
+    try:
+        flow_value, flow_dict = nx.maximum_flow(G, source, sink)
+        results['maximum_flow'] = {
+            'value': flow_value,
+            'source': source,
+            'sink': sink,
+            'note': 'Assuming unit capacity on all edges (or weight attribute if present)'
+        }
+
+        # Count non-zero flows
+        non_zero_flows = sum(1 for node_flows in flow_dict.values()
+                            for flow in node_flows.values() if flow > 0)
+        results['maximum_flow']['edges_with_flow'] = non_zero_flows
+
+    except Exception as e:
+        results['maximum_flow'] = f"Error computing max flow: {e}"
+
+    # Minimum cut
+    try:
+        cut_value, partition = nx.minimum_cut(G, source, sink)
+        results['minimum_cut'] = {
+            'cut_value': cut_value,
+            'partition_sizes': [len(partition[0]), len(partition[1])],
+            'note': 'Minimum capacity to separate source from sink'
+        }
+    except Exception as e:
+        results['minimum_cut'] = f"Error computing min cut: {e}"
+
+    # For directed graphs, check if flow is feasible
+    try:
+        # Node connectivity (min nodes to remove to disconnect)
+        node_conn = nx.node_connectivity(G, source, sink)
+        results['node_connectivity'] = {
+            'source_to_sink': node_conn,
+            'note': 'Minimum nodes to remove to disconnect source from sink'
+        }
+    except Exception as e:
+        results['node_connectivity'] = f"Error: {e}"
+
+    return results
+
+
 def run_all_analysis(G: nx.DiGraph) -> Dict[str, Any]:
     """Run all NetworkX analysis methods and return comprehensive results."""
     print("Running comprehensive NetworkX analysis...")
@@ -701,6 +1050,21 @@ def run_all_analysis(G: nx.DiGraph) -> Dict[str, Any]:
 
     print("  - Computing graph properties...")
     analysis_results['properties'] = analyze_properties(G)
+
+    print("  - Detecting communities...")
+    analysis_results['communities'] = analyze_communities(G)
+
+    print("  - Finding cycles and feedback loops...")
+    analysis_results['cycles'] = analyze_cycles(G)
+
+    print("  - Analyzing strongly connected components...")
+    analysis_results['strongly_connected'] = analyze_strongly_connected(G)
+
+    print("  - Analyzing DAG properties...")
+    analysis_results['dag'] = analyze_dag(G)
+
+    print("  - Analyzing flow and capacity...")
+    analysis_results['flow'] = analyze_flow(G)
 
     return analysis_results
 
@@ -884,8 +1248,18 @@ Supported Frameworks:
                        help='Analyze clustering (clustering coefficient, transitivity)')
     parser.add_argument('--properties', action='store_true',
                        help='Compute graph properties (density, assortativity, reciprocity)')
+    parser.add_argument('--community', action='store_true',
+                       help='Detect communities (Louvain, label propagation, Girvan-Newman)')
+    parser.add_argument('--cycles', action='store_true',
+                       help='Find cycles and feedback loops')
+    parser.add_argument('--scc', action='store_true',
+                       help='Analyze strongly connected components')
+    parser.add_argument('--dag', action='store_true',
+                       help='Analyze DAG properties (topological sort, longest path, levels)')
+    parser.add_argument('--flow', action='store_true',
+                       help='Analyze flow (maximum flow, minimum cut, node connectivity)')
     parser.add_argument('--analyze-all', action='store_true',
-                       help='Run all analysis methods (centrality, paths, connectivity, clustering, properties)')
+                       help='Run all analysis methods (centrality, paths, connectivity, clustering, properties, community, cycles, scc, dag, flow)')
 
     args = parser.parse_args()
 
@@ -952,7 +1326,8 @@ Supported Frameworks:
     # Optional: Run NetworkX analysis
     analysis_results = None
     if args.analyze_all or any([args.centrality, args.paths, args.connectivity,
-                                args.clustering, args.properties]):
+                                args.clustering, args.properties, args.community,
+                                args.cycles, args.scc, args.dag, args.flow]):
         analysis_results = {}
 
         if args.analyze_all or args.centrality:
@@ -969,6 +1344,21 @@ Supported Frameworks:
 
         if args.analyze_all or args.properties:
             analysis_results['properties'] = analyze_properties(G)
+
+        if args.analyze_all or args.community:
+            analysis_results['communities'] = analyze_communities(G)
+
+        if args.analyze_all or args.cycles:
+            analysis_results['cycles'] = analyze_cycles(G)
+
+        if args.analyze_all or args.scc:
+            analysis_results['strongly_connected'] = analyze_strongly_connected(G)
+
+        if args.analyze_all or args.dag:
+            analysis_results['dag'] = analyze_dag(G)
+
+        if args.analyze_all or args.flow:
+            analysis_results['flow'] = analyze_flow(G)
 
     # Generate output
     if args.output:
