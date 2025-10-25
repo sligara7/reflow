@@ -103,6 +103,155 @@
       "maps_from": "Dev-01: Initialization & Environment Bootstrap",
       "actions": [
         {
+          "action_id": "D-01-A00",
+          "description": "Research current development best practices and industry standards (OPTIONAL)",
+          "when": "Before setting up development environment",
+          "user_prompt": {
+            "ask": "Would you like to research current best practices for development tooling before setting up the environment?",
+            "options": [
+              "Yes - Research current best practices (recommended for new tech stacks)",
+              "No - Skip research and use known/default tooling"
+            ],
+            "default": "No",
+            "note": "Research takes 5-10 minutes but helps ensure modern, industry-standard tooling choices"
+          },
+          "if_yes": {
+            "research_areas": [
+              {
+                "category": "Dependency Management",
+                "query_template": "{language} dependency management best practices 2025",
+                "examples": [
+                  "Python: poetry vs hatchling vs pdm vs pip-tools",
+                  "JavaScript: npm vs yarn vs pnpm",
+                  "Java: Maven vs Gradle",
+                  "Go: go modules best practices"
+                ],
+                "output_key": "dependency_management_recommendation"
+              },
+              {
+                "category": "Container Best Practices",
+                "query_template": "{language} Dockerfile best practices 2025",
+                "examples": [
+                  "Multi-stage builds",
+                  "Security scanning",
+                  "Layer optimization",
+                  "Base image selection"
+                ],
+                "output_key": "container_recommendations"
+              },
+              {
+                "category": "CI/CD Tooling",
+                "query_template": "{language} CI/CD pipeline best practices 2025",
+                "examples": [
+                  "GitHub Actions vs GitLab CI vs Jenkins",
+                  "Automated testing in CI",
+                  "Deployment strategies",
+                  "Environment promotion"
+                ],
+                "output_key": "cicd_recommendations"
+              },
+              {
+                "category": "Observability Frameworks",
+                "query_template": "{language} observability and monitoring best practices 2025",
+                "examples": [
+                  "Logging frameworks (structured logging)",
+                  "Metrics collection (Prometheus, StatsD)",
+                  "Distributed tracing (OpenTelemetry)",
+                  "Error tracking (Sentry, Rollbar)"
+                ],
+                "output_key": "observability_recommendations"
+              },
+              {
+                "category": "Security Standards",
+                "query_template": "{language} security best practices 2025",
+                "examples": [
+                  "Dependency vulnerability scanning",
+                  "Secrets management",
+                  "Code security linting",
+                  "OWASP compliance"
+                ],
+                "output_key": "security_recommendations"
+              },
+              {
+                "category": "Testing Frameworks",
+                "query_template": "{language} testing frameworks best practices 2025",
+                "examples": [
+                  "Unit testing (pytest, Jest, JUnit)",
+                  "Integration testing",
+                  "Mocking libraries",
+                  "Test coverage tools"
+                ],
+                "output_key": "testing_recommendations"
+              },
+              {
+                "category": "Linting and Formatting",
+                "query_template": "{language} code quality tools 2025",
+                "examples": [
+                  "Python: ruff vs black vs pylint",
+                  "JavaScript: ESLint, Prettier",
+                  "Type checking (mypy, TypeScript)",
+                  "Pre-commit hooks"
+                ],
+                "output_key": "code_quality_recommendations"
+              },
+              {
+                "category": "Build Systems",
+                "query_template": "{language} build system best practices 2025",
+                "examples": [
+                  "Build automation",
+                  "Artifact packaging",
+                  "Version management",
+                  "Release automation"
+                ],
+                "output_key": "build_recommendations"
+              }
+            ],
+            "research_method": "quick",
+            "research_depth": "Top 3-5 results per category, focus on 2024-2025 sources",
+            "time_budget": "5-10 minutes total",
+            "tools": ["WebSearch", "WebFetch"],
+            "output_file": "context/development_tooling_research_{date}.md",
+            "output_format": {
+              "structure": [
+                "# Development Tooling Research",
+                "Date: {timestamp}",
+                "Language/Framework: {primary_language}",
+                "",
+                "## Research Summary",
+                "For each research_area:",
+                "  ### {category}",
+                "  **Current Best Practice**: {recommendation}",
+                "  **Reasoning**: {why_this_is_recommended}",
+                "  **Sources**: [links]",
+                "",
+                "## Recommendations for This Project",
+                "Based on research, recommended tooling stack:",
+                "- Dependency Management: {tool} (rationale)",
+                "- Testing: {framework} (rationale)",
+                "- etc."
+              ],
+              "example_output": "See templates/development_research_output_template.md"
+            }
+          },
+          "if_no": {
+            "action": "Skip research, proceed with default tooling based on service_architecture.json deployment section"
+          },
+          "llm_agent_instructions": [
+            "ASK the user via AskUserQuestion tool if they want to research current best practices",
+            "If YES: Use WebSearch for each research area, focusing on 2024-2025 sources",
+            "Spend no more than 1-2 minutes per research area (quick search, top results only)",
+            "Synthesize findings into actionable recommendations",
+            "Save research to context/development_tooling_research_{date}.md",
+            "Use research findings to inform D-01-A04 (dependency management) decisions",
+            "If NO: Skip directly to D-01-A01"
+          ],
+          "success_criteria": [
+            "User question asked and answered",
+            "If yes: Research completed and saved to context/ directory",
+            "If no: Research skipped, noted in working_memory.json"
+          ]
+        },
+        {
           "action_id": "D-01-A01",
           "description": "Select development languages and frameworks",
           "tool": "select_development_languages.py",
@@ -131,13 +280,51 @@
         {
           "action_id": "D-01-A04",
           "description": "Initialize dependency management",
+          "note": "If D-01-A00 research was performed, use those recommendations. Otherwise, use defaults below.",
+          "check_for_research": "context/development_tooling_research_*.md (if exists, read dependency_management_recommendation section)",
+          "modern_best_practices": {
+            "Python": {
+              "recommended": "poetry or hatchling (modern tools with lock files and dependency resolution)",
+              "traditional": "requirements.txt (simple but lacks lock file and dependency resolution)",
+              "rationale": "Poetry/hatchling provide reproducible builds, better dependency resolution, and standardized packaging"
+            },
+            "JavaScript": {
+              "recommended": "pnpm or yarn (fast, disk-efficient)",
+              "traditional": "npm (standard, widely compatible)",
+              "rationale": "pnpm saves disk space via content-addressable storage, yarn has better workspace support"
+            },
+            "Java": {
+              "recommended": "Gradle with version catalogs",
+              "traditional": "Maven",
+              "rationale": "Gradle is faster, more flexible, better for multi-module projects"
+            },
+            "Go": {
+              "recommended": "go modules (standard)",
+              "rationale": "Built-in, official Go dependency management"
+            }
+          },
           "examples": [
-            "Python: requirements.txt or pyproject.toml",
-            "JavaScript/TypeScript: package.json",
-            "Java: pom.xml or build.gradle",
-            "Go: go.mod"
+            "Python: pyproject.toml with poetry/hatchling (modern) or requirements.txt (traditional)",
+            "JavaScript/TypeScript: package.json with pnpm/yarn (recommended) or npm",
+            "Java: build.gradle with version catalogs or pom.xml",
+            "Go: go.mod and go.sum"
           ],
-          "purpose": "Set up reproducible dependency management"
+          "purpose": "Set up reproducible dependency management using modern tools when possible",
+          "outputs": [
+            "services/{service}/pyproject.toml (Python with poetry/hatchling)",
+            "services/{service}/requirements.txt (Python traditional)",
+            "services/{service}/package.json (JavaScript)",
+            "services/{service}/pom.xml or build.gradle (Java)",
+            "services/{service}/go.mod (Go)"
+          ],
+          "llm_agent_instructions": [
+            "CHECK if context/development_tooling_research_*.md exists from D-01-A00",
+            "If exists: READ the dependency_management_recommendation section and use those recommendations",
+            "If not exists: Use modern_best_practices guidance above",
+            "For Python specifically: PREFER poetry or hatchling over requirements.txt for new projects",
+            "Create appropriate dependency files in services/{service}/ directory",
+            "Document dependency management choice in dev_current_focus.md"
+          ]
         },
         {
           "action_id": "D-01-A05",
