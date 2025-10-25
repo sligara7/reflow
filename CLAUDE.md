@@ -64,27 +64,7 @@ Reflow operates on a **separation principle**:
 
 #### Web-Based Quick Start
 
-**Option A: Claude.ai (Web) - EASIEST**
-
-User creates GitHub repo, then says to Claude:
-```
-Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
-on system in github.com/yourname/my_system_repo
-```
-
-**How it works:**
-1. Claude reads Reflow repo from GitHub (workflows, templates, tools)
-2. Claude reads/writes to user's system repo on GitHub
-3. All artifacts committed to user's system repo
-4. Context stored in `context/working_memory.json` in system repo
-5. Conversation history persists in Claude.ai
-
-**Resuming work (next day/session):**
-```
-Continue workflow from context/working_memory.json in github.com/yourname/my_system_repo
-```
-
-**Option B: GitHub Codespaces - FULL DEV ENVIRONMENT**
+**Option A: GitHub Codespaces - MOST ACCESSIBLE**
 
 User opens Codespace, then:
 ```
@@ -95,13 +75,51 @@ on system in /workspaces/my_system
 **How it works:**
 1. Codespace clones both reflow and system repos
 2. Full Linux environment with git, Python, all tools
-3. Can use Claude Code CLI or Claude.ai in another tab
+3. Can use Claude Code CLI or web-based AI code editor in another tab
 4. Commits push directly to GitHub
 5. Context preserved in system repo
 
-**Option C: Other Web IDEs**
+**Cost & Requirements:**
+- Free tier: 60 hours/month
+- Paid: ~$0.18/hour
+- Only needs GitHub account
 
-Works with Gitpod, Repl.it, Google Colab (with manual repo management), etc.
+**Option B: Claude Code (Web) - https://claude.ai/code**
+
+User creates GitHub repo, then in Claude Code:
+```
+Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+on system in github.com/yourname/my_system_repo
+```
+
+**How it works:**
+1. Claude Code reads Reflow repo from GitHub (workflows, templates, tools)
+2. Claude Code reads/writes to user's system repo on GitHub
+3. All artifacts committed to user's system repo
+4. Context stored in `context/working_memory.json` in system repo
+5. Conversation history persists in Claude Code
+
+**Cost & Requirements:**
+- Requires Claude Pro ($20/month) or Max subscription
+- GitHub integration setup required
+
+**Resuming work (next day/session):**
+```
+Continue workflow from context/working_memory.json in github.com/yourname/my_system_repo
+```
+
+**Option C: Other Web-Based Code Environments**
+
+- **OpenAI Codex**: Similar functionality (subscription required)
+- **Google Jules**: Google's code environment (subscription/requirements vary)
+- **Gitpod**: Alternative to Codespaces (gitpod.io)
+- **Replit**: Web-based IDE (replit.com)
+
+**⚠️ IMPORTANT**: Regular chat interfaces (claude.ai chat, chatgpt.com, gemini.google.com) likely **won't work** for this workflow. You need:
+- Code execution environment
+- GitHub integration (read/write repos)
+- File system operations
+- Git operations
 
 #### 🔑 Context Preservation for Multi-Day Projects
 
@@ -964,22 +982,22 @@ kill -9 <PID>                # Kill specific process
 Day 1: Initial Setup and Architecture
 1. User creates GitHub repo: github.com/yourname/smart_home_system
 2. User adds README with system description
-3. User opens claude.ai
+3. User opens GitHub Codespaces or Claude Code (https://claude.ai/code)
 4. User: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
          on system in github.com/yourname/smart_home_system"
-5. Claude executes setup, framework selection, initial architecture
+5. LLM agent executes setup, framework selection, initial architecture
 6. All context saved in github.com/yourname/smart_home_system/context/working_memory.json
 
 Day 2: Continue Systems Engineering
-1. User opens claude.ai (conversation persists!)
+1. User opens Codespaces or Claude Code (conversation persists in code environments!)
 2. User: "Continue workflow from context/working_memory.json
          in github.com/yourname/smart_home_system"
-3. Claude reads context, resumes from exact step
+3. LLM agent reads context, resumes from exact step
 4. Continue through systems engineering workflow
 
 Days 3-N: Development and Operations
-1. Same pattern: open Claude, "continue workflow from context/working_memory.json"
-2. Claude always reads context first, knows exactly where project is
+1. Same pattern: open code environment, "continue workflow from context/working_memory.json"
+2. LLM agent always reads context first, knows exactly where project is
 3. Progress through: 01-systems_engineering → 02-artifacts_visualization →
    03-development → 04-testing_operations
 
@@ -991,7 +1009,8 @@ Result: Fully designed, documented, implemented system - never touched local mac
 2. Check `current_workflow` and `current_step` to know where to resume
 3. Update context after each operation
 4. Commit changes to GitHub after major milestones
-5. Reference conversation history if user says "continue from yesterday"
+5. Reference conversation history if available (code environments store this)
+6. **IMPORTANT**: Regular chat interfaces (claude.ai chat, chatgpt, gemini) likely won't work - need code execution environment
 
 ### Pattern 2: Web-Based Architecture-Only (No Code)
 
@@ -1199,10 +1218,17 @@ Local usage is alternative if user explicitly requests it or web not available.
 **Ready to Start (Web-Based)?**
 
 ```
-User creates GitHub repo, then says:
+User creates GitHub repo, then in a code environment (Codespaces, Claude Code, etc.) says:
 "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
  on system in github.com/yourname/your_system_repo"
 ```
+
+**Web-Based Environment Options:**
+- **GitHub Codespaces** (most accessible - free tier available)
+- **Claude Code** (https://claude.ai/code - requires Pro/Max)
+- **OpenAI Codex, Google Jules, Gitpod, Replit**
+
+**⚠️ Don't Use**: Regular chat interfaces (claude.ai chat, chatgpt, gemini) - they lack code execution and GitHub integration
 
 **Resuming Work (Multi-Day Projects)?**
 

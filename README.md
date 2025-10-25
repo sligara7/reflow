@@ -45,24 +45,36 @@ A **framework-agnostic** systems engineering workflow for LLM agents to design, 
 
 #### 2. Open in Web-Based Environment
 
-**Option A: Claude Code (Web)** - Easiest
-```
-1. Go to claude.ai
-2. Start new conversation
-3. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
-   on system in github.com/yourname/my_system"
-4. Claude reads both repos and executes workflow
-```
-
-**Option B: GitHub Codespaces** - Full Dev Environment
+**Option A: GitHub Codespaces** - Most Accessible
 ```
 1. Open your system repo on github.com
 2. Click "Code" → "Codespaces" → "Create codespace"
 3. In terminal: git clone https://github.com/sligara7/reflow
-4. Install Claude Code CLI (optional) or use Claude.ai in another tab
+4. Install Claude Code CLI or use web-based AI code editor in another tab
 5. Say: "Implement workflow in /workspaces/reflow/workflows/00-setup.json
    on system in /workspaces/my_system"
 ```
+- **Cost**: Free tier available (60 hours/month), then ~$0.18/hour
+- **Requirements**: GitHub account
+
+**Option B: Claude Code (Web)** - Anthropic's Web IDE
+```
+1. Go to https://claude.ai/code (requires Claude Pro or Max subscription)
+2. Start new project
+3. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+   on system in github.com/yourname/my_system"
+4. Claude Code reads both repos and executes workflow
+```
+- **Cost**: Claude Pro ($20/month) or Max subscription required
+- **Requirements**: Claude Pro/Max subscription, GitHub integration
+
+**Option C: Other Web-Based Code Environments**
+- **OpenAI Codex**: Similar functionality (subscription required)
+- **Google Jules**: Google's code environment (subscription/requirements vary)
+- **Gitpod**: Alternative to Codespaces (gitpod.io)
+- **Replit**: Web-based IDE (replit.com)
+
+**⚠️ Note**: Regular chat interfaces (claude.ai chat, chatgpt.com, gemini.google.com) likely **won't work** - you need a code execution environment with GitHub integration.
 
 #### 3. Progress Through Workflows
 After setup, continue with:
@@ -366,24 +378,25 @@ Each system gets a standardized structure:
 Day 1: Initial Architecture
 1. Create GitHub repo: github.com/yourname/smart_home_system
 2. Add README with system description
-3. Open claude.ai or GitHub Codespaces
+3. Open GitHub Codespaces or Claude Code (https://claude.ai/code)
 4. Say: "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
    on system in github.com/yourname/smart_home_system"
 5. Continue through systems engineering workflow
 
 Day 2: Continue Development
-1. Open claude.ai (conversation persists!) or new Codespace
+1. Open Codespaces or Claude Code (conversation persists!)
 2. Say: "Continue workflow from context/working_memory.json
    in github.com/yourname/smart_home_system"
-3. Claude picks up exactly where you left off
+3. LLM agent picks up exactly where you left off
 4. All progress tracked in context/ folder
 
 Benefits:
 ✅ Never touches local machine
 ✅ Work from any device (laptop, tablet, phone)
-✅ Conversation history preserved
+✅ Conversation history preserved (in code environments)
 ✅ Context folder tracks progress
 ✅ Direct GitHub integration
+✅ Codespaces: Free tier available (60 hours/month)
 ```
 
 ### :cloud: Architecture Only (Web-Based)
