@@ -1,13 +1,14 @@
 # Reflow - Systems Engineering Workflow
 
-[![Version](https://img.shields.io/badge/version-3.3.0-blue.svg)](https://github.com/anthropics/reflow)
+[![Version](https://img.shields.io/badge/version-3.3.1-blue.svg)](https://github.com/anthropics/reflow)
 [![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 [![Frameworks](https://img.shields.io/badge/frameworks-6%2B-green.svg)](#supported-frameworks)
+[![Tools](https://img.shields.io/badge/tools-16-brightgreen.svg)](#tools-available)
 
 A **framework-agnostic** systems engineering workflow for LLM agents to design, architect, and develop complex systems. Model software systems (UAF), biological networks, social systems, ecosystems, and more.
 
-**:tada: Version 3.3.0** - Production-ready systems from day one! Design for real operational environments UPFRONT - not as an afterthought.
+**:tada: Version 3.3.1** - Streamlined tooling! **16 focused tools** (down from 24) with comprehensive documentation. Production-ready systems from day one!
 
 ---
 
@@ -306,9 +307,12 @@ reflow/
 │   └── feature_update.json
 ├── workflow_steps/              # NEW - Detailed step definitions
 ├── workflows_master_index.json  # NEW - Workflow routing
-├── tools/                       # 22 Python tools
+├── tools/                       # 16 Python tools (streamlined in v3.3.1)
 ├── templates/                   # 36+ templates
-└── definitions/                 # Architectural definitions
+├── definitions/                 # Architectural definitions
+└── docs/                        # Tool documentation (NEW in v3.3.1)
+    ├── TOOL_USAGE_SUMMARY.md   # Comprehensive tool reference
+    └── TOOL_VERSION_MANIFEST.md # Version history tracking
 ```
 
 ### Your System (Anywhere on Filesystem)
@@ -463,6 +467,11 @@ on system in github.com/yourname/my_system"
 
 ## :books: Documentation
 
+### Tool Reference (v3.3.1)
+- :toolbox: [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - **NEW** Comprehensive guide to all 16 tools
+- :bookmark: [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - **NEW** Tool version history and tracking
+- :memo: [RELEASE_NOTES_v3.3.1.md](docs/RELEASE_NOTES_v3.3.1.md) - **NEW** Latest release notes
+
 ### Workflow Structure
 - :page_facing_up: [NEW_STRUCTURE_README.md](docs/restructuring/NEW_STRUCTURE_README.md) - Quick reference for new workflow structure
 - :page_facing_up: [RESTRUCTURING_DESIGN.md](docs/restructuring/RESTRUCTURING_DESIGN.md) - Detailed design rationale
@@ -512,7 +521,23 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 ## :memo: Version History
 
 <details open>
-<summary><b>v3.3.0 (2025-10-25)</b> - Latest</summary>
+<summary><b>v3.3.1 (2025-10-25)</b> - Latest</summary>
+
+- :broom: **Tool Cleanup** - Streamlined from 24 to **16 focused tools** (33% reduction)
+  - Deleted 8 unused/deprecated tools (injection system, legacy v1, redundant tools)
+  - Updated 3 workflows to use v2 graph tool (backward compatible, no breaking changes)
+  - **NO MIGRATION REQUIRED** - all changes transparent to users
+- :books: **Comprehensive Documentation** - New comprehensive tool reference
+  - `docs/TOOL_USAGE_SUMMARY.md` (1,100+ lines) - Complete tool guide with usage examples
+  - `docs/TOOL_VERSION_MANIFEST.md` (350+ lines) - Version history tracking
+  - `docs/RELEASE_NOTES_v3.3.1.md` - Detailed release notes
+- :white_check_mark: **Meta-Analysis Validated** - Changes discovered and implemented via Reflow analyzing itself
+- :toolbox: **Feature Update Workflow** - Changes documented via `feature_update.json` workflow (FU-01 through FU-05)
+
+</details>
+
+<details>
+<summary>v3.3.0 (2025-10-25)</summary>
 
 - :rocket: **Operational Environment Design** - Design for REAL operational conditions UPFRONT (not as afterthought)
   - 10 IT considerations: service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing

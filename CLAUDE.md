@@ -1,6 +1,6 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.3.0
+**Version**: 3.3.1
 **Last Updated**: 2025-10-25
 
 ## What is Reflow?
@@ -435,11 +435,13 @@ Reflow enforces **10 quality gates** (7 blocking):
 
 ## Tools Available (in /path/to/reflow/tools/)
 
-Reflow provides **23 Python tools** including:
+Reflow provides **16 focused Python tools** (streamlined in v3.3.1 from 24):
+
+**For complete tool documentation, see**: `docs/TOOL_USAGE_SUMMARY.md`
 
 **Architecture** (Framework-Agnostic):
 - `validate_architecture.py` - Validate architecture files against framework schemas
-- `system_of_systems_graph_v2.py` - **NEW!** Framework-agnostic graph generation with:
+- `system_of_systems_graph_v2.py` - **FLAGSHIP TOOL** - Framework-agnostic graph generation with:
   - Universal node/edge schema (works across all frameworks)
   - **Knowledge gap detection** (6 gap types: orphaned interfaces, missing nodes, "dark matter" mediators, structural holes, etc.)
   - **Comprehensive NetworkX analysis** (25+ algorithms across 10 categories):
@@ -456,8 +458,8 @@ Reflow provides **23 Python tools** including:
   - Supports UAF, Biology, Social, Ecological, CAS, and Custom frameworks
   - Usage: `python3 system_of_systems_graph_v2.py index.json --detect-gaps --analyze-all`
   - Or selectively: `--centrality --community --cycles --scc --dag --flow`
-- `system_of_systems_graph.py` - Legacy tool (v1, UAF-only, still works for backward compatibility)
 - `generate_interface_contracts.py` - Create ICDs from architecture
+- `validate_workflow_files.py` - **NEW in v3.3.1** - Validate workflow JSON files
 
 **Development**:
 - `bootstrap_development_context.py` - Initialize dev environment
@@ -1105,6 +1107,9 @@ Reflow supports:
 ## Getting Help
 
 - **README.md** - Overview and quick start
+- **docs/TOOL_USAGE_SUMMARY.md** - **NEW v3.3.1** - Comprehensive guide to all 16 tools
+- **docs/TOOL_VERSION_MANIFEST.md** - **NEW v3.3.1** - Tool version history
+- **docs/RELEASE_NOTES_v3.3.1.md** - **NEW v3.3.1** - Latest release notes
 - **docs/restructuring/NEW_STRUCTURE_README.md** - Quick reference
 - **docs/restructuring/RESTRUCTURING_DESIGN.md** - Design rationale
 - **docs/restructuring/MIGRATION_GUIDE.md** - v2.x to v3.0 migration
@@ -1211,7 +1216,7 @@ The `system_of_systems_graph.py` tool now detects architectural consistency issu
 7. **Start with 00-setup**: First workflow configures paths, framework, structure
 8. **6 workflows in sequence**: 00-setup → 01-systems_engineering → 02-artifacts_visualization → 03-development → 04-testing_operations (+ feature_update)
 9. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-10. **v3.3.0 is current**: Operational environment design, IT requirements, versioning
+10. **v3.3.1 is current**: Streamlined tooling (16 tools), comprehensive documentation, operational environment design, IT requirements, versioning
 
 ### Secondary Approach: Local Machine
 
