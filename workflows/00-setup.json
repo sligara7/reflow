@@ -353,6 +353,204 @@
             "example": "python3 {reflow_root}/tools/rag_agent_wrapper.py {system_root} wrap --query 'Start next step' --strategy on_step_start"
           },
           "reference": "See {reflow_root}/docs/RAG_CONTEXT_MANAGEMENT.md for complete documentation"
+        },
+        {
+          "action_id": "S-03-A06",
+          "description": "Configure automatic git commits (OPTIONAL but RECOMMENDED)",
+          "purpose": "Enable automatic version control commits at key workflow milestones",
+          "user_prompt": {
+            "ask": "Would you like to enable automatic git commits during workflow execution?",
+            "options": [
+              "Yes - Enable automatic git commits and pushes (recommended for version control)",
+              "No - I'll manage git manually"
+            ],
+            "default": "No",
+            "benefits": [
+              "Automatic backup of architecture and code",
+              "Version history of workflow progress",
+              "Collaboration (others can see progress)",
+              "Recovery from failures",
+              "Meaningful commit messages at logical checkpoints"
+            ]
+          },
+          "if_yes": {
+            "git_setup": [
+              {
+                "step": 1,
+                "action": "Check if git repo exists",
+                "command": "cd {system_root} && git status",
+                "outcomes": {
+                  "success": "Git repo already exists, skip initialization",
+                  "failure": "No git repo, proceed with initialization"
+                }
+              },
+              {
+                "step": 2,
+                "action": "Initialize git repo if needed",
+                "command": "cd {system_root} && git init",
+                "condition": "Only if step 1 failed (no existing repo)"
+              },
+              {
+                "step": 3,
+                "action": "Create .gitignore file",
+                "location": "{system_root}/.gitignore",
+                "content": [
+                  "# Python",
+                  "__pycache__/",
+                  "*.py[cod]",
+                  "*$py.class",
+                  "*.so",
+                  ".Python",
+                  "venv/",
+                  "env/",
+                  ".venv",
+                  "*.egg-info/",
+                  "",
+                  "# IDEs",
+                  ".vscode/",
+                  ".idea/",
+                  "*.swp",
+                  "*.swo",
+                  "*~",
+                  "",
+                  "# OS",
+                  ".DS_Store",
+                  "Thumbs.db",
+                  "",
+                  "# Secrets",
+                  ".env",
+                  "*.pem",
+                  "*.key",
+                  "credentials.json",
+                  "",
+                  "# Build artifacts",
+                  "dist/",
+                  "build/",
+                  "*.egg",
+                  "",
+                  "# Test coverage",
+                  ".coverage",
+                  "htmlcov/",
+                  "",
+                  "# RAG embeddings (optional - large files)",
+                  "# context/embeddings/*.pkl",
+                  "",
+                  "# Logs",
+                  "*.log"
+                ]
+              },
+              {
+                "step": 4,
+                "action": "Collect git configuration from user",
+                "user_questions": [
+                  {
+                    "question": "What is your git remote repository URL?",
+                    "examples": [
+                      "https://github.com/username/repo.git",
+                      "git@github.com:username/repo.git",
+                      "https://gitlab.com/username/repo.git"
+                    ],
+                    "validation": "URL should end with .git",
+                    "store_in": "context/git_config.json (git_remote_url)"
+                  },
+                  {
+                    "question": "Which branch should automatic commits push to?",
+                    "default": "main",
+                    "examples": ["main", "develop", "architecture", "feature/workflow-automation"],
+                    "store_in": "context/git_config.json (git_branch)"
+                  },
+                  {
+                    "question": "Who should be credited as author for automatic commits?",
+                    "default": "Claude Code <noreply@anthropic.com>",
+                    "format": "Name <email>",
+                    "examples": ["Claude Code <noreply@anthropic.com>", "Your Name <your@email.com>"],
+                    "store_in": "context/git_config.json (git_author)"
+                  }
+                ]
+              },
+              {
+                "step": 5,
+                "action": "Configure git remote",
+                "command": "cd {system_root} && git remote add origin {git_remote_url}",
+                "fallback_if_exists": "git remote set-url origin {git_remote_url}",
+                "verification": "git remote -v shows correct remote"
+              },
+              {
+                "step": 6,
+                "action": "Create initial git commit for setup",
+                "commands": [
+                  "cd {system_root}",
+                  "git add .",
+                  "git commit -m \"$(cat <<'EOF'\nInitial setup: Directory structure and foundational documents\n\n- Created directory structure (context/, specs/, docs/, services/)\n- Added foundational documents (SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md, SUCCESS_CRITERIA.md)\n- Initialized working_memory.json and workflow tracking\n- Configured automatic git commits\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\"",
+                  "git branch -M {git_branch}",
+                  "git push -u origin {git_branch}"
+                ],
+                "error_handling": {
+                  "if_push_fails": "Warn user but continue - they may need to configure git credentials or set up SSH keys",
+                  "credential_help": "For HTTPS: git config --global credential.helper store\nFor SSH: Set up SSH keys with ssh-keygen and add to GitHub/GitLab",
+                  "continue_on_failure": true
+                }
+              },
+              {
+                "step": 7,
+                "action": "Save git configuration to working_memory.json",
+                "update_fields": {
+                  "git_automation_enabled": true,
+                  "git_remote_url": "{git_remote_url}",
+                  "git_branch": "{git_branch}",
+                  "git_author": "{git_author}",
+                  "last_git_commit": "{timestamp}"
+                },
+                "location": "context/working_memory.json"
+              },
+              {
+                "step": 8,
+                "action": "Create git commit helper function documentation",
+                "location": "context/GIT_AUTOMATION_README.md",
+                "content": "Documentation on when automatic commits occur and how to disable if needed"
+              }
+            ],
+            "commit_schedule": {
+              "description": "Automatic commits will occur at these workflow milestones",
+              "00-setup": [
+                "S-03-A06: After setup complete (initial commit)"
+              ],
+              "01-systems-engineering": [
+                "SE-02: After each service architecture completed",
+                "SE-06: After system graph generated and validated"
+              ],
+              "02-artifacts-visualization": [
+                "AV-03: After human documentation generated",
+                "AV-04: After visualizations created"
+              ],
+              "03-development": [
+                "D-03: After each service foundation code completed",
+                "D-03: After each service implementation completed and tests pass"
+              ],
+              "04-testing-operations": [
+                "TO-02: After CI/CD pipeline configured",
+                "TO-04: After successful deployment"
+              ]
+            }
+          },
+          "if_no": {
+            "action": "Skip git setup, set git_automation_enabled: false in working_memory.json",
+            "note": "User will manually manage git commits"
+          },
+          "llm_agent_instructions": [
+            "ASK the user via AskUserQuestion tool if they want automatic git commits",
+            "If YES: Execute git setup steps 1-8 in order",
+            "Collect git remote URL and branch from user",
+            "Create meaningful initial commit with workflow metadata",
+            "Handle push failures gracefully (warn but continue)",
+            "Document git configuration in working_memory.json",
+            "If NO: Set git_automation_enabled: false and skip to next step"
+          ],
+          "success_criteria": [
+            "User question asked and answered",
+            "If yes: Git repo initialized/configured, initial commit made, working_memory.json updated",
+            "If no: Git automation disabled in working_memory.json"
+          ]
         }
       ],
       "tools_used": ["bootstrap_development_context.py", "generate_rag_embeddings.py (optional)"],
@@ -368,7 +566,9 @@
         "docs/SUCCESS_CRITERIA.md",
         "context/working_memory.json",
         "context/step_progress_tracker.json",
-        "context/current_focus.md"
+        "context/current_focus.md",
+        "context/git_config.json (if git automation enabled)",
+        ".gitignore (if git automation enabled)"
       ],
       "gates": [
         {
