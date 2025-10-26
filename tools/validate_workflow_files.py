@@ -21,6 +21,9 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Tuple, Set
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
 class WorkflowValidator:
     def __init__(self, reflow_root: str):
         self.reflow_root = Path(reflow_root)
@@ -187,25 +190,50 @@ def main():
         print("  python3 validate_workflow_files.py /path/to/reflow/workflows/01-systems_engineering.json")
         sys.exit(1)
 
-    target = Path(sys.argv[1])
+    # Security: Resolve and validate target path (v3.4.0 fix - SV-01)
+    try:
+        target = Path(sys.argv[1]).resolve()
 
-    # Determine reflow_root
-    if target.is_dir() and target.name == "workflows":
-        reflow_root = target.parent
-    elif target.is_file() and target.parent.name == "workflows":
-        reflow_root = target.parent.parent
-    else:
-        # Assume target is within reflow, walk up to find reflow root
-        current = target
-        while current != current.parent:
-            if (current / "workflows").exists() and (current / "tools").exists():
-                reflow_root = current
-                break
-            current = current.parent
-        else:
-            print(f"ERROR: Could not determine reflow_root from {target}")
-            print("Make sure you're running this from within a reflow directory structure")
+        # Verify target exists
+        if not target.exists():
+            print(f"ERROR: Path does not exist: {target}")
             sys.exit(1)
+
+        # Determine reflow_root from target
+        if target.is_dir() and target.name == "workflows":
+            reflow_root = target.parent
+        elif target.is_file() and target.parent.name == "workflows":
+            reflow_root = target.parent.parent
+        else:
+            # Assume target is within reflow, walk up to find reflow root
+            current = target.parent if target.is_file() else target
+            while current != current.parent:
+                if (current / "workflows").exists() and (current / "tools").exists():
+                    reflow_root = current
+                    break
+                current = current.parent
+            else:
+                print(f"ERROR: Could not determine reflow_root from {target}")
+                print("Make sure you're running this from within a reflow directory structure")
+                sys.exit(1)
+
+        # Validate reflow_root is a valid directory
+        reflow_root = validate_system_root(reflow_root)
+
+        # Verify target is within reflow_root (security check)
+        try:
+            target.relative_to(reflow_root)
+        except ValueError:
+            print(f"ERROR: Target path {target} is outside reflow root {reflow_root}")
+            print("This may be a security violation")
+            sys.exit(1)
+
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
 
     validator = WorkflowValidator(reflow_root)
 

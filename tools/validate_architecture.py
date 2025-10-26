@@ -19,6 +19,9 @@ from datetime import datetime
 import networkx as nx
 from typing import Dict, List, Set, Tuple
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
 # Adjust paths for reflow directory structure
 REFLOW_ROOT = Path(__file__).parent.parent
 TEMPLATES_PATH = REFLOW_ROOT / "templates"
@@ -267,9 +270,15 @@ def main():
         print("Usage: validate_architecture.py <system_path>")
         sys.exit(1)
 
-    system_path = Path(sys.argv[1])
-    if not system_path.exists():
-        print(f"Error: System path {system_path} does not exist")
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(sys.argv[1])
+    except PathSecurityError as e:
+        print(f"Error: Path security violation: {e}", file=sys.stderr)
+        print("System path must be a valid directory", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
     validator = ArchitectureValidator(system_path)
