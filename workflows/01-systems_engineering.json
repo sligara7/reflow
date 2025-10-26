@@ -24,15 +24,35 @@
     ]
   },
   "entry_points": {
+    "auto": {
+      "id": "auto",
+      "description": "RECOMMENDED - LLM automatically detects bottom-up vs top-down by examining system directory",
+      "first_step": "SE-00",
+      "approach": "auto_detect",
+      "detection_logic": {
+        "description": "SE-00 examines system directory and routes to BU-01 (bottom-up) or SE-01 (top-down)",
+        "indicators_of_existing_components": [
+          "Source code directories (services/, src/, lib/, packages/, components/)",
+          "Package manifests (package.json, requirements.txt, Cargo.toml, pom.xml, go.mod)",
+          "Build files (Dockerfile, docker-compose.yml, Makefile, build.gradle)",
+          "Existing architecture files (*.json in specs/machine/)",
+          "Git history showing existing commits (not just initial commit)"
+        ],
+        "routing": {
+          "if_components_found": "Route to BU-01 (bottom-up integration)",
+          "if_empty_or_docs_only": "Route to SE-01 (top-down greenfield)"
+        }
+      }
+    },
     "from_setup": {
       "id": "from_setup",
-      "description": "Standard top-down entry after completing setup workflow",
+      "description": "LEGACY - Explicitly start top-down (greenfield). Use 'auto' instead for automatic detection.",
       "first_step": "SE-01",
       "approach": "top_down"
     },
     "from_existing_components": {
       "id": "from_existing_components",
-      "description": "Bottom-up entry starting with existing components to integrate",
+      "description": "LEGACY - Explicitly start bottom-up (existing components). Use 'auto' instead for automatic detection.",
       "first_step": "BU-01",
       "approach": "bottom_up",
       "prerequisites": [
@@ -112,6 +132,42 @@
     }
   },
   "workflow_steps": [
+    {
+      "step_id": "SE-00",
+      "name": "Auto-Detect Integration Approach",
+      "description": "Automatically detect bottom-up (existing components) vs top-down (greenfield) by examining system directory",
+      "phase": "approach_detection",
+      "step_file": "workflow_steps/systems_engineering/SE-00-AutoDetectApproach.json",
+      "approach": "auto_detect",
+      "when_to_use": "When using 'auto' entry point - LLM examines system directory to determine approach",
+      "actions": [
+        {
+          "action_id": "SE-00-A01",
+          "description": "Examine system directory structure for existing components"
+        },
+        {
+          "action_id": "SE-00-A02",
+          "description": "Classify system as bottom-up or top-down based on evidence"
+        },
+        {
+          "action_id": "SE-00-A03",
+          "description": "Record detection result in approach_detection_result.json"
+        },
+        {
+          "action_id": "SE-00-A04",
+          "description": "Update working_memory.json with detected approach"
+        },
+        {
+          "action_id": "SE-00-A05",
+          "description": "Route to BU-01 (bottom-up) or SE-01 (top-down)"
+        }
+      ],
+      "outputs": [
+        "context/approach_detection_result.json",
+        "context/working_memory.json (updated with detected_approach)"
+      ],
+      "next_step": "Dynamic: BU-01 if bottom_up detected, SE-01 if top_down detected"
+    },
     {
       "step_id": "BU-01",
       "name": "Component Inventory & Discovery (BOTTOM-UP)",

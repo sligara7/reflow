@@ -89,10 +89,12 @@ feature_update.json              → Update existing systems
    - Initialize `context/working_memory.json`
 
 2. **Architecture**: Run `01-systems_engineering.json`
-   - Design component architectures
-   - Create `service_architecture_v{version}-{date}.json` per service
-   - Generate `system_of_systems_graph.json` with gap detection
-   - Validate constraints
+   - **NEW: Automatic Approach Detection (SE-00)** - LLM examines system directory
+   - **If existing components found** → Bottom-up integration (BU-01 through BU-06)
+     - Component inventory, gap analysis, exact code-level deltas
+   - **If empty/greenfield** → Top-down design (SE-01 through SE-06)
+     - Service identification, architecture design, validation
+   - Both approaches merge at common validation steps
 
 3. **Documentation**: Run `02-artifacts_visualization.json`
    - Generate ICDs, Mermaid diagrams
@@ -104,6 +106,26 @@ feature_update.json              → Update existing systems
 
 5. **Deploy** (optional): Run `04-testing_operations.json`
    - CI/CD, Docker Compose, operational testing
+
+### Automatic Approach Detection (NEW!)
+
+**LLM automatically detects** whether to use bottom-up (existing components) or top-down (greenfield):
+
+**Detection Process (SE-00)**:
+1. LLM scans `system_root` directory (3 levels deep)
+2. Looks for indicators:
+   - **Bottom-up**: Source code dirs (src/, services/), package manifests (requirements.txt, package.json), build files (Dockerfile), existing architecture files
+   - **Top-down**: Empty directory, only docs/context folders
+3. **Decision rule**:
+   - ≥2 bottom-up indicators → Route to BU-01 (bottom-up integration)
+   - 0-1 indicators, system empty → Route to SE-01 (top-down design)
+   - Ambiguous (exactly 1 weak indicator) → Ask user to confirm
+4. Records decision in `context/approach_detection_result.json`
+5. Proceeds to appropriate workflow path
+
+**User sees**: "✓ Auto-detection: BOTTOM-UP approach selected. Found existing components: [services/, requirements.txt]. Proceeding to BU-01."
+
+**Manual Override**: Use legacy entry points `from_existing_components` (force bottom-up) or `from_setup` (force top-down) if automatic detection is unwanted.
 
 ### Architecture-Only Flow
 
