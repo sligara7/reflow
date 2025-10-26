@@ -1,0 +1,101 @@
+{
+  "requirements_metadata": {
+    "created_date": "2025-10-26",
+    "system_name": "Example User Authentication System",
+    "integration_goal": "Enable user_service to authenticate incoming requests using auth_library",
+    "target_capabilities": [
+      "Authenticated user profile access",
+      "JWT-based request validation",
+      "Secure API endpoints"
+    ]
+  },
+  "component_mapping": {
+    "auth_library": ["User authentication", "JWT token generation", "Token validation"],
+    "user_service": ["User profile management", "Authenticated API access"]
+  },
+  "required_interactions": [
+    {
+      "interaction_id": "INT-001",
+      "from_component": "user_service",
+      "to_component": "auth_library",
+      "interaction_type": "synchronous_call",
+      "interaction_purpose": "Validate JWT tokens for incoming requests",
+      "data_exchanged": {
+        "request": "JWT token string",
+        "response": "Token validation result (boolean) + user claims"
+      },
+      "frequency": "Per API request (high frequency)",
+      "performance_requirements": {
+        "max_latency_ms": 50,
+        "expected_throughput": "1000 req/sec"
+      }
+    }
+  ],
+  "data_flow_requirements": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "Authenticated User Profile Access",
+      "components_involved": ["user_service", "auth_library"],
+      "flow_steps": [
+        {
+          "step": 1,
+          "component": "user_service",
+          "action": "Receive HTTP request with JWT token in Authorization header",
+          "data_in": "HTTP request with Authorization: Bearer <token>",
+          "data_out": "JWT token string"
+        },
+        {
+          "step": 2,
+          "component": "auth_library",
+          "action": "Validate JWT token and extract user claims",
+          "data_in": "JWT token string",
+          "data_out": "Validation result + user_id"
+        },
+        {
+          "step": 3,
+          "component": "user_service",
+          "action": "Process request with authenticated user context",
+          "data_in": "user_id",
+          "data_out": "User profile data (JSON)"
+        }
+      ]
+    }
+  ],
+  "non_functional_requirements": {
+    "performance": {
+      "latency_targets": {
+        "p50": "20ms",
+        "p95": "50ms",
+        "p99": "100ms"
+      },
+      "throughput_targets": {
+        "requests_per_second": 1000
+      }
+    },
+    "security": {
+      "authentication_required": true,
+      "encryption_in_transit": true
+    },
+    "reliability": {
+      "availability_target": "99.9%",
+      "error_rate_target": "<0.1%"
+    }
+  },
+  "success_criteria": [
+    {
+      "criterion_id": "SC-001",
+      "criterion": "user_service can validate JWT tokens via auth_library",
+      "validation_method": "Integration test showing successful token validation"
+    },
+    {
+      "criterion_id": "SC-002",
+      "criterion": "Token validation latency < 50ms at p95",
+      "validation_method": "Performance test under load"
+    },
+    {
+      "criterion_id": "SC-003",
+      "criterion": "No breaking changes to existing auth_library API",
+      "validation_method": "Backward compatibility test"
+    }
+  ]
+}

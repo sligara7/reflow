@@ -1,0 +1,114 @@
+{
+  "gaps_metadata": {
+    "created_date": "2025-10-26",
+    "system_name": "Example User Authentication System",
+    "based_on_inventory": "test_data/bottom_up_example/component_inventory.json",
+    "based_on_requirements": "test_data/bottom_up_example/integration_requirements.json",
+    "analysis_tool": "analyze_integration_gaps.py v2.0.0",
+    "total_components_analyzed": 2,
+    "total_interactions_analyzed": 1
+  },
+  "gaps": [
+    {
+      "gap_id": "GAP-SECURITY-001",
+      "gap_type": "security_gap",
+      "severity": "critical",
+      "from_component": "user_service",
+      "to_component": "auth_library",
+      "gap_description": "Security gap: auth_library does not implement authentication, but system requires it",
+      "current_state": "auth_library: authentication=False, System requirement: True",
+      "required_state": "All components implement required authentication",
+      "required_change": "Add authentication to auth_library",
+      "affected_tiers": [
+        "tier_3_component"
+      ],
+      "affected_capabilities": [
+        "Security",
+        "Access control"
+      ],
+      "impact_if_not_resolved": "System will be vulnerable to unauthorized access",
+      "recommendation": {
+        "recommended_solution": "Implement JWT or API key authentication in auth_library",
+        "rationale": "Authentication is mandatory for security compliance",
+        "estimated_effort": "8 hours",
+        "priority": "immediate"
+      },
+      "resolution_approach": {
+        "approach_type": "modify_component",
+        "components_to_modify": [
+          "auth_library"
+        ],
+        "new_components_to_create": [],
+        "code_changes_required": true,
+        "configuration_changes_required": true
+      },
+      "related_gaps": []
+    },
+    {
+      "gap_id": "GAP-SECURITY-002",
+      "gap_type": "security_gap",
+      "severity": "high",
+      "from_component": "user_service",
+      "to_component": "auth_library",
+      "gap_description": "Security gap: auth_library does not use SSL/TLS, but system requires encryption in transit",
+      "current_state": "auth_library: ssl_tls=False, System requirement: True",
+      "required_state": "All network communications encrypted",
+      "required_change": "Enable SSL/TLS in auth_library",
+      "affected_tiers": [
+        "tier_3_component"
+      ],
+      "affected_capabilities": [
+        "Security",
+        "Data protection"
+      ],
+      "impact_if_not_resolved": "Data transmitted in clear text, vulnerable to interception",
+      "recommendation": {
+        "recommended_solution": "Configure SSL/TLS certificates for auth_library",
+        "rationale": "Encryption in transit is mandatory for data protection",
+        "estimated_effort": "4 hours",
+        "priority": "short_term"
+      },
+      "resolution_approach": {
+        "approach_type": "modify_component",
+        "components_to_modify": [
+          "auth_library"
+        ],
+        "new_components_to_create": [],
+        "code_changes_required": false,
+        "configuration_changes_required": true,
+        "infrastructure_changes_required": true
+      },
+      "related_gaps": []
+    }
+  ],
+  "gap_categories": {
+    "by_severity": {
+      "critical": 1,
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "by_type": {
+      "security_gap": 2
+    }
+  },
+  "summary": {
+    "total_gaps": 2,
+    "critical_gaps": 1,
+    "high_priority_gaps": 1,
+    "gaps_requiring_new_components": 0,
+    "gaps_requiring_modifications": 2,
+    "estimated_total_effort": "12 hours (average 6 hours per gap)",
+    "integration_feasibility": "low",
+    "integration_feasibility_rationale": "1 critical gaps, 1 high priority gaps",
+    "blocking_gaps": [
+      "GAP-SECURITY-001"
+    ]
+  },
+  "next_steps": [
+    "Prioritize gaps by severity and impact",
+    "Assign gaps to resolution phases",
+    "Run generate_component_deltas.py to create exact change specifications",
+    "Review and approve resolution roadmap"
+  ]
+}

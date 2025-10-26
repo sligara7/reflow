@@ -26,8 +26,26 @@
   "entry_points": {
     "from_setup": {
       "id": "from_setup",
-      "description": "Standard entry after completing setup workflow",
-      "first_step": "SE-01"
+      "description": "Standard top-down entry after completing setup workflow",
+      "first_step": "SE-01",
+      "approach": "top_down"
+    },
+    "from_existing_components": {
+      "id": "from_existing_components",
+      "description": "Bottom-up entry starting with existing components to integrate",
+      "first_step": "BU-01",
+      "approach": "bottom_up",
+      "prerequisites": [
+        "List of existing components (packages, services, systems) to integrate",
+        "High-level integration goal",
+        "Component source locations (GitHub repos, filesystem paths, package registries)"
+      ],
+      "when_to_use": [
+        "Integrating 10+ Python packages into cohesive system",
+        "Integrating legacy systems not designed to work together",
+        "Need exact component-level deltas (function/module changes)",
+        "Starting with existing components rather than requirements"
+      ]
     }
   },
   "context_management": {
@@ -94,6 +112,278 @@
     }
   },
   "workflow_steps": [
+    {
+      "step_id": "BU-01",
+      "name": "Component Inventory & Discovery (BOTTOM-UP)",
+      "description": "Catalog all existing components for bottom-up integration",
+      "phase": "bottom_up_analysis",
+      "step_file": "workflow_steps/bottom_up_integration/BU-01-ComponentInventory.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-01-A01",
+          "description": "Gather component list and source locations"
+        },
+        {
+          "action_id": "BU-01-A02",
+          "description": "Classify components by hierarchical tier"
+        },
+        {
+          "action_id": "BU-01-A03",
+          "description": "Analyze component capabilities"
+        },
+        {
+          "action_id": "BU-01-A04",
+          "description": "Extract exposed interfaces"
+        },
+        {
+          "action_id": "BU-01-A05",
+          "description": "Identify dependencies"
+        },
+        {
+          "action_id": "BU-01-A06",
+          "description": "Assess integration readiness"
+        },
+        {
+          "action_id": "BU-01-A07",
+          "description": "Create component_inventory.json"
+        }
+      ],
+      "tools_used": [],
+      "templates_used": ["component_inventory_template.json"],
+      "outputs": ["specs/machine/component_inventory.json", "docs/COMPONENT_INVENTORY_SUMMARY.md"],
+      "gates": [],
+      "next_step": "BU-02"
+    },
+    {
+      "step_id": "BU-02",
+      "name": "Integration Requirements Definition (BOTTOM-UP)",
+      "description": "Define how components should work together",
+      "phase": "bottom_up_analysis",
+      "step_file": "workflow_steps/bottom_up_integration/BU-02-IntegrationRequirements.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-02-A01",
+          "description": "Define integration goal"
+        },
+        {
+          "action_id": "BU-02-A02",
+          "description": "Identify target capabilities"
+        },
+        {
+          "action_id": "BU-02-A03",
+          "description": "Map components to capabilities"
+        },
+        {
+          "action_id": "BU-02-A04",
+          "description": "Define required interactions"
+        },
+        {
+          "action_id": "BU-02-A05",
+          "description": "Specify non-functional requirements"
+        },
+        {
+          "action_id": "BU-02-A06",
+          "description": "Define success criteria"
+        },
+        {
+          "action_id": "BU-02-A07",
+          "description": "Create integration_requirements.json"
+        }
+      ],
+      "tools_used": [],
+      "templates_used": ["integration_requirements_template.json"],
+      "outputs": ["specs/machine/integration_requirements.json"],
+      "gates": [],
+      "next_step": "BU-03"
+    },
+    {
+      "step_id": "BU-03",
+      "name": "Integration Gap Analysis (BOTTOM-UP)",
+      "description": "Identify integration gaps preventing components from working together",
+      "phase": "bottom_up_analysis",
+      "step_file": "workflow_steps/bottom_up_integration/BU-03-IntegrationGapAnalysis.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-03-A01",
+          "description": "Run analyze_integration_gaps.py tool",
+          "tool": "analyze_integration_gaps.py"
+        },
+        {
+          "action_id": "BU-03-A02",
+          "description": "Review and classify gaps by severity"
+        },
+        {
+          "action_id": "BU-03-A03",
+          "description": "Recommend solutions for each gap"
+        },
+        {
+          "action_id": "BU-03-A04",
+          "description": "Create resolution roadmap"
+        },
+        {
+          "action_id": "BU-03-A05",
+          "description": "Finalize integration_gaps.json"
+        }
+      ],
+      "tools_used": ["analyze_integration_gaps.py"],
+      "templates_used": ["integration_gaps_template.json"],
+      "outputs": ["specs/machine/integration_gaps.json"],
+      "gates": [],
+      "next_step": "BU-04"
+    },
+    {
+      "step_id": "BU-04",
+      "name": "Component Delta Analysis (BOTTOM-UP) - CRITICAL",
+      "description": "Generate EXACT component-level changes (function/class/module level) required for integration",
+      "phase": "bottom_up_analysis",
+      "step_file": "workflow_steps/bottom_up_integration/BU-04-ComponentDeltaAnalysis.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-04-A01",
+          "description": "Run generate_component_deltas.py for each component",
+          "tool": "generate_component_deltas.py",
+          "critical": true,
+          "note": "Generates exact code changes: new_function, modify_function, new_module, etc."
+        },
+        {
+          "action_id": "BU-04-A02",
+          "description": "Review delta feasibility"
+        },
+        {
+          "action_id": "BU-04-A03",
+          "description": "Validate component deltas",
+          "tool": "validate_component_deltas.py"
+        },
+        {
+          "action_id": "BU-04-A04",
+          "description": "Prioritize component deltas"
+        },
+        {
+          "action_id": "BU-04-A05",
+          "description": "Generate delta summary report"
+        }
+      ],
+      "tools_used": ["generate_component_deltas.py", "validate_component_deltas.py"],
+      "templates_used": ["component_delta_template.json"],
+      "outputs": ["specs/machine/component_deltas/{component_id}_delta.json", "docs/COMPONENT_DELTAS_SUMMARY.md"],
+      "gates": [],
+      "next_step": "BU-05"
+    },
+    {
+      "step_id": "BU-05",
+      "name": "Integration Architecture Design (BOTTOM-UP)",
+      "description": "Design multi-tier architecture showing component integration with adapters/mediators",
+      "phase": "bottom_up_architecture",
+      "step_file": "workflow_steps/bottom_up_integration/BU-05-IntegrationArchitectureDesign.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-05-A01",
+          "description": "Create tier hierarchy"
+        },
+        {
+          "action_id": "BU-05-A02",
+          "description": "Design adapter components"
+        },
+        {
+          "action_id": "BU-05-A03",
+          "description": "Design mediator components"
+        },
+        {
+          "action_id": "BU-05-A04",
+          "description": "Create nested architecture files for each tier",
+          "template": "component_architecture_nested_template.json"
+        },
+        {
+          "action_id": "BU-05-A05",
+          "description": "Define tier-crossing interfaces"
+        },
+        {
+          "action_id": "BU-05-A06",
+          "description": "Create interface_registry.json"
+        },
+        {
+          "action_id": "BU-05-A07",
+          "description": "Link deltas to architecture files"
+        }
+      ],
+      "tools_used": [],
+      "templates_used": ["component_architecture_nested_template.json", "interface_registry_enhanced_template.json"],
+      "outputs": [
+        "specs/machine/system_architecture.json",
+        "specs/machine/systems/*/services/*/component_architecture.json",
+        "specs/machine/interface_registry.json"
+      ],
+      "gates": [],
+      "next_step": "BU-06"
+    },
+    {
+      "step_id": "BU-06",
+      "name": "Validation & Verification (BOTTOM-UP)",
+      "description": "Validate bottom-up integration architecture and generate system graph",
+      "phase": "bottom_up_validation",
+      "step_file": "workflow_steps/bottom_up_integration/BU-06-ValidationVerification.json",
+      "approach": "bottom_up",
+      "actions": [
+        {
+          "action_id": "BU-06-A01",
+          "description": "Validate architecture files",
+          "tool": "validate_architecture.py --validate-nested"
+        },
+        {
+          "action_id": "BU-06-A02",
+          "description": "Create index.json"
+        },
+        {
+          "action_id": "BU-06-A03",
+          "description": "Generate system of systems graph",
+          "tool": "system_of_systems_graph_v2.py --nested-tiers"
+        },
+        {
+          "action_id": "BU-06-A04",
+          "description": "Validate component deltas",
+          "tool": "validate_component_deltas.py"
+        },
+        {
+          "action_id": "BU-06-A05",
+          "description": "Check for circular dependencies"
+        },
+        {
+          "action_id": "BU-06-A06",
+          "description": "Verify interface consistency"
+        },
+        {
+          "action_id": "BU-06-A07",
+          "description": "Generate integration validation report"
+        }
+      ],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph_v2.py", "validate_component_deltas.py"],
+      "outputs": [
+        "specs/machine/index.json",
+        "specs/machine/graphs/system_of_systems_graph.json",
+        "docs/INTEGRATION_VALIDATION_REPORT.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-BU-06",
+          "name": "Bottom-Up Integration Validation Gate",
+          "checks": [
+            "All architecture files pass validation",
+            "System graph shows coherent integration",
+            "No critical integration gaps remain unresolved",
+            "Component deltas are feasible",
+            "Integration readiness = high"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "SE-02",
+      "transition_note": "Bottom-up workflow merges with top-down workflow at SE-02. Architecture files created, can proceed to further refinement or development."
+    },
     {
       "step_id": "SE-01",
       "name": "System Analysis & Service Decomposition",

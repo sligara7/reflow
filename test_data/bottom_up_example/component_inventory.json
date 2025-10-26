@@ -1,0 +1,127 @@
+{
+  "inventory_metadata": {
+    "created_date": "2025-10-26",
+    "system_name": "Example User Authentication System",
+    "total_components": 2,
+    "inventory_purpose": "Test bottom-up integration tools"
+  },
+  "components": [
+    {
+      "component_id": "auth_library",
+      "component_name": "Authentication Library",
+      "component_type": "library",
+      "tier_classification": "tier_3_component",
+      "current_version": "1.0.0",
+      "source_location": "/packages/auth_library",
+      "programming_language": "python",
+      "capabilities": [
+        "User authentication via password",
+        "JWT token generation",
+        "Session management"
+      ],
+      "exposed_interfaces": [
+        {
+          "interface_id": "auth_python_api",
+          "interface_type": "python_api",
+          "interface_name": "AuthLibrary Python API",
+          "operations": [
+            {
+              "operation_name": "authenticate_user",
+              "operation_type": "function",
+              "input_parameters": ["username", "password"],
+              "output_type": "AuthToken"
+            },
+            {
+              "operation_name": "validate_token",
+              "operation_type": "function",
+              "input_parameters": ["token"],
+              "output_type": "boolean"
+            }
+          ]
+        }
+      ],
+      "consumed_interfaces": [],
+      "dependencies": {
+        "runtime_dependencies": [
+          {
+            "dependency_name": "pyjwt",
+            "version_constraint": ">=2.8.0"
+          }
+        ]
+      },
+      "constraints": {
+        "async_support": false,
+        "requires_database": false
+      },
+      "integration_readiness": {
+        "documentation_quality": "good",
+        "test_coverage": "80%",
+        "api_stability": "stable"
+      }
+    },
+    {
+      "component_id": "user_service",
+      "component_name": "User Service",
+      "component_type": "service",
+      "tier_classification": "tier_2_service",
+      "current_version": "1.0.0",
+      "source_location": "/services/user_service",
+      "programming_language": "python",
+      "capabilities": [
+        "User profile management",
+        "User CRUD operations",
+        "User data persistence"
+      ],
+      "exposed_interfaces": [
+        {
+          "interface_id": "user_rest_api",
+          "interface_type": "rest_api",
+          "interface_name": "User Service REST API",
+          "base_url": "http://localhost:8001",
+          "endpoints": [
+            {
+              "path": "/users",
+              "method": "GET",
+              "description": "List all users"
+            },
+            {
+              "path": "/users/{id}",
+              "method": "GET",
+              "description": "Get user by ID"
+            }
+          ]
+        }
+      ],
+      "consumed_interfaces": [],
+      "dependencies": {
+        "runtime_dependencies": [
+          {
+            "dependency_name": "fastapi",
+            "version_constraint": ">=0.104.0"
+          },
+          {
+            "dependency_name": "pyjwt",
+            "version_constraint": ">=2.6.0"
+          }
+        ]
+      },
+      "constraints": {
+        "async_support": true,
+        "requires_database": true
+      },
+      "integration_readiness": {
+        "documentation_quality": "excellent",
+        "test_coverage": "85%",
+        "api_stability": "stable"
+      }
+    }
+  ],
+  "component_relationships": [
+    {
+      "from_component": "user_service",
+      "to_component": "auth_library",
+      "relationship_type": "needs",
+      "relationship_description": "user_service needs to authenticate requests using auth_library"
+    }
+  ]
+}
