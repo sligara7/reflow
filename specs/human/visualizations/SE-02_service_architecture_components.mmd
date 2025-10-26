@@ -1,0 +1,81 @@
+graph TD
+    %% SE-02: Service Architecture Step - Component View
+    %% Shows internal components and their interactions
+    %% Based on service_architecture_v1.0.0-20251025.json
+
+    subgraph Inputs["Input Interfaces"]
+        INPUT1[system_decomposition.json<br/>from SE-01]
+        INPUT2[architecture_templates<br/>from reflow/templates]
+        INPUT3[working_memory.json<br/>framework configuration]
+    end
+
+    subgraph Components["SE-02 Internal Components"]
+        TL[TemplateLoader<br/>type: template_component]
+        ID[InterfaceDesigner<br/>type: architecture_component]
+        CM[ComponentModeler<br/>type: architecture_component]
+        AG[ArchitectureGenerator<br/>type: artifact_generator]
+        IR[InterfaceRegistrar<br/>type: registry_component]
+        AV[ArchitectureValidator<br/>type: validation_component]
+    end
+
+    subgraph Outputs["Output Artifacts"]
+        OUTPUT1[service_architecture_v*.json<br/>per component]
+        OUTPUT2[interface_registry.json<br/>centralized registry]
+    end
+
+    subgraph Consumers["Consuming Steps"]
+        CONSUMER1[SE-06: System Graph]
+        CONSUMER2[AV-01: Interface Contracts]
+    end
+
+    %% Input flows
+    INPUT1 --> TL
+    INPUT2 --> TL
+    INPUT3 --> TL
+
+    %% Internal component flows
+    TL -->|template| ID
+    TL -->|template| CM
+    INPUT1 -->|component list| ID
+    INPUT1 -->|component list| CM
+
+    ID -->|interface specs| AG
+    CM -->|component specs| AG
+
+    AG -->|architecture files| AV
+    AG -->|all interfaces| IR
+
+    AV -->|validation results| AG
+    AV -.validation fail.-> ID
+    AV -.validation fail.-> CM
+
+    %% Output flows
+    AG --> OUTPUT1
+    IR --> OUTPUT2
+
+    %% Consumption
+    OUTPUT1 --> CONSUMER1
+    OUTPUT1 --> CONSUMER2
+    OUTPUT2 --> CONSUMER1
+    OUTPUT2 --> CONSUMER2
+
+    %% Responsibilities
+    TL -.responsibilities.-> TL_R["• Load architecture templates<br/>• Select template based on framework<br/>• Validate template structure"]
+    ID -.responsibilities.-> ID_R["• Design consumed interfaces<br/>• Design produced interfaces<br/>• Define data models<br/>• Establish interface contracts"]
+    CM -.responsibilities.-> CM_R["• Define internal components<br/>• Allocate responsibilities<br/>• Model operational activities<br/>• Define capabilities"]
+    AG -.responsibilities.-> AG_R["• Generate service_architecture files<br/>• Apply versioning (semantic + date)<br/>• Create symlinks to current version"]
+    IR -.responsibilities.-> IR_R["• Collect all interfaces<br/>• Build interface registry<br/>• Detect interface conflicts"]
+    AV -.responsibilities.-> AV_R["• Validate architecture completeness<br/>• Check interface consistency<br/>• Verify framework compliance"]
+
+    %% Styling
+    classDef inputClass fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef componentClass fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    classDef outputClass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef consumerClass fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef noteClass fill:#fff9c4,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 3 3
+
+    class INPUT1,INPUT2,INPUT3 inputClass
+    class TL,ID,CM,AG,IR,AV componentClass
+    class OUTPUT1,OUTPUT2 outputClass
+    class CONSUMER1,CONSUMER2 consumerClass
+    class TL_R,ID_R,CM_R,AG_R,IR_R,AV_R noteClass

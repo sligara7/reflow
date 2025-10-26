@@ -1,0 +1,120 @@
+flowchart TB
+    %% Reflow Workflow System - High-Level Workflow Sequence
+    %% Shows the 6 main workflows and their transitions
+    %% Framework-agnostic system supporting UAF, Decision Flow, Biology, Social, Ecological, CAS
+
+    START([User Starts<br/>New System Design])
+
+    %% Workflow 00: Setup
+    WF00[["00-setup.json<br/>Initial Setup & Path Configuration"]]
+    WF00_STEPS["Key Steps:<br/>S-01: Path Configuration<br/>S-01A: Framework Selection CRITICAL<br/>S-02: Directory Structure<br/>S-03: Foundational Documents<br/><br/>Duration: 10-15 minutes"]
+    WF00_OUTPUT["Outputs:<br/>• working_memory.json<br/>• Framework selected & confirmed<br/>• Directory structure created<br/>• Foundational docs (mission, scenarios)"]
+
+    %% Workflow 01: Systems Engineering
+    WF01[["01-systems_engineering.json<br/>Architecture Design & Validation"]]
+    WF01_STEPS["Key Steps:<br/>SE-01: System Analysis & Decomposition<br/>SE-02: Component Architecture<br/>SE-03: Architecture Validation<br/>SE-06: System Graph Generation<br/><br/>Duration: 2-4 hours"]
+    WF01_OUTPUT["Outputs:<br/>• system_decomposition.json<br/>• service_architecture files vX.X.X<br/>• interface_registry.json<br/>• system_of_systems_graph.json"]
+
+    %% Workflow 02: Artifacts & Visualization
+    WF02[["02-artifacts_visualization.json<br/>Human-Readable Documentation"]]
+    WF02_DECISION{Development Intent?}
+    WF02_FULL["Full Development Path:<br/>AV-01: Interface Contract Docs<br/>AV-02: Mermaid Diagrams<br/>AV-03: Documentation<br/><br/>Duration: 1-2 hours"]
+    WF02_ARCH["Architecture-Only Path:<br/>AV-04: Minimal Handoff<br/><br/>Duration: 15-30 minutes"]
+    WF02_OUTPUT_FULL["Outputs:<br/>• ICDs for all interfaces<br/>• Mermaid diagrams (system, component, sequence)<br/>• Architecture summary docs"]
+    WF02_OUTPUT_ARCH["Outputs:<br/>• Architecture summary<br/>• High-level diagrams only"]
+
+    %% Workflow 03: Development
+    WF03[["03-development.json<br/>Service Implementation OPTIONAL"]]
+    WF03_STEPS["Key Steps:<br/>D-01: Development Environment<br/>D-02: Component Implementation<br/>D-03: Testing & Validation<br/><br/>Duration: Days to weeks"]
+    WF03_OUTPUT["Outputs:<br/>• Service source code<br/>• Unit tests 80% coverage<br/>• Integration tests<br/>• Observability instrumentation"]
+
+    %% Workflow 04: Testing & Operations
+    WF04[["04-testing_operations.json<br/>CI/CD & Deployment OPTIONAL"]]
+    WF04_STEPS["Key Steps:<br/>TO-01: Integration Testing<br/>TO-02: CI/CD Pipeline<br/>TO-03: Operational Deployment<br/><br/>Duration: 1-2 weeks"]
+    WF04_OUTPUT["Outputs:<br/>• CI/CD pipeline (GitHub Actions/Jenkins)<br/>• Docker Compose / K8s manifests<br/>• Deployment documentation<br/>• Operational runbooks"]
+
+    %% Feature Update Workflow (side branch)
+    WFFU[["feature_update.json<br/>Update Existing System"]]
+    WFFU_STEPS["Key Steps:<br/>FU-01: Load existing architecture<br/>FU-02: Propose changes<br/>FU-03: Validate impact<br/>FU-04: Update architecture with versioning<br/>FU-05: Regenerate artifacts"]
+
+    %% End states
+    END_ARCH([Architecture-Only Complete<br/>Ready for handoff])
+    END_FULL([Fully Implemented System<br/>Ready for production])
+    END_UPDATE([Updated System<br/>Backward compatibility tracked])
+
+    %% Main flow
+    START --> WF00
+    WF00 --> WF00_STEPS
+    WF00_STEPS --> WF00_OUTPUT
+    WF00_OUTPUT --> WF01
+
+    WF01 --> WF01_STEPS
+    WF01_STEPS --> WF01_OUTPUT
+    WF01_OUTPUT --> WF02
+
+    WF02 --> WF02_DECISION
+    WF02_DECISION -->|Develop| WF02_FULL
+    WF02_DECISION -->|Architecture Only| WF02_ARCH
+
+    WF02_FULL --> WF02_OUTPUT_FULL
+    WF02_OUTPUT_FULL --> WF03
+
+    WF02_ARCH --> WF02_OUTPUT_ARCH
+    WF02_OUTPUT_ARCH --> END_ARCH
+
+    WF03 --> WF03_STEPS
+    WF03_STEPS --> WF03_OUTPUT
+    WF03_OUTPUT --> WF04
+
+    WF04 --> WF04_STEPS
+    WF04_STEPS --> WF04_OUTPUT
+    WF04_OUTPUT --> END_FULL
+
+    %% Feature update branch
+    START -.existing system.-> WFFU
+    WFFU --> WFFU_STEPS
+    WFFU_STEPS --> END_UPDATE
+
+    %% Quality Gates (Critical blockers)
+    QG_FRAMEWORK{S-01A-QG:<br/>Framework<br/>Confirmed?}
+    QG_ARCH{SE-03-QG:<br/>Architecture<br/>Valid?}
+    QG_TESTS{D-03-QG:<br/>Tests ≥80%?}
+    QG_OPS{TO-03-QG:<br/>Operational<br/>Tests Pass?}
+
+    WF00_OUTPUT --> QG_FRAMEWORK
+    QG_FRAMEWORK -->|PASS| WF01
+    QG_FRAMEWORK -.FAIL.-> WF00
+
+    WF01_OUTPUT --> QG_ARCH
+    QG_ARCH -->|PASS| WF02
+    QG_ARCH -.FAIL.-> WF01
+
+    WF03_OUTPUT --> QG_TESTS
+    QG_TESTS -->|PASS| WF04
+    QG_TESTS -.FAIL.-> WF03
+
+    WF04_OUTPUT --> QG_OPS
+    QG_OPS -->|PASS| END_FULL
+    QG_OPS -.FAIL.-> WF04
+
+    %% Supported Frameworks annotation
+    FRAMEWORKS["Supported Frameworks:<br/>• UAF 1.2 Unified Architecture Framework<br/>• Decision Flow Framework workflows/state machines<br/>• Systems Biology gene/metabolic networks<br/>• Social Network Analysis organizations/communities<br/>• Ecological Systems food webs/ecosystems<br/>• Complex Adaptive Systems markets/emergent<br/>• Custom LLM-generated frameworks"]
+
+    WF00 -.framework selection.-> FRAMEWORKS
+
+    %% Styling
+    classDef workflowClass fill:#e3f2fd,stroke:#1565c0,stroke-width:3px
+    classDef stepsClass fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    classDef outputClass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef decisionClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef gateClass fill:#ffebee,stroke:#c62828,stroke-width:3px
+    classDef endClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    classDef noteClass fill:#fff9c4,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5
+
+    class WF00,WF01,WF02,WF03,WF04,WFFU workflowClass
+    class WF00_STEPS,WF01_STEPS,WF02_FULL,WF02_ARCH,WF03_STEPS,WF04_STEPS,WFFU_STEPS stepsClass
+    class WF00_OUTPUT,WF01_OUTPUT,WF02_OUTPUT_FULL,WF02_OUTPUT_ARCH,WF03_OUTPUT,WF04_OUTPUT outputClass
+    class WF02_DECISION decisionClass
+    class QG_FRAMEWORK,QG_ARCH,QG_TESTS,QG_OPS gateClass
+    class END_ARCH,END_FULL,END_UPDATE endClass
+    class FRAMEWORKS noteClass

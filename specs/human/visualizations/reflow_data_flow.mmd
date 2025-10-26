@@ -1,0 +1,107 @@
+flowchart LR
+    %% Reflow System - Data Flow Diagram
+    %% Shows how artifacts flow through the workflow system
+    %% Critical path: User input → Architecture → Implementation → Deployment
+
+    subgraph User["User Inputs"]
+        U1[System Requirements]
+        U2[Path Configuration]
+        U3[Framework Selection]
+    end
+
+    subgraph ContextData["Context & Configuration"]
+        WM[working_memory.json<br/>Tracks current state,<br/>paths, framework]
+        FM[Framework Configuration<br/>Selected framework,<br/>terminology, rationale]
+    end
+
+    subgraph ArchData["Architecture Artifacts (Machine)"]
+        SD[system_decomposition.json<br/>Component list,<br/>responsibilities]
+        SA[service_architecture files<br/>Interfaces, components,<br/>constraints, deployment]
+        IR[interface_registry.json<br/>All interfaces,<br/>producers/consumers]
+        SG[system_of_systems_graph.json<br/>NetworkX graph,<br/>knowledge gaps, analysis]
+    end
+
+    subgraph HumanDocs["Human-Readable Artifacts"]
+        ICD[Interface Contract Docs<br/>API specifications,<br/>data models, examples]
+        MERM[Mermaid Diagrams<br/>Architecture visualizations,<br/>sequence diagrams]
+        DOC[Documentation<br/>Architecture summary,<br/>deployment guides]
+    end
+
+    subgraph DevArtifacts["Development Artifacts"]
+        CODE[Service Implementation<br/>Source code,<br/>tests, configs]
+        CICD[CI/CD Pipeline<br/>Build, test,<br/>deploy automation]
+        DEPLOY[Deployment Configs<br/>Docker Compose,<br/>K8s manifests]
+    end
+
+    %% Data flow sequence
+    U1 --> SD
+    U2 --> WM
+    U3 --> FM
+    FM --> WM
+
+    WM --> SD
+    SD --> SA
+    WM -.framework info.-> SA
+
+    SA --> IR
+    SA --> SG
+    IR --> SG
+
+    SG --> MERM
+    IR --> ICD
+    SA --> ICD
+    SA --> DOC
+    SG --> DOC
+
+    SA --> CODE
+    ICD --> CODE
+    DOC --> CODE
+
+    CODE --> CICD
+    SA -.deployment specs.-> DEPLOY
+    DEPLOY --> CICD
+
+    %% Feedback loops (rework)
+    SG -.knowledge gaps detected.-> SA
+    SG -.architectural issues.-> SA
+    CODE -.tests fail.-> CODE
+    CICD -.deployment fail.-> DEPLOY
+
+    %% Versioning annotations
+    SA -.v1.0.0-YYYYMMDD.-> SAV[Semantic Versioning<br/>+ Date Stamps]
+    ICD -.matched versions.-> SAV
+    DOC -.matched versions.-> SAV
+
+    %% Quality gates
+    QG1{Architecture<br/>Validation}
+    QG2{Test Coverage<br/>≥80%}
+    QG3{Operational<br/>Testing}
+
+    SA --> QG1
+    QG1 -->|PASS| SG
+    QG1 -.FAIL.-> SA
+
+    CODE --> QG2
+    QG2 -->|PASS| CICD
+    QG2 -.FAIL.-> CODE
+
+    CICD --> QG3
+    QG3 -->|PASS| DEPLOY
+    QG3 -.FAIL.-> CICD
+
+    %% Styling
+    classDef userClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef contextClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef archClass fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef humanClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef devClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef gateClass fill:#ffebee,stroke:#c62828,stroke-width:3px
+    classDef noteClass fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+
+    class U1,U2,U3 userClass
+    class WM,FM contextClass
+    class SD,SA,IR,SG archClass
+    class ICD,MERM,DOC humanClass
+    class CODE,CICD,DEPLOY devClass
+    class QG1,QG2,QG3 gateClass
+    class SAV noteClass

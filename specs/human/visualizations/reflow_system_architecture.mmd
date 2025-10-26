@@ -1,0 +1,89 @@
+flowchart TD
+    %% Reflow Workflow System - System Architecture
+    %% Generated from meta-analysis architecture files
+    %% Framework: Decision Flow (workflow steps as states with transitions)
+
+    subgraph Setup["00-setup Workflow"]
+        S01[S-01: Path Configuration]
+        S01A[S-01A: Framework Selection]
+        S03[S-03: Foundational Documents]
+    end
+
+    subgraph SysEng["01-systems_engineering Workflow"]
+        SE01[SE-01: System Analysis &<br/>Service Decomposition]
+        SE02[SE-02: Service Architecture<br/>Design]
+        SE03[SE-03: Architecture Validation]
+        SE06[SE-06: System Graph<br/>Generation]
+    end
+
+    subgraph Artifacts["02-artifacts_visualization Workflow"]
+        AV01[AV-01: Interface Contract<br/>Documents]
+        AV02[AV-02: Mermaid Diagrams &<br/>Visualizations]
+        AV03[AV-03: Human-Readable<br/>Documentation]
+    end
+
+    subgraph Development["03-development Workflow"]
+        D01[D-01: Development<br/>Environment Init]
+        D02[D-02: Component<br/>Implementation]
+        D03[D-03: Testing &<br/>Validation]
+    end
+
+    subgraph Operations["04-testing_operations Workflow"]
+        TO01[TO-01: Integration Testing]
+        TO02[TO-02: CI/CD Pipeline<br/>Setup]
+        TO03[TO-03: Operational<br/>Deployment]
+    end
+
+    %% Workflow transitions
+    S01 --> S01A
+    S01A --> S03
+    S03 --> SE01
+
+    SE01 --> SE02
+    SE02 --> SE03
+    SE03 --> SE06
+    SE03 -.validation fail.-> SE02
+    SE06 --> AV01
+
+    AV01 --> AV02
+    AV02 --> AV03
+    AV03 --> D01
+
+    D01 --> D02
+    D02 --> D03
+    D03 -.tests fail.-> D02
+    D03 --> TO01
+
+    TO01 --> TO02
+    TO02 --> TO03
+
+    %% Critical artifacts (data flows)
+    S01 -.creates.-> WM[working_memory.json]
+    WM -.consumed by.-> SE01
+    WM -.consumed by.-> SE02
+    WM -.consumed by.-> SE06
+
+    SE01 -.produces.-> SD[system_decomposition.json]
+    SD -.consumed by.-> SE02
+
+    SE02 -.produces.-> ARCH[service_architecture<br/>files]
+    ARCH -.consumed by.-> SE06
+    ARCH -.consumed by.-> AV01
+
+    SE06 -.produces.-> GRAPH[system_of_systems<br/>_graph.json]
+    GRAPH -.consumed by.-> AV02
+
+    %% Styling
+    classDef setupClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef sysengClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef artifactClass fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef devClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef opsClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef dataClass fill:#fff9c4,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5
+
+    class S01,S01A,S03 setupClass
+    class SE01,SE02,SE03,SE06 sysengClass
+    class AV01,AV02,AV03 artifactClass
+    class D01,D02,D03 devClass
+    class TO01,TO02,TO03 opsClass
+    class WM,SD,ARCH,GRAPH dataClass
