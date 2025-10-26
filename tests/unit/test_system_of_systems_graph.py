@@ -934,7 +934,61 @@ class TestArchitecturalIssueDetection:
 
         assert isinstance(results, dict)
         # Should have different issue categories
-        assert 'orphaned_services' in results or 'isolated_components' in results or 'unimplemented_services' in results
+        assert 'circular_dependencies' in results
+        assert 'orphaned_nodes' in results
+        assert 'unimplemented_services' in results
+
+    def test_detect_architectural_issues_circular_dependency(self):
+        """Test detection of circular dependencies."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        G = nx.DiGraph()
+        # Create circular dependency: A -> B -> C -> A
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        results = detect_architectural_issues(G)
+
+        # Should detect circular dependency
+        assert len(results['circular_dependencies']) > 0
+        assert results['circular_dependencies'][0]['severity'] == 'error'
+
+    def test_detect_architectural_issues_orphaned_nodes(self):
+        """Test detection of orphaned nodes (no connections)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        G = nx.DiGraph()
+        # Add orphaned node
+        G.add_node("isolated_service", name="Isolated", type="core")
+        # Add connected nodes
+        G.add_edge("connected_a", "connected_b")
+
+        results = detect_architectural_issues(G)
+
+        # Should detect orphaned node
+        assert len(results['orphaned_nodes']) > 0
+        orphaned_node_ids = [issue['node'] for issue in results['orphaned_nodes']]
+        assert "isolated_service" in orphaned_node_ids
+
+    def test_detect_architectural_issues_performance_bottleneck(self):
+        """Test detection of performance bottlenecks (high fan-in)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        G = nx.DiGraph()
+        # Create high fan-in scenario (more than 5 dependencies)
+        for i in range(7):
+            G.add_edge(f"service_{i}", "bottleneck_service")
+
+        results = detect_architectural_issues(G)
+
+        # Should detect performance bottleneck
+        assert len(results['performance_bottlenecks']) > 0
+        assert results['performance_bottlenecks'][0]['node'] == "bottleneck_service"
+        assert results['performance_bottlenecks'][0]['in_degree'] >= 6
 
     def test_detect_architectural_issues_empty_graph(self):
         """Test issue detection on empty graph."""
@@ -945,6 +999,36 @@ class TestArchitecturalIssueDetection:
         results = detect_architectural_issues(G)
 
         assert isinstance(results, dict)
+        # Empty graph should have no issues
+        assert len(results['circular_dependencies']) == 0
+        assert len(results['orphaned_nodes']) == 0
+
+    def test_detect_architectural_issues_with_system_root(self, tmp_path):
+        """Test issue detection with system_root for unimplemented services check."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        # Create system structure
+        system_root = tmp_path / "system"
+        system_root.mkdir()
+        services_dir = system_root / "services"
+        services_dir.mkdir()
+
+        # Create implemented service
+        implemented_service = services_dir / "implemented_service"
+        implemented_service.mkdir()
+        (implemented_service / "main.py").write_text("def main():\n    pass\n" * 30)  # > 50 lines
+
+        G = nx.DiGraph()
+        G.add_node("implemented_service", type="core")
+        G.add_node("unimplemented_service", type="core")
+
+        results = detect_architectural_issues(G, system_root)
+
+        # Should detect unimplemented service
+        assert len(results['unimplemented_services']) >= 1
+        unimplemented_ids = [issue['node'] for issue in results['unimplemented_services']]
+        assert "unimplemented_service" in unimplemented_ids
 
 
 class TestNetworkXPathAnalysis:
@@ -1268,6 +1352,235 @@ class TestNetworkXPropertiesAnalysis:
         assert isinstance(results, dict)
         assert results['num_nodes'] == 0
         assert results['num_edges'] == 0
+
+
+class TestComprehensiveAnalysis:
+    """Tests for run_all_analysis() function."""
+
+    def test_run_all_analysis_returns_all_sections(self):
+        """Test that run_all_analysis() returns all analysis sections."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import run_all_analysis
+
+        G = nx.DiGraph()
+        # Create a simple graph
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        results = run_all_analysis(G)
+
+        assert isinstance(results, dict)
+        # Should have metadata section
+        assert 'metadata' in results
+        assert 'analysis_date' in results['metadata']
+        assert 'num_nodes' in results['metadata']
+        assert 'num_edges' in results['metadata']
+
+        # Should have all analysis sections
+        expected_sections = [
+            'centrality', 'paths', 'connectivity', 'clustering',
+            'properties', 'communities', 'cycles',
+            'strongly_connected', 'dag', 'flow'
+        ]
+        for section in expected_sections:
+            assert section in results, f"Missing analysis section: {section}"
+
+    def test_run_all_analysis_handles_small_graph(self):
+        """Test run_all_analysis() on small graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import run_all_analysis
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+
+        results = run_all_analysis(G)
+
+        assert isinstance(results, dict)
+        assert results['metadata']['num_nodes'] == 2
+        assert results['metadata']['num_edges'] == 1
+
+    def test_run_all_analysis_metadata_correctness(self):
+        """Test that metadata contains correct values."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import run_all_analysis
+
+        G = nx.DiGraph()
+        for i in range(5):
+            G.add_edge(f"node_{i}", f"node_{i+1}")
+
+        results = run_all_analysis(G)
+
+        # Check metadata
+        assert results['metadata']['num_nodes'] == 6  # node_0 to node_5
+        assert results['metadata']['num_edges'] == 5
+
+
+class TestOutputGeneration:
+    """Tests for generate_output() function."""
+
+    def test_generate_output_creates_file(self, tmp_path):
+        """Test that generate_output() creates output file."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+
+        G = nx.DiGraph()
+        G.add_node("A", name="Service A", type="core", functions=[], interfaces=[], dependencies=[])
+        G.add_edge("A", "B")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {
+            'framework_name': 'UAF 1.2',
+            'framework_id': 'uaf',
+            'component_term': 'service',
+            'connection_term': 'interface'
+        }
+
+        generate_output(G, str(output_file), framework_config)
+
+        assert output_file.exists()
+
+    def test_generate_output_structure(self, tmp_path):
+        """Test that output file has correct structure."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+        import json
+
+        G = nx.DiGraph()
+        G.add_node("A", name="Service A", type="core", functions=[], interfaces=[], dependencies=[])
+        G.add_edge("A", "B")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {
+            'framework_name': 'UAF 1.2',
+            'framework_id': 'uaf',
+            'component_term': 'service',
+            'connection_term': 'interface'
+        }
+
+        generate_output(G, str(output_file), framework_config)
+
+        # Read and verify structure
+        with open(output_file, 'r') as f:
+            data = json.load(f)
+
+        assert 'metadata' in data
+        assert 'graph' in data
+        assert data['metadata']['framework'] == 'UAF 1.2'
+        assert data['metadata']['framework_id'] == 'uaf'
+        assert data['metadata']['num_nodes'] == 2
+        assert data['metadata']['num_edges'] == 1
+
+    def test_generate_output_with_knowledge_gaps(self, tmp_path):
+        """Test output generation with knowledge gaps."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+        import json
+
+        G = nx.DiGraph()
+        G.add_node("A")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {'framework_name': 'UAF', 'framework_id': 'uaf'}
+
+        knowledge_gaps = {
+            'orphaned_interfaces': [
+                {'service': 'A', 'interface': 'api', 'target': 'B'}
+            ]
+        }
+
+        generate_output(G, str(output_file), framework_config, knowledge_gaps=knowledge_gaps)
+
+        with open(output_file, 'r') as f:
+            data = json.load(f)
+
+        assert 'knowledge_gaps' in data
+        assert 'knowledge_gaps_summary' in data
+        assert data['knowledge_gaps_summary']['total_gaps'] == 1
+
+    def test_generate_output_with_architectural_issues(self, tmp_path):
+        """Test output generation with architectural issues."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+        import json
+
+        G = nx.DiGraph()
+        G.add_node("A")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {'framework_name': 'UAF', 'framework_id': 'uaf'}
+
+        architectural_issues = {
+            'orphaned_services': [
+                {'service_id': 'A', 'reason': 'No connections'}
+            ]
+        }
+
+        generate_output(G, str(output_file), framework_config, architectural_issues=architectural_issues)
+
+        with open(output_file, 'r') as f:
+            data = json.load(f)
+
+        assert 'architectural_issues' in data
+        assert 'architectural_issues_summary' in data
+        assert data['architectural_issues_summary']['total_issues'] == 1
+
+    def test_generate_output_with_analysis_results(self, tmp_path):
+        """Test output generation with analysis results."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+        import json
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {'framework_name': 'UAF', 'framework_id': 'uaf'}
+
+        analysis_results = {
+            'centrality': {'degree_centrality': {'A': 0.5, 'B': 0.5}}
+        }
+
+        generate_output(G, str(output_file), framework_config, analysis_results=analysis_results)
+
+        with open(output_file, 'r') as f:
+            data = json.load(f)
+
+        assert 'graph_analysis' in data
+        assert 'centrality' in data['graph_analysis']
+
+    def test_generate_output_all_optional_sections(self, tmp_path):
+        """Test output with all optional sections."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import generate_output
+        import json
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+
+        output_file = tmp_path / "test_graph.json"
+        framework_config = {'framework_name': 'UAF', 'framework_id': 'uaf'}
+
+        knowledge_gaps = {'orphaned_interfaces': [{'service': 'A'}]}
+        architectural_issues = {'orphaned_services': [{'service_id': 'C'}]}
+        analysis_results = {'centrality': {}}
+
+        generate_output(
+            G, str(output_file), framework_config,
+            knowledge_gaps=knowledge_gaps,
+            architectural_issues=architectural_issues,
+            analysis_results=analysis_results
+        )
+
+        with open(output_file, 'r') as f:
+            data = json.load(f)
+
+        # All sections should be present
+        assert 'metadata' in data
+        assert 'graph' in data
+        assert 'knowledge_gaps' in data
+        assert 'architectural_issues' in data
+        assert 'graph_analysis' in data
 
 
 if __name__ == "__main__":
