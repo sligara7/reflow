@@ -1,0 +1,224 @@
+{
+  "metadata": {
+    "service_name": "SE-06: System Graph Generation",
+    "step_id": "SE-06",
+    "workflow": "01-systems_engineering",
+    "version": "1.0.0",
+    "date": "2025-10-25",
+    "description": "Generate system-of-systems graph with NetworkX analysis and architectural issue detection",
+    "purpose": "Create comprehensive graph representation with gap detection and network analysis",
+    "meta_analysis_note": "This is a workflow step modeled as a UAF service for meta-analysis purposes",
+    "service_id": "se_06_systemgraph"
+  },
+  "system_view": {
+    "interfaces": [
+      {
+        "name": "component_architectures_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifacts",
+        "description": "Reads all service_architecture.json files",
+        "artifact_pattern": "specs/machine/service_arch/{component_name}/service_architecture.json (symlink to versioned file)"
+      },
+      {
+        "name": "index_file_input",
+        "direction": "consumed",
+        "connected_services": [
+          "SE-02_ServiceArchitecture"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads index.json listing all architecture files",
+        "artifact": "specs/machine/service_arch/index.json",
+        "data_model": {
+          "services": [
+            {
+              "service_id": "string",
+              "architecture_file": "string (relative path)"
+            }
+          ]
+        }
+      },
+      {
+        "name": "working_memory_input",
+        "direction": "consumed",
+        "connected_services": [
+          "S-01_PathConfiguration"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Reads framework configuration and analysis selection",
+        "data_model": {
+          "framework_configuration": {
+            "framework_id": "string"
+          },
+          "analysis_configuration": {
+            "selected_analyses": [
+              "array of strings"
+            ],
+            "edge_weights_present": "boolean"
+          }
+        }
+      },
+      {
+        "name": "framework_registry_input",
+        "direction": "consumed",
+        "connected_services": [
+          "reflow_definitions"
+        ],
+        "interface_type": "json_reference",
+        "description": "Reads framework-specific analysis recommendations",
+        "artifact": "definitions/framework_registry.json"
+      },
+      {
+        "name": "system_graph_output",
+        "direction": "produced",
+        "connected_services": [
+          "AV-01_InterfaceContracts",
+          "D-01_DevelopmentInit"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Produces comprehensive system-of-systems graph",
+        "artifact": "specs/machine/graphs/system_of_systems_graph.json",
+        "data_model": {
+          "metadata": "graph info, framework, date",
+          "nodes": "array of component nodes",
+          "edges": "array of interface edges",
+          "knowledge_gaps": "detected architectural issues",
+          "networkx_analysis": "centrality, community, cycles, etc."
+        },
+        "criticality": "CRITICAL - Validates architectural consistency"
+      },
+      {
+        "name": "architectural_issues_output",
+        "direction": "produced",
+        "connected_services": [
+          "SE-03_Validation"
+        ],
+        "interface_type": "json_artifact",
+        "description": "Structured list of detected issues",
+        "artifact": "specs/machine/architectural_issues.json",
+        "data_model": {
+          "orphaned_interfaces": "interfaces without connected components",
+          "missing_nodes": "referenced but undefined components",
+          "unimplemented_services": "services with no implementation",
+          "structural_holes": "weak connectivity regions",
+          "framework_inconsistencies": "violations of framework rules"
+        }
+      }
+    ],
+    "components": [
+      {
+        "name": "ArchitectureAggregator",
+        "type": "data_component",
+        "responsibilities": [
+          "Load index.json",
+          "Read all service_architecture files",
+          "Extract nodes and edges"
+        ]
+      },
+      {
+        "name": "GraphBuilder",
+        "type": "logic_component",
+        "responsibilities": [
+          "Construct node objects",
+          "Construct edge objects",
+          "Build universal graph schema"
+        ]
+      },
+      {
+        "name": "KnowledgeGapDetector",
+        "type": "analysis_component",
+        "responsibilities": [
+          "Detect orphaned interfaces",
+          "Identify missing nodes (dark matter)",
+          "Find structural holes",
+          "Check for unimplemented services"
+        ]
+      },
+      {
+        "name": "NetworkXAnalyzer",
+        "type": "analysis_component",
+        "responsibilities": [
+          "Run centrality analysis",
+          "Detect communities",
+          "Identify cycles",
+          "Analyze strongly connected components",
+          "Check DAG properties",
+          "Compute flow analysis (if weights present)"
+        ]
+      },
+      {
+        "name": "FrameworkValidator",
+        "type": "validation_component",
+        "responsibilities": [
+          "Validate framework-specific rules",
+          "Check async/sync consistency",
+          "Detect circular dependencies",
+          "Verify security boundaries"
+        ]
+      },
+      {
+        "name": "GraphSerializer",
+        "type": "artifact_generator",
+        "responsibilities": [
+          "Serialize graph to JSON",
+          "Generate architectural_issues.json",
+          "Update working_memory.json"
+        ]
+      }
+    ]
+  },
+  "operational_view": {
+    "activities": [
+      "SE-06-A01: Load index.json and all service_architecture files",
+      "SE-06-A02: Select NetworkX analyses based on framework",
+      "SE-06-A03: Execute system_of_systems_graph_v2.py with --detect-gaps and analysis flags",
+      "SE-06-A04: Review generated graph and architectural issues",
+      "SE-06-A05: Validate no CRITICAL issues present",
+      "SE-06-A06: Update working_memory.json with analysis results"
+    ],
+    "capabilities": [
+      "Graph aggregation from architectures",
+      "Knowledge gap detection (6 gap types)",
+      "NetworkX analysis (25+ algorithms)",
+      "Framework-specific validation",
+      "Issue severity classification"
+    ],
+    "tools": [
+      "system_of_systems_graph_v2.py"
+    ]
+  },
+  "constraints": {
+    "dependencies": {
+      "prerequisite_steps": [
+        "SE-02_ServiceArchitecture"
+      ],
+      "prerequisite_artifacts": [
+        "specs/machine/service_arch/index.json",
+        "specs/machine/service_arch/{component}/service_architecture.json (all components)",
+        "context/working_memory.json (with framework_configuration)"
+      ],
+      "note": "Requires all component architectures before graph generation"
+    },
+    "outputs_required_by": [
+      "SE-03_Validation (blocking gate)",
+      "AV-01_InterfaceContracts",
+      "D-01_DevelopmentInit"
+    ]
+  },
+  "execution_environment": {
+    "execution_context": "LLM agent session with Python tool execution",
+    "estimated_duration": "5-10 minutes",
+    "user_interaction_required": false,
+    "user_inputs": [],
+    "command_template": "python3 system_of_systems_graph_v2.py index.json --detect-gaps --centrality --community --cycles --scc --dag --flow"
+  },
+  "node_type": "process_step",
+  "transitions": {
+    "probability": 0.5,
+    "weight": 5,
+    "condition": "always",
+    "transition_type": "sequential"
+  }
+}

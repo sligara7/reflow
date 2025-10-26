@@ -1,0 +1,445 @@
+{
+  "migration_metadata": {
+    "timestamp": "2025-10-26T08:09:06.370141",
+    "from_framework": "uaf",
+    "to_framework": "decision_flow",
+    "system_root": "/home/user/reflow",
+    "output_directory": "/home/user/reflow/specs/machine/migrated/decision_flow_20251026_080906"
+  },
+  "summary": {
+    "migrated_files": 8,
+    "auto_mapped_fields": 40,
+    "manual_review_needed": [
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: metadata - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: system_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: operational_view - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: constraints - No direct mapping found",
+      "service_architecture_v1.0.0-20251025.json: node_type - New field for decision_flow framework - default value added",
+      "service_architecture_v1.0.0-20251025.json: transitions - New field for decision_flow framework - default value added"
+    ],
+    "warnings": [
+      "WARNING: Current framework (decision_flow) doesn't match --from (uaf)"
+    ],
+    "errors": []
+  },
+  "migrated_files": [
+    {
+      "original_file": "specs/machine/service_arch/TO-02_CICD/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'TO-02: CI/CD Pipeline', 'step_id': 'TO-02', 'workflow': '04-testing_operations', '"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'service_implementations_input', 'direction': 'consumed', 'connected_servic"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['TO-02-A01: Read deployment_architecture.json and identify CI/CD platform', 'TO-02-A"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['D-01_DevelopmentInit', 'D-02_ServiceImplementation', 'TO-0"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/AV-01_InterfaceContracts/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'AV-01: Interface Contract Generation', 'step_id': 'AV-01', 'workflow': '02-artifac"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'component_architectures_input', 'direction': 'consumed', 'connected_servic"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['AV-01-A01: Load interface registry and architecture files', 'AV-01-A02: Execute gen"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['SE-06_SystemGraph'], 'prerequisite_artifacts': ['specs/mac"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/SE-02_ServiceArchitecture/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'SE-02: Service Architecture', 'step_id': 'SE-02', 'workflow': '01-systems_engineer"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'system_decomposition_input', 'direction': 'consumed', 'connected_services'"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['SE-02-A01: Load architecture templates and framework configuration', 'SE-02-A02: Fo"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['SE-01_SystemAnalysis'], 'prerequisite_artifacts': ['specs/"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/S-01_PathConfiguration/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'S-01: Path Configuration', 'step_id': 'S-01', 'workflow': '00-setup', 'version': '"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'user_input_paths', 'direction': 'consumed', 'connected_services': ['extern"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['S-01-A01: Identify and validate reflow_root path', 'S-01-A02: Identify or create sy"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': [], 'prerequisite_artifacts': [], 'note': 'This is the first"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/D-01_DevelopmentInit/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'D-01: Development Initialization', 'step_id': 'D-01', 'workflow': '03-development'"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'component_architectures_input', 'direction': 'consumed', 'connected_servic"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['D-01-A00: OPTIONAL - Research current development best practices', 'D-01-A01: Execu"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['AV-01_InterfaceContracts'], 'prerequisite_artifacts': ['sp"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/S-03_FoundationalDocuments/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'S-03: Foundational Documents', 'step_id': 'S-03', 'workflow': '00-setup', 'version"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'working_memory_input', 'direction': 'consumed', 'connected_services': ['S-"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['S-03-A01: Load foundational document templates', 'S-03-A02: Gather system mission f"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['S-01_PathConfiguration'], 'prerequisite_artifacts': ['cont"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/SE-01_SystemAnalysis/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'SE-01: System Analysis', 'step_id': 'SE-01', 'workflow': '01-systems_engineering',"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'foundational_documents_input', 'direction': 'consumed', 'connected_service"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['SE-01-A01: Load foundational documents and framework definition', 'SE-01-A02: Analy"
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['S-03_FoundationalDocuments'], 'prerequisite_artifacts': ['"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    },
+    {
+      "original_file": "specs/machine/service_arch/SE-06_SystemGraph/service_architecture_v1.0.0-20251025.json",
+      "migrated_file": "specs/machine/migrated/decision_flow_20251026_080906/service_architecture_v1.0.0-20251025.json",
+      "manual_review_items": [
+        {
+          "field": "metadata",
+          "reason": "No direct mapping found",
+          "preserved_as": "metadata",
+          "value": "{'service_name': 'SE-06: System Graph Generation', 'step_id': 'SE-06', 'workflow': '01-systems_engin"
+        },
+        {
+          "field": "system_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "system_view",
+          "value": "{'interfaces': [{'name': 'component_architectures_input', 'direction': 'consumed', 'connected_servic"
+        },
+        {
+          "field": "operational_view",
+          "reason": "No direct mapping found",
+          "preserved_as": "operational_view",
+          "value": "{'activities': ['SE-06-A01: Load index.json and all service_architecture files', 'SE-06-A02: Select "
+        },
+        {
+          "field": "constraints",
+          "reason": "No direct mapping found",
+          "preserved_as": "constraints",
+          "value": "{'dependencies': {'prerequisite_steps': ['SE-02_ServiceArchitecture'], 'prerequisite_artifacts': ['s"
+        },
+        {
+          "field": "node_type",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": "process_step",
+          "action": "Review and update with correct value"
+        },
+        {
+          "field": "transitions",
+          "reason": "New field for decision_flow framework - default value added",
+          "default_value": {
+            "probability": 0.5,
+            "weight": 5,
+            "condition": "always",
+            "transition_type": "sequential"
+          },
+          "action": "Review and update with correct value"
+        }
+      ]
+    }
+  ]
+}

@@ -225,18 +225,28 @@ Each workflow file contains:
 
 Example: UAF on workflows misses decision logic, rework loops, and path probabilities.
 
-**ALWAYS follow this process**:
-1. **Analyze system semantics** - Are your nodes states? services? agents? species?
-2. **Consider required analyses** - Need flow analysis? Choose framework with edge weights
-3. **Compare ALL 7 frameworks** against your system characteristics
-4. **Get user confirmation** before proceeding (required in S-01A-QG quality gate)
+**ALWAYS follow this process** (enforced in S-01A):
+1. **Semantic Matching** - Use 6-question questionnaire to understand system nature
+   - What are your nodes? (states, services, agents, species, molecules?)
+   - What are your edges? (transitions, APIs, relationships, energy flow?)
+   - Do edges have conditions? Are cycles expected or errors?
+   - Match abstractions, not just domain (LESSON-04)
+2. **Score ALL frameworks** - Use objective 5-criteria rubric (LESSON-06)
+   - Domain match (weight 2.0), semantic match (weight 2.5), analysis match (weight 2.0), edge weight feasibility (weight 1.5), complexity (weight 1.0)
+   - Semantic match weighted HIGHEST - wrong abstractions = wrong insights
+   - Transparency: Show scores (e.g., Decision Flow 9.2/10 vs UAF 4.2/10)
+3. **Map NetworkX analyses** - Show which analyses each framework enables/blocks
+   - Flow analysis requires edge weights (Decision Flow ✅, UAF ❌)
+   - Cycle semantics vary (UAF = bugs, Decision Flow = rework, Biology = feedback)
+4. **Get user confirmation** - Present recommendation with scores, require explicit approval (LESSON-05)
+   - S-01A-QG quality gate (BLOCKING) enforces confirmation
 
 **Time investment**: 10-15 min framework analysis saves hours of rework later.
 
 **See also**:
-- NetworkX Analysis Guide: `docs/NETWORKX_ANALYSIS_GUIDE.md`
-- Decision Flow Framework Example: `docs/DECISION_FLOW_FRAMEWORK.md`
-- Framework Selection (S-01A): Enhanced with explicit analysis requirements per LESSON-01
+- NetworkX Analysis Guide: `docs/NETWORKX_ANALYSIS_GUIDE.md` (400+ lines)
+- Decision Flow Framework Example: `docs/DECISION_FLOW_FRAMEWORK.md` (500+ lines)
+- Framework Selection (S-01A): Enhanced with semantic matching, scoring rubric, user confirmation
 
 ---
 

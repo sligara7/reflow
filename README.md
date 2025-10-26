@@ -555,13 +555,13 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 <details open>
 <summary><b>v3.4.0 (2025-10-26)</b> - Latest</summary>
 
-- :warning: **CRITICAL: Framework Selection Enhancement** - Implement lessons learned from Decision Flow Framework analysis
+- :warning: **CRITICAL: Framework Selection Enhancement** - Implement 7 lessons learned from Decision Flow Framework analysis (all HIGH+MEDIUM+LOW)
   - **LESSON-01 Implemented**: S-01A now requires explicit analysis of ALL frameworks (not defaulting to UAF)
     - LLM agents must analyze system semantics (states? services? agents? species?)
     - LLM agents must show which NetworkX analyses each framework enables
     - LLM agents must compare ALL 7 frameworks against system characteristics
     - User confirmation now REQUIRED (S-01A-QG quality gate - BLOCKING)
-  - **LESSON-02 Implemented**: New `docs/NETWORKX_ANALYSIS_GUIDE.md` (comprehensive analysis implications)
+  - **LESSON-02 Implemented**: New `docs/NETWORKX_ANALYSIS_GUIDE.md` (400+ lines comprehensive guide)
     - Analysis availability matrix (which frameworks enable which analyses)
     - Edge weight requirements and semantics per framework
     - When to use each analysis type
@@ -570,10 +570,30 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
     - If framework requires edge weights for flow analysis, plan them during architecture design (not later)
     - Guidance on edge weight semantics per framework (probability, energy flow, reaction rate, etc.)
     - Validation added to SE-03 to verify edge weights present if required
+  - **LESSON-04 Implemented**: Semantic matching questionnaire added to S-01A-A01
+    - 6-question questionnaire maps system semantics to frameworks
+    - Decision tree: nodes → edges → behavior → framework recommendation
+    - Correct vs incorrect examples (workflows are states, not services)
+    - Emphasizes: "Match abstractions, not just domain"
+  - **LESSON-05 Implemented**: User confirmation required (already in LESSON-01)
+    - S-01A-A05: User confirmation prompt (BLOCKING)
+    - S-01A-QG: Quality gate enforces user_confirmed == true
+  - **LESSON-06 Implemented**: Framework scoring rubric added to S-01A-A04
+    - 5 objective criteria: domain match (weight 2.0), semantic match (weight 2.5), analysis match (weight 2.0), edge weight feasibility (weight 1.5), complexity (weight 1.0)
+    - Max score: 80 points (10/10 on all criteria × weights)
+    - Example scoring: Decision Flow (9.2/10) vs UAF (4.2/10) vs CAS (6.5/10)
+    - Makes framework selection transparent and defensible
   - **LESSON-07 Implemented**: CLAUDE.md updated with prominent framework selection warnings
     - "DO NOT default to UAF!" warning section
     - Decision Flow Framework added to supported frameworks list
     - Time investment guidance: "10-15 min analysis saves hours of rework later"
+  - **LESSON-08 Implemented**: Framework migration tool added (`tools/migrate_framework.py`)
+    - Automate framework switching if wrong framework chosen initially
+    - UAF ↔ Decision Flow migrations supported
+    - Field mapping: service_id → step_id, interfaces → transitions, etc.
+    - Generates migration report with manual review items
+    - Flags items requiring domain knowledge (edge weights, node types)
+    - Preserves data where possible, prevents data loss
 - :book: **Decision Flow Framework** - New framework for workflow systems (workflows as state machines, not services)
   - Added to framework_registry.json with full specifications
   - Example architecture created: `specs/machine/workflow_arch/00-setup_decision_flow_example.json`

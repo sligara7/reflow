@@ -1,0 +1,126 @@
+flowchart TD
+    %% S-01A: Framework Selection Analysis - Decision Flow
+    %% Shows the enhanced framework selection process (LESSON-01)
+    %% Includes semantic matching, scoring, and user confirmation
+
+    START([S-01A: Framework<br/>Selection Analysis])
+
+    %% Action A01: Semantic Matching
+    A01[A01: Analyze System<br/>Characteristics]
+    A01Q1{What are<br/>your nodes?}
+    A01Q2{What are<br/>your edges?}
+    A01Q3{Do edges have<br/>conditions?}
+    A01Q4{Are cycles<br/>expected or errors?}
+    A01Q5{Need flow<br/>analysis?}
+    A01Q6{System's primary<br/>behavior?}
+
+    %% Action A02: Evaluate ALL Frameworks
+    A02[A02: Analyze ALL Frameworks<br/>not just one!]
+    F1[UAF 1.2<br/>Engineered Systems]
+    F2[Decision Flow<br/>Workflows & State Machines]
+    F3[Systems Biology<br/>Biological Networks]
+    F4[Social Network<br/>Organizations]
+    F5[Ecological<br/>Ecosystems]
+    F6[Complex Adaptive<br/>Self-organizing]
+
+    %% Action A03: Map NetworkX Analyses
+    A03[A03: Map NetworkX Analyses<br/>to each framework]
+    MAP[Analysis Availability Matrix<br/>• Flow → requires edge weights<br/>• Cycles → semantic meaning varies<br/>• DAG → deployment order or pathway<br/>• Community → service groups or modules]
+
+    %% Action A04: Objective Scoring
+    A04[A04: Score Frameworks<br/>with objective rubric]
+    SCORE[5 Criteria with Weights:<br/>1. Domain Match 2.0x<br/>2. Semantic Match 2.5x HIGHEST<br/>3. Analysis Match 2.0x<br/>4. Edge Weight Feasibility 1.5x<br/>5. Complexity 1.0x<br/><br/>Max Score: 80 points]
+
+    RESULTS[Example Scoring:<br/>Decision Flow: 9.2/10 73.6pts<br/>UAF: 4.2/10 33.6pts<br/>CAS: 6.5/10 52.0pts]
+
+    %% Action A05: User Confirmation (CRITICAL)
+    A05{A05: USER CONFIRMATION<br/>REQUIRED BLOCKING}
+    PRESENT[Present Recommendation:<br/>• Recommended framework<br/>• Scored alternatives<br/>• Analysis capabilities<br/>• Edge weight requirements<br/>• Rationale]
+
+    APPROVED[User Approves]
+    REJECTED[User Rejects]
+    ALTERNATE[Select Alternative<br/>Framework]
+
+    %% Action A06: Load Framework
+    A06[A06: Load Confirmed Framework]
+    LOAD[Load framework definition<br/>from framework_registry.json]
+
+    %% Action A07: Update Working Memory
+    A07[A07: Update working_memory.json]
+    UPDATE[Store:<br/>• framework_id<br/>• user_confirmed: true<br/>• confirmation_timestamp<br/>• framework_analysis<br/>• recommended_analyses]
+
+    %% Action A08: Custom Framework (Conditional)
+    A08[A08: Custom Framework<br/>Research OPTIONAL]
+    CUSTOM{Selected<br/>framework = custom?}
+    RESEARCH[LLM researches domain<br/>and creates custom<br/>framework definition]
+
+    %% Action A09: Display Summary
+    A09[A09: Display Confirmation<br/>Summary]
+    SUMMARY[Confirmed:<br/>• Framework selected<br/>• Analysis capabilities<br/>• Edge weight plan<br/>• Ready for SE-01]
+
+    %% Quality Gate
+    QG{S-01A-QG:<br/>Framework Selection<br/>Confirmation<br/>BLOCKING}
+    QGCHECK[Checks:<br/>FS-01: System characteristics analyzed<br/>FS-02: ALL frameworks evaluated ≥5<br/>FS-03: NetworkX analyses mapped<br/>FS-04: User explicitly confirmed<br/>FS-05: Detailed rationale documented]
+
+    PASS([PASS → SE-01])
+    FAIL([FAIL → Return to A01])
+
+    %% Flow
+    START --> A01
+    A01 --> A01Q1 & A01Q2 & A01Q3 & A01Q4 & A01Q5 & A01Q6
+    A01Q1 & A01Q2 & A01Q3 & A01Q4 & A01Q5 & A01Q6 --> A02
+
+    A02 --> F1 & F2 & F3 & F4 & F5 & F6
+    F1 & F2 & F3 & F4 & F5 & F6 --> A03
+
+    A03 --> MAP
+    MAP --> A04
+
+    A04 --> SCORE
+    SCORE --> RESULTS
+    RESULTS --> A05
+
+    A05 --> PRESENT
+    PRESENT --> APPROVED
+    PRESENT --> REJECTED
+
+    APPROVED --> A06
+    REJECTED --> ALTERNATE
+    ALTERNATE --> A04
+
+    A06 --> LOAD
+    LOAD --> A07
+
+    A07 --> UPDATE
+    UPDATE --> CUSTOM
+
+    CUSTOM -->|YES| A08
+    CUSTOM -->|NO| A09
+    A08 --> RESEARCH
+    RESEARCH --> A09
+
+    A09 --> SUMMARY
+    SUMMARY --> QG
+
+    QG --> QGCHECK
+    QGCHECK -->|ALL PASS| PASS
+    QGCHECK -->|ANY FAIL| FAIL
+
+    %% Styling
+    classDef startClass fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    classDef actionClass fill:#bbdefb,stroke:#1565c0,stroke-width:2px
+    classDef decisionClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef dataClass fill:#e1bee7,stroke:#6a1b9a,stroke-width:2px
+    classDef criticalClass fill:#ffcdd2,stroke:#c62828,stroke-width:3px
+    classDef frameworkClass fill:#b2ebf2,stroke:#00838f,stroke-width:2px
+    classDef gateClass fill:#ffebee,stroke:#b71c1c,stroke-width:4px
+    classDef endClass fill:#c5e1a5,stroke:#558b2f,stroke-width:3px
+
+    class START startClass
+    class A01,A02,A03,A04,A06,A07,A08,A09 actionClass
+    class A01Q1,A01Q2,A01Q3,A01Q4,A01Q5,A01Q6,CUSTOM decisionClass
+    class MAP,SCORE,RESULTS,LOAD,UPDATE,RESEARCH,SUMMARY,PRESENT,QGCHECK dataClass
+    class A05 criticalClass
+    class F1,F2,F3,F4,F5,F6 frameworkClass
+    class QG gateClass
+    class PASS,FAIL,APPROVED,REJECTED,ALTERNATE endClass
