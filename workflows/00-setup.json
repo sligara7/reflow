@@ -190,17 +190,112 @@
       "actions": [
         {
           "action_id": "S-01A-A01",
-          "description": "Analyze system domain and characteristics",
-          "purpose": "Understand system semantics BEFORE selecting framework",
+          "description": "Analyze system domain and characteristics with semantic matching",
+          "purpose": "Understand system semantics BEFORE selecting framework - match abstractions, not just domain",
+          "rationale": "LESSON-04: Framework abstractions must match system semantics. Workflows are state machines (not services), even though both could be 'engineered systems'. Wrong abstraction = wrong insights.",
           "llm_instructions": [
             "Ask user to describe the system in their own words",
-            "Identify: What are the primary entities? (services, states, agents, species, etc.)",
-            "Identify: What are the connections? (APIs, transitions, relationships, interactions, etc.)",
-            "Identify: Are there decision points or conditional routing?",
-            "Identify: Are cycles expected (feedback loops) or errors (circular dependencies)?",
-            "Identify: Will you need to analyze flow/throughput/bottlenecks?"
+            "Apply semantic matching questionnaire (below) to understand system nature",
+            "Document answers for framework comparison"
           ],
-          "output": "System characteristics summary for framework matching"
+          "semantic_matching_questionnaire": {
+            "question_1": {
+              "question": "What are your primary entities (nodes)?",
+              "answers_map_to": {
+                "Services that communicate via APIs": "UAF framework",
+                "States in a process with transitions": "Decision Flow framework",
+                "Agents with relationships": "Social Network framework",
+                "Species in an ecosystem": "Ecological framework",
+                "Genes, proteins, or molecules": "Systems Biology framework",
+                "Adaptive agents that learn": "Complex Adaptive Systems framework"
+              },
+              "critical": "Match entity semantics, not just domain. A workflow step is a STATE, not a SERVICE."
+            },
+            "question_2": {
+              "question": "What are your connections (edges)?",
+              "answers_map_to": {
+                "API calls or data interfaces": "UAF framework",
+                "State transitions with conditions": "Decision Flow framework",
+                "Social relationships or interactions": "Social Network framework",
+                "Energy/matter flow or species interactions": "Ecological framework",
+                "Molecular interactions (activation, inhibition)": "Systems Biology framework",
+                "Adaptive interactions with feedback": "Complex Adaptive Systems framework"
+              },
+              "critical": "Edges represent different things in each framework. Workflow transitions ≠ API calls."
+            },
+            "question_3": {
+              "question": "Do edges have conditions or branching?",
+              "answers_map_to": {
+                "Yes, if/else routing or decision points": "Decision Flow framework (conditional transitions)",
+                "Yes, but based on agent decisions": "Social Network or CAS framework",
+                "No, always connected": "UAF, Social Network (static connections)",
+                "Yes, based on environmental factors": "Ecological or Systems Biology framework"
+              }
+            },
+            "question_4": {
+              "question": "Are cycles expected behavior or errors?",
+              "answers_map_to": {
+                "Expected - feedback loops are essential": "Systems Biology, CAS, Ecological (regulatory feedback)",
+                "Expected - rework loops are normal": "Decision Flow (validation failures, retries)",
+                "Errors - circular dependencies are bad": "UAF (service dependencies should be acyclic)",
+                "Neither - cycles not relevant": "Consider simpler modeling approach"
+              },
+              "critical": "Cycle semantics determine framework choice. UAF cycles = bugs. Biology cycles = features."
+            },
+            "question_5": {
+              "question": "Do you need to analyze flow, throughput, or bottlenecks?",
+              "answers_map_to": {
+                "Yes, need to find workflow bottlenecks": "Decision Flow (requires edge weights: probabilities)",
+                "Yes, need to track energy flow": "Ecological (requires edge weights: energy transfer rates)",
+                "Yes, need to analyze reaction rates": "Systems Biology (requires edge weights: reaction rates)",
+                "No, just need connectivity analysis": "Any framework works (centrality, community, etc.)"
+              },
+              "critical": "Flow analysis REQUIRES edge weights. If you need flow, choose framework that supports weights."
+            },
+            "question_6": {
+              "question": "What is the system's primary behavior?",
+              "answers_map_to": {
+                "Sequential processing with decision points": "Decision Flow framework",
+                "Services responding to requests": "UAF framework",
+                "Agents interacting and influencing each other": "Social Network or CAS framework",
+                "Species competing and cooperating": "Ecological framework",
+                "Molecules regulating each other": "Systems Biology framework",
+                "Emergent behavior from simple rules": "Complex Adaptive Systems framework"
+              }
+            }
+          },
+          "semantic_matching_decision_tree": {
+            "start": "What are your nodes?",
+            "if_states": "Are transitions conditional?",
+            "if_conditional_transitions": "→ Decision Flow Framework",
+            "if_sequential_only": "→ Decision Flow or UAF (check if states vs services)",
+            "if_services": "Do services have human users?",
+            "if_services_with_users": "→ UAF with IT requirements (security, deployment, UX)",
+            "if_services_internal": "→ UAF (simpler security acceptable)",
+            "if_agents": "Do agents adapt and learn?",
+            "if_adaptive_agents": "→ Complex Adaptive Systems",
+            "if_static_agents": "→ Social Network Analysis",
+            "if_species": "→ Ecological Systems Framework",
+            "if_molecules": "→ Systems Biology Framework",
+            "if_hybrid": "→ Custom Framework (research domain)"
+          },
+          "examples_correct_vs_incorrect": {
+            "correct": [
+              "Microservices system → UAF (services communicating via APIs)",
+              "Reflow workflows → Decision Flow (states with conditional transitions)",
+              "Gene regulatory network → Systems Biology (molecular interactions)",
+              "Corporate org chart → Social Network (people with relationships)",
+              "Food web → Ecological (species with predation/competition)",
+              "Stock market → CAS (adaptive agents with emergent behavior)"
+            ],
+            "incorrect": [
+              "❌ Reflow workflows → UAF (WRONG: steps ≠ services, misses decision logic)",
+              "❌ Social network → UAF (WRONG: relationships ≠ interfaces)",
+              "❌ Food web → UAF (WRONG: predation ≠ API calls)",
+              "❌ Gene network → Social Network (WRONG: molecular regulation ≠ social relationships)"
+            ]
+          },
+          "output": "System characteristics summary with semantic matching answers"
         },
         {
           "action_id": "S-01A-A02",
@@ -254,29 +349,144 @@
         },
         {
           "action_id": "S-01A-A04",
-          "description": "Recommend framework with detailed rationale",
-          "purpose": "Present LLM's framework recommendation to user",
+          "description": "Score and recommend framework with objective criteria",
+          "purpose": "Present LLM's framework recommendation to user with objective scoring",
+          "rationale": "LESSON-06: Use objective scoring criteria to make framework selection transparent and defensible",
           "llm_instructions": [
-            "Based on steps A01-A03 analysis, select BEST framework",
+            "Based on steps A01-A03 analysis, score EACH framework on 5 criteria",
+            "Use scoring rubric below to calculate total scores",
+            "Select framework with HIGHEST total score",
             "Prepare recommendation message including:",
-            "  1. Recommended framework name and ID",
-            "  2. WHY this framework matches system semantics",
-            "  3. WHAT insights this framework will reveal",
-            "  4. WHICH NetworkX analyses will be enabled",
-            "  5. WHAT alternatives were considered and rejected",
-            "Format as clear, structured message for user"
+            "  1. Recommended framework (highest score)",
+            "  2. Score breakdown showing WHY this framework won",
+            "  3. Comparison with 2nd and 3rd place frameworks",
+            "  4. WHAT insights this framework will reveal",
+            "  5. WHICH NetworkX analyses will be enabled",
+            "Format as clear, structured message with scores visible"
           ],
-          "recommendation_template": {
-            "recommended_framework": "framework_id",
-            "rationale": "Why this framework matches system",
-            "reveals": ["Insight 1", "Insight 2"],
-            "enables_analyses": ["flow", "cycles", "centrality"],
-            "alternatives_considered": {
-              "uaf": "Rejected because...",
-              "systems_biology": "Rejected because..."
+          "framework_scoring_rubric": {
+            "criterion_1_domain_match": {
+              "name": "Domain Match",
+              "weight": 2.0,
+              "description": "How well does the framework's target domain match the system's domain?",
+              "scoring": {
+                "10": "Perfect match (e.g., microservices → UAF, workflows → Decision Flow)",
+                "7-9": "Good match with minor misalignment",
+                "4-6": "Partial match, framework can work but not ideal",
+                "1-3": "Poor match, framework not designed for this domain",
+                "0": "Complete mismatch"
+              }
+            },
+            "criterion_2_semantic_match": {
+              "name": "Semantic Match",
+              "weight": 2.5,
+              "description": "Do system entities match framework node/edge abstractions?",
+              "scoring": {
+                "10": "Perfect semantic match (states → Decision Flow, services → UAF, species → Ecological)",
+                "7-9": "Good match with reasonable interpretation",
+                "4-6": "Forced fit, requires mental gymnastics",
+                "1-3": "Poor fit, wrong abstractions (e.g., workflow steps as 'services')",
+                "0": "Semantics completely incompatible"
+              },
+              "critical": "MOST IMPORTANT criterion. Wrong abstractions = wrong insights."
+            },
+            "criterion_3_analysis_match": {
+              "name": "Required Analyses Availability",
+              "weight": 2.0,
+              "description": "Does framework enable the NetworkX analyses you need?",
+              "scoring": {
+                "10": "All required analyses available (e.g., need flow → framework has edge weights)",
+                "7-9": "Most analyses available, workarounds possible",
+                "4-6": "Some analyses available, significant gaps",
+                "1-3": "Few analyses available, major limitations",
+                "0": "Critical analyses blocked (e.g., need flow but no edge weights)"
+              }
+            },
+            "criterion_4_edge_weight_feasibility": {
+              "name": "Edge Weight Feasibility",
+              "weight": 1.5,
+              "description": "If framework requires edge weights, can you provide them?",
+              "scoring": {
+                "10": "Edge weights not needed OR easily obtainable (historical data, domain knowledge)",
+                "7-9": "Can estimate weights with reasonable accuracy",
+                "4-6": "Weights difficult to obtain, rough estimates only",
+                "1-3": "Weights very difficult, mostly guessing",
+                "0": "Cannot provide weights but framework requires them",
+                "N/A": "Framework doesn't use edge weights (score 10 by default)"
+              }
+            },
+            "criterion_5_complexity": {
+              "name": "Framework Complexity",
+              "weight": 1.0,
+              "description": "Prefer simpler frameworks if they meet requirements equally well",
+              "scoring": {
+                "10": "Very simple, easy to understand and apply",
+                "7-9": "Moderate complexity, manageable",
+                "4-6": "Complex, requires significant learning",
+                "1-3": "Very complex, steep learning curve",
+                "0": "Extremely complex, not practical"
+              },
+              "note": "Only use as tiebreaker if scores are close"
             }
           },
-          "output": "Framework recommendation with rationale"
+          "scoring_process": {
+            "step_1": "Score each framework on all 5 criteria (0-10 scale)",
+            "step_2": "Multiply each score by its weight",
+            "step_3": "Sum weighted scores to get total (max 80 points)",
+            "step_4": "Select framework with highest total score",
+            "step_5": "Document scores for transparency"
+          },
+          "example_scoring_output": {
+            "system": "Reflow Workflow System",
+            "frameworks_scored": {
+              "decision_flow": {
+                "total_score": "9.2/10 (73.6/80 points)",
+                "breakdown": {
+                  "domain_match": "10/10 × 2.0 = 20.0 (workflow system)",
+                  "semantic_match": "10/10 × 2.5 = 25.0 (states, not services)",
+                  "analysis_match": "9/10 × 2.0 = 18.0 (flow, cycles, paths all available)",
+                  "edge_weight_feasibility": "8/10 × 1.5 = 12.0 (can estimate probabilities)",
+                  "complexity": "8/10 × 1.0 = 8.0 (moderate)"
+                },
+                "recommendation": "✅ RECOMMENDED - Highest score, perfect semantic match"
+              },
+              "uaf": {
+                "total_score": "4.2/10 (33.6/80 points)",
+                "breakdown": {
+                  "domain_match": "8/10 × 2.0 = 16.0 (engineered system)",
+                  "semantic_match": "2/10 × 2.5 = 5.0 (services ≠ states)",
+                  "analysis_match": "3/10 × 2.0 = 6.0 (DAG ok, but no flow)",
+                  "edge_weight_feasibility": "2/10 × 1.5 = 3.0 (no weight support)",
+                  "complexity": "8/10 × 1.0 = 8.0 (simple)"
+                },
+                "recommendation": "❌ NOT RECOMMENDED - Poor semantic match, missing flow analysis"
+              },
+              "complex_adaptive": {
+                "total_score": "6.5/10 (52.0/80 points)",
+                "breakdown": {
+                  "domain_match": "7/10 × 2.0 = 14.0 (emergent behavior)",
+                  "semantic_match": "6/10 × 2.5 = 15.0 (adaptive agents)",
+                  "analysis_match": "7/10 × 2.0 = 14.0 (cycles, SCC available)",
+                  "edge_weight_feasibility": "6/10 × 1.5 = 9.0 (interaction strength unclear)",
+                  "complexity": "5/10 × 1.0 = 5.0 (complex)"
+                },
+                "recommendation": "⚠️ SECOND PLACE - Could work but less clear than Decision Flow"
+              }
+            }
+          },
+          "recommendation_template": {
+            "recommended_framework": "framework_id (highest score)",
+            "total_score": "X.X/10 (XX.X/80 points)",
+            "score_breakdown": "Show weighted scores for all criteria",
+            "comparison_with_alternatives": "Show 2nd and 3rd place scores",
+            "rationale": "Why this framework won (semantic match, analysis availability)",
+            "reveals": ["Insight 1", "Insight 2"],
+            "enables_analyses": ["flow", "cycles", "centrality"],
+            "alternatives_rejected": {
+              "framework_name": "Rejected due to low score on [criterion]"
+            }
+          },
+          "output": "Framework recommendation with objective scoring"
         },
         {
           "action_id": "S-01A-A05",
