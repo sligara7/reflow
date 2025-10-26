@@ -23,6 +23,9 @@ from collections import defaultdict
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import sanitize_path, validate_system_root, PathSecurityError
 
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 
 class PortRegistryValidator:
     def __init__(self, port_registry_path: Path):
@@ -41,14 +44,16 @@ class PortRegistryValidator:
     def load_registry(self) -> bool:
         """Load and parse port_registry.json"""
         try:
-            with open(self.port_registry_path, 'r') as f:
-                self.port_registry = json.load(f)
+            self.port_registry = safe_load_json(
+                self.port_registry_path,
+                file_type_description="port registry"
+            )
             return True
-        except FileNotFoundError:
-            self.errors.append(f"Port registry not found: {self.port_registry_path}")
+        except FileNotFoundError as e:
+            self.errors.append(str(e))
             return False
-        except json.JSONDecodeError as e:
-            self.errors.append(f"Invalid JSON in port registry: {e}")
+        except JSONValidationError as e:
+            self.errors.append(str(e))
             return False
 
     def validate(self) -> Tuple[bool, Dict]:

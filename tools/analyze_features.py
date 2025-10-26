@@ -39,6 +39,9 @@ from typing import Dict, List, Set
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import sanitize_path, validate_system_root, PathSecurityError
 
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 class FeatureAnalyzer:
     def __init__(self, feature_summary_path: Path):
         self.feature_summary_path = Path(feature_summary_path)

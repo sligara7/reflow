@@ -15,6 +15,9 @@ from typing import Dict, List, Any, Set
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import sanitize_path, PathSecurityError
 
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 def load_system_analysis(analysis_file: str) -> Dict[str, Any]:
     """Load system analysis results from a JSON file."""
     try:

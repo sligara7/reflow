@@ -26,6 +26,9 @@ import fnmatch
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import validate_system_root, PathSecurityError
 
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 # Embedded mode detection (auto-added during injection)
 def _detect_embedded_mode():
     """Detect if running in embedded mode and return appropriate paths."""

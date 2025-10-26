@@ -31,6 +31,9 @@ from collections import defaultdict
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import sanitize_path, validate_system_root, PathSecurityError
 
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 # Adjust paths for reflow directory structure
 REFLOW_ROOT = Path(__file__).parent.parent
 TEMPLATES_PATH = REFLOW_ROOT / "templates"
