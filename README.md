@@ -555,7 +555,7 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 <details open>
 <summary><b>v3.4.0 (2025-10-26)</b> - Latest</summary>
 
-- :warning: **CRITICAL: Framework Selection Enhancement** - Implement 6 lessons learned from Decision Flow Framework analysis
+- :warning: **CRITICAL: Framework Selection Enhancement** - Implement 7 lessons learned from Decision Flow Framework analysis (all HIGH+MEDIUM+LOW)
   - **LESSON-01 Implemented**: S-01A now requires explicit analysis of ALL frameworks (not defaulting to UAF)
     - LLM agents must analyze system semantics (states? services? agents? species?)
     - LLM agents must show which NetworkX analyses each framework enables
@@ -587,6 +587,13 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
     - "DO NOT default to UAF!" warning section
     - Decision Flow Framework added to supported frameworks list
     - Time investment guidance: "10-15 min analysis saves hours of rework later"
+  - **LESSON-08 Implemented**: Framework migration tool added (`tools/migrate_framework.py`)
+    - Automate framework switching if wrong framework chosen initially
+    - UAF ↔ Decision Flow migrations supported
+    - Field mapping: service_id → step_id, interfaces → transitions, etc.
+    - Generates migration report with manual review items
+    - Flags items requiring domain knowledge (edge weights, node types)
+    - Preserves data where possible, prevents data loss
 - :book: **Decision Flow Framework** - New framework for workflow systems (workflows as state machines, not services)
   - Added to framework_registry.json with full specifications
   - Example architecture created: `specs/machine/workflow_arch/00-setup_decision_flow_example.json`
