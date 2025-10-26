@@ -8,18 +8,18 @@ independent development with guaranteed integration success.
 
 Creates complete ICD specifications including:
 - Input/output schemas with validation rules
-- Error handling and retry policies  
+- Error handling and retry policies
 - Timing and performance constraints
 - Integration test scenarios
 - Contract verification guidelines
 
 Usage:
     python3 generate_interface_contracts.py /path/to/systems/<system_name>/
-    
+
 Output:
     Creates /systems/<system_name>/interfaces/<interface_id>.json for each interface
     Creates /systems/<system_name>/interfaces/interfaces_summary.json overview
-    
+
 LLM Usage:
     Generated ICD files serve as authoritative specifications for component development.
     Following the contracts precisely guarantees successful integration.
@@ -32,20 +32,44 @@ from pathlib import Path
 from typing import Dict, List, Any, Set
 from datetime import datetime
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
 class InterfaceContractGenerator:
-    def __init__(self, system_path: str):
-        self.system_path = Path(system_path)
-        self.index_file = self.system_path / "index.json"
-        self.interfaces_dir = self.system_path / "interfaces"
-        self.template_path = Path(__file__).parent.parent / "templates" / "interface_contract_complete_template.json"
-        
+    def __init__(self, system_path: Path):
+        """
+        Initialize contract generator with validated system path.
+
+        Args:
+            system_path: Pre-validated Path object (use validate_system_root() before passing)
+        """
+        self.system_path = system_path
+
+        # Security: Sanitize all file paths (v3.4.0 fix - SV-01)
+        try:
+            self.index_file = sanitize_path("index.json", self.system_path, must_exist=False)
+            self.interfaces_dir = sanitize_path("interfaces", self.system_path, must_exist=False)
+
+            # Template is in reflow_root, need to validate that path
+            reflow_root = Path(__file__).parent.parent
+            reflow_root = validate_system_root(reflow_root)
+            self.template_path = sanitize_path(
+                "templates/interface_contract_complete_template.json",
+                reflow_root,
+                must_exist=True
+            )
+
+        except (PathSecurityError, FileNotFoundError) as e:
+            print(f"ERROR: Path security violation during initialization: {e}", file=sys.stderr)
+            sys.exit(1)
+
         # Load template
         with open(self.template_path, 'r') as f:
             self.template = json.load(f)
-            
+
         # Create interfaces directory
         self.interfaces_dir.mkdir(exist_ok=True)
-        
+
         self.components = {}
         self.interfaces_generated = []
         self.interfaces_map = {}  # interface_id -> contract
@@ -55,25 +79,39 @@ class InterfaceContractGenerator:
         if not self.index_file.exists():
             print(f"Error: Index file not found at {self.index_file}")
             sys.exit(1)
-            
+
         with open(self.index_file, 'r') as f:
             index = json.load(f)
-            
-        for component_id, component_path in index.get('components', {}).items():
-            if not os.path.isabs(component_path):
-                component_path = self.system_path / component_path
-            else:
-                component_path = Path(component_path)
-                
-            if component_path.exists():
-                try:
-                    with open(component_path, 'r') as f:
-                        self.components[component_id] = json.load(f)
-                except json.JSONDecodeError as e:
-                    print(f"Warning: Could not parse {component_path}: {e}")
-            else:
-                print(f"Warning: Component file not found: {component_path}")
-                
+
+        for component_id, component_path_str in index.get('components', {}).items():
+            # Security: Sanitize component paths (v3.4.0 fix - SV-01)
+            try:
+                # Always treat component paths as relative to system_path
+                if os.path.isabs(component_path_str):
+                    print(f"Warning: Absolute path detected for component {component_id}: {component_path_str}")
+                    print(f"  Treating as relative to system_path for security")
+                    # Strip leading slash to make it relative
+                    component_path_str = component_path_str.lstrip('/')
+
+                component_path = sanitize_path(
+                    component_path_str,
+                    self.system_path,
+                    must_exist=True
+                )
+
+                with open(component_path, 'r') as f:
+                    self.components[component_id] = json.load(f)
+
+            except PathSecurityError as e:
+                print(f"Warning: Path security violation for component {component_id}: {e}")
+                continue
+            except FileNotFoundError:
+                print(f"Warning: Component file not found: {component_path_str}")
+                continue
+            except json.JSONDecodeError as e:
+                print(f"Warning: Could not parse component {component_id}: {e}")
+                continue
+
         print(f"Loaded {len(self.components)} components")
         
     def extract_interfaces(self):
@@ -363,23 +401,36 @@ class InterfaceContractGenerator:
     def generate_all_contracts(self):
         """Generate all interface contracts"""
         interface_pairs = self.extract_interfaces()
-        
+
         for pair in interface_pairs:
             contract = self.generate_interface_contract(
                 pair['provider'],
                 pair['consumer'],
                 pair['interface_def']
             )
-            
+
             interface_id = contract['interface_id']
-            contract_path = self.interfaces_dir / f"{interface_id}.json"
-            
-            with open(contract_path, 'w') as f:
-                json.dump(contract, f, indent=2)
-                
-            self.interfaces_generated.append(interface_id)
-            self.interfaces_map[interface_id] = contract
-            
+
+            # Security: Sanitize contract path (v3.4.0 fix - SV-01)
+            try:
+                # interfaces_dir is already validated, but sanitize the specific file
+                contract_filename = f"{interface_id}.json"
+                contract_path = sanitize_path(
+                    f"interfaces/{contract_filename}",
+                    self.system_path,
+                    must_exist=False
+                )
+
+                with open(contract_path, 'w') as f:
+                    json.dump(contract, f, indent=2)
+
+                self.interfaces_generated.append(interface_id)
+                self.interfaces_map[interface_id] = contract
+
+            except PathSecurityError as e:
+                print(f"Warning: Could not write contract {interface_id}: {e}")
+                continue
+
         print(f"\nGenerated {len(self.interfaces_generated)} interface contracts")
         print(f"Saved to: {self.interfaces_dir}/")
         
@@ -419,32 +470,51 @@ class InterfaceContractGenerator:
                 }
             })
             
-        summary_path = self.interfaces_dir / "interfaces_summary.json"
-        with open(summary_path, 'w') as f:
-            json.dump(summary, f, indent=2)
-            
-        print(f"Summary saved to: {summary_path}")
-        print(f"📋 Generated {len(self.interfaces_generated)} interface contracts")
-        print("🤖 LLM agents can use these contracts for independent component development")
-        print("✅ Following contracts precisely guarantees integration success")
+        # Security: Sanitize summary path (v3.4.0 fix - SV-01)
+        try:
+            summary_path = sanitize_path(
+                "interfaces/interfaces_summary.json",
+                self.system_path,
+                must_exist=False
+            )
+
+            with open(summary_path, 'w') as f:
+                json.dump(summary, f, indent=2)
+
+            print(f"Summary saved to: {summary_path}")
+            print(f"📋 Generated {len(self.interfaces_generated)} interface contracts")
+            print("🤖 LLM agents can use these contracts for independent component development")
+            print("✅ Following contracts precisely guarantees integration success")
+
+        except PathSecurityError as e:
+            print(f"ERROR: Could not write summary file: {e}", file=sys.stderr)
         
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 generate_interface_contracts.py /path/to/systems/<system_name>/")
         sys.exit(1)
-        
-    system_path = sys.argv[1]
-    
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(sys.argv[1])
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}", file=sys.stderr)
+        print("System path must be a valid directory", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
     print("=" * 80)
     print("Interface Contract Generator")
     print("=" * 80)
     print(f"System path: {system_path}\n")
-    
+
     generator = InterfaceContractGenerator(system_path)
     generator.load_components()
     generator.generate_all_contracts()
     generator.generate_summary()
-    
+
     print("\n" + "=" * 80)
     print("Interface contract generation complete!")
     print("=" * 80)
