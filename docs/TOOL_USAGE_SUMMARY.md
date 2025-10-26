@@ -1,8 +1,9 @@
 # Reflow Tools - Usage Summary
 
 **Last Updated**: 2025-10-26
-**Total Tools**: 16 (down from 24 - deleted 8 unused/legacy tools)
+**Total Tools**: 19 (up from 16 - added 3 as-fielded architecture tools)
 **Security Version**: v3.4.0 (Path Traversal Protection Added)
+**Latest Feature**: v3.5.0 (As-Fielded Architecture Tracking)
 
 ---
 
@@ -306,42 +307,125 @@ python3 system_of_systems_graph_v2.py specs/machine/index.json --analyze-all
 ---
 
 ### 5. `verify_component_contract.py`
-**Purpose**: Verify service implementation matches architecture contract  
-**Used In**: D-03, D-04, D-05 (Development phases)  
-**References**: 6 references  
+**Purpose**: Verify service implementation matches architecture contract
+**Used In**: D-03, D-04, D-05 (Development phases)
+**References**: 6 references
 **Validates**: Implementation adheres to architecture specifications
+
+---
+
+### 6. `generate_as_built_architecture.py` 🆕
+**Purpose**: Reverse-engineer architecture from implemented code (as-built architecture)
+**Used In**: D-06 (Development - As-Built Architecture Generation)
+**Created**: 2025-10-26 (as-fielded architecture tracking feature)
+**Method**: AST parsing + dependency analysis
+**Detects**:
+- REST endpoints (Flask/FastAPI decorators)
+- Function signatures
+- Dependencies (requirements.txt, imports)
+- Database connections
+- Message queues
+
+**Usage**:
+```bash
+python3 generate_as_built_architecture.py \
+  --system-root /path/to/system \
+  --output specs/machine/graphs/system_of_systems_graph_as_built.json \
+  --compare-to specs/machine/graphs/system_of_systems_graph.json
+```
+
+**Output**:
+- `system_of_systems_graph_as_built.json` (architecture from code)
+- `architecture_delta_designed_to_built_{date}.json` (comparison report)
+
+---
+
+### 7. `generate_as_fielded_architecture.py` 🆕
+**Purpose**: Capture architecture from deployed/running system (as-fielded architecture)
+**Used In**: TO-06 (Testing & Operations - As-Fielded Architecture Capture)
+**Created**: 2025-10-26 (as-fielded architecture tracking feature)
+**Method**: Docker runtime inspection + docker-compose analysis
+**Detects**:
+- Running containers and their status
+- Actual port mappings
+- Health endpoint status
+- Network topology
+- Service dependencies (from docker-compose)
+- Resource usage
+
+**Usage**:
+```bash
+python3 generate_as_fielded_architecture.py \
+  --system-root /path/to/system \
+  --output specs/machine/graphs/system_of_systems_graph_as_fielded.json \
+  --compare-to specs/machine/graphs/system_of_systems_graph.json \
+  --environment production
+```
+
+**Output**:
+- `system_of_systems_graph_as_fielded.json` (architecture from deployed system)
+- `architecture_delta_designed_to_fielded_{date}.json` (comparison report)
+
+---
+
+### 8. `compare_architectures.py` 🆕
+**Purpose**: Compare two architecture graphs and generate delta report
+**Used In**: D-06, TO-06 (called automatically by tools 6 and 7)
+**Created**: 2025-10-26 (as-fielded architecture tracking feature)
+**Analyzes**:
+- Added/removed services
+- Added/removed interfaces
+- Modified properties
+- Similarity score (Jaccard similarity: 0.4 × nodes + 0.4 × edges + 0.2 × properties)
+- Breaking vs non-breaking changes
+
+**Usage**:
+```bash
+python3 compare_architectures.py \
+  --from specs/machine/graphs/system_of_systems_graph.json \
+  --to specs/machine/graphs/system_of_systems_graph_as_built.json \
+  --output specs/machine/graphs/architecture_delta_designed_to_built_{date}.json
+```
+
+**Output**: Delta report with:
+- Similarity score (overall, nodes, edges, properties)
+- Node deltas (added, removed, modified)
+- Edge deltas (added, removed, modified)
+- Breaking changes (removed nodes/edges, incompatible changes)
+- Non-breaking changes (additions, compatible modifications)
+- Recommendations (actionable guidance)
 
 ---
 
 ## Validation & Quality Assurance Tools
 
-### 6. `validate_directory_structure.py`
-**Purpose**: Validate system directory structure matches Reflow requirements  
-**Used In**: S-02 (Setup)  
+### 9. `validate_directory_structure.py`
+**Purpose**: Validate system directory structure matches Reflow requirements
+**Used In**: S-02 (Setup)
 **Validates**: specs/, docs/, context/, services/ directories exist
 
 ---
 
-### 7. `validate_port_registry.py`
-**Purpose**: Validate port assignments for UAF/IT systems - detect conflicts  
-**Used In**: SE-03 (validation), SE-04 (deployment architecture)  
-**References**: 3 references  
+### 10. `validate_port_registry.py`
+**Purpose**: Validate port assignments for UAF/IT systems - detect conflicts
+**Used In**: SE-03 (validation), SE-04 (deployment architecture)
+**References**: 3 references
 **Checks**: PC-01 through PC-05 (duplicate ports, port ranges, privileged ports, docker mappings)
 
 ---
 
-### 8. `validate_foundational_alignment.py`
-**Purpose**: Validate foundational documents align with architecture  
-**Used In**: SE-03 (validation), SE-05 (consistency verification)  
-**References**: 4 references  
+### 11. `validate_foundational_alignment.py`
+**Purpose**: Validate foundational documents align with architecture
+**Used In**: SE-03 (validation), SE-05 (consistency verification)
+**References**: 4 references
 **Validates**: Mission statement, scenarios, success criteria align with architecture
 
 ---
 
-### 9. `validate_workflow_files.py` 🆕
-**Purpose**: Validate workflow JSON files for syntax, structure, references  
-**Used In**: CI/CD pipeline (not in workflows - development/maintenance tool)  
-**Created**: 2025-10-25 (during meta-analysis)  
+### 12. `validate_workflow_files.py` 🆕
+**Purpose**: Validate workflow JSON files for syntax, structure, references
+**Used In**: CI/CD pipeline (not in workflows - development/maintenance tool)
+**Created**: 2025-10-25 (during meta-analysis)
 **Validates**:
 - JSON syntax correctness
 - Required fields (workflow_metadata, workflow_steps, completion)
@@ -353,34 +437,34 @@ python3 system_of_systems_graph_v2.py specs/machine/index.json --analyze-all
 
 ## Analysis & Planning Tools
 
-### 10. `analyze_features.py`
-**Purpose**: Analyze feature requirements and identify required services  
-**Used In**: SE-01 (System Analysis)  
-**References**: 2 references  
-**Input**: SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md  
+### 13. `analyze_features.py`
+**Purpose**: Analyze feature requirements and identify required services
+**Used In**: SE-01 (System Analysis)
+**References**: 2 references
+**Input**: SYSTEM_MISSION_STATEMENT.md, USER_SCENARIOS.md
 **Output**: Initial service breakdown
 
 ---
 
-### 11. `select_development_languages.py`
-**Purpose**: Select appropriate development languages for services  
-**Used In**: D-01 (Development Initialization)  
-**References**: 2 references  
+### 14. `select_development_languages.py`
+**Purpose**: Select appropriate development languages for services
+**Used In**: D-01 (Development Initialization)
+**References**: 2 references
 **Considers**: Service requirements, team preferences, architectural constraints
 
 ---
 
-### 12. `identify_integration_points.py`
-**Purpose**: Identify integration points for system-of-systems projects  
-**Used In**: S-04 (System-of-Systems Decomposition - OPTIONAL), SE-04 (Architecture Reconciliation)  
-**References**: 2 references  
+### 15. `identify_integration_points.py`
+**Purpose**: Identify integration points for system-of-systems projects
+**Used In**: S-04 (System-of-Systems Decomposition - OPTIONAL), SE-04 (Architecture Reconciliation)
+**References**: 2 references
 **Use Case**: Multi-system integration projects
 
 ---
 
 ## Optional/Advanced Tools
 
-### 13. `generate_rag_embeddings.py` (OPTIONAL)
+### 16. `generate_rag_embeddings.py` (OPTIONAL)
 **Purpose**: Generate RAG embeddings for context management  
 **Used In**: S-03-A05 (Setup - optional RAG setup)  
 **References**: 1 reference  
@@ -389,25 +473,25 @@ python3 system_of_systems_graph_v2.py specs/machine/index.json --analyze-all
 
 ---
 
-### 14. `rag_agent_wrapper.py` (OPTIONAL)
-**Purpose**: Wrap LLM queries with RAG-enhanced context  
-**Used In**: Throughout workflows if RAG enabled  
-**References**: Mentioned in workflows but used dynamically  
+### 17. `rag_agent_wrapper.py` (OPTIONAL)
+**Purpose**: Wrap LLM queries with RAG-enhanced context
+**Used In**: Throughout workflows if RAG enabled
+**References**: Mentioned in workflows but used dynamically
 **Strategies**: on_step_start, on_degradation_detected, on_tool_execution, periodic_refresh
 
 ---
 
-### 15. `export_system_to_github.py` (OPTIONAL)
-**Purpose**: Export architecture-only handoff package to GitHub  
-**Used In**: AV-04 (Architecture-Only Handoff)  
-**References**: 1 reference  
+### 18. `export_system_to_github.py` (OPTIONAL)
+**Purpose**: Export architecture-only handoff package to GitHub
+**Used In**: AV-04 (Architecture-Only Handoff)
+**References**: 1 reference
 **Use Case**: When system design complete but development elsewhere
 
 ---
 
 ## Standalone Tools (Not in Workflows)
 
-### 16. `reflow_mcp_server.py`
+### 19. `reflow_mcp_server.py`
 **Purpose**: Model Context Protocol server for Claude integration  
 **Used In**: Standalone - enables Claude to interact with Reflow via MCP  
 **References**: 0 workflow references (intentional - standalone utility)  
@@ -477,21 +561,26 @@ Most tools have zero external dependencies (use Python stdlib). Exceptions:
 
 ## Summary Statistics
 
-- **Total Tools**: 16 (down from 24)
-- **Core Workflow Tools**: 12 (always/often used)
+- **Total Tools**: 19 (up from 16)
+- **Core Workflow Tools**: 15 (always/often used)
 - **Optional/Advanced Tools**: 3 (RAG system, export)
 - **Standalone Tools**: 1 (MCP server)
-- **Deleted**: 8 (33% reduction - injection system + legacy)
-- **Workflow References**: 50+ total references across 6 workflows
+- **Recently Added**: 3 (as-built, as-fielded, compare architectures)
+- **Workflow References**: 55+ total references across 6 workflows
 - **Tools with 0 workflow references**: 2 (validate_workflow_files.py - CI/CD tool, reflow_mcp_server.py - standalone)
 
 ---
 
 ## Maintenance Notes
 
-**Last Tool Audit**: 2025-10-25  
-**Tools Added**: validate_workflow_files.py (meta-analysis)  
-**Tools Deleted**: 8 (injection system, legacy v1 graph, redundant tools)  
-**Workflows Updated**: 00-setup.json, 01-systems_engineering.json, feature_update.json (v1 → v2 references)
+**Last Tool Audit**: 2025-10-26
+**Tools Added**:
+- generate_as_built_architecture.py (v3.5.0 - as-fielded architecture tracking)
+- generate_as_fielded_architecture.py (v3.5.0 - as-fielded architecture tracking)
+- compare_architectures.py (v3.5.0 - as-fielded architecture tracking)
+- validate_workflow_files.py (v3.4.0 - meta-analysis)
+
+**Tools Deleted**: 8 (2025-10-25: injection system, legacy v1 graph, redundant tools)
+**Workflows Updated**: 03-development.json (added D-06), 04-testing_operations.json (added TO-06)
 
 **Next Review**: When adding new workflows or deprecating features

@@ -4,35 +4,73 @@
 
 ---
 
-## Current Version: v3.3.1 (2025-10-25)
+## Current Version: v3.5.0 (2025-10-26)
 
-**Tool Count**: 16 (down from 24)
-**Change Type**: PATCH (tool cleanup, non-breaking)
+**Tool Count**: 19 (up from 16)
+**Change Type**: MINOR (as-fielded architecture tracking feature)
 **Status**: Active
 
-### Tools (16 Total)
+### Tools (19 Total)
 
-#### Core Workflow Tools (12)
+#### Core Workflow Tools (15)
 1. `system_of_systems_graph_v2.py` - System graph generation with NetworkX analysis
 2. `validate_architecture.py` - Architecture file validation
 3. `generate_interface_contracts.py` - ICD generation
 4. `bootstrap_development_context.py` - Development environment initialization
 5. `verify_component_contract.py` - Contract compliance verification
-6. `validate_directory_structure.py` - Directory structure validation
-7. `validate_port_registry.py` - Port conflict detection (UAF/IT systems)
-8. `validate_foundational_alignment.py` - Foundational document alignment
-9. `validate_workflow_files.py` - Workflow JSON validation (NEW in v3.3.1)
-10. `analyze_features.py` - Feature analysis and service identification
-11. `select_development_languages.py` - Language selection for services
-12. `identify_integration_points.py` - System-of-systems integration points
+6. `generate_as_built_architecture.py` - Reverse-engineer architecture from code (NEW in v3.5.0)
+7. `generate_as_fielded_architecture.py` - Capture architecture from deployed system (NEW in v3.5.0)
+8. `compare_architectures.py` - Compare architecture graphs and generate delta reports (NEW in v3.5.0)
+9. `validate_directory_structure.py` - Directory structure validation
+10. `validate_port_registry.py` - Port conflict detection (UAF/IT systems)
+11. `validate_foundational_alignment.py` - Foundational document alignment
+12. `validate_workflow_files.py` - Workflow JSON validation (v3.3.1)
+13. `analyze_features.py` - Feature analysis and service identification
+14. `select_development_languages.py` - Language selection for services
+15. `identify_integration_points.py` - System-of-systems integration points
 
 #### Optional/Advanced Tools (3)
-13. `generate_rag_embeddings.py` - RAG context management (optional)
-14. `rag_agent_wrapper.py` - RAG-enhanced LLM queries (optional)
-15. `export_system_to_github.py` - Architecture-only export (optional)
+16. `generate_rag_embeddings.py` - RAG context management (optional)
+17. `rag_agent_wrapper.py` - RAG-enhanced LLM queries (optional)
+18. `export_system_to_github.py` - Architecture-only export (optional)
 
 #### Standalone Tools (1)
-16. `reflow_mcp_server.py` - Model Context Protocol server (standalone utility)
+19. `reflow_mcp_server.py` - Model Context Protocol server (standalone utility)
+
+### Changes from v3.3.1
+
+**Additions (3 new tools)**:
+- `generate_as_built_architecture.py` - Reverse-engineer architecture from implemented code (AST parsing + dependency analysis)
+- `generate_as_fielded_architecture.py` - Capture architecture from deployed/running system (Docker inspection + docker-compose analysis)
+- `compare_architectures.py` - Compare two architecture graphs, generate delta reports with similarity scores and change classification
+
+**Workflow Updates (2 workflows)**:
+- `workflows/03-development.json` - Added step D-06 (As-Built Architecture Generation)
+- `workflows/04-testing_operations.json` - Added step TO-06 (As-Fielded Architecture Capture)
+
+**Template Additions**:
+- `templates/architecture_delta_report_template.json` - Template for delta report output
+
+**Feature**: As-Fielded Architecture Tracking
+- Track architecture lifecycle: designed → built → fielded
+- Compare implementations against design to identify drift
+- Generate delta reports with similarity scores (Jaccard similarity)
+- Classify changes as breaking vs non-breaking
+- Document rationale for architectural deviations
+- Feed operational insights back into design phase
+
+**Addresses**: GitHub Issue #6 (Architecture Lifecycle Tracking)
+
+**Breaking Changes**: NONE
+**Migration Required**: NO (feature is additive)
+
+---
+
+## Previous Version: v3.3.1 (2025-10-25)
+
+**Tool Count**: 16
+**Change Type**: PATCH (tool cleanup, non-breaking)
+**Status**: Superseded
 
 ### Changes from v3.3.0
 
@@ -83,6 +121,7 @@
 
 | Version | Date | Tools | Change Type | Key Changes |
 |---------|------|-------|-------------|-------------|
+| v3.5.0 | 2025-10-26 | 19 | MINOR | As-fielded architecture tracking (+3 tools, D-06, TO-06) |
 | v3.3.1 | 2025-10-25 | 16 | PATCH | Tool cleanup (-8 tools), v1→v2 updates |
 | v3.3.0 | 2025-10-24 | 24 | MINOR | Operational environment design |
 | v3.2.0 | 2025-10-23 | 24 | MINOR | Port management, git automation |
@@ -93,14 +132,14 @@
 
 ## Tool Categories Over Time
 
-| Category | v3.0.0 | v3.3.0 | v3.3.1 | Change |
-|----------|--------|--------|--------|--------|
-| Core Workflow | 12 | 12 | 12 | No change |
-| Validation | 4 | 4 | 4 | No change |
-| Optional/Advanced | 3 | 3 | 3 | No change |
-| Standalone | 1 | 1 | 1 | No change |
-| Deprecated | 3 | 4 | 0 | Deleted |
-| Total | 23 | 24 | 16 | -33% |
+| Category | v3.0.0 | v3.3.0 | v3.3.1 | v3.5.0 | Change |
+|----------|--------|--------|--------|--------|--------|
+| Core Workflow | 12 | 12 | 12 | 15 | +3 (architecture lifecycle) |
+| Validation | 4 | 4 | 4 | 4 | No change |
+| Optional/Advanced | 3 | 3 | 3 | 3 | No change |
+| Standalone | 1 | 1 | 1 | 1 | No change |
+| Deprecated | 3 | 4 | 0 | 0 | Deleted |
+| **Total** | **23** | **24** | **16** | **19** | **+3 from v3.3.1** |
 
 ---
 

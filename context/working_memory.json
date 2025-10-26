@@ -2,8 +2,9 @@
   "template_version": "2.0",
   "system_name": "Reflow Workflow System",
   "current_workflow": "feature_update",
-  "current_step": "FU-06-VALIDATION",
-  "current_substep": "FU-06-A01",
+  "current_step": "FU-01",
+  "current_substep": "FU-01-A01",
+  "feature_being_implemented": "as-fielded-architecture-tracking",
   "path_configuration": {
     "reflow_root": "/home/user/reflow",
     "system_root": "/home/user/reflow",

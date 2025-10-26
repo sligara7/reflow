@@ -639,6 +639,112 @@
           "note": "Changed from blocking to non-blocking in v3.4.0 (DEV-OBS-01) - allows workflow completion for large codebases while still enforcing quality standards via CI/CD"
         }
       ],
+      "next_step": "D-06"
+    },
+    {
+      "step_id": "D-06",
+      "name": "As-Built Architecture Generation",
+      "description": "Generate as-built architecture from implemented code and compare to as-designed",
+      "phase": "validation",
+      "step_file": "workflow_steps/development/D-06-AsBuiltArchitecture.json",
+      "actions": [
+        {
+          "action_id": "D-06-A01",
+          "description": "Generate as-built architecture graph",
+          "tool": "generate_as_built_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_as_built_architecture.py --system-root {system_root} --output specs/machine/graphs/system_of_systems_graph_as_built.json --compare-to specs/machine/graphs/system_of_systems_graph.json",
+          "purpose": "Reverse-engineer architecture from implemented services",
+          "method": "AST parsing + dependency analysis",
+          "detects": [
+            "REST endpoints (Flask/FastAPI decorators)",
+            "Function signatures",
+            "Dependencies (requirements.txt, imports)",
+            "Database connections",
+            "Message queues"
+          ],
+          "outputs": [
+            "specs/machine/graphs/system_of_systems_graph_as_built.json"
+          ]
+        },
+        {
+          "action_id": "D-06-A02",
+          "description": "Compare as-built to as-designed architecture",
+          "tool": "compare_architectures.py",
+          "command_pattern": "python3 {reflow_root}/tools/compare_architectures.py --from specs/machine/graphs/system_of_systems_graph.json --to specs/machine/graphs/system_of_systems_graph_as_built.json --output specs/machine/graphs/architecture_delta_designed_to_built_{date}.json",
+          "purpose": "Identify architectural deviations from design",
+          "note": "This runs automatically as part of D-06-A01 (--compare-to flag)",
+          "analyzes": [
+            "Added/removed services",
+            "Added/removed interfaces",
+            "Modified properties",
+            "Similarity score (Jaccard similarity)",
+            "Breaking vs non-breaking changes"
+          ],
+          "outputs": [
+            "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json"
+          ]
+        },
+        {
+          "action_id": "D-06-A03",
+          "description": "Review delta report and document rationale",
+          "purpose": "Understand why implementation differs from design",
+          "process": [
+            "Read architecture_delta_designed_to_built_{date}.json",
+            "Review breaking_changes and non_breaking_changes",
+            "For each significant change, document rationale",
+            "Decide: update design OR fix implementation"
+          ],
+          "decision_criteria": {
+            "update_design_if": [
+              "Design was impractical or impossible to implement",
+              "Better solution discovered during implementation",
+              "Technical constraints not known during design phase"
+            ],
+            "fix_implementation_if": [
+              "Deviation was developer oversight or mistake",
+              "Original design is superior",
+              "Deviation introduces technical debt or security issues"
+            ]
+          },
+          "output_location": "docs/AS_BUILT_ARCHITECTURE_RATIONALE.md"
+        },
+        {
+          "action_id": "D-06-A04",
+          "description": "Update as-designed architecture if needed",
+          "conditional": "If delta analysis reveals design should change",
+          "process": [
+            "Update service_architecture.json files",
+            "Regenerate system_of_systems_graph.json",
+            "Update ICDs if interfaces changed",
+            "Document changes in version_manifest.json"
+          ],
+          "purpose": "Keep design documents aligned with validated implementation decisions"
+        }
+      ],
+      "tools_used": [
+        "generate_as_built_architecture.py",
+        "compare_architectures.py"
+      ],
+      "outputs": [
+        "specs/machine/graphs/system_of_systems_graph_as_built.json",
+        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json",
+        "docs/AS_BUILT_ARCHITECTURE_RATIONALE.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-D-06",
+          "name": "As-Built Architecture Validation",
+          "checks": [
+            "As-built graph generated successfully",
+            "Delta report created",
+            "Similarity score >= 0.7 (70% match to designed architecture)",
+            "All breaking changes documented with rationale",
+            "Decision made: update design OR fix implementation"
+          ],
+          "blocking": false,
+          "note": "Non-blocking to allow controlled architectural drift with documentation"
+        }
+      ],
       "next_step": "D-Post"
     },
     {

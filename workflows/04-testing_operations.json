@@ -576,6 +576,155 @@
           "note": "This is the final gate before production release"
         }
       ],
+      "next_step": "TO-06"
+    },
+    {
+      "step_id": "TO-06",
+      "name": "As-Fielded Architecture Capture",
+      "description": "Generate as-fielded architecture from deployed system and compare to as-designed",
+      "phase": "validation",
+      "step_file": "workflow_steps/testing_operations/TO-06-AsFieldedArchitecture.json",
+      "actions": [
+        {
+          "action_id": "TO-06-A01",
+          "description": "Generate as-fielded architecture graph",
+          "tool": "generate_as_fielded_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_as_fielded_architecture.py --system-root {system_root} --output specs/machine/graphs/system_of_systems_graph_as_fielded.json --compare-to specs/machine/graphs/system_of_systems_graph.json --environment {environment}",
+          "purpose": "Capture actual deployed system architecture from runtime inspection",
+          "method": "Docker runtime inspection + docker-compose analysis",
+          "detects": [
+            "Running containers and their status",
+            "Actual port mappings",
+            "Health endpoint status",
+            "Network topology",
+            "Service dependencies (from docker-compose)",
+            "Resource usage"
+          ],
+          "environment_values": ["dev", "staging", "production"],
+          "outputs": [
+            "specs/machine/graphs/system_of_systems_graph_as_fielded.json"
+          ]
+        },
+        {
+          "action_id": "TO-06-A02",
+          "description": "Compare as-fielded to as-designed architecture",
+          "tool": "compare_architectures.py",
+          "command_pattern": "python3 {reflow_root}/tools/compare_architectures.py --from specs/machine/graphs/system_of_systems_graph.json --to specs/machine/graphs/system_of_systems_graph_as_fielded.json --output specs/machine/graphs/architecture_delta_designed_to_fielded_{date}.json",
+          "purpose": "Identify architectural deviations from design in deployed system",
+          "note": "This runs automatically as part of TO-06-A01 (--compare-to flag)",
+          "analyzes": [
+            "Services not running (should be running)",
+            "Unexpected services (not in design)",
+            "Port conflicts or changes",
+            "Network topology differences",
+            "Health check failures",
+            "Similarity score (Jaccard similarity)",
+            "Breaking vs non-breaking changes"
+          ],
+          "outputs": [
+            "specs/machine/graphs/architecture_delta_designed_to_fielded_{date}.json"
+          ]
+        },
+        {
+          "action_id": "TO-06-A03",
+          "description": "Compare as-fielded to as-built architecture",
+          "tool": "compare_architectures.py",
+          "command_pattern": "python3 {reflow_root}/tools/compare_architectures.py --from specs/machine/graphs/system_of_systems_graph_as_built.json --to specs/machine/graphs/system_of_systems_graph_as_fielded.json --output specs/machine/graphs/architecture_delta_built_to_fielded_{date}.json",
+          "purpose": "Identify operational changes from implementation to deployment",
+          "optional": "Only if as-built graph exists",
+          "analyzes": [
+            "Deployment-specific changes (ports, environment vars)",
+            "Services scaled or removed for operations",
+            "Configuration drift"
+          ],
+          "outputs": [
+            "specs/machine/graphs/architecture_delta_built_to_fielded_{date}.json"
+          ]
+        },
+        {
+          "action_id": "TO-06-A04",
+          "description": "Review delta reports and document operational rationale",
+          "purpose": "Understand why deployed system differs from design and implementation",
+          "process": [
+            "Read architecture_delta_designed_to_fielded_{date}.json",
+            "Read architecture_delta_built_to_fielded_{date}.json (if exists)",
+            "Review breaking_changes and non_breaking_changes",
+            "For each significant change, document operational rationale",
+            "Decide: update design OR fix deployment OR accept drift"
+          ],
+          "decision_criteria": {
+            "update_design_if": [
+              "Operational constraints not known during design",
+              "Production environment requires different architecture",
+              "Scalability requirements changed"
+            ],
+            "fix_deployment_if": [
+              "Configuration drift introduced bugs",
+              "Security controls missing or misconfigured",
+              "Services not deployed as intended"
+            ],
+            "accept_drift_if": [
+              "Environment-specific configuration (expected)",
+              "Temporary workarounds for production issues",
+              "Optimization for operational efficiency"
+            ]
+          },
+          "output_location": "docs/AS_FIELDED_ARCHITECTURE_RATIONALE.md"
+        },
+        {
+          "action_id": "TO-06-A05",
+          "description": "Update as-designed architecture for operational insights",
+          "conditional": "If delta analysis reveals design should incorporate fielded learnings",
+          "process": [
+            "Update service_architecture.json files with operational insights",
+            "Regenerate system_of_systems_graph.json",
+            "Update operational runbooks if architecture changed",
+            "Document changes in version_manifest.json"
+          ],
+          "purpose": "Feed operational experience back into design phase (continuous improvement)"
+        },
+        {
+          "action_id": "TO-06-A06",
+          "description": "Create architecture lifecycle summary",
+          "purpose": "Document complete architecture evolution: designed → built → fielded",
+          "output_file": "docs/ARCHITECTURE_LIFECYCLE_SUMMARY.md",
+          "includes": [
+            "Summary of as-designed architecture",
+            "Summary of as-built changes and rationale",
+            "Summary of as-fielded changes and rationale",
+            "Similarity scores (designed vs built, designed vs fielded, built vs fielded)",
+            "Lessons learned for future systems",
+            "Recommendations for next iteration"
+          ]
+        }
+      ],
+      "tools_used": [
+        "generate_as_fielded_architecture.py",
+        "compare_architectures.py"
+      ],
+      "outputs": [
+        "specs/machine/graphs/system_of_systems_graph_as_fielded.json",
+        "specs/machine/graphs/architecture_delta_designed_to_fielded_{date}.json",
+        "specs/machine/graphs/architecture_delta_built_to_fielded_{date}.json",
+        "docs/AS_FIELDED_ARCHITECTURE_RATIONALE.md",
+        "docs/ARCHITECTURE_LIFECYCLE_SUMMARY.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-TO-06",
+          "name": "As-Fielded Architecture Validation",
+          "checks": [
+            "As-fielded graph generated successfully",
+            "All deployed services healthy",
+            "Delta reports created",
+            "Similarity score >= 0.6 (60% match to designed architecture)",
+            "All critical deviations documented with rationale",
+            "Architecture lifecycle summary complete"
+          ],
+          "blocking": false,
+          "note": "Non-blocking to allow operational flexibility while maintaining architectural awareness"
+        }
+      ],
       "next_step": "complete"
     }
   ],

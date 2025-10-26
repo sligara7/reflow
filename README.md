@@ -207,7 +207,7 @@ Reflow now supports **bottom-up integration** for existing components:
 reflow/
 ├── workflows/           # 6 modular workflow files
 ├── workflow_steps/      # Detailed step definitions
-├── tools/              # 16 Python tools
+├── tools/              # 19 Python tools
 ├── templates/          # 36+ templates
 └── definitions/        # Framework definitions
 ```
@@ -242,6 +242,12 @@ reflow/
 - Deployment: One-command deployment, automated rollback, health checks
 - UX: Intuitive APIs, clear error messages, comprehensive documentation
 
+**Architecture Lifecycle Tracking (NEW v3.5.0):**
+- Track architecture evolution: designed → as-built → as-fielded
+- Compare implementation vs design to identify drift
+- Delta reports with similarity scores and change classification
+- Document rationale for deviations, feed insights back to design
+
 **Architecture Versioning:**
 - Semantic versioning for all architecture files
 - Complete history preserved
@@ -259,8 +265,8 @@ reflow/
 ## Documentation
 
 **Tool Reference:**
-- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 16 tools
-- [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - Tool version history
+- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 19 tools
+- [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - Tool version history (v3.5.0)
 
 **Workflow & Features:**
 - [NETWORKX_ANALYSIS_GUIDE.md](docs/NETWORKX_ANALYSIS_GUIDE.md) - Framework-specific NetworkX analysis guidance (400+ lines)
