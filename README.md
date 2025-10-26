@@ -1,14 +1,22 @@
 # Reflow - Systems Engineering Workflow
 
-[![Version](https://img.shields.io/badge/version-3.3.1-blue.svg)](https://github.com/anthropics/reflow)
+[![Version](https://img.shields.io/badge/version-3.4.0-blue.svg)](https://github.com/anthropics/reflow)
 [![Python](https://img.shields.io/badge/python-3.8+-green.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 [![Frameworks](https://img.shields.io/badge/frameworks-6%2B-green.svg)](#supported-frameworks)
 [![Tools](https://img.shields.io/badge/tools-16-brightgreen.svg)](#tools-available)
 
-A **framework-agnostic** systems engineering workflow for LLM agents to design, architect, and develop complex systems. Model software systems (UAF), biological networks, social systems, ecosystems, and more.
+## What is Reflow?
 
-**:tada: Version 3.3.1** - Streamlined tooling! **16 focused tools** (down from 24) with comprehensive documentation. Production-ready systems from day one!
+**Reflow** is a step-by-step workflow that helps LLM agents (like Claude or GPT) design and build complex systems. Think of it as a guided process that takes you from an idea to a fully architected, documented, and optionally implemented system.
+
+**Key features**:
+- **Framework-agnostic**: Works with software (UAF), biology, social networks, ecosystems, workflows, and more
+- **Modular**: 5 separate workflows - use what you need, skip what you don't
+- **Automated**: LLM agents execute workflows, generate architecture, create documentation
+- **Production-ready**: Design for real operational conditions from day one
+
+**:tada: Version 3.4.0** - Enhanced framework selection! Critical lessons learned applied. Production-ready systems from day one!
 
 ---
 
@@ -138,6 +146,17 @@ Continue workflow from context/working_memory.json in ~/projects/my_system
 
 ## :globe_with_meridians: Supported Frameworks
 
+### ⚠️ Framework Selection is Critical!
+
+**Don't default to UAF** - framework choice determines which analyses you can run and what insights you'll discover.
+
+- **Wrong framework = wrong insights** (e.g., UAF on workflows misses decision logic)
+- **Framework selection happens early** (step S-01A) with user confirmation required
+- **Take 10-15 minutes to analyze** - saves hours of rework later
+- **See**: `docs/NETWORKX_ANALYSIS_GUIDE.md` for detailed guidance
+
+---
+
 Reflow is **framework-agnostic** - it works with multiple architectural frameworks across different domains. All frameworks map to the same core abstraction: **nodes (components) + edges (connections)**.
 
 ### :desktop_computer: UAF 1.2 - Unified Architecture Framework (Default)
@@ -175,12 +194,25 @@ Reflow is **framework-agnostic** - it works with multiple architectural framewor
 - **Examples**: Stock markets, urban traffic, ant colonies
 - **Analysis**: Emergence, self-organization, multiscale dynamics
 
+### :arrows_counterclockwise: Decision Flow Framework (NEW in v3.4.0!)
+- **Best for**: Workflows, decision processes, state machines
+- **Nodes**: Workflow steps (process_step, decision_node, start_state, end_state)
+- **Edges**: State transitions (sequential, conditional, rework, skip)
+- **Edge Attributes**: probability (0.0-1.0), weight, condition
+- **Examples**: Workflow systems, quality gates, approval processes
+- **Analysis**: Flow (critical paths, bottlenecks), cycles (rework loops), path probabilities
+- **Use case**: Reflow meta-analysis (workflows as state machines, not services)
+
 ### :wrench: Custom Framework (LLM-Generated)
 - **Best for**: Novel domains, hybrid systems, experimental research
 - **Process**: LLM researches domain and creates custom framework
 - **Examples**: Cyber-physical-social systems, unique research domains
 
-**Framework selection happens in step S-01A during setup workflow.**
+**Framework selection**:
+- Happens in step S-01A during setup workflow
+- **ENHANCED in v3.4.0**: LLM agents must analyze ALL frameworks, show NetworkX analyses available, get user confirmation
+- User confirmation enforced by S-01A-QG quality gate (BLOCKING)
+- See `docs/NETWORKX_ANALYSIS_GUIDE.md` for analysis implications
 
 ---
 
@@ -521,7 +553,43 @@ python3 -c "import networkx; print('✓ Dependencies installed')"
 ## :memo: Version History
 
 <details open>
-<summary><b>v3.3.1 (2025-10-25)</b> - Latest</summary>
+<summary><b>v3.4.0 (2025-10-26)</b> - Latest</summary>
+
+- :warning: **CRITICAL: Framework Selection Enhancement** - Implement lessons learned from Decision Flow Framework analysis
+  - **LESSON-01 Implemented**: S-01A now requires explicit analysis of ALL frameworks (not defaulting to UAF)
+    - LLM agents must analyze system semantics (states? services? agents? species?)
+    - LLM agents must show which NetworkX analyses each framework enables
+    - LLM agents must compare ALL 7 frameworks against system characteristics
+    - User confirmation now REQUIRED (S-01A-QG quality gate - BLOCKING)
+  - **LESSON-02 Implemented**: New `docs/NETWORKX_ANALYSIS_GUIDE.md` (comprehensive analysis implications)
+    - Analysis availability matrix (which frameworks enable which analyses)
+    - Edge weight requirements and semantics per framework
+    - When to use each analysis type
+    - Decision guide for framework selection
+  - **LESSON-03 Implemented**: Edge weight planning added to SE-02-A02B
+    - If framework requires edge weights for flow analysis, plan them during architecture design (not later)
+    - Guidance on edge weight semantics per framework (probability, energy flow, reaction rate, etc.)
+    - Validation added to SE-03 to verify edge weights present if required
+  - **LESSON-07 Implemented**: CLAUDE.md updated with prominent framework selection warnings
+    - "DO NOT default to UAF!" warning section
+    - Decision Flow Framework added to supported frameworks list
+    - Time investment guidance: "10-15 min analysis saves hours of rework later"
+- :book: **Decision Flow Framework** - New framework for workflow systems (workflows as state machines, not services)
+  - Added to framework_registry.json with full specifications
+  - Example architecture created: `specs/machine/workflow_arch/00-setup_decision_flow_example.json`
+  - Documentation: `docs/DECISION_FLOW_FRAMEWORK.md` (500+ lines)
+- :wrench: **Template Enhancement** - `working_memory_template.json` updated
+  - New `framework_analysis` section (documents which frameworks evaluated, why alternatives rejected)
+  - Enhanced `framework_configuration` with user_confirmed and confirmation_timestamp fields
+- :bug: **Root Cause Addressed**: Wrong framework selection on Reflow meta-analysis (UAF → Decision Flow)
+  - UAF treated workflow steps as "services" (wrong abstraction)
+  - Decision Flow treats steps as "states" with conditional transitions (correct)
+  - Flow analysis now reveals critical paths, bottlenecks, rework loops (70% skip git, 40% validation failure)
+
+</details>
+
+<details>
+<summary>v3.3.1 (2025-10-25)</summary>
 
 - :broom: **Tool Cleanup** - Streamlined from 24 to **16 focused tools** (33% reduction)
   - Deleted 8 unused/deprecated tools (injection system, legacy v1, redundant tools)
@@ -620,7 +688,7 @@ Built on:
 
 <div align="center">
 
-**:sparkles: Version 3.3.0 - Production-ready systems from day one! :sparkles:**
+**:sparkles: Version 3.4.0 - Enhanced framework selection! Critical lessons learned applied. :sparkles:**
 
 Made with :heart: for systems engineers and LLM agents
 
