@@ -95,6 +95,249 @@
         }
       }
     },
+    "decision_flow": {
+      "framework_id": "decision_flow",
+      "name": "Decision Flow Framework",
+      "standard": "State machine + decision graph (Reflow-specific)",
+      "domain": "Workflow systems, decision processes, state machines, process flows",
+      "definitions_file": "architectural_definitions_decision_flow.json",
+      "template_file": "workflow_step_template.json",
+      "terminology": {
+        "node": "workflow_step",
+        "edge": "transition",
+        "architecture_file": "workflow_step_architecture.json",
+        "system_graph": "workflow_decision_graph.json",
+        "node_collection": "workflow_steps",
+        "edge_collection": "transitions"
+      },
+      "node_schema": {
+        "primary_type": "WorkflowStep",
+        "id_field": "step_id",
+        "name_field": "step_name",
+        "type_field": "step_type",
+        "functions_field": "actions",
+        "interfaces_field": "transitions",
+        "dependencies_field": "prerequisites",
+        "node_type_field": "node_type"
+      },
+      "edge_schema": {
+        "primary_type": "StateTransition",
+        "id_field": "transition_id",
+        "type_field": "transition_type",
+        "direction_field": "flow_direction",
+        "condition_field": "condition",
+        "probability_field": "probability",
+        "weight_field": "weight",
+        "connects_to_field": "next_steps"
+      },
+      "node_types": {
+        "process_step": {
+          "description": "Executable workflow step that performs actions",
+          "examples": ["SE-02 (Architecture Creation)", "D-01 (Dev Setup)", "TO-02 (CI/CD)"],
+          "characteristics": ["Has inputs", "Produces outputs", "Deterministic execution"]
+        },
+        "decision_node": {
+          "description": "Branching point where workflow path is determined by conditions",
+          "examples": ["SE-03 (Validation Gate)", "S-04-decision (Git automation?)", "Architecture complete?"],
+          "characteristics": ["Multiple outgoing edges", "Conditional routing", "Quality gates"]
+        },
+        "start_state": {
+          "description": "Workflow entry point",
+          "examples": ["S-01 (Workflow Start)"],
+          "characteristics": ["No incoming edges", "One outgoing edge"]
+        },
+        "end_state": {
+          "description": "Workflow completion or transition to next workflow",
+          "examples": ["Workflow Complete", "Transition to 01-systems_engineering"],
+          "characteristics": ["No outgoing edges", "May have completion actions"]
+        }
+      },
+      "edge_types": {
+        "sequential": {
+          "description": "Unconditional next-step transition",
+          "probability": 1.0,
+          "examples": ["S-01 → S-02", "SE-02 → SE-03"]
+        },
+        "conditional": {
+          "description": "If/else transition based on condition",
+          "probability": "0.0-1.0 (varies)",
+          "examples": ["SE-03 → SE-06 (if PASS)", "SE-03 → SE-02 (if FAIL)"],
+          "required_attributes": ["condition"]
+        },
+        "rework": {
+          "description": "Return to previous step after validation failure",
+          "probability": "< 1.0 (failure rate)",
+          "examples": ["SE-03 → SE-02 (validation failed)", "D-05 → D-03 (tests failed)"],
+          "characteristics": ["Creates cycle", "Indicates quality issue"]
+        },
+        "parallel": {
+          "description": "Concurrent execution paths (optional in most workflows)",
+          "probability": 1.0,
+          "examples": ["Rarely used in linear workflows"]
+        },
+        "skip": {
+          "description": "Optional step bypass",
+          "probability": "varies by user choice",
+          "examples": ["S-04-decision → SE-01 (skip git automation)"]
+        }
+      },
+      "edge_attributes": {
+        "condition": {
+          "type": "string",
+          "description": "Boolean expression determining if transition occurs",
+          "examples": ["validation_passed", "user_choice == 'git_automation'", "coverage >= 0.8"]
+        },
+        "probability": {
+          "type": "float",
+          "range": "0.0-1.0",
+          "description": "Likelihood of taking this transition (for flow analysis)",
+          "examples": {
+            "sequential": 1.0,
+            "common_path": 0.7,
+            "rare_path": 0.3,
+            "validation_failure": 0.4
+          }
+        },
+        "weight": {
+          "type": "integer",
+          "description": "Typical number of executions (for flow analysis capacity)",
+          "examples": {
+            "10_executions": 10,
+            "7_skip_git": 7,
+            "3_use_git": 3
+          },
+          "calculation": "probability * total_workflows"
+        },
+        "transition_type": {
+          "type": "enum",
+          "values": ["sequential", "conditional", "rework", "parallel", "skip"]
+        }
+      },
+      "best_for": [
+        "Workflow analysis and optimization",
+        "Process flow modeling",
+        "State machine systems",
+        "Decision trees and graphs",
+        "Guided execution systems (LLM agent workflows)",
+        "Quality gate validation flows"
+      ],
+      "visualization_types": [
+        "State transition diagrams",
+        "Decision flow diagrams",
+        "Critical path analysis",
+        "Rework loop visualization",
+        "Probability flow diagrams"
+      ],
+      "deployment_characteristics": {
+        "port_management_applicable": false,
+        "rationale": "Decision flows are abstract control structures, not network services",
+        "container_orchestration_applicable": false,
+        "deployment_types": ["workflow_engine", "process_automation", "guidance_system"]
+      },
+      "recommended_analyses": {
+        "high_priority": {
+          "flow": {
+            "reason": "CRITICAL - Find most common workflow paths and bottlenecks using edge probabilities",
+            "use_cases": [
+              "Identify most-traveled paths (architecture-only vs. full development)",
+              "Find bottleneck steps where many paths converge",
+              "Measure workflow efficiency (actual flow vs. theoretical max)",
+              "Optimize for common paths"
+            ],
+            "required_fields": ["transitions.probability OR transitions.weight"],
+            "edge_weight_semantic": "probability (0.0-1.0) or execution count",
+            "interpretation": "High flow = critical path, Low flow = rare/optional path"
+          },
+          "cycles": {
+            "reason": "Identify rework loops and validation failures",
+            "use_cases": [
+              "Find validation failure loops (SE-03 → SE-02 → SE-03)",
+              "Measure rework probability",
+              "Distinguish expected cycles from infinite loops",
+              "Optimize validation gates to reduce rework"
+            ],
+            "required_fields": [],
+            "expected_behavior": "Some cycles are normal (quality gates), infinite loops are bugs"
+          },
+          "paths": {
+            "reason": "Analyze workflow execution paths and alternatives",
+            "use_cases": [
+              "Find critical path (shortest viable workflow)",
+              "Identify full development path (longest path)",
+              "Count alternative paths",
+              "Measure workflow flexibility"
+            ],
+            "required_fields": [],
+            "metrics": ["Shortest path = architecture-only", "Longest path = full development"]
+          }
+        },
+        "medium_priority": {
+          "centrality": {
+            "reason": "Identify critical decision points and high-impact steps",
+            "use_cases": [
+              "Find quality gates with highest betweenness (critical decisions)",
+              "Identify bottleneck steps",
+              "Prioritize workflow improvements"
+            ],
+            "required_fields": [],
+            "interpretation": "High betweenness centrality = critical decision node"
+          },
+          "community": {
+            "reason": "Detect workflow phases and tightly coupled step groups",
+            "use_cases": [
+              "Identify natural workflow phases (Setup, Architecture, Development, Operations)",
+              "Find tightly coupled validation loops",
+              "Group steps for modular execution"
+            ],
+            "required_fields": []
+          },
+          "dag": {
+            "reason": "Verify no infinite loops (except intentional rework cycles)",
+            "use_cases": [
+              "Detect unintended circular dependencies",
+              "Verify workflow termination",
+              "Find topological ordering of steps"
+            ],
+            "required_fields": [],
+            "note": "Rework loops are expected - DAG analysis applies to non-rework edges only"
+          }
+        },
+        "optional": {
+          "scc": {
+            "reason": "Find strongly coupled step clusters (rework loops)",
+            "use_cases": [
+              "Identify validation loops (SE-02, SE-03 as SCC)",
+              "Measure loop complexity"
+            ],
+            "required_fields": []
+          },
+          "connectivity": {
+            "reason": "Ensure workflow has no unreachable steps",
+            "use_cases": [
+              "Detect orphaned steps",
+              "Verify all steps reachable from start"
+            ],
+            "required_fields": []
+          }
+        }
+      },
+      "key_insights_vs_uaf": {
+        "what_uaf_missed": [
+          "Decision logic at quality gates (conditional routing)",
+          "Rework loops and validation failures (cycles with semantic meaning)",
+          "Workflow path probabilities (common vs. rare paths)",
+          "State machine semantics (steps are states, not services)",
+          "Flow analysis (requires edge weights that UAF doesn't capture)"
+        ],
+        "what_decision_flow_reveals": [
+          "Most common workflow path (70% skip git automation)",
+          "Validation failure rate (40% of SE-03 gates fail → rework)",
+          "Bottleneck steps (SE-06 has highest convergence)",
+          "Critical decision nodes (SE-03 has highest betweenness centrality)",
+          "Workflow efficiency (flow analysis shows 60% take architecture-only path)"
+        ]
+      }
+    },
     "systems_biology": {
       "framework_id": "systems_biology",
       "name": "Systems Biology Framework",
@@ -605,6 +848,7 @@
   "framework_selection_guidance": {
     "decision_tree": {
       "engineered_system": "uaf",
+      "workflow_or_process_system": "decision_flow",
       "biological_system": "systems_biology",
       "social_system": "social_network",
       "ecological_system": "ecological",
@@ -613,6 +857,7 @@
     },
     "questions_to_ask": [
       "Is this a human-engineered system (software, hardware)?",
+      "Is this a workflow, decision process, or state machine system?",
       "Does it involve biological components (genes, proteins, organisms)?",
       "Is it primarily a social network (people, organizations, communities)?",
       "Is it an ecological system (species, populations, ecosystems)?",
