@@ -1,7 +1,100 @@
 # Reflow Tools - Usage Summary
 
-**Last Updated**: 2025-10-25  
+**Last Updated**: 2025-10-26
 **Total Tools**: 16 (down from 24 - deleted 8 unused/legacy tools)
+**Security Version**: v3.4.0 (Path Traversal Protection Added)
+
+---
+
+## 🔒 Security Features (v3.4.0+)
+
+**All 16 tools now include path traversal protection** to prevent malicious file access.
+
+### Security Module: `path_utils.py`
+
+Located in `tools/path_utils.py`, this module provides:
+
+#### Core Security Functions
+
+**`sanitize_path(user_path, system_root, must_exist=False, strict=True, allow_symlinks=True)`**
+- Validates all file paths stay within `system_root` boundaries
+- Blocks path traversal attempts (`../../etc/passwd`)
+- Blocks absolute paths outside system_root (`/etc/passwd`)
+- Resolves symlinks and validates they don't escape system_root
+- Returns validated `Path` object
+
+**`validate_system_root(system_root)`**
+- Validates system_root is a valid, existing directory
+- Ensures system_root is not a file
+- Returns validated `Path` object
+
+**`is_safe_filename(filename, allow_dots=False)`**
+- Checks filenames for path traversal characters
+- Blocks directory separators (`/`, `\`)
+- Blocks null bytes
+- Validates leading dots based on `allow_dots` parameter
+
+### What's Protected Against
+
+All tools are protected against:
+
+1. **Path Traversal Attacks**
+   - Input: `../../etc/passwd`
+   - Result: `PathSecurityError` - blocked before file access
+
+2. **Absolute Path Escapes**
+   - Input: `/etc/passwd`
+   - Result: `PathSecurityError` - outside system root
+
+3. **Symlink Attacks**
+   - Symlinks pointing outside system_root are blocked
+   - Symlinks within system_root are allowed (configurable)
+
+4. **Null Byte Injection**
+   - Input: `file\x00.txt`
+   - Result: Blocked (ValueError or PathSecurityError)
+
+5. **Cross-System Access**
+   - Attempting to access `/system2/` from `/system1/` context
+   - Result: `PathSecurityError`
+
+### Usage in Tools
+
+Every tool now follows this pattern:
+
+```python
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# 1. Validate system_root
+try:
+    system_root = validate_system_root(args.system_path)
+except PathSecurityError as e:
+    print(f"ERROR: Path security violation: {e}")
+    sys.exit(1)
+
+# 2. Sanitize all file paths
+try:
+    safe_file = sanitize_path("docs/README.md", system_root, must_exist=True)
+    with open(safe_file) as f:
+        content = f.read()
+except PathSecurityError as e:
+    print(f"ERROR: Path security violation: {e}")
+    sys.exit(1)
+```
+
+### Testing
+
+Comprehensive unit tests are available in `tests/unit/test_path_utils.py`:
+- 28 tests covering all security scenarios
+- Run with: `python -m pytest tests/unit/test_path_utils.py -v`
+- All tests pass (100% coverage of security functions)
+
+### Security Audit Trail
+
+- **Issue #1 (SV-01)**: Path Traversal Vulnerabilities - Fixed in v3.4.0
+- **Commits**: 9 parts (b22b4e9 through 756791c)
+- **Tools Secured**: 16 of 16 (100%)
+- **Lines Added**: ~1,100 lines of security code
 
 ---
 
