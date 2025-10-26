@@ -19,6 +19,9 @@ from typing import Dict, List, Any, Tuple
 from datetime import datetime
 import argparse
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
 try:
     from sentence_transformers import SentenceTransformer
     import numpy as np
@@ -31,14 +34,21 @@ except ImportError as e:
 
 class RAGEmbeddingGenerator:
     """Generate and manage embeddings for RAG-enhanced context management."""
-    
-    def __init__(self, system_path: str, config_path: str = None):
-        self.system_path = Path(system_path).resolve()
+
+    def __init__(self, system_path: Path, config_path: Path = None):
+        """
+        Initialize RAG embedding generator with validated paths.
+
+        Args:
+            system_path: Pre-validated Path object to system directory
+            config_path: Optional pre-validated Path object to config file
+        """
+        self.system_path = system_path
         self.reflow_root = self._find_reflow_root()
-        
+
         # Load RAG configuration
         if config_path:
-            self.config_path = Path(config_path)
+            self.config_path = config_path
         else:
             self.config_path = self.system_path / "context" / "rag_context_config.json"
         
@@ -390,8 +400,30 @@ def main():
     )
     
     args = parser.parse_args()
-    
-    generator = RAGEmbeddingGenerator(args.system_path, args.config)
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: System path does not exist: {args.system_path}")
+        sys.exit(1)
+
+    # Security: Validate config path if provided (v3.4.0 fix - SV-01)
+    config_path = None
+    if args.config:
+        try:
+            config_path = Path(args.config).resolve()
+            if not config_path.exists():
+                print(f"ERROR: Config file does not exist: {args.config}")
+                sys.exit(1)
+        except Exception as e:
+            print(f"ERROR: Invalid config path: {e}")
+            sys.exit(1)
+
+    generator = RAGEmbeddingGenerator(system_path, config_path)
     generator.generate_all_embeddings(force_rebuild=args.force_rebuild)
 
 

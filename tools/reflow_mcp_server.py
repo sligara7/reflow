@@ -19,6 +19,9 @@ import argparse
 import subprocess
 import logging
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
@@ -798,10 +801,20 @@ async def main():
         default=".",
         help="Path to reflow root directory"
     )
-    
+
     args = parser.parse_args()
-    
-    server = ReflowMCPServer(args.reflow_root)
+
+    # Security: Validate reflow root path (v3.4.0 fix - SV-01)
+    try:
+        reflow_root = validate_system_root(args.reflow_root)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: Reflow root does not exist: {args.reflow_root}")
+        sys.exit(1)
+
+    server = ReflowMCPServer(str(reflow_root))
     await server.run()
 
 
