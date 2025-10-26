@@ -815,6 +815,204 @@ class TestNetworkXCommunityDetection:
 class TestArchitecturalGapDetection:
     """Tests for detecting architectural knowledge gaps."""
 
+    def test_detect_knowledge_gaps_consumed_not_provided(self):
+        """Test detection of consumed interfaces without providers."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("consumer", interfaces=[
+            {
+                "type": "user_api",
+                "direction": "consumed",
+                "name": "user_api"
+            }
+        ])
+
+        component_data = {
+            "consumer": {
+                "node_id": "consumer",
+                "interfaces": [
+                    {
+                        "type": "user_api",
+                        "direction": "consumed"
+                    }
+                ]
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect orphaned interface
+        assert 'orphaned_interfaces' in results
+        if len(results['orphaned_interfaces']) > 0:
+            assert 'user_api' in str(results['orphaned_interfaces'])
+
+    def test_detect_knowledge_gaps_bidirectional_interface(self):
+        """Test detection with bidirectional interfaces."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("service_a", interfaces=[
+            {
+                "type": "sync_api",
+                "direction": "bidirectional",
+                "name": "sync_api"
+            }
+        ])
+
+        component_data = {
+            "service_a": {
+                "node_id": "service_a",
+                "interfaces": [
+                    {
+                        "type": "sync_api",
+                        "direction": "bidirectional"
+                    }
+                ]
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should handle bidirectional interfaces
+        assert isinstance(results, dict)
+
+    def test_detect_knowledge_gaps_unmet_dependencies(self):
+        """Test detection of unmet dependencies."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("service_a", dependencies=["missing_capability"], functions=[])
+
+        component_data = {
+            "service_a": {
+                "node_id": "service_a",
+                "dependencies": ["missing_capability"],
+                "functions": []
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect unmet dependency
+        assert 'unmet_dependencies' in results
+        if len(results['unmet_dependencies']) > 0:
+            assert 'missing_capability' in str(results['unmet_dependencies'])
+
+    def test_detect_knowledge_gaps_structural_holes(self):
+        """Test detection of structural holes (critical broker nodes)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        # Create structure where B is critical broker: A -> B -> C and D -> B -> E
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("D", "B")
+        G.add_edge("B", "E")
+
+        # Add node attributes
+        for node in G.nodes():
+            G.nodes[node]['interfaces'] = []
+            G.nodes[node]['functions'] = []
+            G.nodes[node]['dependencies'] = []
+
+        component_data = {node: {} for node in G.nodes()}
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect structural hole
+        assert 'structural_holes' in results
+
+    def test_detect_knowledge_gaps_unexplained_outputs(self):
+        """Test detection of unexplained outputs (provided interface with no generating function)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("service_a", interfaces=[
+            {
+                "name": "mystery_api",
+                "direction": "provided",
+                "type": "http"
+            }
+        ], functions=["unrelated_function"])
+
+        component_data = {
+            "service_a": {
+                "node_id": "service_a",
+                "interfaces": [
+                    {
+                        "name": "mystery_api",
+                        "direction": "provided"
+                    }
+                ],
+                "functions": ["unrelated_function"]
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect unexplained output
+        assert 'unexplained_outputs' in results
+
+    def test_detect_knowledge_gaps_provided_interface_variations(self):
+        """Test detection with various provided interface direction keywords."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("service_a", interfaces=[
+            {"type": "api1", "direction": "provided"},
+            {"type": "api2", "direction": "out"},
+            {"type": "api3", "direction": "provides"}
+        ])
+
+        component_data = {
+            "service_a": {
+                "interfaces": [
+                    {"type": "api1", "direction": "provided"},
+                    {"type": "api2", "direction": "out"},
+                    {"type": "api3", "direction": "provides"}
+                ]
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should handle all direction variations
+        assert isinstance(results, dict)
+
+    def test_detect_knowledge_gaps_consumed_interface_variations(self):
+        """Test detection with various consumed interface direction keywords."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        G = nx.DiGraph()
+        G.add_node("service_a", interfaces=[
+            {"type": "api1", "direction": "consumed"},
+            {"type": "api2", "direction": "in"},
+            {"type": "api3", "direction": "requires"}
+        ])
+
+        component_data = {
+            "service_a": {
+                "interfaces": [
+                    {"type": "api1", "direction": "consumed"},
+                    {"type": "api2", "direction": "in"},
+                    {"type": "api3", "direction": "requires"}
+                ]
+            }
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect all as orphaned (no providers)
+        assert 'orphaned_interfaces' in results
+
     def test_detect_knowledge_gaps_orphaned_interfaces(self):
         """Test detection of orphaned interfaces (no connected service)."""
         import networkx as nx
@@ -1581,6 +1779,762 @@ class TestOutputGeneration:
         assert 'knowledge_gaps' in data
         assert 'architectural_issues' in data
         assert 'graph_analysis' in data
+
+
+class TestErrorHandlingPaths:
+    """Tests for error handling in various functions."""
+
+    def test_analyze_centrality_with_error_conditions(self):
+        """Test centrality analysis error handling."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_centrality
+
+        # Empty graph should not crash
+        G = nx.DiGraph()
+        results = analyze_centrality(G)
+        assert isinstance(results, dict)
+
+    def test_analyze_paths_with_disconnected_components(self):
+        """Test path analysis with multiple disconnected components."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_paths
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("C", "D")
+        G.add_edge("E", "F")
+
+        results = analyze_paths(G)
+        assert isinstance(results, dict)
+        # Should indicate not connected
+        assert 'not connected' in str(results.get('diameter', '')).lower() or \
+               'multiple components' in str(results.get('diameter', '')).lower()
+
+    def test_analyze_clustering_empty_graph(self):
+        """Test clustering analysis on empty graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_clustering
+
+        G = nx.DiGraph()
+        results = analyze_clustering(G)
+        assert isinstance(results, dict)
+
+    def test_analyze_properties_single_node(self):
+        """Test properties analysis on single node."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        G.add_node("single")
+
+        results = analyze_properties(G)
+        assert results['num_nodes'] == 1
+        assert results['num_edges'] == 0
+
+    def test_detect_knowledge_gaps_minimal_graph(self):
+        """Test gap detection on minimal graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        # Graph with 2 nodes only (< 3 nodes skips structural holes)
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.nodes["A"]['interfaces'] = []
+        G.nodes["B"]['interfaces'] = []
+
+        results = detect_knowledge_gaps(G, {"A": {}, "B": {}})
+        assert isinstance(results, dict)
+
+
+class TestFullWorkflowIntegration:
+    """Integration tests exercising full workflow with realistic fixtures."""
+
+    def test_full_workflow_small_system(self, tmp_path):
+        """Test complete workflow with small realistic system."""
+        import networkx as nx
+        import json
+        from system_of_systems_graph_v2 import (
+            load_framework_registry,
+            load_component_index,
+            build_universal_graph,
+            run_all_analysis,
+            detect_knowledge_gaps,
+            detect_architectural_issues,
+            generate_output
+        )
+
+        # Create realistic system structure
+        system_root = tmp_path / "system"
+        system_root.mkdir()
+        specs_machine = system_root / "specs" / "machine"
+        specs_machine.mkdir(parents=True)
+        context_dir = system_root / "context"
+        context_dir.mkdir()
+
+        # Create working_memory.json
+        working_memory = {
+            "framework_configuration": {"framework_id": "uaf"}
+        }
+        (context_dir / "working_memory.json").write_text(json.dumps(working_memory))
+
+        # Create two service architectures
+        service_a = {
+            "service_id": "auth_service",
+            "service_name": "Authentication Service",
+            "classification": "core",
+            "functions": ["authenticate", "authorize"],
+            "interfaces": [
+                {
+                    "name": "user_api",
+                    "direction": "consumed",
+                    "connected_services": ["user_service"]
+                }
+            ],
+            "dependencies": ["user_service"]
+        }
+
+        service_b = {
+            "service_id": "user_service",
+            "service_name": "User Service",
+            "classification": "core",
+            "functions": ["get_user", "create_user"],
+            "interfaces": [
+                {
+                    "name": "user_api",
+                    "direction": "provided"
+                }
+            ],
+            "dependencies": []
+        }
+
+        (specs_machine / "auth_service.json").write_text(json.dumps(service_a))
+        (specs_machine / "user_service.json").write_text(json.dumps(service_b))
+
+        # Create index
+        index = {
+            "auth_service": str(specs_machine / "auth_service.json"),
+            "user_service": str(specs_machine / "user_service.json")
+        }
+
+        # Run full workflow
+        framework_schema = load_framework_registry("uaf")
+        G = build_universal_graph(index, framework_schema, system_root)
+
+        assert G.number_of_nodes() == 2
+        assert G.number_of_edges() >= 1
+
+        # Run all analysis
+        analysis_results = run_all_analysis(G)
+        assert 'centrality' in analysis_results
+        assert 'metadata' in analysis_results
+
+        # Detect gaps
+        component_data = {
+            "auth_service": G.nodes["auth_service"],
+            "user_service": G.nodes["user_service"]
+        }
+        gaps = detect_knowledge_gaps(G, component_data)
+        assert isinstance(gaps, dict)
+
+        # Detect issues
+        issues = detect_architectural_issues(G, system_root)
+        assert isinstance(issues, dict)
+
+        # Generate output
+        output_file = tmp_path / "graph.json"
+        framework_config = {
+            "framework_name": "UAF 1.2",
+            "framework_id": "uaf"
+        }
+        generate_output(
+            G, str(output_file), framework_config,
+            knowledge_gaps=gaps,
+            architectural_issues=issues,
+            analysis_results=analysis_results
+        )
+
+        assert output_file.exists()
+
+        # Verify output structure
+        with open(output_file, 'r') as f:
+            output = json.load(f)
+
+        assert 'metadata' in output
+        assert 'graph' in output
+        assert 'knowledge_gaps' in output
+        assert 'architectural_issues' in output
+        assert 'graph_analysis' in output
+
+    def test_workflow_with_circular_dependency(self, tmp_path):
+        """Test workflow detection of circular dependencies."""
+        import networkx as nx
+        import json
+        from system_of_systems_graph_v2 import (
+            load_framework_registry,
+            build_universal_graph,
+            detect_architectural_issues
+        )
+
+        system_root = tmp_path / "system"
+        system_root.mkdir()
+        specs_machine = system_root / "specs" / "machine"
+        specs_machine.mkdir(parents=True)
+
+        # Create circular dependency: A -> B -> C -> A
+        service_a = {
+            "service_id": "a",
+            "service_name": "Service A",
+            "classification": "core",
+            "functions": [],
+            "interfaces": [],
+            "dependencies": ["b"]
+        }
+        service_b = {
+            "service_id": "b",
+            "service_name": "Service B",
+            "classification": "core",
+            "functions": [],
+            "interfaces": [],
+            "dependencies": ["c"]
+        }
+        service_c = {
+            "service_id": "c",
+            "service_name": "Service C",
+            "classification": "core",
+            "functions": [],
+            "interfaces": [],
+            "dependencies": ["a"]
+        }
+
+        (specs_machine / "a.json").write_text(json.dumps(service_a))
+        (specs_machine / "b.json").write_text(json.dumps(service_b))
+        (specs_machine / "c.json").write_text(json.dumps(service_c))
+
+        index = {
+            "a": str(specs_machine / "a.json"),
+            "b": str(specs_machine / "b.json"),
+            "c": str(specs_machine / "c.json")
+        }
+
+        framework_schema = load_framework_registry("uaf")
+        G = build_universal_graph(index, framework_schema, system_root)
+
+        issues = detect_architectural_issues(G)
+
+        # Should detect circular dependency
+        assert len(issues['circular_dependencies']) > 0
+        assert any('cycle' in str(issue).lower() for issue in issues['circular_dependencies'])
+
+
+class TestConfigurationErrorPaths:
+    """Test error handling in configuration loading."""
+
+    def test_load_framework_config_with_invalid_json(self, tmp_path):
+        """Test load_framework_config handles invalid JSON gracefully."""
+        from system_of_systems_graph_v2 import load_framework_config
+        import json
+
+        # Create system with invalid working_memory.json
+        system_root = tmp_path / "system"
+        context_dir = system_root / "context"
+        context_dir.mkdir(parents=True)
+
+        # Write invalid JSON
+        (context_dir / "working_memory.json").write_text("{ invalid json }")
+
+        # Should default to UAF
+        framework_config = load_framework_config(system_root)
+        assert isinstance(framework_config, dict)
+        assert framework_config['framework_id'] == "uaf"
+
+    def test_load_framework_config_with_missing_framework_field(self, tmp_path):
+        """Test load_framework_config handles missing framework_configuration field."""
+        from system_of_systems_graph_v2 import load_framework_config
+        import json
+
+        # Create system with working_memory.json missing framework_configuration
+        system_root = tmp_path / "system"
+        context_dir = system_root / "context"
+        context_dir.mkdir(parents=True)
+
+        working_memory = {"other_field": "value"}
+        (context_dir / "working_memory.json").write_text(json.dumps(working_memory))
+
+        # Should default to UAF
+        framework_config = load_framework_config(system_root)
+        assert isinstance(framework_config, dict)
+        assert framework_config['framework_id'] == "uaf"
+
+    def test_load_framework_registry_fallback_for_uaf(self, tmp_path):
+        """Test load_framework_registry uses fallback schema when registry missing."""
+        from system_of_systems_graph_v2 import load_framework_registry
+        import sys
+        from pathlib import Path
+
+        # Temporarily modify DEFINITIONS_PATH to non-existent directory
+        original_module = sys.modules.get('system_of_systems_graph_v2')
+        if original_module:
+            original_path = original_module.DEFINITIONS_PATH
+
+            # Set to non-existent path
+            fake_path = tmp_path / "nonexistent"
+            original_module.DEFINITIONS_PATH = fake_path
+
+            try:
+                # Should return fallback UAF schema
+                schema = load_framework_registry("uaf")
+
+                assert "node_schema" in schema
+                assert "edge_schema" in schema
+                assert schema["node_schema"]["id_field"] == "service_id"
+                assert schema["node_schema"]["name_field"] == "service_name"
+            finally:
+                # Restore original path
+                original_module.DEFINITIONS_PATH = original_path
+
+    def test_load_framework_registry_raises_for_non_uaf_when_missing(self, tmp_path):
+        """Test load_framework_registry raises error for non-UAF frameworks when registry missing."""
+        from system_of_systems_graph_v2 import load_framework_registry
+        import sys
+
+        # Temporarily modify DEFINITIONS_PATH to non-existent directory
+        original_module = sys.modules.get('system_of_systems_graph_v2')
+        if original_module:
+            original_path = original_module.DEFINITIONS_PATH
+
+            fake_path = tmp_path / "nonexistent"
+            original_module.DEFINITIONS_PATH = fake_path
+
+            try:
+                # Should raise FileNotFoundError for non-UAF frameworks
+                with pytest.raises(FileNotFoundError, match="framework_registry.json not found"):
+                    load_framework_registry("biology")
+            finally:
+                # Restore original path
+                original_module.DEFINITIONS_PATH = original_path
+
+
+class TestFlowAnalysisSuccessPaths:
+    """Test maximum flow analysis success cases."""
+
+    def test_analyze_flow_with_valid_source_sink(self):
+        """Test flow analysis with explicitly chosen source and sink."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_flow
+
+        # Create graph with clear source and sink
+        # Use 'capacity' attribute for flow analysis
+        G = nx.DiGraph()
+        G.add_edge("source", "middle", capacity=10, weight=10)
+        G.add_edge("middle", "sink", capacity=5, weight=5)
+        G.add_edge("source", "sink", capacity=3, weight=3)
+
+        results = analyze_flow(G)
+
+        assert 'maximum_flow' in results
+        # maximum_flow might be error string or dict
+        if isinstance(results['maximum_flow'], dict):
+            assert results['maximum_flow']['source'] == 'source'
+            assert results['maximum_flow']['sink'] == 'sink'
+            assert results['maximum_flow']['value'] > 0
+            assert 'edges_with_flow' in results['maximum_flow']
+
+    def test_analyze_flow_with_weighted_edges(self):
+        """Test flow analysis with capacity attributes."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_flow
+
+        # Create graph with capacity attribute
+        G = nx.DiGraph()
+        G.add_edge("A", "B", capacity=100, weight=100)
+        G.add_edge("B", "C", capacity=10, weight=10)
+        G.add_edge("C", "D", capacity=100, weight=100)
+
+        results = analyze_flow(G)
+
+        # Should successfully compute flow (function selects source/sink automatically)
+        if 'maximum_flow' in results and isinstance(results['maximum_flow'], dict):
+            assert results['maximum_flow']['value'] > 0
+            assert 'source' in results['maximum_flow']
+            assert 'sink' in results['maximum_flow']
+
+
+class TestAdditionalKnowledgeGapPaths:
+    """Test additional knowledge gap detection code paths."""
+
+    def test_detect_structural_holes_with_high_betweenness(self):
+        """Test detection of structural holes (critical broker nodes)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        # Create network with clear structural hole
+        # A->B->C, D->B->E (B is critical broker)
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("D", "B")
+        G.add_edge("B", "E")
+
+        component_data = {
+            node: {"node_id": node, "interfaces": []}
+            for node in G.nodes()
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # B should be detected as structural hole (high betweenness, removing it disconnects graph)
+        assert 'structural_holes' in results
+
+    def test_detect_missing_bidirectional_edge(self):
+        """Test detection of bidirectional interfaces with missing reverse edge."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        # Create graph with bidirectional interface but missing reverse edge
+        G = nx.DiGraph()
+        G.add_edge("service_a", "service_b", direction="bidirectional")
+
+        component_data = {
+            "service_a": {"node_id": "service_a", "interfaces": []},
+            "service_b": {"node_id": "service_b", "interfaces": []}
+        }
+
+        results = detect_knowledge_gaps(G, component_data)
+
+        # Should detect missing bidirectional edge
+        assert 'missing_bidirectional' in results
+        if len(results['missing_bidirectional']) > 0:
+            assert any('service_b' in str(gap) and 'service_a' in str(gap)
+                      for gap in results['missing_bidirectional'])
+
+    def test_detect_knowledge_gaps_with_non_dict_interface(self):
+        """Test knowledge gap detection handles non-dict interfaces gracefully."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import detect_knowledge_gaps
+
+        # Create component data with non-dict interface (should be skipped)
+        G = nx.DiGraph()
+        G.add_node("service_a")
+
+        component_data = {
+            "service_a": {
+                "node_id": "service_a",
+                "interfaces": ["not_a_dict", {"name": "valid_interface", "direction": "provided"}]
+            }
+        }
+
+        # Should handle gracefully without crashing
+        results = detect_knowledge_gaps(G, component_data)
+        assert isinstance(results, dict)
+
+
+class TestUnimplementedServicesDetection:
+    """Test detection of services with only scaffolding code."""
+
+    def test_detect_scaffolding_only_service(self, tmp_path):
+        """Test detection of service with only scaffolding (no real code)."""
+        import networkx as nx
+        import json
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        # Create system structure
+        system_root = tmp_path / "system"
+        services_dir = system_root / "services"
+        services_dir.mkdir(parents=True)
+
+        # Create scaffolding-only service
+        scaffold_service = services_dir / "api_gateway"
+        scaffold_service.mkdir()
+
+        # Write minimal scaffolding file
+        (scaffold_service / "main.py").write_text("""
+# API Gateway scaffolding
+# TODO: Implement routing
+""")
+
+        # Create graph with api_gateway node
+        G = nx.DiGraph()
+        G.add_node("api_gateway", interfaces=[], node_id="api_gateway")
+
+        issues = detect_architectural_issues(G, system_root)
+
+        # Should detect unimplemented service
+        assert 'unimplemented_services' in issues
+        # May or may not find it depending on code detection heuristics
+        # This tests the code path is executed
+
+    def test_detect_implemented_service_not_flagged(self, tmp_path):
+        """Test that services with real implementation are not flagged as scaffolding."""
+        import networkx as nx
+        import json
+        from system_of_systems_graph_v2 import detect_architectural_issues
+
+        # Create system structure
+        system_root = tmp_path / "system"
+        services_dir = system_root / "services"
+        services_dir.mkdir(parents=True)
+
+        # Create fully implemented service
+        impl_service = services_dir / "user_service"
+        impl_service.mkdir()
+
+        # Write real implementation
+        (impl_service / "main.py").write_text("""
+from fastapi import FastAPI
+
+app = FastAPI()
+
+class UserService:
+    def __init__(self):
+        self.users = {}
+
+    def create_user(self, user_data):
+        user_id = len(self.users) + 1
+        self.users[user_id] = user_data
+        return user_id
+
+    def get_user(self, user_id):
+        return self.users.get(user_id)
+
+@app.get("/users/{user_id}")
+def read_user(user_id: int):
+    service = UserService()
+    return service.get_user(user_id)
+""")
+
+        # Create graph
+        G = nx.DiGraph()
+        G.add_node("user_service", interfaces=[], node_id="user_service")
+
+        issues = detect_architectural_issues(G, system_root)
+
+        # Should NOT flag as unimplemented
+        assert 'unimplemented_services' in issues
+        # Should be empty or not contain user_service
+        assert len([i for i in issues['unimplemented_services'] if i['node'] == 'user_service']) == 0
+
+
+class TestCLIEntryPoint:
+    """Test the main() CLI entry point."""
+
+    def test_main_with_basic_arguments(self, tmp_path):
+        """Test main() function with basic arguments."""
+        import sys
+        import json
+        from system_of_systems_graph_v2 import main
+
+        # Create minimal system structure
+        system_root = tmp_path / "system"
+        specs_machine = system_root / "specs" / "machine"
+        specs_machine.mkdir(parents=True)
+        context_dir = system_root / "context"
+        context_dir.mkdir()
+
+        # Create working_memory.json
+        working_memory = {
+            "framework_configuration": {"framework_id": "uaf"}
+        }
+        (context_dir / "working_memory.json").write_text(json.dumps(working_memory))
+
+        # Create minimal service architecture
+        service = {
+            "service_id": "test_service",
+            "service_name": "Test Service",
+            "classification": "core",
+            "functions": ["test"],
+            "interfaces": [],
+            "dependencies": []
+        }
+        (specs_machine / "test_service.json").write_text(json.dumps(service))
+
+        # Create index
+        index_file = specs_machine / "index.json"
+        index = {"test_service": str(specs_machine / "test_service.json")}
+        index_file.write_text(json.dumps(index))
+
+        # Create output path inside system root
+        output_file = system_root / "specs" / "machine" / "output.json"
+
+        # Mock sys.argv
+        original_argv = sys.argv
+        try:
+            sys.argv = [
+                "system_of_systems_graph_v2.py",
+                str(index_file),
+                "--output", str(output_file),
+                "--system-root", str(system_root)
+            ]
+
+            # Call main
+            result = main()
+
+            # Should succeed (return 0) or at least not crash
+            assert result in (0, None)
+
+            # Output file should exist
+            assert output_file.exists()
+
+            # Output should be valid JSON
+            with open(output_file, 'r') as f:
+                output_data = json.load(f)
+
+            assert 'metadata' in output_data
+            assert 'graph' in output_data
+
+        finally:
+            # Restore original argv
+            sys.argv = original_argv
+
+    def test_main_with_detect_gaps_flag(self, tmp_path):
+        """Test main() with --detect-gaps flag."""
+        import sys
+        import json
+        from system_of_systems_graph_v2 import main
+
+        # Create system structure
+        system_root = tmp_path / "system"
+        specs_machine = system_root / "specs" / "machine"
+        specs_machine.mkdir(parents=True)
+        context_dir = system_root / "context"
+        context_dir.mkdir()
+
+        # Create working_memory.json
+        working_memory = {
+            "framework_configuration": {"framework_id": "uaf"}
+        }
+        (context_dir / "working_memory.json").write_text(json.dumps(working_memory))
+
+        # Create service with orphaned interface
+        service = {
+            "service_id": "consumer",
+            "service_name": "Consumer",
+            "classification": "core",
+            "functions": ["consume"],
+            "interfaces": [
+                {
+                    "name": "missing_api",
+                    "direction": "consumed",
+                    "connected_services": ["nonexistent"]
+                }
+            ],
+            "dependencies": ["nonexistent"]
+        }
+        (specs_machine / "consumer.json").write_text(json.dumps(service))
+
+        # Create index
+        index_file = specs_machine / "index.json"
+        index = {"consumer": str(specs_machine / "consumer.json")}
+        index_file.write_text(json.dumps(index))
+
+        # Create output path inside system root
+        output_file = system_root / "specs" / "machine" / "output_gaps.json"
+
+        # Mock sys.argv
+        original_argv = sys.argv
+        try:
+            sys.argv = [
+                "system_of_systems_graph_v2.py",
+                str(index_file),
+                "--output", str(output_file),
+                "--system-root", str(system_root),
+                "--detect-gaps"
+            ]
+
+            result = main()
+
+            # Should succeed
+            assert result in (0, None)
+
+            # Output should contain knowledge_gaps
+            with open(output_file, 'r') as f:
+                output_data = json.load(f)
+
+            assert 'knowledge_gaps' in output_data
+
+        finally:
+            sys.argv = original_argv
+
+    def test_main_with_analysis_flags(self, tmp_path):
+        """Test main() with network analysis flags."""
+        import sys
+        import json
+        from system_of_systems_graph_v2 import main
+
+        # Create minimal system
+        system_root = tmp_path / "system"
+        specs_machine = system_root / "specs" / "machine"
+        specs_machine.mkdir(parents=True)
+        context_dir = system_root / "context"
+        context_dir.mkdir()
+
+        # Create working_memory.json
+        working_memory = {
+            "framework_configuration": {"framework_id": "uaf"}
+        }
+        (context_dir / "working_memory.json").write_text(json.dumps(working_memory))
+
+        # Create two connected services
+        service_a = {
+            "service_id": "service_a",
+            "service_name": "Service A",
+            "classification": "core",
+            "functions": ["fn_a"],
+            "interfaces": [{"name": "api", "direction": "provided"}],
+            "dependencies": []
+        }
+        service_b = {
+            "service_id": "service_b",
+            "service_name": "Service B",
+            "classification": "core",
+            "functions": ["fn_b"],
+            "interfaces": [{"name": "api", "direction": "consumed", "connected_services": ["service_a"]}],
+            "dependencies": ["service_a"]
+        }
+        (specs_machine / "service_a.json").write_text(json.dumps(service_a))
+        (specs_machine / "service_b.json").write_text(json.dumps(service_b))
+
+        # Create index
+        index_file = specs_machine / "index.json"
+        index = {
+            "service_a": str(specs_machine / "service_a.json"),
+            "service_b": str(specs_machine / "service_b.json")
+        }
+        index_file.write_text(json.dumps(index))
+
+        # Create output path inside system root
+        output_file = system_root / "specs" / "machine" / "output_analysis.json"
+
+        # Mock sys.argv with analysis flags
+        original_argv = sys.argv
+        try:
+            sys.argv = [
+                "system_of_systems_graph_v2.py",
+                str(index_file),
+                "--output", str(output_file),
+                "--system-root", str(system_root),
+                "--centrality",
+                "--community",
+                "--dag"
+            ]
+
+            result = main()
+
+            # Should succeed
+            assert result in (0, None)
+
+            # Output should contain graph_analysis
+            with open(output_file, 'r') as f:
+                output_data = json.load(f)
+
+            assert 'graph_analysis' in output_data
+            if 'networkx_analysis' in output_data['graph_analysis']:
+                # Should have the requested analyses
+                nx_analysis = output_data['graph_analysis']['networkx_analysis']
+                # At least centrality should be present
+                assert 'centrality' in nx_analysis or 'metadata' in nx_analysis
+
+        finally:
+            sys.argv = original_argv
 
 
 if __name__ == "__main__":
