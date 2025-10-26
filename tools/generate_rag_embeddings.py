@@ -60,8 +60,7 @@ class RAGEmbeddingGenerator:
             print("Create from template: cp templates/rag_context_config_template.json systems/<system>/context/rag_context_config.json")
             sys.exit(1)
         
-        with open(self.config_path, 'r') as f:
-            config_data = json.load(f)
+        config_data = safe_load_json(self.config_path, file_type_description="RAG context configuration")
             self.config = config_data.get('rag_context_configuration', config_data)
         
         # Initialize embedding model
@@ -147,8 +146,7 @@ class RAGEmbeddingGenerator:
     
     def _chunk_workflow_file(self, file_path: Path) -> List[Dict[str, Any]]:
         """Chunk workflow JSON file by steps and substeps."""
-        with open(file_path, 'r') as f:
-            data = json.load(f)
+        data = safe_load_json(file_path, file_type_description="workflow file")
         
         chunks = []
         workflow_name = file_path.stem
@@ -214,8 +212,7 @@ class RAGEmbeddingGenerator:
         
         # Check if rebuild needed
         if not force_rebuild and embeddings_file.exists() and metadata_file.exists():
-            with open(metadata_file, 'r') as f:
-                metadata = json.load(f)
+            metadata = safe_load_json(metadata_file, file_type_description="embedding metadata")
             
             # Check if source files changed
             source_changed = False
@@ -237,8 +234,7 @@ class RAGEmbeddingGenerator:
             source_path = self._resolve_path(kb_config['source_file'])
             print(f"  Loading: {source_path}")
             
-            with open(source_path, 'r') as f:
-                data = json.load(f)
+            data = safe_load_json(source_path, file_type_description=f"knowledge base source '{kb_config.get('name', 'file')}'")
             
             source_hashes[str(source_path)] = self._compute_file_hash(source_path)
             
@@ -277,8 +273,7 @@ class RAGEmbeddingGenerator:
                             if 'workflow' in kb_config.get('content_type', ''):
                                 chunks.extend(self._chunk_workflow_file(file_path))
                             else:
-                                with open(file_path, 'r') as f:
-                                    data = json.load(f)
+                                data = safe_load_json(file_path, file_type_description="JSON document")
                                 chunks.append({
                                     'id': file_path.stem,
                                     'section': 'full',
@@ -293,11 +288,11 @@ class RAGEmbeddingGenerator:
                         print(f"  Loading: {file_path}")
                         source_hashes[str(file_path)] = self._compute_file_hash(file_path)
                         
-                        with open(file_path, 'r') as f:
-                            if file_path.suffix == '.json':
-                                data = json.load(f)
-                                text = json.dumps(data, indent=2)
-                            else:
+                        if file_path.suffix == '.json':
+                            data = safe_load_json(file_path, file_type_description="JSON document")
+                            text = json.dumps(data, indent=2)
+                        else:
+                            with open(file_path, 'r') as f:
                                 text = f.read()
                         
                         chunks.append({

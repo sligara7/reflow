@@ -68,8 +68,7 @@ def load_framework_config(system_root: Path) -> Dict[str, Any]:
         return default_framework
 
     try:
-        with open(working_memory_path, 'r') as f:
-            working_memory = json.load(f)
+        working_memory = safe_load_json(working_memory_path, file_type_description="working memory")
 
         framework_id = working_memory.get('architectural_framework', 'uaf')
 
@@ -111,8 +110,7 @@ def load_framework_registry(framework_id: str) -> Dict[str, Any]:
         else:
             raise FileNotFoundError(f"framework_registry.json not found at {registry_path}")
 
-    with open(registry_path, 'r') as f:
-        registry = json.load(f)
+    registry = safe_load_json(registry_path, file_type_description="framework registry")
 
     if framework_id not in registry.get('frameworks', {}):
         raise ValueError(f"Framework '{framework_id}' not found in registry. Available: {list(registry['frameworks'].keys())}")
@@ -168,8 +166,7 @@ def load_component_index(index_path: str) -> Dict[str, str]:
 
     Returns a flat mapping of component_id to file_path.
     """
-    with open(index_path, 'r') as f:
-        index_data = json.load(f)
+    index_data = safe_load_json(index_path, file_type_description="component index")
 
     # Handle structured index format with metadata and components
     if isinstance(index_data, dict) and 'components' in index_data:
@@ -219,9 +216,8 @@ def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_
             continue
 
         try:
-            with open(safe_file_path, 'r') as f:
-                raw_data = json.load(f)
-        except json.JSONDecodeError:
+            raw_data = safe_load_json(safe_file_path, file_type_description=f"component architecture '{component_id}'")
+        except JSONValidationError:
             print(f"Warning: Invalid JSON in {safe_file_path} for component {component_id}")
             continue
 
@@ -1367,8 +1363,7 @@ Supported Frameworks:
             for wm_path in possible_wm_paths:
                 if wm_path.exists():
                     try:
-                        with open(wm_path) as f:
-                            wm_data = json.load(f)
+                        wm_data = safe_load_json(wm_path, file_type_description="working memory")
                         system_root_str = wm_data.get('path_configuration', {}).get('system_root')
                         if system_root_str:
                             system_root_from_wm = Path(system_root_str).resolve()
