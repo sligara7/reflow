@@ -200,13 +200,13 @@
         {
           "action_id": "FU-02-A05",
           "description": "Regenerate system_of_systems_graph.json",
-          "tool": "system_of_systems_graph.py",
-          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph.py {system_root}",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}",
           "note": "Uses symlinks from index.json, so automatically reflects new versions",
           "purpose": "Update graph to reflect architecture changes"
         }
       ],
-      "tools_used": ["validate_architecture.py", "system_of_systems_graph.py"],
+      "tools_used": ["validate_architecture.py", "system_of_systems_graph_v2.py"],
       "outputs": [
         "Updated service_architecture.json files (new versions)",
         "Updated interface_registry.json",

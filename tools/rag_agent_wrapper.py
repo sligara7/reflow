@@ -8,10 +8,10 @@ into LLM agent prompts at appropriate trigger points.
 Usage:
     # As a library
     from rag_agent_wrapper import RAGAgentWrapper
-    
+
     wrapper = RAGAgentWrapper(system_path="systems/my_system")
     enhanced_prompt = wrapper.wrap_user_query("How do I validate the architecture?")
-    
+
     # As a command-line tool
     python3 rag_agent_wrapper.py <system_path> --query "your query" --output prompt.txt
 """
@@ -22,6 +22,9 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 import argparse
+
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
 
 # Import RAG retrieval tool
 try:
@@ -322,12 +325,22 @@ def main():
     refresh_parser.add_argument('--output', help='Output file for refresh summary')
     
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         sys.exit(1)
-    
-    wrapper = RAGAgentWrapper(args.system_path)
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: System path does not exist: {args.system_path}")
+        sys.exit(1)
+
+    wrapper = RAGAgentWrapper(str(system_path))
     
     if args.command == 'wrap':
         enhanced_prompt = wrapper.wrap_user_query(args.query, args.strategy)

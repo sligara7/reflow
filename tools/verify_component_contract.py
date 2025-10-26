@@ -7,7 +7,7 @@ providing guaranteed integration success when verification passes.
 
 This tool performs comprehensive verification of:
 - Interface implementation completeness
-- Interface contract compliance  
+- Interface contract compliance
 - Functional requirement testability
 - Integration test execution
 - Maturity level compliance
@@ -35,6 +35,12 @@ from pathlib import Path
 from datetime import datetime
 import argparse
 from typing import Dict, List, Optional, Tuple
+
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
 
 # Adjust paths for reflow directory structure
 REFLOW_ROOT = Path(__file__).parent.parent
@@ -80,9 +86,22 @@ class ContractVerifier:
 
         # Load component specification
         try:
-            spec_file = specification_path / "component_specification.json"
-            with open(spec_file) as f:
-                specification = json.load(f)
+            # Security: Sanitize specification file path (v3.4.0 fix - SV-01)
+            spec_file = sanitize_path(
+                "component_specification.json",
+                specification_path,
+                must_exist=True
+            )
+            specification = safe_load_json(spec_file, file_type_description="component specification")
+        except PathSecurityError as e:
+            self.verification_results["issues_found"].append(
+                {
+                    "type": "path_security_error",
+                    "severity": "critical",
+                    "message": f"Path security violation: {e}",
+                }
+            )
+            return self._finalize_results()
         except Exception as e:
             self.verification_results["issues_found"].append(
                 {
@@ -254,7 +273,21 @@ class ContractVerifier:
         check_name = "integration_tests"
         print(f"🧪 Running integration tests...")
 
-        integration_tests_dir = specification_path / "integration_tests"
+        # Security: Sanitize integration tests directory path (v3.4.0 fix - SV-01)
+        try:
+            integration_tests_dir = sanitize_path(
+                "integration_tests",
+                specification_path,
+                must_exist=False
+            )
+        except PathSecurityError as e:
+            self.verification_results["checks_performed"][check_name] = {
+                "status": "skipped",
+                "reason": f"Path security violation: {e}",
+            }
+            print(f"⚠️  Could not access integration tests: {e}")
+            return
+
         if not integration_tests_dir.exists():
             self.verification_results["checks_performed"][check_name] = {
                 "status": "skipped",
@@ -269,9 +302,21 @@ class ContractVerifier:
         tests_total = len(test_files)
 
         for test_file in test_files:
-            test_passed = self._run_test_suite(test_file)
-            if test_passed:
-                tests_passed += 1
+            # Security: Verify test file is within integration_tests_dir (v3.4.0 fix - SV-01)
+            try:
+                # test_file is already from glob within integration_tests_dir,
+                # but we verify it's within specification_path for extra security
+                safe_test_file = sanitize_path(
+                    test_file.relative_to(specification_path),
+                    specification_path,
+                    must_exist=True
+                )
+                test_passed = self._run_test_suite(safe_test_file)
+                if test_passed:
+                    tests_passed += 1
+            except (PathSecurityError, ValueError) as e:
+                print(f"  ⚠️ Skipping test file {test_file.name}: Path security violation")
+                continue
 
         success = tests_passed == tests_total
         self.verification_results["checks_performed"][check_name] = {
@@ -342,12 +387,11 @@ class ContractVerifier:
     def _run_test_suite(self, test_file: Path) -> bool:
         """Run a test suite (simplified)."""
         try:
-            with open(test_file) as f:
-                test_suite = json.load(f)
+            test_suite = safe_load_json(test_file, file_type_description="test suite")
             # This is a placeholder - real implementation would execute tests
             print(f"  📝 Running test suite: {test_file.name}")
             return True
-        except Exception as e:
+        except (JSONValidationError, FileNotFoundError) as e:
             print(f"  ❌ Failed to run test suite {test_file.name}: {e}")
             return False
 
@@ -482,15 +526,23 @@ EXAMPLES:
 
     args = parser.parse_args()
 
-    implementation_path = Path(args.implementation)
-    specification_path = Path(args.specification)
-
-    if not implementation_path.exists():
-        print(f"❌ Implementation path does not exist: {implementation_path}")
+    # Security: Validate implementation and specification paths (v3.4.0 fix - SV-01)
+    try:
+        implementation_path = validate_system_root(args.implementation)
+    except PathSecurityError as e:
+        print(f"❌ Implementation path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"❌ Implementation path does not exist: {args.implementation}")
         sys.exit(1)
 
-    if not specification_path.exists():
-        print(f"❌ Specification path does not exist: {specification_path}")
+    try:
+        specification_path = validate_system_root(args.specification)
+    except PathSecurityError as e:
+        print(f"❌ Specification path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"❌ Specification path does not exist: {args.specification}")
         sys.exit(1)
 
     verifier = ContractVerifier()
@@ -529,10 +581,21 @@ EXAMPLES:
 
     # Save results if requested
     if args.output:
-        output_path = Path(args.output)
-        with open(output_path, "w") as f:
-            json.dump(results, f, indent=2)
-        print(f"📁 Results saved to: {output_path}")
+        # Security: Validate output path (v3.4.0 fix - SV-01)
+        try:
+            # Determine appropriate root for output validation
+            # Use specification_path as root since output is typically near specs
+            output_path = sanitize_path(
+                args.output,
+                specification_path,
+                must_exist=False
+            )
+            with open(output_path, "w") as f:
+                json.dump(results, f, indent=2)
+            print(f"📁 Results saved to: {output_path}")
+        except PathSecurityError as e:
+            print(f"⚠️  Could not save results: Path security violation: {e}")
+            print("Results not saved, but verification completed successfully")
 
     sys.exit(exit_code)
 

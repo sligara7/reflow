@@ -19,13 +19,13 @@
     ]
   },
   "components": {
-    "s_01_path_configuration": "machine/service_arch/S-01_PathConfiguration/service_architecture_v1.0.0-20251025.json",
-    "s_03_foundational_documents": "machine/service_arch/S-03_FoundationalDocuments/service_architecture_v1.0.0-20251025.json",
-    "se_01_system_analysis": "machine/service_arch/SE-01_SystemAnalysis/service_architecture_v1.0.0-20251025.json",
-    "se_02_service_architecture": "machine/service_arch/SE-02_ServiceArchitecture/service_architecture_v1.0.0-20251025.json",
-    "se_06_system_graph": "machine/service_arch/SE-06_SystemGraph/service_architecture_v1.0.0-20251025.json",
-    "av_01_interface_contracts": "machine/service_arch/AV-01_InterfaceContracts/service_architecture_v1.0.0-20251025.json",
-    "d_01_development_init": "machine/service_arch/D-01_DevelopmentInit/service_architecture_v1.0.0-20251025.json",
-    "to_02_cicd": "machine/service_arch/TO-02_CICD/service_architecture_v1.0.0-20251025.json"
+    "s_01_path_configuration": "specs/machine/service_arch/S-01_PathConfiguration/service_architecture_v1.0.0-20251025.json",
+    "s_03_foundational_documents": "specs/machine/service_arch/S-03_FoundationalDocuments/service_architecture_v1.0.0-20251025.json",
+    "se_01_system_analysis": "specs/machine/service_arch/SE-01_SystemAnalysis/service_architecture_v1.0.0-20251025.json",
+    "se_02_service_architecture": "specs/machine/service_arch/SE-02_ServiceArchitecture/service_architecture_v1.0.0-20251025.json",
+    "se_06_system_graph": "specs/machine/service_arch/SE-06_SystemGraph/service_architecture_v1.0.0-20251025.json",
+    "av_01_interface_contracts": "specs/machine/service_arch/AV-01_InterfaceContracts/service_architecture_v1.0.0-20251025.json",
+    "d_01_development_init": "specs/machine/service_arch/D-01_DevelopmentInit/service_architecture_v1.0.0-20251025.json",
+    "to_02_cicd": "specs/machine/service_arch/TO-02_CICD/service_architecture_v1.0.0-20251025.json"
   }
 }

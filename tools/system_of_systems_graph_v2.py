@@ -28,6 +28,12 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 # Adjust paths for reflow directory structure
 REFLOW_ROOT = Path(__file__).parent.parent
 TEMPLATES_PATH = REFLOW_ROOT / "templates"
@@ -37,13 +43,17 @@ DEFINITIONS_PATH = REFLOW_ROOT / "definitions"
 # FRAMEWORK ADAPTER - Load and adapt framework-specific files to universal schema
 # =============================================================================
 
-def load_framework_config(system_root: str) -> Dict[str, Any]:
+def load_framework_config(system_root: Path) -> Dict[str, Any]:
     """Load framework configuration from working_memory.json.
 
     Returns framework metadata including field mappings for node/edge schemas.
     Falls back to UAF if no framework specified (backward compatibility).
+
+    Args:
+        system_root: System root directory (Path object, already validated)
     """
-    working_memory_path = os.path.join(system_root, "context", "working_memory.json")
+    # system_root is now a Path object from sanitize_path/validate_system_root
+    working_memory_path = system_root / "context" / "working_memory.json"
 
     # Default to UAF for backward compatibility
     default_framework = {
@@ -53,13 +63,12 @@ def load_framework_config(system_root: str) -> Dict[str, Any]:
         "connection_term": "interface"
     }
 
-    if not os.path.exists(working_memory_path):
+    if not working_memory_path.exists():
         print(f"Warning: No working_memory.json found, defaulting to UAF framework")
         return default_framework
 
     try:
-        with open(working_memory_path, 'r') as f:
-            working_memory = json.load(f)
+        working_memory = safe_load_json(working_memory_path, file_type_description="working memory")
 
         framework_id = working_memory.get('architectural_framework', 'uaf')
 
@@ -101,8 +110,7 @@ def load_framework_registry(framework_id: str) -> Dict[str, Any]:
         else:
             raise FileNotFoundError(f"framework_registry.json not found at {registry_path}")
 
-    with open(registry_path, 'r') as f:
-        registry = json.load(f)
+    registry = safe_load_json(registry_path, file_type_description="framework registry")
 
     if framework_id not in registry.get('frameworks', {}):
         raise ValueError(f"Framework '{framework_id}' not found in registry. Available: {list(registry['frameworks'].keys())}")
@@ -158,8 +166,7 @@ def load_component_index(index_path: str) -> Dict[str, str]:
 
     Returns a flat mapping of component_id to file_path.
     """
-    with open(index_path, 'r') as f:
-        index_data = json.load(f)
+    index_data = safe_load_json(index_path, file_type_description="component index")
 
     # Handle structured index format with metadata and components
     if isinstance(index_data, dict) and 'components' in index_data:
@@ -180,7 +187,7 @@ def load_component_index(index_path: str) -> Dict[str, str]:
 # GRAPH BUILDING - Framework-Agnostic
 # =============================================================================
 
-def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_root: str) -> nx.DiGraph:
+def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_root: Path) -> nx.DiGraph:
     """Build a directed graph from component architecture files using universal schema.
 
     All frameworks map to the same structure:
@@ -190,7 +197,7 @@ def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_
     Args:
         index: Dictionary mapping component_id to file paths
         framework_schema: Schema from framework_registry.json
-        system_root: System root directory for resolving relative paths
+        system_root: System root directory (Path object, already validated)
 
     Returns:
         NetworkX DiGraph with universal node/edge attributes
@@ -201,18 +208,17 @@ def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_
     # Pass 1: Load all components and add as nodes
     print(f"Loading {len(index)} components...")
     for component_id, file_path in index.items():
-        # Handle relative paths
-        if not os.path.isabs(file_path):
-            file_path = os.path.join(system_root, file_path)
+        # Sanitize file path (security fix - SV-01)
+        try:
+            safe_file_path = sanitize_path(file_path, system_root, must_exist=True)
+        except (PathSecurityError, FileNotFoundError) as e:
+            print(f"Warning: Could not validate path {file_path} for component {component_id}: {e}")
+            continue
 
         try:
-            with open(file_path, 'r') as f:
-                raw_data = json.load(f)
-        except FileNotFoundError:
-            print(f"Warning: Could not find file {file_path} for component {component_id}")
-            continue
-        except json.JSONDecodeError:
-            print(f"Warning: Invalid JSON in {file_path} for component {component_id}")
+            raw_data = safe_load_json(safe_file_path, file_type_description=f"component architecture '{component_id}'")
+        except JSONValidationError:
+            print(f"Warning: Invalid JSON in {safe_file_path} for component {component_id}")
             continue
 
         try:
@@ -1073,11 +1079,15 @@ def run_all_analysis(G: nx.DiGraph) -> Dict[str, Any]:
 # ARCHITECTURAL ISSUE DETECTION (from v1, enhanced)
 # =============================================================================
 
-def detect_architectural_issues(G: nx.DiGraph, system_root: Optional[str] = None) -> Dict[str, List[Dict]]:
+def detect_architectural_issues(G: nx.DiGraph, system_root: Optional[Path] = None) -> Dict[str, List[Dict]]:
     """Detect architectural problems (circular deps, orphans, etc.).
 
     Enhanced version from v1 with framework-agnostic support.
     Includes detection of unimplemented services (scaffolding without code).
+
+    Args:
+        G: NetworkX DiGraph
+        system_root: System root directory (Path object, already validated)
     """
     issues = {
         'circular_dependencies': [],
@@ -1128,8 +1138,8 @@ def detect_architectural_issues(G: nx.DiGraph, system_root: Optional[str] = None
 
     # 4. Unimplemented services (architecture defined but no code)
     if system_root:
-        services_dir = os.path.join(system_root, 'services')
-        if os.path.exists(services_dir):
+        services_dir = system_root / 'services'
+        if services_dir.exists():
             for node in G.nodes():
                 node_data = G.nodes[node]
                 node_type = node_data.get('type', '')
@@ -1140,9 +1150,9 @@ def detect_architectural_issues(G: nx.DiGraph, system_root: Optional[str] = None
                     continue
 
                 # Check if implementation directory exists
-                service_impl_dir = os.path.join(services_dir, node)
+                service_impl_dir = services_dir / node
 
-                if not os.path.exists(service_impl_dir):
+                if not service_impl_dir.exists():
                     issues['unimplemented_services'].append({
                         'node': node,
                         'severity': 'error',
@@ -1291,6 +1301,7 @@ Supported Frameworks:
 
     parser.add_argument('index_file', help='Path to index.json file')
     parser.add_argument('-o', '--output', help='Output file path (default: system_of_systems_graph.json)')
+    parser.add_argument('--system-root', help='System root directory (if not provided, derived from index.json location or read from working_memory.json)')
 
     # Analysis flags
     parser.add_argument('--detect-gaps', action='store_true',
@@ -1324,12 +1335,61 @@ Supported Frameworks:
 
     args = parser.parse_args()
 
-    # Determine system root from index file path
-    index_path = os.path.abspath(args.index_file)
-    system_root = os.path.dirname(os.path.dirname(index_path))  # Go up from specs/machine/
+    # Security: Validate and sanitize all paths (v3.4.0 fix - SV-01)
+    try:
+        # Determine system root first (needed for path validation)
+        if args.system_root:
+            # Use explicitly provided system root (validate it exists and is a directory)
+            system_root = validate_system_root(args.system_root)
+            print(f"System root: {system_root} (explicitly provided)")
+        else:
+            # Try to derive from index file location or working_memory.json
+            # First resolve index_file to find potential system_root
+            index_path_preliminary = Path(args.index_file).resolve()
 
-    print(f"System root: {system_root}")
-    print(f"Index file: {index_path}")
+            # Try specs/machine/index.json → go up to system root
+            if index_path_preliminary.name == 'index.json' and index_path_preliminary.parent.name == 'machine':
+                potential_system_root = index_path_preliminary.parent.parent.parent
+            else:
+                potential_system_root = Path.cwd()
+
+            # Try to read from working_memory.json
+            possible_wm_paths = [
+                potential_system_root / 'context' / 'working_memory.json',
+                Path.cwd() / 'context' / 'working_memory.json',
+            ]
+
+            system_root_from_wm = None
+            for wm_path in possible_wm_paths:
+                if wm_path.exists():
+                    try:
+                        wm_data = safe_load_json(wm_path, file_type_description="working memory")
+                        system_root_str = wm_data.get('path_configuration', {}).get('system_root')
+                        if system_root_str:
+                            system_root_from_wm = Path(system_root_str).resolve()
+                            print(f"System root: {system_root_from_wm} (from working_memory.json)")
+                            break
+                    except Exception as e:
+                        pass  # Continue to next option
+
+            if system_root_from_wm:
+                system_root = validate_system_root(system_root_from_wm)
+            else:
+                # Fall back to deriving from index file path
+                system_root = validate_system_root(potential_system_root)
+                print(f"System root: {system_root} (derived from index.json location)")
+
+        # Now validate index_file path relative to system_root
+        index_path = sanitize_path(args.index_file, system_root, must_exist=True)
+        print(f"Index file: {index_path}")
+
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}", file=sys.stderr)
+        print(f"Paths must be within system root or explicitly trusted.", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
 
     # Load framework configuration
     print("\nLoading framework configuration...")
@@ -1421,16 +1481,22 @@ Supported Frameworks:
         if args.analyze_all or args.flow:
             analysis_results['flow'] = analyze_flow(G)
 
-    # Generate output
-    if args.output:
-        output_path = args.output
-    else:
-        # Default output location
-        output_path = os.path.join(system_root, 'specs', 'machine', 'graphs', 'system_of_systems_graph.json')
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Generate output (with path security validation)
+    try:
+        if args.output:
+            # Validate user-provided output path
+            output_path = sanitize_path(args.output, system_root, must_exist=False)
+        else:
+            # Default output location
+            output_dir = sanitize_path('specs/machine/graphs', system_root, must_exist=False)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / 'system_of_systems_graph.json'
 
-    generate_output(G, output_path, framework_config, knowledge_gaps,
-                   architectural_issues, analysis_results)
+        generate_output(G, str(output_path), framework_config, knowledge_gaps,
+                       architectural_issues, analysis_results)
+    except PathSecurityError as e:
+        print(f"ERROR: Output path security violation: {e}", file=sys.stderr)
+        sys.exit(1)
 
     print("\n✓ Graph generation complete!")
 

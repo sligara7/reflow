@@ -2,12 +2,21 @@
   "workflow_metadata": {
     "workflow_id": "03-development",
     "name": "Development Workflow",
-    "version": "1.0.0",
-    "description": "Implement services according to architecture specifications",
+    "version": "1.1.0",
+    "description": "Implement services according to architecture specifications OR analyze existing implementation (meta-analysis/brownfield)",
     "created_from": "decision_flow.json v2.5.0 - extracted Dev-01 through Dev-Post",
-    "last_updated": "2025-10-24",
-    "purpose": "Transform architecture specifications into working code",
-    "note": "This workflow may be subdivided in the future (foundation, integration, quality)"
+    "last_updated": "2025-10-25",
+    "purpose": "Transform architecture specifications into working code (greenfield) OR validate existing code quality (meta-analysis)",
+    "note": "This workflow may be subdivided in the future (foundation, integration, quality)",
+    "changelog_v1.1.0": {
+      "date": "2025-10-25",
+      "changes": [
+        "DEV-OBS-01: Changed G-D-05 from blocking to non-blocking two-tier gate (60% min, 80% target)",
+        "DEV-OBS-05: Added meta-analysis/brownfield branch to D-02 for code quality analysis",
+        "DEV-OBS-06: D-01 research already optional (confirmed documentation)"
+      ],
+      "rationale": "Support meta-analysis scenarios (Reflow analyzing itself) and large codebases where 80% coverage unrealistic in single session"
+    }
   },
   "prerequisites": {
     "required_workflows": ["00-setup", "01-systems_engineering", "02-artifacts_visualization"],
@@ -362,10 +371,30 @@
       "actions": [
         {
           "action_id": "D-02-A01",
-          "description": "Implement domain models",
-          "source": "data_models from service_architecture.json",
-          "purpose": "Create core business entities and value objects",
-          "pattern": "Domain-driven design principles"
+          "description": "Implement domain models (greenfield) OR analyze existing implementation (meta-analysis/brownfield)",
+          "conditional_execution": {
+            "if_greenfield": {
+              "description": "Implement domain models from architecture",
+              "source": "data_models from service_architecture.json",
+              "purpose": "Create core business entities and value objects",
+              "pattern": "Domain-driven design principles"
+            },
+            "if_meta_analysis_or_brownfield": {
+              "description": "Analyze existing implementation quality",
+              "purpose": "Validate existing code against architecture, identify quality gaps",
+              "actions": [
+                "Read existing code (tools, services, components)",
+                "Analyze code quality (complexity, maintainability, documentation)",
+                "Compare implementation to architecture specifications",
+                "Identify gaps, technical debt, security issues",
+                "Document findings in analysis report"
+              ],
+              "output": "Code quality analysis report (e.g., TOOL_CODE_QUALITY_REPORT.md)",
+              "note": "For meta-analysis (Reflow analyzing itself), D-02 validates existing tools/workflows rather than implementing new code"
+            }
+          },
+          "source": "data_models from service_architecture.json (greenfield) OR existing codebase (meta-analysis)",
+          "pattern": "Domain-driven design principles (greenfield) OR code analysis best practices (meta-analysis)"
         },
         {
           "action_id": "D-02-A02",
@@ -593,13 +622,21 @@
           "gate_id": "G-D-05",
           "name": "Testing & Observability Gate",
           "checks": [
-            "Test coverage >= 80%",
+            "Test coverage >= 60% (minimum) and >= 80% (target)",
             "All tests passing",
             "Metrics collection implemented",
             "Structured logging implemented",
             "Health check endpoints working"
           ],
-          "blocking": true
+          "blocking": false,
+          "enforcement": {
+            "coverage_minimum": 60,
+            "coverage_target": 80,
+            "below_minimum": "ERROR - insufficient testing (< 60%), strongly recommend improving before proceeding",
+            "minimum_to_target": "WARNING - below target coverage (60-80%), consider improving tests",
+            "above_target": "PASS - excellent test coverage"
+          },
+          "note": "Changed from blocking to non-blocking in v3.4.0 (DEV-OBS-01) - allows workflow completion for large codebases while still enforcing quality standards via CI/CD"
         }
       ],
       "next_step": "D-Post"

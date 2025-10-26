@@ -2,11 +2,11 @@
 """
 Foundational Alignment Validation Tool
 
-Ensures that any new features, services, or changes align with the system's 
+Ensures that any new features, services, or changes align with the system's
 foundational documents and architectural principles before allowing workflow progression.
 
 This tool enforces the "black box" architecture principle where:
-1. Each service encapsulates internal functions 
+1. Each service encapsulates internal functions
 2. Services interact only through well-defined interfaces
 3. Changes maintain consistency with foundational mission and constraints
 """
@@ -18,9 +18,21 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple
 import re
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 class FoundationalValidator:
-    def __init__(self, system_path: str):
-        self.system_path = Path(system_path)
+    def __init__(self, system_path: Path):
+        """
+        Initialize validator with validated system path.
+
+        Args:
+            system_path: Pre-validated Path object (use validate_system_root() before passing)
+        """
+        self.system_path = system_path
         self.validation_results = {
             "timestamp": "",
             "system": self.system_path.name,
@@ -38,8 +50,18 @@ class FoundationalValidator:
     
     def validate_mission_alignment(self, change_proposal: Dict[str, Any]) -> bool:
         """Validate that proposed changes align with system mission."""
-        mission_file = self.system_path / "SYSTEM_MISSION_STATEMENT.md"
-        
+        # Security: Sanitize mission file path (v3.4.0 fix - SV-01)
+        try:
+            mission_file = sanitize_path("SYSTEM_MISSION_STATEMENT.md", self.system_path, must_exist=False)
+        except PathSecurityError as e:
+            self.validation_results["foundational_alignment"]["mission_alignment"]["issues"].append({
+                "type": "path_security_error",
+                "severity": "critical",
+                "description": f"Path security violation: {e}",
+                "recommendation": "Ensure SYSTEM_MISSION_STATEMENT.md path is valid"
+            })
+            return False
+
         if not mission_file.exists():
             self.validation_results["foundational_alignment"]["mission_alignment"]["issues"].append({
                 "type": "missing_foundational_document",
@@ -48,7 +70,7 @@ class FoundationalValidator:
                 "recommendation": "Create mission statement before proceeding with changes"
             })
             return False
-        
+
         # Parse mission statement to extract key mission elements
         mission_content = mission_file.read_text()
         mission_keywords = self._extract_mission_keywords(mission_content)
@@ -72,11 +94,26 @@ class FoundationalValidator:
     def validate_black_box_integrity(self, affected_services: List[str]) -> bool:
         """Validate that changes maintain black box architecture principles."""
         integrity_violations = []
-        
+
         for service_id in affected_services:
-            service_arch_file = self.system_path / "specs" / "machine" / "service_arch" / service_id / "service_architecture.json"
-            
-            if not service_arch_file.exists():
+            # Security: Sanitize service architecture path (v3.4.0 fix - SV-01)
+            try:
+                service_arch_path = sanitize_path(
+                    f"specs/machine/service_arch/{service_id}/service_architecture.json",
+                    self.system_path,
+                    must_exist=False
+                )
+            except PathSecurityError as e:
+                integrity_violations.append({
+                    "service": service_id,
+                    "type": "path_security_error",
+                    "severity": "critical",
+                    "description": f"Path security violation for service {service_id}: {e}",
+                    "recommendation": f"Ensure service path for {service_id} is valid"
+                })
+                continue
+
+            if not service_arch_path.exists():
                 integrity_violations.append({
                     "service": service_id,
                     "type": "missing_service_architecture",
@@ -85,10 +122,9 @@ class FoundationalValidator:
                     "recommendation": f"Create service_architecture.json for {service_id} using template"
                 })
                 continue
-            
+
             # Load service architecture
-            with open(service_arch_file) as f:
-                service_arch = json.load(f)
+            service_arch = safe_load_json(service_arch_path, file_type_description="service architecture")
             
             # Check black box principles
             self._validate_interface_encapsulation(service_arch, service_id, integrity_violations)
@@ -105,20 +141,36 @@ class FoundationalValidator:
     
     def validate_architectural_consistency(self) -> bool:
         """Validate consistency with architectural_definitions.json."""
-        arch_def_file = self.system_path.parent.parent / "definitions" / "architectural_definitions.json"
-        
+        # Security: Sanitize architectural definitions path (v3.4.0 fix - SV-01)
+        # Note: arch defs are in reflow_root, not system_root
+        try:
+            reflow_root = self.system_path.parent.parent
+            reflow_root = validate_system_root(reflow_root)
+            arch_def_file = sanitize_path(
+                "definitions/architectural_definitions.json",
+                reflow_root,
+                must_exist=False
+            )
+        except (PathSecurityError, FileNotFoundError) as e:
+            self.validation_results["foundational_alignment"]["architectural_consistency"]["issues"].append({
+                "type": "path_security_error",
+                "severity": "critical",
+                "description": f"Path security violation: {e}",
+                "recommendation": "Ensure architectural_definitions.json path is valid"
+            })
+            return False
+
         if not arch_def_file.exists():
             self.validation_results["foundational_alignment"]["architectural_consistency"]["issues"].append({
                 "type": "missing_architectural_definitions",
-                "severity": "critical", 
+                "severity": "critical",
                 "description": "architectural_definitions.json not found",
                 "recommendation": "Ensure architectural_definitions.json exists before validation"
             })
             return False
-        
+
         # Load architectural definitions
-        with open(arch_def_file) as f:
-            arch_defs = json.load(f)
+        arch_defs = safe_load_json(arch_def_file, file_type_description="architectural definitions")
         
         # Validate UAF compliance
         uaf_compliance = self._check_uaf_compliance(arch_defs)
@@ -277,25 +329,47 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python3 validate_foundational_alignment.py <system_path> [--change-proposal <path>]")
         sys.exit(1)
-    
-    system_path = sys.argv[1]
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(sys.argv[1])
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}", file=sys.stderr)
+        print("System path must be a valid directory", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
     change_proposal_path = None
-    
+
     # Parse optional change proposal argument
     if "--change-proposal" in sys.argv:
         idx = sys.argv.index("--change-proposal")
         if idx + 1 < len(sys.argv):
-            change_proposal_path = sys.argv[idx + 1]
-    
+            # Security: Validate change proposal path (v3.4.0 fix - SV-01)
+            try:
+                change_proposal_path = sanitize_path(
+                    sys.argv[idx + 1],
+                    system_path,
+                    must_exist=True
+                )
+            except PathSecurityError as e:
+                print(f"ERROR: Change proposal path security violation: {e}", file=sys.stderr)
+                sys.exit(1)
+            except FileNotFoundError as e:
+                print(f"ERROR: Change proposal file not found: {e}", file=sys.stderr)
+                sys.exit(1)
+
     validator = FoundationalValidator(system_path)
-    
+
     # Load change proposal if provided
     change_proposal = {}
-    if change_proposal_path and os.path.exists(change_proposal_path):
-        with open(change_proposal_path) as f:
-            if change_proposal_path.endswith('.json'):
-                change_proposal = json.load(f)
-            else:
+    if change_proposal_path and change_proposal_path.exists():
+        if str(change_proposal_path).endswith('.json'):
+            change_proposal = safe_load_json(change_proposal_path, file_type_description="change proposal")
+        else:
+            with open(change_proposal_path) as f:
                 change_proposal = {"content": f.read()}
     
     # Run validation checks

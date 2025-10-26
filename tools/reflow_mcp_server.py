@@ -19,6 +19,12 @@ import argparse
 import subprocess
 import logging
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
@@ -462,8 +468,7 @@ class ReflowMCPServer:
                             text=json.dumps({"error": "working_memory.json not found", "isolated": False})
                         )]
                     
-                    with open(memory_file, 'r') as f:
-                        memory = json.load(f)
+                    memory = safe_load_json(memory_file, file_type_description="working memory")
                     
                     isolated = memory.get("system_name") == system_name
                     
@@ -508,8 +513,7 @@ class ReflowMCPServer:
                             text=json.dumps({"error": "step_progress_tracker.json not found"})
                         )]
                     
-                    with open(tracker_file, 'r') as f:
-                        tracker = json.load(f)
+                    tracker = safe_load_json(tracker_file, file_type_description="step progress tracker")
                     
                     current_step = tracker.get("current_step")
                     
@@ -521,9 +525,11 @@ class ReflowMCPServer:
                         workflow_path = self.reflow_root / wf_dir
                         if workflow_path.exists():
                             for wf_file in workflow_path.glob("*.json"):
-                                with open(wf_file, 'r') as f:
-                                    wf_data = json.load(f)
-                                
+                                try:
+                                    wf_data = safe_load_json(wf_file, file_type_description="workflow file")
+                                except JSONValidationError:
+                                    continue
+
                                 if "steps" in wf_data:
                                     for step in wf_data["steps"]:
                                         if step.get("id") == current_step or step.get("step_id") == current_step:
@@ -608,8 +614,7 @@ class ReflowMCPServer:
             try:
                 if name == "critical_behavioral_rules":
                     decision_flow_path = self.reflow_root / "decision_flow.json"
-                    with open(decision_flow_path, 'r') as f:
-                        decision_flow = json.load(f)
+                    decision_flow = safe_load_json(decision_flow_path, file_type_description="decision flow")
                     
                     rules = decision_flow.get("context_management", {}).get("CRITICAL_BEHAVIORAL_RULES", {})
                     
@@ -643,8 +648,7 @@ class ReflowMCPServer:
                     
                     # Get critical rules
                     decision_flow_path = self.reflow_root / "decision_flow.json"
-                    with open(decision_flow_path, 'r') as f:
-                        decision_flow = json.load(f)
+                    decision_flow = safe_load_json(decision_flow_path, file_type_description="decision flow")
                     
                     rules = decision_flow.get("context_management", {}).get("CRITICAL_BEHAVIORAL_RULES", {})
                     
@@ -656,9 +660,11 @@ class ReflowMCPServer:
                         workflow_path = self.reflow_root / wf_dir
                         if workflow_path.exists():
                             for wf_file in workflow_path.glob("*.json"):
-                                with open(wf_file, 'r') as f:
-                                    wf_data = json.load(f)
-                                
+                                try:
+                                    wf_data = safe_load_json(wf_file, file_type_description="workflow file")
+                                except JSONValidationError:
+                                    continue
+
                                 if "steps" in wf_data:
                                     for step in wf_data["steps"]:
                                         if step.get("id") == step_id or step.get("step_id") == step_id:
@@ -699,8 +705,7 @@ class ReflowMCPServer:
                         raise ValueError("signal_type is required")
                     
                     decision_flow_path = self.reflow_root / "decision_flow.json"
-                    with open(decision_flow_path, 'r') as f:
-                        decision_flow = json.load(f)
+                    decision_flow = safe_load_json(decision_flow_path, file_type_description="decision flow")
                     
                     rules = decision_flow.get("context_management", {}).get("CRITICAL_BEHAVIORAL_RULES", {})
                     
@@ -744,15 +749,13 @@ class ReflowMCPServer:
                     prompt_text = f"**SYSTEM CONTEXT: {system_name}**\n\n"
                     
                     if memory_file.exists():
-                        with open(memory_file, 'r') as f:
-                            memory = json.load(f)
+                        memory = safe_load_json(memory_file, file_type_description="working memory")
                         prompt_text += "**Working Memory:**\n```json\n"
                         prompt_text += json.dumps(memory, indent=2)
                         prompt_text += "\n```\n\n"
                     
                     if progress_file.exists():
-                        with open(progress_file, 'r') as f:
-                            progress = json.load(f)
+                        progress = safe_load_json(progress_file, file_type_description="step progress tracker")
                         prompt_text += "**Progress Tracker:**\n```json\n"
                         prompt_text += json.dumps(progress, indent=2)
                         prompt_text += "\n```\n\n"
@@ -798,10 +801,20 @@ async def main():
         default=".",
         help="Path to reflow root directory"
     )
-    
+
     args = parser.parse_args()
-    
-    server = ReflowMCPServer(args.reflow_root)
+
+    # Security: Validate reflow root path (v3.4.0 fix - SV-01)
+    try:
+        reflow_root = validate_system_root(args.reflow_root)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: Reflow root does not exist: {args.reflow_root}")
+        sys.exit(1)
+
+    server = ReflowMCPServer(str(reflow_root))
     await server.run()
 
 

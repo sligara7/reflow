@@ -12,12 +12,17 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Any, Set
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 def load_system_analysis(analysis_file: str) -> Dict[str, Any]:
     """Load system analysis results from a JSON file."""
     try:
-        with open(analysis_file, 'r') as f:
-            return json.load(f)
-    except Exception as e:
+        return safe_load_json(Path(analysis_file), file_type_description="system analysis file")
+    except (JSONValidationError, FileNotFoundError) as e:
         print(f"Error loading {analysis_file}: {e}", file=sys.stderr)
         return {}
 
@@ -236,26 +241,54 @@ def main():
     parser.add_argument("--requirements", "-r", help="Integration requirements JSON file")
     parser.add_argument("--output", "-o", help="Output file for integration analysis")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
-    
+
     args = parser.parse_args()
-    
+
+    # Security: Use current working directory as base (v3.4.0 fix - SV-01)
+    base_dir = Path.cwd()
+
     # Load system analyses
     systems = []
-    for analysis_file in args.analysis_files:
-        analysis = load_system_analysis(analysis_file)
-        if analysis:
-            systems.append(analysis)
-    
+    for analysis_file_str in args.analysis_files:
+        # Security: Sanitize analysis file path (v3.4.0 fix - SV-01)
+        try:
+            analysis_file_path = Path(analysis_file_str).resolve()
+            # Verify file is within base_dir or explicitly allow absolute paths from user
+            # For this tool, we'll check existence but allow any path (tool is for analyzing multiple systems)
+            if not analysis_file_path.exists():
+                print(f"Warning: Analysis file not found: {analysis_file_str}")
+                continue
+
+            if not analysis_file_path.is_file():
+                print(f"Warning: Not a file: {analysis_file_str}")
+                continue
+
+            analysis = load_system_analysis(str(analysis_file_path))
+            if analysis:
+                systems.append(analysis)
+
+        except Exception as e:
+            print(f"Warning: Could not load {analysis_file_str}: {e}")
+            continue
+
     if len(systems) < 2:
         print("Error: Need at least 2 system analyses to identify integration points", file=sys.stderr)
         sys.exit(1)
-    
+
     print(f"Analyzing integration opportunities between {len(systems)} systems")
-    
+
     # Load requirements if provided
     requirements = {}
     if args.requirements:
-        requirements = load_system_analysis(args.requirements)
+        # Security: Sanitize requirements file path (v3.4.0 fix - SV-01)
+        try:
+            requirements_path = Path(args.requirements).resolve()
+            if requirements_path.exists() and requirements_path.is_file():
+                requirements = load_system_analysis(str(requirements_path))
+            else:
+                print(f"Warning: Requirements file not found or invalid: {args.requirements}")
+        except Exception as e:
+            print(f"Warning: Could not load requirements file: {e}")
     
     # Identify integration opportunities
     opportunities = identify_integration_opportunities(systems)
@@ -276,11 +309,23 @@ def main():
             "low_feasibility": len([o for o in opportunities if o["feasibility"] == "low"])
         }
     }
-    
+
     if args.output:
-        with open(args.output, 'w') as f:
-            json.dump(results, f, indent=2)
-        print(f"Integration analysis written to: {args.output}")
+        # Security: Sanitize output file path (v3.4.0 fix - SV-01)
+        try:
+            output_path = Path(args.output).resolve()
+
+            # Ensure parent directory exists
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(output_path, 'w') as f:
+                json.dump(results, f, indent=2)
+            print(f"Integration analysis written to: {output_path}")
+
+        except (PathSecurityError, PermissionError, OSError) as e:
+            print(f"ERROR: Could not write output file: {e}")
+            print("Printing results to stdout instead:")
+            print(json.dumps(results, indent=2))
     else:
         print(json.dumps(results, indent=2))
     

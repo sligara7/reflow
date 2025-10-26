@@ -19,6 +19,12 @@ from typing import Dict, List, Any, Tuple
 from datetime import datetime
 import argparse
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 try:
     from sentence_transformers import SentenceTransformer
     import numpy as np
@@ -31,14 +37,21 @@ except ImportError as e:
 
 class RAGEmbeddingGenerator:
     """Generate and manage embeddings for RAG-enhanced context management."""
-    
-    def __init__(self, system_path: str, config_path: str = None):
-        self.system_path = Path(system_path).resolve()
+
+    def __init__(self, system_path: Path, config_path: Path = None):
+        """
+        Initialize RAG embedding generator with validated paths.
+
+        Args:
+            system_path: Pre-validated Path object to system directory
+            config_path: Optional pre-validated Path object to config file
+        """
+        self.system_path = system_path
         self.reflow_root = self._find_reflow_root()
-        
+
         # Load RAG configuration
         if config_path:
-            self.config_path = Path(config_path)
+            self.config_path = config_path
         else:
             self.config_path = self.system_path / "context" / "rag_context_config.json"
         
@@ -47,8 +60,7 @@ class RAGEmbeddingGenerator:
             print("Create from template: cp templates/rag_context_config_template.json systems/<system>/context/rag_context_config.json")
             sys.exit(1)
         
-        with open(self.config_path, 'r') as f:
-            config_data = json.load(f)
+        config_data = safe_load_json(self.config_path, file_type_description="RAG context configuration")
             self.config = config_data.get('rag_context_configuration', config_data)
         
         # Initialize embedding model
@@ -134,8 +146,7 @@ class RAGEmbeddingGenerator:
     
     def _chunk_workflow_file(self, file_path: Path) -> List[Dict[str, Any]]:
         """Chunk workflow JSON file by steps and substeps."""
-        with open(file_path, 'r') as f:
-            data = json.load(f)
+        data = safe_load_json(file_path, file_type_description="workflow file")
         
         chunks = []
         workflow_name = file_path.stem
@@ -201,8 +212,7 @@ class RAGEmbeddingGenerator:
         
         # Check if rebuild needed
         if not force_rebuild and embeddings_file.exists() and metadata_file.exists():
-            with open(metadata_file, 'r') as f:
-                metadata = json.load(f)
+            metadata = safe_load_json(metadata_file, file_type_description="embedding metadata")
             
             # Check if source files changed
             source_changed = False
@@ -224,8 +234,7 @@ class RAGEmbeddingGenerator:
             source_path = self._resolve_path(kb_config['source_file'])
             print(f"  Loading: {source_path}")
             
-            with open(source_path, 'r') as f:
-                data = json.load(f)
+            data = safe_load_json(source_path, file_type_description=f"knowledge base source '{kb_config.get('name', 'file')}'")
             
             source_hashes[str(source_path)] = self._compute_file_hash(source_path)
             
@@ -264,8 +273,7 @@ class RAGEmbeddingGenerator:
                             if 'workflow' in kb_config.get('content_type', ''):
                                 chunks.extend(self._chunk_workflow_file(file_path))
                             else:
-                                with open(file_path, 'r') as f:
-                                    data = json.load(f)
+                                data = safe_load_json(file_path, file_type_description="JSON document")
                                 chunks.append({
                                     'id': file_path.stem,
                                     'section': 'full',
@@ -280,11 +288,11 @@ class RAGEmbeddingGenerator:
                         print(f"  Loading: {file_path}")
                         source_hashes[str(file_path)] = self._compute_file_hash(file_path)
                         
-                        with open(file_path, 'r') as f:
-                            if file_path.suffix == '.json':
-                                data = json.load(f)
-                                text = json.dumps(data, indent=2)
-                            else:
+                        if file_path.suffix == '.json':
+                            data = safe_load_json(file_path, file_type_description="JSON document")
+                            text = json.dumps(data, indent=2)
+                        else:
+                            with open(file_path, 'r') as f:
                                 text = f.read()
                         
                         chunks.append({
@@ -390,8 +398,30 @@ def main():
     )
     
     args = parser.parse_args()
-    
-    generator = RAGEmbeddingGenerator(args.system_path, args.config)
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: System path does not exist: {args.system_path}")
+        sys.exit(1)
+
+    # Security: Validate config path if provided (v3.4.0 fix - SV-01)
+    config_path = None
+    if args.config:
+        try:
+            config_path = Path(args.config).resolve()
+            if not config_path.exists():
+                print(f"ERROR: Config file does not exist: {args.config}")
+                sys.exit(1)
+        except Exception as e:
+            print(f"ERROR: Invalid config path: {e}")
+            sys.exit(1)
+
+    generator = RAGEmbeddingGenerator(system_path, config_path)
     generator.generate_all_embeddings(force_rebuild=args.force_rebuild)
 
 

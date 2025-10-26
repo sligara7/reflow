@@ -1,0 +1,9 @@
+# Reflow Python Dependencies
+
+# Core Dependencies
+networkx>=3.0  # Graph analysis for system_of_systems_graph_v2.py
+jsonschema>=4.0.0  # JSON schema validation for workflows and configs
+
+# Development Dependencies (Testing)
+pytest>=7.0.0  # Testing framework
+pytest-cov>=4.0.0  # Coverage measurement

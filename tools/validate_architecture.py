@@ -19,6 +19,12 @@ from datetime import datetime
 import networkx as nx
 from typing import Dict, List, Set, Tuple
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 # Adjust paths for reflow directory structure
 REFLOW_ROOT = Path(__file__).parent.parent
 TEMPLATES_PATH = REFLOW_ROOT / "templates"
@@ -40,15 +46,24 @@ class ArchitectureValidator:
                       self.system_path / "context" / "working_memory.json"]
         for memory_file in candidates:
             if memory_file.exists():
-                with open(memory_file) as f:
-                    return json.load(f)
+                try:
+                    return safe_load_json(memory_file, file_type_description="working memory")
+                except JSONValidationError:
+                    # Continue to next candidate if JSON is invalid
+                    continue
         return {}
 
     def load_service_files(self) -> Dict[str, dict]:
         services = {}
         for service_file in self.system_path.rglob("service_architecture.json"):
-            with open(service_file) as f:
-                services[service_file.parent.name] = json.load(f)
+            try:
+                services[service_file.parent.name] = safe_load_json(
+                    service_file,
+                    file_type_description="service architecture"
+                )
+            except JSONValidationError as e:
+                print(f"Warning: Skipping invalid service architecture {service_file}: {e}")
+                continue
         return services
 
     def validate_interface_consistency(self) -> List[dict]:
@@ -163,8 +178,11 @@ class ArchitectureValidator:
         ]
         for registry_file in candidates:
             if registry_file.exists():
-                with open(registry_file) as f:
-                    return json.load(f)
+                try:
+                    return safe_load_json(registry_file, file_type_description="interface registry")
+                except JSONValidationError:
+                    # Continue to next candidate if JSON is invalid
+                    continue
         return {"interfaces": {}}
 
     def validate_directory_structure(self) -> List[dict]:
@@ -267,9 +285,15 @@ def main():
         print("Usage: validate_architecture.py <system_path>")
         sys.exit(1)
 
-    system_path = Path(sys.argv[1])
-    if not system_path.exists():
-        print(f"Error: System path {system_path} does not exist")
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(sys.argv[1])
+    except PathSecurityError as e:
+        print(f"Error: Path security violation: {e}", file=sys.stderr)
+        print("System path must be a valid directory", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
     validator = ArchitectureValidator(system_path)

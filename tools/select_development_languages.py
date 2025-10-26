@@ -20,9 +20,21 @@ from pathlib import Path
 from typing import Dict, List, Any
 import argparse
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 class LanguageSelector:
-    def __init__(self, system_path: str):
-        self.system_path = Path(system_path)
+    def __init__(self, system_path: Path):
+        """
+        Initialize language selector with validated system path.
+
+        Args:
+            system_path: Pre-validated Path object (use validate_system_root() before passing)
+        """
+        self.system_path = system_path
         self.system_name = self.system_path.name
         
         # Language configurations with framework options
@@ -97,25 +109,38 @@ class LanguageSelector:
 
     def load_system_services(self) -> List[Dict[str, Any]]:
         """Load services from build_ready_index.json."""
-        build_ready_path = self.system_path / "build_ready_index.json"
-        
-        if not build_ready_path.exists():
-            print(f"❌ Error: build_ready_index.json not found at {build_ready_path}")
+        # Security: Sanitize build_ready_index path (v3.4.0 fix - SV-01)
+        try:
+            build_ready_path = sanitize_path(
+                "build_ready_index.json",
+                self.system_path,
+                must_exist=True
+            )
+        except (PathSecurityError, FileNotFoundError) as e:
+            print(f"❌ Error: build_ready_index.json not found or path security violation: {e}")
             sys.exit(1)
-        
-        with open(build_ready_path) as f:
-            build_ready = json.load(f)
-        
+
+        build_ready = safe_load_json(build_ready_path, file_type_description="build-ready configuration")
+
         services = []
         components = build_ready.get("components", {})
-        
+
         for service_id, component_info in components.items():
-            # Load service architecture to get more details
-            service_arch_path = Path(component_info.get("service_architecture_path", ""))
-            if service_arch_path.exists():
-                with open(service_arch_path) as f:
-                    service_arch = json.load(f)
-                
+            # Security: Sanitize service architecture path (v3.4.0 fix - SV-01)
+            try:
+                service_arch_path_str = component_info.get("service_architecture_path", "")
+                if not service_arch_path_str:
+                    continue
+
+                # Make path relative to system_path
+                service_arch_path = sanitize_path(
+                    service_arch_path_str,
+                    self.system_path,
+                    must_exist=True
+                )
+
+                service_arch = safe_load_json(service_arch_path, file_type_description="service architecture")
+
                 services.append({
                     "service_id": service_id,
                     "service_name": service_arch.get("service_name", service_id),
@@ -123,9 +148,13 @@ class LanguageSelector:
                     "component_classification": service_arch.get("component_classification", "service"),
                     "interfaces": service_arch.get("interfaces", []),
                     "performance": service_arch.get("performance", {}),
-                    "architecture_path": service_arch_path
+                    "architecture_path": str(service_arch_path)
                 })
-        
+
+            except (PathSecurityError, FileNotFoundError) as e:
+                print(f"Warning: Could not load service {service_id}: {e}")
+                continue
+
         return services
 
     def analyze_service_requirements(self, service: Dict[str, Any]) -> Dict[str, Any]:
@@ -383,13 +412,23 @@ class LanguageSelector:
 
     def save_configuration(self):
         """Save the language configuration to file."""
-        output_path = self.system_path / "development_language_configuration.json"
-        
-        with open(output_path, 'w') as f:
-            json.dump(self.language_configuration, f, indent=2)
-        
-        print(f"\n✅ Configuration saved to: {output_path}")
-        return output_path
+        # Security: Sanitize output path (v3.4.0 fix - SV-01)
+        try:
+            output_path = sanitize_path(
+                "development_language_configuration.json",
+                self.system_path,
+                must_exist=False
+            )
+
+            with open(output_path, 'w') as f:
+                json.dump(self.language_configuration, f, indent=2)
+
+            print(f"\n✅ Configuration saved to: {output_path}")
+            return output_path
+
+        except PathSecurityError as e:
+            print(f"ERROR: Could not save configuration: Path security violation: {e}")
+            sys.exit(1)
 
     def print_summary(self):
         """Print a summary of the configuration."""
@@ -426,26 +465,44 @@ def main():
     parser.add_argument("--config", help="Load configuration from JSON file")
     parser.add_argument("--homogeneous", action="store_true",
                        help="Force homogeneous configuration")
-    parser.add_argument("--heterogeneous", action="store_true", 
+    parser.add_argument("--heterogeneous", action="store_true",
                        help="Force heterogeneous configuration")
-    
+
     args = parser.parse_args()
-    
-    selector = LanguageSelector(args.system_path)
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"❌ Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"❌ System path does not exist: {args.system_path}")
+        sys.exit(1)
+
+    selector = LanguageSelector(system_path)
     services = selector.load_system_services()
-    
+
     if not services:
         print("❌ No services found in system. Please complete architecture workflow first.")
         sys.exit(1)
-    
+
     print(f"🚀 Development Language Selection for: {selector.system_name}")
     print(f"Found {len(services)} services to configure")
-    
+
     if args.config:
-        # Load from configuration file
-        with open(args.config) as f:
-            config = json.load(f)
-        selector.language_configuration = config
+        # Security: Validate config file path (v3.4.0 fix - SV-01)
+        try:
+            config_path = sanitize_path(
+                args.config,
+                system_path,
+                must_exist=True
+            )
+            config = safe_load_json(config_path, file_type_description="language configuration")
+            selector.language_configuration = config
+        except (PathSecurityError, FileNotFoundError) as e:
+            print(f"❌ Could not load config file: {e}")
+            sys.exit(1)
     else:
         # Interactive configuration
         print("\nConfiguration Options:")

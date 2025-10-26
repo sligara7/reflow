@@ -20,9 +20,21 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Set
 from collections import defaultdict
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import sanitize_path, validate_system_root, PathSecurityError
+
+# Import JSON validation (v3.4.0 security fix - SV-02)
+from json_utils import safe_load_json, JSONValidationError
+
 
 class PortRegistryValidator:
-    def __init__(self, port_registry_path: str):
+    def __init__(self, port_registry_path: Path):
+        """
+        Initialize validator with pre-validated port registry path.
+
+        Args:
+            port_registry_path: Pre-validated Path object
+        """
         self.port_registry_path = port_registry_path
         self.port_registry = None
         self.errors = []
@@ -32,14 +44,16 @@ class PortRegistryValidator:
     def load_registry(self) -> bool:
         """Load and parse port_registry.json"""
         try:
-            with open(self.port_registry_path, 'r') as f:
-                self.port_registry = json.load(f)
+            self.port_registry = safe_load_json(
+                self.port_registry_path,
+                file_type_description="port registry"
+            )
             return True
-        except FileNotFoundError:
-            self.errors.append(f"Port registry not found: {self.port_registry_path}")
+        except FileNotFoundError as e:
+            self.errors.append(str(e))
             return False
-        except json.JSONDecodeError as e:
-            self.errors.append(f"Invalid JSON in port registry: {e}")
+        except JSONValidationError as e:
+            self.errors.append(str(e))
             return False
 
     def validate(self) -> Tuple[bool, Dict]:
@@ -303,19 +317,45 @@ def main():
         print("   or: python3 validate_port_registry.py <system_root>")
         sys.exit(1)
 
-    input_path = sys.argv[1]
+    input_path_str = sys.argv[1]
 
-    # Determine port_registry.json path
-    if os.path.isfile(input_path):
-        port_registry_path = input_path
-    elif os.path.isdir(input_path):
-        # Assume it's system_root, look for port_registry.json
-        port_registry_path = os.path.join(input_path, 'specs', 'machine', 'port_registry.json')
-        if not os.path.exists(port_registry_path):
-            print(f"Error: port_registry.json not found at {port_registry_path}")
+    # Security: Validate and determine port_registry.json path (v3.4.0 fix - SV-01)
+    try:
+        input_path = Path(input_path_str).resolve()
+
+        if input_path.is_file():
+            # Direct file path provided - validate it
+            # Get system_root (parent of specs/machine)
+            if input_path.name == "port_registry.json" and input_path.parent.name == "machine":
+                system_root = input_path.parent.parent.parent
+                system_root = validate_system_root(system_root)
+                port_registry_path = sanitize_path(
+                    "specs/machine/port_registry.json",
+                    system_root,
+                    must_exist=True
+                )
+            else:
+                print(f"Error: File must be port_registry.json in specs/machine/ directory")
+                sys.exit(1)
+
+        elif input_path.is_dir():
+            # Directory provided - assume it's system_root
+            system_root = validate_system_root(input_path)
+            port_registry_path = sanitize_path(
+                "specs/machine/port_registry.json",
+                system_root,
+                must_exist=True
+            )
+
+        else:
+            print(f"Error: {input_path_str} is not a file or directory")
             sys.exit(1)
-    else:
-        print(f"Error: {input_path} is not a file or directory")
+
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation: {e}")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"ERROR: File not found: {e}")
         sys.exit(1)
 
     # Run validation
