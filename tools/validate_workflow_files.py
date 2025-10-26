@@ -4,6 +4,7 @@ Workflow Files Validator
 
 Validates workflow JSON files for:
 - JSON syntax correctness
+- JSON schema compliance (v3.4.0+)
 - Required fields presence
 - Step ID uniqueness
 - Valid step references (next_step points to existing step)
@@ -24,14 +25,38 @@ from typing import List, Dict, Tuple, Set
 # Import secure path handling (v3.4.0 security fix - SV-01)
 from path_utils import sanitize_path, validate_system_root, PathSecurityError
 
+# Import JSON schema validation (v3.4.0 feature - SCHEMAS-01)
+try:
+    import jsonschema
+    JSONSCHEMA_AVAILABLE = True
+except ImportError:
+    JSONSCHEMA_AVAILABLE = False
+    print("WARNING: jsonschema library not installed. Schema validation will be skipped.")
+    print("Install with: pip install jsonschema>=4.0.0")
+
 class WorkflowValidator:
     def __init__(self, reflow_root: str):
         self.reflow_root = Path(reflow_root)
         self.workflows_dir = self.reflow_root / "workflows"
         self.tools_dir = self.reflow_root / "tools"
         self.templates_dir = self.reflow_root / "templates"
+        self.schemas_dir = self.reflow_root / "schemas"
         self.errors = []
         self.warnings = []
+
+        # Load workflow schema if available (v3.4.0+)
+        self.workflow_schema = None
+        if JSONSCHEMA_AVAILABLE:
+            schema_path = self.schemas_dir / "workflow_schema.json"
+            if schema_path.exists():
+                try:
+                    with open(schema_path) as f:
+                        self.workflow_schema = json.load(f)
+                    print(f"✓ Loaded workflow schema from {schema_path}")
+                except Exception as e:
+                    print(f"WARNING: Failed to load workflow schema: {e}")
+            else:
+                print(f"WARNING: Workflow schema not found at {schema_path}")
 
     def validate_all_workflows(self) -> bool:
         """Validate all workflow JSON files in workflows directory."""
@@ -73,7 +98,31 @@ class WorkflowValidator:
 
         print("  ✓ JSON syntax valid")
 
-        # Check 2: Required top-level fields
+        # Check 2: Schema validation (v3.4.0+)
+        if self.workflow_schema and JSONSCHEMA_AVAILABLE:
+            try:
+                jsonschema.validate(data, self.workflow_schema)
+                print("  ✓ Schema validation passed")
+            except jsonschema.ValidationError as e:
+                # Format error path
+                error_path = ".".join(str(p) for p in e.path) if e.path else "root"
+                error_msg = f"  ✗ SCHEMA VALIDATION ERROR at '{error_path}': {e.message}"
+                file_errors.append(error_msg)
+                print(error_msg)
+                # Show schema context if available
+                if e.schema_path:
+                    schema_path = ".".join(str(p) for p in e.schema_path)
+                    print(f"     Schema requirement: {schema_path}")
+            except jsonschema.SchemaError as e:
+                error_msg = f"  ✗ SCHEMA ERROR: Invalid schema definition: {e.message}"
+                file_errors.append(error_msg)
+                print(error_msg)
+        elif not JSONSCHEMA_AVAILABLE:
+            print("  ⚠ Schema validation skipped (jsonschema not installed)")
+        elif not self.workflow_schema:
+            print("  ⚠ Schema validation skipped (schema not loaded)")
+
+        # Check 3: Required top-level fields
         required_fields = ["workflow_metadata", "workflow_steps", "completion"]
         missing_fields = [f for f in required_fields if f not in data]
         if missing_fields:
@@ -84,7 +133,7 @@ class WorkflowValidator:
         else:
             print("  ✓ Required top-level fields present")
 
-        # Check 3: workflow_metadata required fields
+        # Check 4: workflow_metadata required fields
         if "workflow_metadata" in data:
             metadata_required = ["workflow_id", "name", "version", "description"]
             metadata_missing = [f for f in metadata_required if f not in data["workflow_metadata"]]
@@ -96,7 +145,7 @@ class WorkflowValidator:
             else:
                 print("  ✓ workflow_metadata fields valid")
 
-        # Check 4: Step ID uniqueness
+        # Check 5: Step ID uniqueness
         if "workflow_steps" in data and isinstance(data["workflow_steps"], list):
             step_ids = [step.get("step_id") for step in data["workflow_steps"] if "step_id" in step]
             duplicates = {sid for sid in step_ids if step_ids.count(sid) > 1}
@@ -108,7 +157,7 @@ class WorkflowValidator:
             else:
                 print(f"  ✓ Step IDs unique ({len(step_ids)} steps)")
 
-            # Check 5: Valid next_step references
+            # Check 6: Valid next_step references
             valid_step_ids = set(step_ids)
             for step in data["workflow_steps"]:
                 next_step = step.get("next_step")
@@ -120,7 +169,7 @@ class WorkflowValidator:
             if not file_errors:  # Only print this if no next_step errors
                 print("  ✓ Step references valid")
 
-            # Check 6: Valid tool references
+            # Check 7: Valid tool references
             for step in data["workflow_steps"]:
                 tools_used = step.get("tools_used", [])
                 for tool in tools_used:
@@ -130,7 +179,7 @@ class WorkflowValidator:
                         file_warnings.append(warning_msg)
                         print(warning_msg)
 
-            # Check 7: Valid template references
+            # Check 8: Valid template references
             for step in data["workflow_steps"]:
                 templates_used = step.get("templates_used", [])
                 for template in templates_used:
@@ -140,7 +189,7 @@ class WorkflowValidator:
                         file_warnings.append(warning_msg)
                         print(warning_msg)
 
-            # Check 8: Required step fields
+            # Check 9: Required step fields
             for step in data["workflow_steps"]:
                 step_required = ["step_id", "name", "description", "phase"]
                 step_missing = [f for f in step_required if f not in step]
