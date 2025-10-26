@@ -947,5 +947,328 @@ class TestArchitecturalIssueDetection:
         assert isinstance(results, dict)
 
 
+class TestNetworkXPathAnalysis:
+    """Tests for path-related metrics (shortest paths, diameter, eccentricity)."""
+
+    def test_analyze_paths_connected_graph(self):
+        """Test path analysis on connected graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_paths
+
+        G = nx.DiGraph()
+        # Create connected graph: A -> B -> C -> D
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "D")
+
+        results = analyze_paths(G)
+
+        assert isinstance(results, dict)
+        # Should have diameter and average path length
+        assert 'diameter' in results
+        assert 'average_path_length' in results
+        assert 'eccentricity' in results
+
+    def test_analyze_paths_disconnected_graph(self):
+        """Test path analysis on disconnected graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_paths
+
+        G = nx.DiGraph()
+        # Create two disconnected components
+        G.add_edge("A", "B")
+        G.add_edge("C", "D")
+
+        results = analyze_paths(G)
+
+        assert isinstance(results, dict)
+        # Should indicate graph is not connected
+        if isinstance(results.get('diameter'), str):
+            assert 'not connected' in results['diameter'].lower() or 'multiple components' in results['diameter'].lower()
+
+    def test_analyze_paths_single_node(self):
+        """Test path analysis on single node graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_paths
+
+        G = nx.DiGraph()
+        G.add_node("A")
+
+        results = analyze_paths(G)
+
+        assert isinstance(results, dict)
+
+    def test_analyze_paths_empty_graph(self):
+        """Test path analysis on empty graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_paths
+
+        G = nx.DiGraph()
+
+        # Empty graph may raise NetworkXPointlessConcept exception
+        try:
+            results = analyze_paths(G)
+            assert isinstance(results, dict)
+        except nx.NetworkXPointlessConcept:
+            # This is expected for empty graphs
+            pass
+
+
+class TestNetworkXConnectivityAnalysis:
+    """Tests for connectivity metrics (components, bridges, connectivity)."""
+
+    def test_analyze_connectivity_single_component(self):
+        """Test connectivity analysis on single connected component."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_connectivity
+
+        G = nx.DiGraph()
+        # Create connected component
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        results = analyze_connectivity(G)
+
+        assert isinstance(results, dict)
+        assert 'num_components' in results
+        assert results['num_components'] == 1
+
+    def test_analyze_connectivity_multiple_components(self):
+        """Test connectivity analysis on multiple components."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_connectivity
+
+        G = nx.DiGraph()
+        # Component 1
+        G.add_edge("A", "B")
+        # Component 2
+        G.add_edge("C", "D")
+
+        results = analyze_connectivity(G)
+
+        assert isinstance(results, dict)
+        assert 'num_components' in results
+        assert results['num_components'] == 2
+        assert 'component_sizes' in results
+
+    def test_analyze_connectivity_bridge_detection(self):
+        """Test bridge detection (edges whose removal disconnects graph)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_connectivity
+
+        G = nx.DiGraph()
+        # Create graph with bridge: A -> B -> C (B-C is a bridge in undirected)
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+
+        results = analyze_connectivity(G)
+
+        assert isinstance(results, dict)
+        # Should have bridges analysis
+        assert 'bridges' in results or 'num_bridges' in results
+
+    def test_analyze_connectivity_node_edge_connectivity(self):
+        """Test node and edge connectivity metrics."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_connectivity
+
+        G = nx.DiGraph()
+        # Create well-connected graph
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_edge("A", "C")
+
+        results = analyze_connectivity(G)
+
+        assert isinstance(results, dict)
+        # Should have connectivity metrics
+        assert 'node_connectivity' in results
+        assert 'edge_connectivity' in results
+
+    def test_analyze_connectivity_empty_graph(self):
+        """Test connectivity analysis on empty graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_connectivity
+
+        G = nx.DiGraph()
+        results = analyze_connectivity(G)
+
+        assert isinstance(results, dict)
+        assert results.get('num_components', 0) == 0
+
+
+class TestNetworkXClusteringAnalysis:
+    """Tests for clustering metrics (clustering coefficient, transitivity, triangles)."""
+
+    def test_analyze_clustering_with_triangles(self):
+        """Test clustering analysis on graph with triangles."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_clustering
+
+        G = nx.DiGraph()
+        # Create triangle: A -> B -> C -> A
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+
+        results = analyze_clustering(G)
+
+        assert isinstance(results, dict)
+        assert 'clustering_coefficient' in results
+        assert 'transitivity' in results
+        assert 'triangles' in results
+
+    def test_analyze_clustering_no_triangles(self):
+        """Test clustering analysis on graph without triangles."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_clustering
+
+        G = nx.DiGraph()
+        # Create line graph (no triangles): A -> B -> C -> D
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "D")
+
+        results = analyze_clustering(G)
+
+        assert isinstance(results, dict)
+        assert 'clustering_coefficient' in results
+        assert 'transitivity' in results
+
+    def test_analyze_clustering_average_clustering(self):
+        """Test that average clustering is computed."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_clustering
+
+        G = nx.DiGraph()
+        # Create graph with some clustering
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "A")
+        G.add_edge("B", "D")
+
+        results = analyze_clustering(G)
+
+        assert isinstance(results, dict)
+        assert 'average_clustering' in results
+
+    def test_analyze_clustering_empty_graph(self):
+        """Test clustering analysis on empty graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_clustering
+
+        G = nx.DiGraph()
+        results = analyze_clustering(G)
+
+        assert isinstance(results, dict)
+
+
+class TestNetworkXPropertiesAnalysis:
+    """Tests for general graph properties (density, assortativity, reciprocity)."""
+
+    def test_analyze_properties_basic_stats(self):
+        """Test that basic graph stats are computed."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "D")
+
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert 'num_nodes' in results
+        assert 'num_edges' in results
+        assert results['num_nodes'] == 4
+        assert results['num_edges'] == 3
+
+    def test_analyze_properties_density(self):
+        """Test graph density calculation."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        # Sparse graph
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert 'density' in results
+        # Density should be between 0 and 1
+        if isinstance(results['density'], (int, float)):
+            assert 0 <= results['density'] <= 1
+
+    def test_analyze_properties_reciprocity(self):
+        """Test reciprocity calculation (bidirectional edges)."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        # Add bidirectional edges
+        G.add_edge("A", "B")
+        G.add_edge("B", "A")  # Reciprocal
+        G.add_edge("C", "D")  # Not reciprocal
+
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert 'reciprocity' in results
+
+    def test_analyze_properties_degree_distribution(self):
+        """Test degree distribution statistics."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        G.add_edge("A", "B")
+        G.add_edge("A", "C")
+        G.add_edge("B", "C")
+
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert 'degree_distribution' in results
+        # Should have min, max, mean, median
+        if isinstance(results['degree_distribution'], dict):
+            assert 'min' in results['degree_distribution']
+            assert 'max' in results['degree_distribution']
+            assert 'mean' in results['degree_distribution']
+            assert 'median' in results['degree_distribution']
+
+    def test_analyze_properties_assortativity(self):
+        """Test degree assortativity calculation."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        # Create graph with some structure
+        G.add_edge("A", "B")
+        G.add_edge("B", "C")
+        G.add_edge("C", "D")
+
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert 'degree_assortativity' in results
+
+    def test_analyze_properties_empty_graph(self):
+        """Test properties analysis on empty graph."""
+        import networkx as nx
+        from system_of_systems_graph_v2 import analyze_properties
+
+        G = nx.DiGraph()
+        results = analyze_properties(G)
+
+        assert isinstance(results, dict)
+        assert results['num_nodes'] == 0
+        assert results['num_edges'] == 0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
