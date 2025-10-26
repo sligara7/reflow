@@ -9,7 +9,7 @@ Usage:
     python3 validate_directory_structure.py <system_path>
     python3 validate_directory_structure.py <system_path> --auto-clean
     python3 validate_directory_structure.py <system_path> --report-only
-    
+
 Example:
     python3 validate_directory_structure.py /home/user/my_system
 """
@@ -22,6 +22,9 @@ from pathlib import Path
 import argparse
 from datetime import datetime
 import fnmatch
+
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
 
 # Embedded mode detection (auto-added during injection)
 def _detect_embedded_mode():
@@ -412,16 +415,17 @@ def main():
     parser.add_argument('--auto-clean', action='store_true', help='Automatically execute safe cleanup actions')
     parser.add_argument('--report-only', action='store_true', help='Generate report without cleanup options')
     parser.add_argument('--json', action='store_true', help='Output results as JSON')
-    
+
     args = parser.parse_args()
-    system_path = Path(args.system_path).resolve()
-    
-    if not system_path.exists():
-        print(f"❌ System path does not exist: {system_path}")
+
+    # Security: Validate system path (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"❌ Path security violation: {e}")
         sys.exit(1)
-    
-    if not system_path.is_dir():
-        print(f"❌ System path is not a directory: {system_path}")
+    except FileNotFoundError:
+        print(f"❌ System path does not exist: {args.system_path}")
         sys.exit(1)
     
     # Scan directory
