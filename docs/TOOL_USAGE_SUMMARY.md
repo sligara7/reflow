@@ -95,6 +95,148 @@ Comprehensive unit tests are available in `tests/unit/test_path_utils.py`:
 - **Commits**: 9 parts (b22b4e9 through 756791c)
 - **Tools Secured**: 16 of 16 (100%)
 - **Lines Added**: ~1,100 lines of security code
+- **Issue #2 (SV-02)**: JSON Schema Validation - Fixed in v3.4.0
+- **Commits**: 5 parts (c3bec34, d76d592, a2bf267, 86ec69a, 2b68a6f)
+- **Tools Updated**: 13 of 13 (100%)
+- **JSON Loads Secured**: 38 of 38 (100%)
+
+### JSON Validation Module: `json_utils.py`
+
+**All 13 tools that load JSON files now use safe_load_json()** with comprehensive error handling and optional schema validation.
+
+Located in `tools/json_utils.py`, this module provides:
+
+#### Core JSON Validation Functions
+
+**`safe_load_json(file_path, schema=None, file_type_description="JSON file")`**
+- Validates JSON syntax before processing
+- Optional JSON schema validation (uses jsonschema library)
+- Helpful error messages with line/column numbers
+- Context-specific error messages via `file_type_description`
+- Returns parsed JSON data as dictionary
+
+**`safe_load_json_with_schema_path(file_path, schema_path=None, file_type_description="JSON file")`**
+- Convenience wrapper that loads schema from file
+- Graceful fallback if schema file missing or invalid
+- Same validation benefits as `safe_load_json()`
+
+**`validate_required_fields(data, required_fields, file_description="JSON data")`**
+- Validates that required fields are present
+- Lists all missing fields in error message
+- Raises `JSONValidationError` with clear guidance
+
+**`validate_json_type(data, expected_type, field_name="root", file_description="JSON data")`**
+- Validates JSON data is of expected type (dict, list, str, etc.)
+- Shows expected vs actual type in error message
+- Useful for type checking nested JSON structures
+
+### What JSON Validation Protects Against
+
+1. **Malformed JSON Syntax**
+   - **Trailing commas**: `{"key": "value",}` → Error with helpful fix suggestion
+   - **Single quotes**: `{'key': 'value'}` → Error suggesting double quotes
+   - **Unquoted keys**: `{key: "value"}` → Error with quoting guidance
+   - **Missing brackets**: `{"key": ["value1", "value2"` → Error showing line/column
+
+2. **Invalid JSON Structure**
+   - Schema validation ensures JSON matches expected format
+   - Catches missing required fields before processing
+   - Validates field types (string vs int vs array, etc.)
+   - Prevents downstream crashes from malformed data
+
+3. **File Encoding Issues**
+   - Detects UTF-8 encoding errors
+   - Provides clear guidance on fixing encoding problems
+
+### Helpful Error Messages
+
+JSON validation provides **context-specific error messages**:
+
+**Example 1: Trailing Comma**
+```
+Invalid JSON syntax in workflow file: workflows/00-setup.json
+Error at line 42, column 15: Expecting property name enclosed in double quotes
+
+Common issues:
+  - Missing closing bracket/brace
+  - Trailing comma in array or object
+  - Unquoted strings or keys
+  - Single quotes instead of double quotes
+
+Use a JSON validator (e.g., jsonlint.com) to debug the syntax error.
+```
+
+**Example 2: Schema Validation Failure**
+```
+Schema validation failed for service architecture: service_architecture.json
+Error at 'metadata.version': '1.0' does not match '^[0-9]+\\.[0-9]+\\.[0-9]+$'
+
+This means the JSON file structure doesn't match the expected format.
+Please check the documentation for the correct service architecture structure.
+```
+
+**Example 3: Missing Required Field**
+```
+Missing required fields in workflow metadata:
+  - workflow_id
+  - version
+
+Required fields: workflow_id, name, version, description
+Please add the missing fields to the JSON file.
+```
+
+### Usage in Tools
+
+All 13 tools now follow this pattern:
+
+```python
+from json_utils import safe_load_json, JSONValidationError
+
+# Load JSON with syntax validation
+try:
+    data = safe_load_json(file_path, file_type_description="service architecture")
+except JSONValidationError as e:
+    print(f"ERROR: {e}")
+    sys.exit(1)
+
+# Or with schema validation
+try:
+    with open("schemas/workflow_schema.json") as f:
+        schema = json.load(f)
+    data = safe_load_json(file_path, schema=schema, file_type_description="workflow file")
+except JSONValidationError as e:
+    print(f"ERROR: {e}")
+    sys.exit(1)
+```
+
+### Tools with JSON Validation
+
+All 13 tools that load JSON now use safe_load_json():
+
+1. **validate_workflow_files.py** - Workflow files (with schema validation)
+2. **validate_port_registry.py** - Port registry
+3. **system_of_systems_graph_v2.py** - Working memory, framework registry, component index, architectures
+4. **validate_architecture.py** - Service architectures, interface registry, working memory
+5. **validate_foundational_alignment.py** - Service architectures, architectural definitions, change proposals
+6. **generate_interface_contracts.py** - Templates, component index, component architectures
+7. **verify_component_contract.py** - Component specifications, test suites
+8. **bootstrap_development_context.py** - JSON templates
+9. **validate_directory_structure.py** - Behavioral rules
+10. **analyze_features.py** - Working memory
+11. **select_development_languages.py** - Build-ready config, service architectures, language config
+12. **identify_integration_points.py** - System analysis files
+13. **generate_rag_embeddings.py** - RAG config, workflows, embeddings metadata, knowledge base sources
+14. **reflow_mcp_server.py** - Working memory, progress tracker, workflows, decision flow
+
+### Testing
+
+Comprehensive unit tests are available in `tests/unit/test_json_utils.py`:
+- 24 tests covering all JSON validation scenarios
+- Tests for malformed JSON (trailing commas, single quotes, missing brackets, etc.)
+- Tests for schema validation success and failure
+- Tests for helpful error messages
+- Run with: `python -m pytest tests/unit/test_json_utils.py -v`
+- All tests pass (100% coverage of JSON validation functions)
 
 ---
 
