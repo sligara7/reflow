@@ -92,8 +92,7 @@ class ContractVerifier:
                 specification_path,
                 must_exist=True
             )
-            with open(spec_file) as f:
-                specification = json.load(f)
+            specification = safe_load_json(spec_file, file_type_description="component specification")
         except PathSecurityError as e:
             self.verification_results["issues_found"].append(
                 {
@@ -388,12 +387,11 @@ class ContractVerifier:
     def _run_test_suite(self, test_file: Path) -> bool:
         """Run a test suite (simplified)."""
         try:
-            with open(test_file) as f:
-                test_suite = json.load(f)
+            test_suite = safe_load_json(test_file, file_type_description="test suite")
             # This is a placeholder - real implementation would execute tests
             print(f"  📝 Running test suite: {test_file.name}")
             return True
-        except Exception as e:
+        except (JSONValidationError, FileNotFoundError) as e:
             print(f"  ❌ Failed to run test suite {test_file.name}: {e}")
             return False
 

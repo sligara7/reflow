@@ -116,10 +116,11 @@ def load_behavioral_rules():
     
     if rules_path.exists():
         try:
-            with open(rules_path, 'r') as f:
-                rules = json.load(f)
-                return rules.get('DIRECTORY_STRUCTURE_ENFORCEMENT', {})
-        except:
+            rules = safe_load_json(rules_path, file_type_description="behavioral rules file")
+            return rules.get('DIRECTORY_STRUCTURE_ENFORCEMENT', {})
+        except (JSONValidationError, FileNotFoundError) as e:
+            # Fallback to default rules if file can't be loaded
+            print(f"Warning: Could not load behavioral rules from {rules_path}: {e}")
             pass
     
     # Fallback rules if file not found

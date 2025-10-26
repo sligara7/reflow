@@ -21,9 +21,8 @@ from json_utils import safe_load_json, JSONValidationError
 def load_system_analysis(analysis_file: str) -> Dict[str, Any]:
     """Load system analysis results from a JSON file."""
     try:
-        with open(analysis_file, 'r') as f:
-            return json.load(f)
-    except Exception as e:
+        return safe_load_json(Path(analysis_file), file_type_description="system analysis file")
+    except (JSONValidationError, FileNotFoundError) as e:
         print(f"Error loading {analysis_file}: {e}", file=sys.stderr)
         return {}
 

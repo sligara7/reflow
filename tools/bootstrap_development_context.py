@@ -34,8 +34,10 @@ def load_template(template_name):
         raise FileNotFoundError(f"Template not found or path security violation: {template_name} - {e}")
 
     if template_path.suffix == '.json':
-        with open(template_path) as f:
-            return json.load(f)
+        try:
+            return safe_load_json(template_path, file_type_description=f"template file '{template_name}'")
+        except JSONValidationError as e:
+            raise ValueError(f"Invalid JSON in template {template_name}: {e}")
     else:
         with open(template_path) as f:
             return f.read()

@@ -120,8 +120,7 @@ class FeatureAnalyzer:
         try:
             # Load existing working memory
             if working_memory_path.exists():
-                with open(working_memory_path) as f:
-                    memory = json.load(f)
+                memory = safe_load_json(working_memory_path, file_type_description="working memory")
             else:
                 memory = {}
 

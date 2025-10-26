@@ -46,15 +46,24 @@ class ArchitectureValidator:
                       self.system_path / "context" / "working_memory.json"]
         for memory_file in candidates:
             if memory_file.exists():
-                with open(memory_file) as f:
-                    return json.load(f)
+                try:
+                    return safe_load_json(memory_file, file_type_description="working memory")
+                except JSONValidationError:
+                    # Continue to next candidate if JSON is invalid
+                    continue
         return {}
 
     def load_service_files(self) -> Dict[str, dict]:
         services = {}
         for service_file in self.system_path.rglob("service_architecture.json"):
-            with open(service_file) as f:
-                services[service_file.parent.name] = json.load(f)
+            try:
+                services[service_file.parent.name] = safe_load_json(
+                    service_file,
+                    file_type_description="service architecture"
+                )
+            except JSONValidationError as e:
+                print(f"Warning: Skipping invalid service architecture {service_file}: {e}")
+                continue
         return services
 
     def validate_interface_consistency(self) -> List[dict]:
@@ -169,8 +178,11 @@ class ArchitectureValidator:
         ]
         for registry_file in candidates:
             if registry_file.exists():
-                with open(registry_file) as f:
-                    return json.load(f)
+                try:
+                    return safe_load_json(registry_file, file_type_description="interface registry")
+                except JSONValidationError:
+                    # Continue to next candidate if JSON is invalid
+                    continue
         return {"interfaces": {}}
 
     def validate_directory_structure(self) -> List[dict]:
