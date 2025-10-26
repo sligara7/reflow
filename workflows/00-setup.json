@@ -182,69 +182,122 @@
     {
       "step_id": "S-01A",
       "name": "Architectural Framework Selection",
-      "description": "Select the architectural framework appropriate for the system being modeled",
+      "description": "Critically analyze and select the architectural framework appropriate for the system being modeled",
       "phase": "initialization",
       "step_file": "workflow_steps/setup/S-01A-FrameworkSelection.json",
-      "rationale": "Different systems (engineered, biological, social, ecological) require different architectural frameworks. UAF 1.2 is ideal for engineered systems, but biological systems benefit from Systems Biology frameworks, social systems from SNA, etc.",
+      "rationale": "Framework selection is an ARCHITECTURAL DECISION, not a configuration choice. Wrong framework = wrong insights. This step requires EXPLICIT ANALYSIS of all frameworks against system semantics and user confirmation before proceeding.",
+      "critical_lesson": "LESSON-01: Do NOT default to UAF! Analyze system semantics (state machines? services? agents? species?) against ALL frameworks. Framework choice determines which NetworkX analyses are available.",
       "actions": [
         {
           "action_id": "S-01A-A01",
-          "description": "Present framework options to user",
-          "user_prompt": {
-            "question": "Which architectural framework best describes your system?",
-            "guidance": "Choose based on the primary nature of your system",
-            "options": {
-              "uaf": {
-                "display_name": "UAF 1.2 - Unified Architecture Framework (DEFAULT)",
-                "best_for": "Engineered systems: software services, hardware systems, enterprise architecture, defense systems (DoDAF/MODAF)",
-                "node_term": "service",
-                "edge_term": "interface",
-                "examples": "Microservices architecture, IoT systems, enterprise IT, system-of-systems integration"
-              },
-              "systems_biology": {
-                "display_name": "Systems Biology Framework",
-                "best_for": "Biological systems: gene networks, metabolic pathways, protein interactions, ecological food webs",
-                "node_term": "component",
-                "edge_term": "interaction",
-                "examples": "Gene regulatory networks, metabolic pathway modeling, protein-protein interactions, ecosystem dynamics"
-              },
-              "social_network": {
-                "display_name": "Social Network Analysis (SNA)",
-                "best_for": "Social systems: organizations, communities, influence networks, collaboration networks",
-                "node_term": "agent",
-                "edge_term": "relationship",
-                "examples": "Organizational structure, social media networks, team collaboration, community analysis"
-              },
-              "ecological": {
-                "display_name": "Ecological Systems Framework",
-                "best_for": "Ecosystems: food webs, species interactions, population dynamics, conservation planning",
-                "node_term": "species/population",
-                "edge_term": "ecological_interaction",
-                "examples": "Food web modeling, predator-prey dynamics, ecosystem resilience, biodiversity analysis"
-              },
-              "complex_adaptive": {
-                "display_name": "Complex Adaptive Systems (CAS)",
-                "best_for": "Emergent, self-organizing systems: markets, cities, hybrid systems with feedback and adaptation",
-                "node_term": "adaptive_agent",
-                "edge_term": "interaction",
-                "examples": "Economic markets, urban systems, traffic flow, multi-agent simulations"
-              },
-              "custom": {
-                "display_name": "Custom Framework (LLM-Generated)",
-                "best_for": "Novel or hybrid systems not covered by existing frameworks",
-                "node_term": "component (user-defined)",
-                "edge_term": "connection (user-defined)",
-                "examples": "Cyber-physical-social systems, experimental domains, unique research areas",
-                "requires_llm_research": true
-              }
-            },
-            "default": "uaf",
-            "help_text": "This determines terminology, templates, and validation rules. All frameworks use the same core abstraction (nodes + edges) and can be analyzed with networkx graph tools."
-          }
+          "description": "Analyze system domain and characteristics",
+          "purpose": "Understand system semantics BEFORE selecting framework",
+          "llm_instructions": [
+            "Ask user to describe the system in their own words",
+            "Identify: What are the primary entities? (services, states, agents, species, etc.)",
+            "Identify: What are the connections? (APIs, transitions, relationships, interactions, etc.)",
+            "Identify: Are there decision points or conditional routing?",
+            "Identify: Are cycles expected (feedback loops) or errors (circular dependencies)?",
+            "Identify: Will you need to analyze flow/throughput/bottlenecks?"
+          ],
+          "output": "System characteristics summary for framework matching"
         },
         {
           "action_id": "S-01A-A02",
-          "description": "Load selected framework definition",
+          "description": "Analyze ALL frameworks against system characteristics",
+          "purpose": "Evaluate EVERY framework, not just pick one",
+          "llm_instructions": [
+            "Load definitions/framework_registry.json",
+            "For EACH of the 7 frameworks (UAF, Decision Flow, Systems Biology, Social Network, Ecological, CAS, Custom):",
+            "  - Evaluate: Does system domain match framework domain?",
+            "  - Evaluate: Do system entities match framework node types?",
+            "  - Evaluate: Do system connections match framework edge types?",
+            "  - Evaluate: Which NetworkX analyses does this framework enable?",
+            "  - Evaluate: What insights would this framework reveal?",
+            "  - Evaluate: What insights would this framework MISS?",
+            "Create comparison table showing each framework's fit"
+          ],
+          "required_fields_to_check": [
+            "framework.domain",
+            "framework.node_types",
+            "framework.edge_types",
+            "framework.recommended_analyses",
+            "framework.edge_schema (does it support weights?)"
+          ],
+          "output": "Framework analysis comparison table"
+        },
+        {
+          "action_id": "S-01A-A03",
+          "description": "Map NetworkX analyses to each framework",
+          "purpose": "Show which analyses each framework enables/blocks",
+          "llm_instructions": [
+            "For each framework, list which NetworkX analyses are:",
+            "  - AVAILABLE: Can be run with this framework",
+            "  - BLOCKED: Cannot be run (e.g., flow analysis requires edge weights)",
+            "  - SEMANTIC: Have different meaning (cycles = rework loops vs circular deps)",
+            "Create NetworkX analysis availability matrix",
+            "Highlight analyses that are HIGH priority for this system"
+          ],
+          "example_output": {
+            "uaf": {
+              "flow_analysis": "BLOCKED - No edge weights support",
+              "cycle_detection": "AVAILABLE - Cycles indicate circular dependencies (BAD)",
+              "dag_analysis": "AVAILABLE - Verify no circular service dependencies"
+            },
+            "decision_flow": {
+              "flow_analysis": "AVAILABLE - Uses transition probabilities to find critical paths",
+              "cycle_detection": "AVAILABLE - Cycles indicate rework loops (EXPECTED)",
+              "dag_analysis": "AVAILABLE - Find sequential workflow paths"
+            }
+          },
+          "output": "NetworkX analysis availability matrix"
+        },
+        {
+          "action_id": "S-01A-A04",
+          "description": "Recommend framework with detailed rationale",
+          "purpose": "Present LLM's framework recommendation to user",
+          "llm_instructions": [
+            "Based on steps A01-A03 analysis, select BEST framework",
+            "Prepare recommendation message including:",
+            "  1. Recommended framework name and ID",
+            "  2. WHY this framework matches system semantics",
+            "  3. WHAT insights this framework will reveal",
+            "  4. WHICH NetworkX analyses will be enabled",
+            "  5. WHAT alternatives were considered and rejected",
+            "Format as clear, structured message for user"
+          ],
+          "recommendation_template": {
+            "recommended_framework": "framework_id",
+            "rationale": "Why this framework matches system",
+            "reveals": ["Insight 1", "Insight 2"],
+            "enables_analyses": ["flow", "cycles", "centrality"],
+            "alternatives_considered": {
+              "uaf": "Rejected because...",
+              "systems_biology": "Rejected because..."
+            }
+          },
+          "output": "Framework recommendation with rationale"
+        },
+        {
+          "action_id": "S-01A-A05",
+          "description": "Present recommendation to user and request confirmation",
+          "purpose": "USER MUST EXPLICITLY CONFIRM framework selection",
+          "user_prompt": {
+            "message_format": "Framework Recommendation:\n\nRecommended: {framework_name}\n\nRationale:\n{rationale}\n\nThis framework reveals:\n{reveals_list}\n\nNetworkX analyses enabled:\n{enabled_analyses}\n\nAlternatives considered:\n{alternatives_rejected}\n\n⚠️ IMPORTANT: Framework selection determines entire analysis approach. Switching later requires re-doing all architecture files.\n\nConfirm: Proceed with {framework_name}? [Y/N]",
+            "required": true,
+            "blocking": true
+          },
+          "user_response_handling": {
+            "if_yes": "Proceed to action S-01A-A06",
+            "if_no": "Ask user which framework they prefer, re-analyze with that framework, re-present confirmation",
+            "if_uncertain": "Provide additional guidance on framework tradeoffs"
+          },
+          "output": "User confirmation (Y/N)"
+        },
+        {
+          "action_id": "S-01A-A06",
+          "description": "User confirmed framework - load framework definition",
+          "condition": "User confirmed YES in S-01A-A05",
           "command_pattern": "Read framework_registry.json and architectural_definitions_{framework}.json",
           "file_locations": [
             "{reflow_root}/definitions/framework_registry.json",
@@ -253,21 +306,31 @@
           "note": "If custom framework selected, LLM researches domain and creates custom definitions file"
         },
         {
-          "action_id": "S-01A-A03",
-          "description": "Update working_memory.json with framework selection",
+          "action_id": "S-01A-A07",
+          "description": "Update working_memory.json with framework selection and analysis results",
+          "purpose": "Document framework decision with complete rationale",
           "updates": {
-            "architectural_framework": "{selected_framework_id}",
-            "framework_name": "{framework_display_name}",
-            "component_term": "{node_term}",
-            "connection_term": "{edge_term}",
-            "definitions_path": "{reflow_root}/definitions/architectural_definitions_{framework}.json",
-            "template_file": "{framework_template_file}",
-            "architecture_file_name": "{framework_architecture_file_name}"
+            "framework_configuration": {
+              "framework_id": "{selected_framework_id}",
+              "framework_name": "{framework_display_name}",
+              "component_term": "{node_term}",
+              "connection_term": "{edge_term}",
+              "architecture_file_type": "{architecture_file_type}",
+              "selected_framework_rationale": "{detailed_rationale_from_A04}",
+              "user_confirmed": true,
+              "confirmation_timestamp": "{timestamp}"
+            },
+            "framework_analysis": {
+              "system_characteristics": "{summary_from_A01}",
+              "frameworks_evaluated": "{list_of_all_frameworks_analyzed}",
+              "recommended_analyses": "{enabled_analyses_from_A03}",
+              "alternatives_rejected": "{alternatives_from_A04}"
+            }
           },
           "store_in": "context/working_memory.json"
         },
         {
-          "action_id": "S-01A-A04",
+          "action_id": "S-01A-A08",
           "description": "If custom framework: LLM research and definition creation",
           "condition": "selected_framework == 'custom'",
           "if_custom": {
@@ -292,23 +355,62 @@
           }
         },
         {
-          "action_id": "S-01A-A05",
-          "description": "Display framework confirmation",
-          "output_message": "Framework selected: {framework_name}\\nYour system will use '{component_term}' nodes connected by '{connection_term}' edges.\\nDefinitions: {definitions_path}\\nTemplate: {template_file}"
+          "action_id": "S-01A-A09",
+          "description": "Display framework confirmation summary",
+          "output_message": "✓ Framework selected: {framework_name}\\n✓ User confirmed: {confirmation_timestamp}\\n✓ System will use '{component_term}' nodes connected by '{connection_term}' edges\\n✓ NetworkX analyses enabled: {enabled_analyses}\\n✓ Definitions: {definitions_path}\\n✓ Template: {template_file}\\n\\nFramework selection complete. Rationale documented in working_memory.json."
         }
       ],
       "tools_used": [],
       "outputs": [
-        "context/working_memory.json updated with framework selection",
+        "context/working_memory.json updated with framework selection and analysis rationale",
+        "Framework analysis documented: system characteristics, alternatives evaluated, NetworkX analyses enabled",
         "Optionally: architectural_definitions_custom.json (if custom selected)"
       ],
-      "gates": [],
+      "gates": [
+        {
+          "gate_id": "S-01A-QG",
+          "name": "Framework Selection Confirmation (BLOCKING)",
+          "type": "BLOCKING",
+          "severity": "CRITICAL",
+          "rationale": "Framework selection is an architectural decision that determines entire analysis approach. User must explicitly confirm before proceeding.",
+          "checks": [
+            {
+              "check_id": "FS-01",
+              "description": "System characteristics analyzed",
+              "validation": "working_memory.json contains framework_analysis.system_characteristics"
+            },
+            {
+              "check_id": "FS-02",
+              "description": "ALL frameworks evaluated (not just one)",
+              "validation": "working_memory.json framework_analysis.frameworks_evaluated contains at least 5 frameworks"
+            },
+            {
+              "check_id": "FS-03",
+              "description": "NetworkX analyses mapped to framework",
+              "validation": "working_memory.json framework_analysis.recommended_analyses is populated"
+            },
+            {
+              "check_id": "FS-04",
+              "description": "User explicitly confirmed framework selection",
+              "validation": "working_memory.json framework_configuration.user_confirmed == true"
+            },
+            {
+              "check_id": "FS-05",
+              "description": "Detailed rationale documented",
+              "validation": "working_memory.json framework_configuration.selected_framework_rationale is not empty"
+            }
+          ],
+          "failure_action": "Cannot proceed to S-02 without user confirmation. Re-execute S-01A-A05 to obtain confirmation.",
+          "success_message": "✓ Framework selection confirmed by user. Rationale and analysis documented."
+        }
+      ],
       "next_step": "S-02",
       "notes": [
-        "All frameworks map to the same core abstraction (nodes with functions + edges with interactions)",
-        "Framework choice affects terminology and templates but not core workflow structure",
-        "Tools like system_of_systems_graph_v2.py work across all frameworks via framework adapters",
-        "UAF 1.2 is default and recommended for most engineered systems"
+        "CRITICAL: Framework selection is NOT a default choice - it requires explicit analysis",
+        "All frameworks map to the same core abstraction (nodes + edges) but enable different analyses",
+        "Wrong framework = wrong insights (Example: UAF on workflows misses decision logic)",
+        "Time investment: 10-15 min framework analysis saves hours of rework later",
+        "Tools like system_of_systems_graph_v2.py work across all frameworks via framework adapters"
       ]
     },
     {

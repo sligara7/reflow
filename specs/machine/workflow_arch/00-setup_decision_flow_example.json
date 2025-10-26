@@ -1,0 +1,297 @@
+{
+  "$schema": "../../../templates/schemas/workflow_step_architecture_schema.json",
+  "framework": "decision_flow",
+  "workflow_id": "00-setup",
+  "workflow_name": "Setup Workflow - Decision Flow Example",
+  "description": "Example demonstrating Decision Flow Framework vs UAF approach for setup workflow steps",
+  "metadata": {
+    "created_date": "2025-10-26",
+    "purpose": "Demonstrate Decision Flow Framework capabilities",
+    "comparison": "Shows how Decision Flow reveals insights UAF missed"
+  },
+
+  "workflow_steps": [
+    {
+      "step_id": "S-01",
+      "step_name": "Initialize Workflow & Path Configuration",
+      "node_type": "start_state",
+      "step_type": "initialization",
+      "actions": [
+        "Create directory structure (context/, specs/machine/, specs/human/)",
+        "Initialize working_memory.json",
+        "Configure paths (reflow_root, system_root, tools_path)"
+      ],
+      "prerequisites": [],
+      "inputs": [],
+      "outputs": [
+        "working_memory.json (initialized)",
+        "Directory structure created"
+      ],
+      "transitions": [
+        {
+          "transition_id": "S-01_to_S-01A",
+          "transition_type": "sequential",
+          "target_step": "S-01A",
+          "condition": "always",
+          "probability": 1.0,
+          "weight": 10,
+          "description": "Unconditional next step - all workflows proceed to framework selection"
+        }
+      ]
+    },
+
+    {
+      "step_id": "S-01A",
+      "step_name": "Framework Selection",
+      "node_type": "decision_node",
+      "step_type": "configuration",
+      "actions": [
+        "Analyze system domain",
+        "Select appropriate framework (UAF, Biology, Social, Ecological, CAS, Custom, Decision Flow)",
+        "Update working_memory.json with framework_configuration"
+      ],
+      "prerequisites": ["S-01"],
+      "inputs": ["working_memory.json"],
+      "outputs": ["working_memory.json (with framework selected)"],
+      "transitions": [
+        {
+          "transition_id": "S-01A_to_S-02",
+          "transition_type": "sequential",
+          "target_step": "S-02",
+          "condition": "framework_selected",
+          "probability": 1.0,
+          "weight": 10,
+          "description": "After framework selection, proceed to directory structure"
+        }
+      ],
+      "decision_logic": "LLM agent analyzes system domain and selects framework based on framework_registry.json guidance"
+    },
+
+    {
+      "step_id": "S-02",
+      "step_name": "Create Directory Structure",
+      "node_type": "process_step",
+      "step_type": "setup",
+      "actions": [
+        "Create specs/machine/ directories",
+        "Create specs/human/ directories",
+        "Set up service_arch/, interfaces/, graphs/ subdirectories"
+      ],
+      "prerequisites": ["S-01A"],
+      "inputs": ["working_memory.json (paths configured)"],
+      "outputs": ["Complete directory structure"],
+      "transitions": [
+        {
+          "transition_id": "S-02_to_S-03",
+          "transition_type": "sequential",
+          "target_step": "S-03",
+          "condition": "directories_created",
+          "probability": 1.0,
+          "weight": 10,
+          "description": "After directories created, proceed to foundational documents"
+        }
+      ]
+    },
+
+    {
+      "step_id": "S-03",
+      "step_name": "Create Foundational Documents",
+      "node_type": "process_step",
+      "step_type": "documentation",
+      "actions": [
+        "Generate SYSTEM_MISSION_STATEMENT.md",
+        "Generate USER_SCENARIOS.md",
+        "Generate SUCCESS_CRITERIA.md"
+      ],
+      "prerequisites": ["S-02"],
+      "inputs": ["User requirements", "System context"],
+      "outputs": [
+        "SYSTEM_MISSION_STATEMENT.md",
+        "USER_SCENARIOS.md",
+        "SUCCESS_CRITERIA.md"
+      ],
+      "transitions": [
+        {
+          "transition_id": "S-03_to_S-04-decision",
+          "transition_type": "sequential",
+          "target_step": "S-04-decision",
+          "condition": "foundational_docs_created",
+          "probability": 1.0,
+          "weight": 10,
+          "description": "After foundational docs, decide on git automation"
+        }
+      ]
+    },
+
+    {
+      "step_id": "S-04-decision",
+      "step_name": "Git Automation Decision Gate",
+      "node_type": "decision_node",
+      "step_type": "decision_gate",
+      "actions": [
+        "Ask user: Enable automatic git commits?",
+        "Present benefits/drawbacks",
+        "Capture user choice"
+      ],
+      "prerequisites": ["S-03"],
+      "inputs": ["User preference"],
+      "outputs": ["Git automation decision"],
+      "transitions": [
+        {
+          "transition_id": "S-04-decision_to_S-04_enable",
+          "transition_type": "conditional",
+          "target_step": "S-04",
+          "condition": "user_choice == 'enable_git_automation'",
+          "probability": 0.3,
+          "weight": 3,
+          "description": "30% of users enable git automation (less common path)",
+          "flow_significance": "rare_path"
+        },
+        {
+          "transition_id": "S-04-decision_to_SE-01_skip",
+          "transition_type": "skip",
+          "target_step": "SE-01",
+          "condition": "user_choice == 'skip_git_automation'",
+          "probability": 0.7,
+          "weight": 7,
+          "description": "70% of users skip git automation (MOST COMMON PATH)",
+          "flow_significance": "critical_path"
+        }
+      ],
+      "decision_logic": "User choice determines path - this is a FORK in the workflow",
+      "analysis_notes": {
+        "uaf_approach": "UAF treated this as a simple step with an interface, missing the fork semantics",
+        "decision_flow_reveals": "This is a critical decision node where 70% take one path, 30% take another. Flow analysis shows skip path is the bottleneck."
+      }
+    },
+
+    {
+      "step_id": "S-04",
+      "step_name": "Configure Git Automation",
+      "node_type": "process_step",
+      "step_type": "configuration",
+      "actions": [
+        "Configure git remote",
+        "Set up branch naming",
+        "Configure commit message templates",
+        "Test git credentials"
+      ],
+      "prerequisites": ["S-04-decision (if enabled)"],
+      "inputs": ["Git configuration", "User credentials"],
+      "outputs": ["Git automation configured"],
+      "transitions": [
+        {
+          "transition_id": "S-04_to_SE-01",
+          "transition_type": "sequential",
+          "target_step": "SE-01",
+          "condition": "git_configured",
+          "probability": 1.0,
+          "weight": 3,
+          "description": "After git setup, proceed to systems engineering workflow",
+          "note": "Weight is 3 (not 10) because only 30% of users reach this step"
+        }
+      ]
+    },
+
+    {
+      "step_id": "SE-01",
+      "step_name": "Transition to Systems Engineering Workflow",
+      "node_type": "end_state",
+      "step_type": "workflow_transition",
+      "actions": [
+        "Mark setup workflow complete",
+        "Transition to 01-systems_engineering.json"
+      ],
+      "prerequisites": ["S-04 OR S-04-decision (skip path)"],
+      "inputs": ["Setup complete"],
+      "outputs": ["Transition to next workflow"],
+      "transitions": [],
+      "convergence_note": "This step has 2 incoming paths: 70% skip git, 30% configure git. Total flow = 10."
+    }
+  ],
+
+  "flow_analysis_insights": {
+    "critical_path": {
+      "path": ["S-01", "S-01A", "S-02", "S-03", "S-04-decision", "SE-01"],
+      "probability": 0.7,
+      "description": "Most users skip git automation (70% take this path)"
+    },
+    "alternative_path": {
+      "path": ["S-01", "S-01A", "S-02", "S-03", "S-04-decision", "S-04", "SE-01"],
+      "probability": 0.3,
+      "description": "Minority enable git automation (30% take this path)"
+    },
+    "bottleneck_analysis": {
+      "bottleneck_step": "SE-01",
+      "reason": "All paths converge here (70% + 30% = 100%)",
+      "fan_in": 2,
+      "total_flow": 10
+    },
+    "decision_node_analysis": {
+      "critical_decision": "S-04-decision",
+      "betweenness_centrality": "HIGH (all paths pass through)",
+      "impact": "Determines 70/30 split in workflow paths",
+      "optimization_opportunity": "Could improve git automation adoption rate from 30% to higher by better UX"
+    }
+  },
+
+  "comparison_with_uaf": {
+    "what_uaf_showed": {
+      "nodes": "7 workflow steps as 'services'",
+      "edges": "Data artifacts flowing between steps",
+      "missing": [
+        "Decision logic at S-04-decision",
+        "Path probabilities (70/30 split)",
+        "Flow analysis (can't find critical path)",
+        "Bottleneck detection (can't see SE-01 convergence)"
+      ]
+    },
+    "what_decision_flow_reveals": {
+      "nodes": "5 process steps + 2 decision nodes (explicit node types)",
+      "edges": "Conditional transitions with probabilities and weights",
+      "enables": [
+        "Flow analysis: Identify 70% take skip path (critical path)",
+        "Bottleneck: SE-01 has fan-in of 2 (convergence point)",
+        "Decision impact: S-04-decision splits workflow 70/30",
+        "Optimization: Could improve git adoption by addressing UX"
+      ]
+    }
+  },
+
+  "networkx_analyses_enabled": {
+    "flow_analysis": {
+      "method": "nx.maximum_flow(G, 'S-01', 'SE-01', capacity='weight')",
+      "result": "Max flow = 10 (all workflows eventually reach SE-01)",
+      "bottleneck": "No bottleneck - both paths have adequate capacity",
+      "critical_path": "S-01 → S-01A → S-02 → S-03 → S-04-decision → SE-01 (skip git)"
+    },
+    "path_analysis": {
+      "shortest_path": "['S-01', 'S-01A', 'S-02', 'S-03', 'S-04-decision', 'SE-01'] (6 steps)",
+      "longest_path": "['S-01', 'S-01A', 'S-02', 'S-03', 'S-04-decision', 'S-04', 'SE-01'] (7 steps)",
+      "interpretation": "70% take shortest path, 30% take longest path"
+    },
+    "centrality_analysis": {
+      "highest_betweenness": "S-04-decision (all paths must pass through)",
+      "interpretation": "Most critical decision node - determines workflow fork"
+    },
+    "cycle_analysis": {
+      "cycles_found": "None in setup workflow",
+      "expected": "Setup is acyclic (no rework loops)",
+      "note": "Other workflows have cycles (validation failures)"
+    }
+  },
+
+  "next_steps": {
+    "full_analysis": "Model all 35 workflow steps across 6 workflows with Decision Flow Framework",
+    "expected_insights": [
+      "Validation failure rates (SE-03 rework loops)",
+      "Architecture-only vs full development split (60/40)",
+      "Common path bottlenecks",
+      "Critical quality gates",
+      "Rework probability by workflow phase"
+    ],
+    "tools_to_use": [
+      "system_of_systems_graph_v2.py --flow --cycles --paths --centrality --community"
+    ]
+  }
+}

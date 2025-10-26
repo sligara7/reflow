@@ -14,33 +14,42 @@
     "note": "Meta-analysis: Reflow is both the tooling AND the system being analyzed"
   },
   "framework_configuration": {
-    "framework_id": "uaf",
-    "framework_name": "UAF 1.2 - Unified Architecture Framework",
+    "framework_id": "decision_flow",
+    "framework_name": "Decision Flow Framework",
     "component_term": "workflow_step",
-    "connection_term": "data_artifact",
-    "architecture_file_type": "service_architecture.json",
-    "selected_framework_rationale": "UAF is most appropriate for this meta-analysis because workflow steps function as 'services' that consume and produce data artifacts. Each step has inputs (previous artifacts), processing logic (actions), and outputs (new artifacts). This maps cleanly to UAF's service-oriented architecture.",
-    "note": "Treating workflow steps as services with data artifact interfaces"
+    "connection_term": "transition",
+    "architecture_file_type": "workflow_step_architecture.json",
+    "selected_framework_rationale": "Decision Flow Framework is the correct choice for Reflow meta-analysis. Workflows are fundamentally STATE MACHINES with CONDITIONAL TRANSITIONS, not service architectures. Decision Flow models: (1) Steps as states with node types (process_step, decision_node), (2) Transitions with conditions and probabilities for flow analysis, (3) Rework loops as semantic cycles, (4) Quality gates as decision nodes. This enables flow analysis to find common paths, cycle detection to measure rework probability, and path analysis to identify bottlenecks - insights UAF completely missed.",
+    "note": "Treating workflow steps as states in decision flow graph with conditional transitions",
+    "previous_framework": "uaf",
+    "switch_reason": "UAF treated steps as services which missed decision logic, rework loops, and path probabilities. Decision Flow Framework reveals workflow dynamics."
   },
   "analysis_configuration": {
     "selected_analyses": {
-      "centrality": true,
-      "paths": true,
-      "connectivity": true,
-      "clustering": false,
-      "properties": true,
-      "community": true,
+      "flow": true,
       "cycles": true,
+      "paths": true,
+      "centrality": true,
+      "community": true,
       "scc": true,
       "dag": true,
-      "flow": false
+      "connectivity": true,
+      "clustering": false,
+      "properties": false
     },
-    "analysis_rationale": "Selected analyses to detect: critical workflow steps (centrality), workflow dependencies (dag), circular dependencies (cycles), isolated steps (connectivity), workflow phases (scc), and modular groupings (community)",
-    "edge_weights_included": false,
-    "edge_weight_semantic": "N/A",
+    "analysis_rationale": "Decision Flow Framework analysis priorities: (1) FLOW = find most-traveled paths and bottlenecks using transition probabilities, (2) CYCLES = identify rework loops (validation failures), (3) PATHS = find critical path (architecture-only) vs full development path, (4) CENTRALITY = identify critical decision nodes (quality gates), (5) COMMUNITY = detect workflow phases (Setup, Architecture, Development, Operations)",
+    "edge_weights_included": true,
+    "edge_weight_semantic": "transition_probability (0.0-1.0) - likelihood of taking this path",
+    "edge_weight_examples": {
+      "sequential_step": 1.0,
+      "validation_pass": 0.6,
+      "validation_fail_rework": 0.4,
+      "skip_optional_step": 0.7,
+      "use_optional_step": 0.3
+    },
     "knowledge_gap_detection_enabled": true,
     "architectural_issues_detection_enabled": true,
-    "note": "Will identify orphaned steps, missing handoffs, implicit dependencies"
+    "note": "Edge weights enable flow analysis to reveal workflow dynamics UAF missed: common vs rare paths, rework probability, bottlenecks"
   },
   "context_management": {
     "operations_since_refresh": 1,

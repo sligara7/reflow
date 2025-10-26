@@ -214,9 +214,35 @@ Each workflow file contains:
 
 ## Supported Frameworks (NEW in v3.1.0!)
 
+### ⚠️ CRITICAL: Framework Selection is an Architectural Decision
+
+**DO NOT default to UAF!** Framework choice determines:
+- **Which NetworkX analyses you can run** (flow requires edge weights)
+- **What insights you'll discover** (cycles = rework loops OR circular deps?)
+- **System semantics** (state machines vs services vs networks vs species)
+
+**Wrong framework = Wrong insights**
+
+Example: UAF on workflows misses decision logic, rework loops, and path probabilities.
+
+**ALWAYS follow this process**:
+1. **Analyze system semantics** - Are your nodes states? services? agents? species?
+2. **Consider required analyses** - Need flow analysis? Choose framework with edge weights
+3. **Compare ALL 7 frameworks** against your system characteristics
+4. **Get user confirmation** before proceeding (required in S-01A-QG quality gate)
+
+**Time investment**: 10-15 min framework analysis saves hours of rework later.
+
+**See also**:
+- NetworkX Analysis Guide: `docs/NETWORKX_ANALYSIS_GUIDE.md`
+- Decision Flow Framework Example: `docs/DECISION_FLOW_FRAMEWORK.md`
+- Framework Selection (S-01A): Enhanced with explicit analysis requirements per LESSON-01
+
+---
+
 Reflow is **framework-agnostic** - all frameworks map to the same core abstraction: **nodes (components) + edges (connections)**. This allows the same workflow and tools to work across vastly different domains.
 
-### UAF 1.2 - Unified Architecture Framework (DEFAULT)
+### UAF 1.2 - Unified Architecture Framework
 - **Domain**: Engineered systems (software, hardware, enterprise, defense)
 - **Nodes**: Services, components
 - **Edges**: Interfaces, dependencies
@@ -247,12 +273,25 @@ Reflow is **framework-agnostic** - all frameworks map to the same core abstracti
 - **Edges**: Interactions with feedback loops
 - **Use for**: Economic markets, urban systems, multi-agent simulations
 
+### Decision Flow Framework (NEW!)
+- **Domain**: Workflow systems, decision processes, state machines
+- **Nodes**: Workflow steps (process_step, decision_node, start_state, end_state)
+- **Edges**: State transitions (sequential, conditional, rework, skip)
+- **Edge Attributes**: probability (0.0-1.0), weight, condition, transition_type
+- **Use for**: Workflows with decision points, quality gates, conditional routing
+- **Enables**: Flow analysis (critical paths, bottlenecks), cycle detection (rework loops)
+- **Example**: Reflow meta-analysis (workflows as state machines, not services)
+
 ### Custom Framework (LLM-Generated)
 - **Domain**: Novel or hybrid systems
 - **Process**: LLM researches domain and creates custom framework definition
 - **Use for**: Cyber-physical-social systems, experimental domains
 
-**Framework selection**: Happens in step S-01A of setup workflow. LLM agents should choose the framework that best matches the system domain.
+**Framework selection**: Happens in step S-01A of setup workflow (ENHANCED per LESSON-01)
+- LLM agents MUST analyze ALL frameworks (not default to UAF)
+- LLM agents MUST show which NetworkX analyses each framework enables
+- LLM agents MUST get explicit user confirmation before proceeding
+- User confirmation is enforced by S-01A-QG quality gate (BLOCKING)
 
 ## Workflow Progression
 

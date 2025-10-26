@@ -202,6 +202,104 @@
           ]
         },
         {
+          "action_id": "SE-02-A02B",
+          "description": "Plan edge weights if framework requires them (CONDITIONAL - based on framework)",
+          "condition": {
+            "check": "Does selected framework support/require edge weights for flow analysis?",
+            "how_to_check": "Read working_memory.json -> framework_analysis.recommended_analyses contains 'flow'",
+            "if_true": "Plan edge weight semantics and add to architecture files",
+            "if_false": "Skip - framework doesn't use edge weights",
+            "frameworks_requiring_weights": {
+              "decision_flow": "REQUIRED - Uses transition probabilities (0.0-1.0)",
+              "ecological": "REQUIRED - Uses energy transfer rates or biomass flow",
+              "systems_biology": "OPTIONAL - Can add reaction rates",
+              "social_network": "OPTIONAL - Can add interaction frequencies",
+              "uaf": "NOT SUPPORTED - Standard UAF has no edge weight field",
+              "complex_adaptive": "OPTIONAL - Can add interaction strengths"
+            }
+          },
+          "purpose": "If framework enables flow analysis, edge weights must be designed into architecture NOW, not added later. Flow analysis will fail without weights.",
+          "rationale": "LESSON-03: Edge weights are architectural data, not operational data. They must be planned during architecture design (SE-02), not discovered during graph generation (SE-06). Without weights, flow analysis will fail with 'No capacity attribute' error.",
+          "planning_steps": [
+            {
+              "step": 1,
+              "action": "Determine edge weight semantic meaning for your framework",
+              "examples": {
+                "decision_flow": "probability (0.0-1.0) - likelihood of taking transition",
+                "ecological": "energy_transfer_rate (kcal/m²/year) - energy flowing between species",
+                "systems_biology": "reaction_rate (s⁻¹) - speed of molecular interaction",
+                "social_network": "interaction_frequency (per week) - how often agents interact"
+              }
+            },
+            {
+              "step": 2,
+              "action": "Add edge weight fields to architecture template",
+              "location": "In each architecture file's edges/transitions/interactions section",
+              "field_names": {
+                "decision_flow": "probability and weight",
+                "ecological": "energy_transfer_rate or biomass_flow",
+                "systems_biology": "reaction_rate or binding_affinity",
+                "social_network": "interaction_frequency or relationship_strength"
+              }
+            },
+            {
+              "step": 3,
+              "action": "Estimate initial edge weight values",
+              "guidance": [
+                "Use historical data if available",
+                "Use domain expert estimates if no data",
+                "Use reasonable defaults if uncertain (e.g., probability=0.5 for unknown branching)",
+                "Mark estimates vs. measured values for later refinement"
+              ],
+              "example_decision_flow": {
+                "sequential_step": "probability: 1.0, weight: 10 (always taken)",
+                "validation_success": "probability: 0.6, weight: 6 (60% pass)",
+                "validation_failure": "probability: 0.4, weight: 4 (40% fail, rework loop)",
+                "conditional_branch_A": "probability: 0.7, weight: 7 (70% take path A)",
+                "conditional_branch_B": "probability: 0.3, weight: 3 (30% take path B)"
+              }
+            },
+            {
+              "step": 4,
+              "action": "Document edge weight configuration in working_memory.json",
+              "update_fields": {
+                "analysis_configuration.edge_weights_included": true,
+                "analysis_configuration.edge_weight_semantic": "transition_probability | energy_transfer_rate | reaction_rate | etc.",
+                "analysis_configuration.edge_weight_source": "estimated | measured | historical_data | expert_opinion",
+                "analysis_configuration.edge_weight_unit": "0.0-1.0 | kcal/m²/year | s⁻¹ | interactions/week"
+              }
+            },
+            {
+              "step": 5,
+              "action": "Add edge weight examples to architecture files",
+              "purpose": "Show developers what values to use when creating architecture specs",
+              "example_in_service_architecture": {
+                "transitions": [
+                  {
+                    "transition_id": "step_A_to_step_B",
+                    "source": "step_A",
+                    "target": "step_B",
+                    "condition": "validation_passed",
+                    "probability": 0.6,
+                    "weight": 6,
+                    "weight_semantic": "Estimated 60% of executions pass validation"
+                  }
+                ]
+              }
+            }
+          ],
+          "validation": {
+            "check_in_SE-03": "Verify edge weights present if framework requires them",
+            "validation_rule": "If working_memory.json -> analysis_configuration.edge_weights_included == true, all edges in architecture files must have weight attribute"
+          },
+          "common_mistakes": {
+            "mistake_1": "Choosing Decision Flow framework but not adding edge weights → Flow analysis fails later",
+            "mistake_2": "Adding edge weights during SE-06 (graph generation) → Too late, architecture files already finalized",
+            "mistake_3": "Using UAF framework but wanting flow analysis → UAF doesn't support weights, choose different framework"
+          },
+          "reference": "See docs/NETWORKX_ANALYSIS_GUIDE.md → Edge Weight Planning section"
+        },
+        {
           "action_id": "SE-02-A03",
           "description": "Define interface registry",
           "template": "interface_registry_enhanced_template.json",

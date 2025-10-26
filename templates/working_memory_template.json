@@ -15,13 +15,31 @@
     "note": "These paths are set during Setup workflow (00-setup) and must NEVER be hardcoded elsewhere"
   },
   "framework_configuration": {
-    "framework_id": "FRAMEWORK_ID (uaf|systems_biology|social_network|ecological|complex_adaptive|custom)",
+    "framework_id": "FRAMEWORK_ID (uaf|decision_flow|systems_biology|social_network|ecological|complex_adaptive|custom)",
     "framework_name": "FRAMEWORK_DISPLAY_NAME",
-    "component_term": "TERM_FOR_NODES (service|component|agent|species|adaptive_agent)",
-    "connection_term": "TERM_FOR_EDGES (interface|interaction|relationship|ecological_interaction)",
-    "architecture_file_type": "FILE_TYPE (service_architecture.json|component_architecture.json|agent_profile.json|etc)",
-    "selected_framework_rationale": "WHY_THIS_FRAMEWORK_WAS_CHOSEN",
-    "note": "Set during Setup workflow step S-01A (Framework Selection)"
+    "component_term": "TERM_FOR_NODES (service|workflow_step|component|agent|species|adaptive_agent)",
+    "connection_term": "TERM_FOR_EDGES (interface|transition|interaction|relationship|ecological_interaction)",
+    "architecture_file_type": "FILE_TYPE (service_architecture.json|workflow_step_architecture.json|component_architecture.json|etc)",
+    "selected_framework_rationale": "DETAILED_RATIONALE_WHY_THIS_FRAMEWORK_WAS_CHOSEN (must explain semantic match and what insights it reveals)",
+    "user_confirmed": false,
+    "confirmation_timestamp": "YYYY-MM-DD HH:MM:SS or null",
+    "note": "Set during Setup workflow step S-01A (Framework Selection) - REQUIRES EXPLICIT USER CONFIRMATION per LESSON-01"
+  },
+  "framework_analysis": {
+    "system_characteristics": {
+      "primary_entities": "WHAT_ARE_THE_NODES (services? states? agents? species?)",
+      "connections": "WHAT_ARE_THE_EDGES (APIs? transitions? relationships? interactions?)",
+      "has_decision_points": false,
+      "has_conditional_routing": false,
+      "cycles_expected": "YES|NO - Are cycles feedback loops (expected) or circular dependencies (errors)?",
+      "needs_flow_analysis": false,
+      "domain": "SYSTEM_DOMAIN (engineered, biological, social, ecological, emergent)"
+    },
+    "frameworks_evaluated": [],
+    "recommended_analyses": [],
+    "alternatives_rejected": {},
+    "analysis_timestamp": "YYYY-MM-DD HH:MM:SS",
+    "note": "Populated during S-01A framework selection analysis - documents WHICH frameworks were considered and WHY others were rejected"
   },
   "analysis_configuration": {
     "selected_analyses": {
