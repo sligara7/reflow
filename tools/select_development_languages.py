@@ -120,8 +120,7 @@ class LanguageSelector:
             print(f"❌ Error: build_ready_index.json not found or path security violation: {e}")
             sys.exit(1)
 
-        with open(build_ready_path) as f:
-            build_ready = json.load(f)
+        build_ready = safe_load_json(build_ready_path, file_type_description="build-ready configuration")
 
         services = []
         components = build_ready.get("components", {})
@@ -140,8 +139,7 @@ class LanguageSelector:
                     must_exist=True
                 )
 
-                with open(service_arch_path) as f:
-                    service_arch = json.load(f)
+                service_arch = safe_load_json(service_arch_path, file_type_description="service architecture")
 
                 services.append({
                     "service_id": service_id,
@@ -500,8 +498,7 @@ def main():
                 system_path,
                 must_exist=True
             )
-            with open(config_path) as f:
-                config = json.load(f)
+            config = safe_load_json(config_path, file_type_description="language configuration")
             selector.language_configuration = config
         except (PathSecurityError, FileNotFoundError) as e:
             print(f"❌ Could not load config file: {e}")

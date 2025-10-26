@@ -67,8 +67,7 @@ class InterfaceContractGenerator:
             sys.exit(1)
 
         # Load template
-        with open(self.template_path, 'r') as f:
-            self.template = json.load(f)
+        self.template = safe_load_json(self.template_path, file_type_description="interface contract template")
 
         # Create interfaces directory
         self.interfaces_dir.mkdir(exist_ok=True)
@@ -83,8 +82,7 @@ class InterfaceContractGenerator:
             print(f"Error: Index file not found at {self.index_file}")
             sys.exit(1)
 
-        with open(self.index_file, 'r') as f:
-            index = json.load(f)
+        index = safe_load_json(self.index_file, file_type_description="component index")
 
         for component_id, component_path_str in index.get('components', {}).items():
             # Security: Sanitize component paths (v3.4.0 fix - SV-01)
@@ -102,8 +100,10 @@ class InterfaceContractGenerator:
                     must_exist=True
                 )
 
-                with open(component_path, 'r') as f:
-                    self.components[component_id] = json.load(f)
+                self.components[component_id] = safe_load_json(
+                    component_path,
+                    file_type_description=f"component architecture '{component_id}'"
+                )
 
             except PathSecurityError as e:
                 print(f"Warning: Path security violation for component {component_id}: {e}")

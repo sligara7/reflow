@@ -124,8 +124,7 @@ class FoundationalValidator:
                 continue
 
             # Load service architecture
-            with open(service_arch_path) as f:
-                service_arch = json.load(f)
+            service_arch = safe_load_json(service_arch_path, file_type_description="service architecture")
             
             # Check black box principles
             self._validate_interface_encapsulation(service_arch, service_id, integrity_violations)
@@ -171,8 +170,7 @@ class FoundationalValidator:
             return False
 
         # Load architectural definitions
-        with open(arch_def_file) as f:
-            arch_defs = json.load(f)
+        arch_defs = safe_load_json(arch_def_file, file_type_description="architectural definitions")
         
         # Validate UAF compliance
         uaf_compliance = self._check_uaf_compliance(arch_defs)
@@ -368,10 +366,10 @@ def main():
     # Load change proposal if provided
     change_proposal = {}
     if change_proposal_path and change_proposal_path.exists():
-        with open(change_proposal_path) as f:
-            if str(change_proposal_path).endswith('.json'):
-                change_proposal = json.load(f)
-            else:
+        if str(change_proposal_path).endswith('.json'):
+            change_proposal = safe_load_json(change_proposal_path, file_type_description="change proposal")
+        else:
+            with open(change_proposal_path) as f:
                 change_proposal = {"content": f.read()}
     
     # Run validation checks
