@@ -20,56 +20,70 @@ from validate_workflow_files import WorkflowValidator
 class TestWorkflowValidator:
     """Test suite for WorkflowValidator class"""
 
-    def test_validator_initialization(self):
-        """Test that validator can be initialized"""
-        validator = WorkflowValidator()
-        assert validator is not None
+    @pytest.fixture
+    def reflow_root(self):
+        """Get the reflow root directory."""
+        return Path(__file__).parent.parent.parent
 
-    def test_valid_json_detection(self, tmp_path):
+    def test_validator_initialization(self, reflow_root):
+        """Test that validator can be initialized"""
+        validator = WorkflowValidator(reflow_root)
+        assert validator is not None
+        assert validator.workflow_schema is not None  # Schema should be loaded
+
+    def test_valid_json_detection(self, tmp_path, reflow_root):
         """Test that validator accepts valid JSON"""
         # Create a valid workflow file
         workflow_file = tmp_path / "valid_workflow.json"
         valid_workflow = {
             "workflow_metadata": {
-                "workflow_id": "test",
+                "workflow_id": "00-test",  # Fixed: needs two-digit prefix
                 "name": "Test Workflow",
-                "version": "1.0.0"
+                "version": "1.0.0",
+                "description": "Test workflow"  # Added required field
             },
-            "workflow_steps": []
+            "workflow_steps": [
+                {
+                    "step_id": "T-01",
+                    "name": "Test Step",
+                    "description": "A test step",
+                    "phase": "testing"
+                }
+            ]
         }
         workflow_file.write_text(json.dumps(valid_workflow, indent=2))
 
-        validator = WorkflowValidator()
+        validator = WorkflowValidator(reflow_root)
         result = validator.validate_workflow_file(workflow_file)
 
         # Should return True for valid workflow
         assert result is True
 
-    def test_invalid_json_detection(self, tmp_path):
+    def test_invalid_json_detection(self, tmp_path, reflow_root):
         """Test that validator rejects invalid JSON"""
         # Create an invalid JSON file
         workflow_file = tmp_path / "invalid_workflow.json"
         workflow_file.write_text("{invalid json content")
 
-        validator = WorkflowValidator()
+        validator = WorkflowValidator(reflow_root)
         result = validator.validate_workflow_file(workflow_file)
 
         # Should return False for invalid JSON
         assert result is False
 
-    def test_missing_required_fields(self, tmp_path):
+    def test_missing_required_fields(self, tmp_path, reflow_root):
         """Test that validator detects missing required fields"""
         # Create workflow missing required field
         workflow_file = tmp_path / "incomplete_workflow.json"
         incomplete_workflow = {
             "workflow_metadata": {
-                "workflow_id": "test"
-                # Missing: name, version
+                "workflow_id": "00-test"
+                # Missing: name, version, description
             }
         }
         workflow_file.write_text(json.dumps(incomplete_workflow, indent=2))
 
-        validator = WorkflowValidator()
+        validator = WorkflowValidator(reflow_root)
         result = validator.validate_workflow_file(workflow_file)
 
         # Should detect missing fields
@@ -82,12 +96,13 @@ class TestWorkflowValidationIntegration:
 
     def test_real_workflows_validate(self):
         """Test that actual Reflow workflows validate correctly"""
-        workflows_dir = Path(__file__).parent.parent.parent / "workflows"
+        reflow_root = Path(__file__).parent.parent.parent
+        workflows_dir = reflow_root / "workflows"
 
         if not workflows_dir.exists():
             pytest.skip("Workflows directory not found")
 
-        validator = WorkflowValidator()
+        validator = WorkflowValidator(reflow_root)
 
         # Test all real workflow files
         workflow_files = list(workflows_dir.glob("*.json"))

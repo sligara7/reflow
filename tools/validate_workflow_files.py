@@ -122,8 +122,9 @@ class WorkflowValidator:
         elif not self.workflow_schema:
             print("  ⚠ Schema validation skipped (schema not loaded)")
 
-        # Check 3: Required top-level fields
-        required_fields = ["workflow_metadata", "workflow_steps", "completion"]
+        # Check 3: Required top-level fields (schema handles this, but keep as redundant check)
+        # NOTE: completion is optional per schema, only workflow_metadata and workflow_steps required
+        required_fields = ["workflow_metadata", "workflow_steps"]
         missing_fields = [f for f in required_fields if f not in data]
         if missing_fields:
             for field in missing_fields:
