@@ -8,7 +8,7 @@ to its own GitHub repository, keeping it separate from reflow tooling.
 Usage:
     # Interactive mode
     python3 export_system_to_github.py systems/my_system --interactive
-    
+
     # Direct mode
     python3 export_system_to_github.py systems/my_system \
         --type architecture_only \
@@ -27,18 +27,28 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# Import secure path handling (v3.4.0 security fix - SV-01)
+from path_utils import validate_system_root, PathSecurityError
+
 
 class SystemExporter:
     """Export reflow systems to GitHub repositories"""
-    
+
     def __init__(self, system_path: Path, reflow_root: Path):
-        self.system_path = system_path.resolve()
+        """
+        Initialize system exporter with validated paths.
+
+        Args:
+            system_path: Pre-validated Path object to system directory
+            reflow_root: Pre-validated Path object to reflow root directory
+        """
+        self.system_path = system_path
         self.system_name = system_path.name
         self.reflow_root = reflow_root
-        
+
         if not self.system_path.exists():
             raise ValueError(f"System not found: {system_path}")
-        
+
         print(f"System: {self.system_name}")
         print(f"Path: {self.system_path}")
     
@@ -521,11 +531,30 @@ def main():
     )
     
     args = parser.parse_args()
-    
+
+    # Security: Validate system path and reflow root (v3.4.0 fix - SV-01)
+    try:
+        system_path = validate_system_root(args.system_path)
+    except PathSecurityError as e:
+        print(f"ERROR: Path security violation for system path: {e}")
+        sys.exit(1)
+    except FileNotFoundError:
+        print(f"ERROR: System path does not exist: {args.system_path}")
+        sys.exit(1)
+
     # Find reflow root
-    system_path = Path(args.system_path)
-    reflow_root = system_path.parent.parent if "systems" in system_path.parts else Path.cwd()
-    
+    if "systems" in system_path.parts:
+        reflow_root = system_path.parent.parent
+    else:
+        reflow_root = Path.cwd()
+
+    # Security: Validate reflow root (v3.4.0 fix - SV-01)
+    try:
+        reflow_root = validate_system_root(reflow_root)
+    except (PathSecurityError, FileNotFoundError) as e:
+        print(f"ERROR: Invalid reflow root: {e}")
+        sys.exit(1)
+
     try:
         exporter = SystemExporter(system_path, reflow_root)
         
