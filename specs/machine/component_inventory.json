@@ -1,16 +1,16 @@
 {
   "inventory_metadata": {
-    "generated": "2025-10-26T08:25:00Z",
+    "generated": "2025-10-27T16:45:00Z",
     "system_name": "Reflow Workflow System",
-    "version": "v3.6.0",
+    "version": "v3.6.1",
     "analysis_approach": "bottom_up",
-    "purpose": "Comprehensive component inventory for systems engineering validation after v3.4-v3.6 updates"
+    "purpose": "Comprehensive component inventory after v3.6.1 patch (added 3 missing testing templates to complete Early Testing Integration feature)"
   },
   "component_summary": {
-    "total_components": 77,
+    "total_components": 80,
     "workflows": 6,
     "tools": 28,
-    "templates": 36,
+    "templates": 39,
     "definitions": 7
   },
   "workflows": {
@@ -413,15 +413,18 @@
   "templates": {
     "tier": "TIER_2_Templates",
     "description": "JSON templates for generating Reflow artifacts",
-    "component_count": 36,
+    "component_count": 39,
     "critical_templates": [
       "working_memory_template.json",
       "service_architecture_template.json",
       "component_architecture_template.json",
       "interface_contract_complete_template.json",
-      "framework_definition_template.json"
+      "framework_definition_template.json",
+      "operational_testing_objectives_template.json",
+      "service_risk_assessment_template.json",
+      "system_test_strategy_template.json"
     ],
-    "note": "Templates provide structure for all generated artifacts"
+    "note": "Templates provide structure for all generated artifacts. v3.6.1 added 3 testing templates for Early Testing Integration feature."
   },
   "definitions": {
     "tier": "TIER_2_Definitions",
