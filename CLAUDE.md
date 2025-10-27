@@ -483,12 +483,46 @@ Result: Updated system with backward compatibility tracking
 - ❌ Guess locations like `./tools/`
 - ❌ Create new tools when existing ones can't be found
 - ❌ Skip reading `working_memory.json` because you "know" the paths
+- ❌ Download templates/tools from GitHub using `curl` - Reflow is ALREADY LOCAL!
+- ❌ Fetch from `https://raw.githubusercontent.com/sligara7/reflow/` URLs
 
 **ALWAYS**:
 - ✅ Read `working_memory.json` FIRST before EVERY workflow step
 - ✅ Extract all paths from the `paths` object
-- ✅ Verify tool exists before invoking
-- ✅ Use extracted paths in ALL tool commands
+- ✅ Verify tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+- ✅ Use LOCAL extracted paths in ALL commands
+- ✅ Read LOCAL templates: `cat {paths.templates_path}/service_architecture_template.json`
+- ✅ Run LOCAL tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
+
+### "Downloading templates from GitHub with curl"
+
+**Symptom**: LLM tries to download templates/tools using `curl https://raw.githubusercontent.com/sligara7/reflow/...`
+
+**Root Cause**: LLM doesn't realize Reflow is ALREADY installed locally
+
+**Why This is Wrong**:
+- Reflow tooling is ALREADY on your machine (local installation)
+- Templates, tools, workflows are LOCAL files, not remote
+- `working_memory.json` contains paths to LOCAL installation
+
+**Fix (for LLM agents)**:
+1. **STOP** using `curl` to download from GitHub
+2. **READ** `{system_root}/context/working_memory.json`
+3. **EXTRACT** paths: `paths.templates_path`, `paths.tools_path`, etc.
+4. **USE** local files:
+   - ❌ WRONG: `curl https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template.json`
+   - ✅ CORRECT: `cat {paths.templates_path}/service_architecture_template.json`
+
+**Example from Real Session** (what NOT to do):
+```bash
+# WRONG - Downloading from GitHub
+curl -s https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template_uaf.json -o templates/...
+# Result: 0 lines (file doesn't exist remotely)
+
+# CORRECT - Use local installation
+cat /path/extracted/from/working_memory/templates/service_architecture_template.json
+# Result: 400+ lines (file exists locally)
+```
 
 ### "Working memory doesn't exist"
 
