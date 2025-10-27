@@ -302,172 +302,37 @@ service_architecture.json                     ← Symlink to current
 
 ## IT System Requirements (UAF with Human Users) - CRITICAL!
 
-### ⚠️ Design Upfront, Not Retrofit
+**Applicability**: UAF framework systems with human users or external API access
 
-**IMPORTANT**: IT systems with human users/external APIs **MUST** address upfront (not afterthoughts):
+**⚠️ Design Upfront, Not Retrofit**: IT systems with human users/external APIs **MUST** address these upfront (not afterthoughts):
 
-1. **Security** - Authentication, authorization, encryption, audit logging
-2. **Deployment Ease** - One-command deployment, automated rollback
-3. **User Experience** - Intuitive APIs, clear errors, documentation
+1. **Security** (SE-02-A05) - Authentication, authorization, **API gateway** (MANDATORY), rate limiting, encryption, audit logging
+2. **Deployment** (SE-02-A06) - One-command deploy, health checks, CI/CD, monitoring, RTO/RPO targets
+3. **UX/API** (SE-02-A07) - RESTful design, user-friendly errors, **OpenAPI docs** (MANDATORY), versioning, performance targets
+4. **Operational Environment** (SE-02-A08) - Design for failures, attacks, scale; define testing strategy NOW
 
 **Rationale**: Retrofitting after launch is **10-100x more expensive** than designing correctly upfront.
 
-**When**: Steps SE-02-A05 through SE-02-A08 during architecture design
+**When**: Steps SE-02-A05 through SE-02-A08 during architecture design (workflows `01b-bottom_up_integration.json` or `01c-top_down_design.json`)
 
-### Security Architecture (SE-02-A05)
+**Validation Gates**: SE-03-A05, SE-03-A06, SE-03-A07, SE-03-A08 (ALL BLOCKING)
 
-**Applicability**:
-- ✅ UAF with human users (web/mobile apps)
-- ✅ UAF with external API access
-- ❌ Internal machine-to-machine only
+**CRITICAL Requirements**:
+- **API Gateway**: MUST be fully implemented (not orphaned scaffolding) - Checked in SE-06 orphaned service detection
+- **Security**: MFA for admins, TLS 1.2+, AES-256 at-rest encryption for sensitive data
+- **Deployment**: `docker-compose up -d` or equivalent, <10 min developer setup, <5 min rollback
+- **UX/API**: OpenAPI spec, Swagger UI, error messages with field names and descriptions
+- **Operations**: 10 IT considerations (service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing)
 
-**Template**: `security_architecture_template.json`
-
-**Required Sections**:
-- Authentication (JWT/OAuth2/SAML), MFA for admins
-- Authorization (RBAC/ABAC), roles, permissions
-- **API Gateway** (MANDATORY for human-facing) - single entry, auth, rate limits, SSL/TLS
-- Rate limiting (e.g., 100 req/min per user, 5 login attempts per 15 min)
-- Input validation (XSS prevention, SQL injection prevention)
-- Encryption (TLS 1.2+ in-transit, AES-256 at-rest, KMS/Vault)
-- Audit logging (auth attempts, data access, admin actions)
-
-**API Gateway Requirement**:
-- IF human users OR external APIs → api_gateway **MUST** exist
-- Gateway must be **fully implemented** (not orphaned scaffolding)
-- Checked in SE-06 orphaned service detection
-
-**Validation**: SE-03-A05 (BLOCKING)
-
-**Common Issues**:
-- Missing/orphaned API gateway → **CRITICAL**
-- Weak auth (no MFA) → **HIGH RISK**
-- No encryption at rest for sensitive data → **HIGH RISK**
-
-### Deployment Architecture (SE-02-A06)
-
-**Template**: `deployment_architecture_template.json`
-
-**Philosophy - SIMPLICITY FIRST**:
-- One-command deploy (`docker-compose up -d`)
-- <10 min setup for new developer
-- <5 min automated rollback
-- Clear README with step-by-step instructions
-
-**Required**:
-- Containerization (Docker/Podman), image scanning
-- Orchestration (Docker Compose default, K8s only if scale/HA needed)
-- CI/CD (build → test → deploy, rollback on failure)
-- Health checks (`/health`, `/ready`)
-- Monitoring (Prometheus, centralized logging, alerting)
-- Backup & DR (RTO/RPO targets)
-
-**Validation**: SE-03-A06 (BLOCKING)
-
-**Common Issues**:
-- Overcomplicated orchestration → Slows iteration
-- No health checks → Can't detect failures
-- Manual deployment → Error-prone
-
-### UX & API Design (SE-02-A07)
-
-**Template**: `ux_api_design_template.json`
-
-**Targets**:
-- Time to first success: <5 min
-- API time to first call: <5 min
-- Task success rate: >95%
-
-**Required**:
-- RESTful design, consistent naming
-- User-friendly errors ("Email is required" vs "500 Internal Server Error")
-- **API Documentation** (MANDATORY) - OpenAPI spec, Swagger UI, code examples
-- Versioning (URL path: `/api/v1/users`)
-- Performance (p95 <500ms), caching
-
-**Validation**: SE-03-A07 (BLOCKING)
-
-**Common Issues**:
-- Inconsistent naming → Developer confusion
-- Poor error messages → Users can't recover
-- Missing docs → Can't use API
-- Orphaned API gateway → System non-functional
-
-### Operational Environment Design (SE-02-A08)
-
-**CRITICAL PRINCIPLE**: Operational environment is **ARCHITECTURAL DECISION** made NOW, NOT operational problem solved during testing.
-
-**Template**: `operational_environment_template.json` (1100+ lines)
-
-**Design for Reality** - Systems face:
-- Network failures, partitions
-- Resource exhaustion (CPU, memory, disk)
-- Cascading failures
-- Traffic spikes
-- Security attacks (DDoS, injection, credential stuffing)
-- Data corruption
-- Third-party outages
-- Configuration drift
-
-**10 IT-Specific Considerations** (UPFRONT Design):
-
-1. **Service Decomposition** - DDD bounded contexts, single responsibility, data ownership
-2. **Containerization** - Docker from day one, multi-stage Dockerfiles, image scanning
-3. **Infrastructure as Code** - Ansible (deploy.yml, rollback.yml), Terraform (AWS provisioning)
-4. **CI/CD Integration** - Pipeline stages, automated testing, semantic versioning
-5. **Scalability & Resilience** - Auto-scaling, circuit breakers, retries, timeouts, bulkheads
-6. **Security & Compliance** - IAM roles, VPC design, encryption, GDPR/HIPAA/PCI-DSS
-7. **Monitoring & Observability** - Prometheus metrics, structured logging, correlation IDs, alerting
-8. **Service Discovery** - AWS Cloud Map, Consul, K8s DNS, API Gateway
-9. **Cost Management** - Right-sizing, spot instances, auto-scale to zero (non-prod)
-10. **Testing & Rollback** - Define test types NOW (unit, integration, perf, security, chaos, operational)
-
-**Testing Strategy Defined NOW**:
-- Unit: 80% coverage, every commit
-- Integration: Real APIs/DBs in isolated env
-- Performance: 2x/5x/10x load, p95 <500ms at 5x
-- Security: OWASP Top 10, penetration testing
-- Chaos: Inject failures (kill instances, network latency, resource exhaustion)
-- Operational: Multi-AZ failover, DB failover, auto-scaling, backup/restore
-
-**Success Criteria**:
-- Availability: 99.9%, 99.95%, 99.99%?
-- RTO: 1 hour, 4 hours?
-- RPO: 15 min, 1 hour data loss?
-- Performance: p50 <100ms, p95 <500ms, p99 <1000ms
-
-**Validation**: SE-03-A08 (BLOCKING)
-
-**Cost Impact**: NOT designing for ops upfront causes **budget overages and costly program delays**
-
-### Orphaned Service Detection (UAF)
-
-**Problem**: Services defined in architecture but never implemented (scaffolding only)
-
-**Example**: API gateway defined with `service_architecture.json` but only empty scaffolding → System fails
-
-**Detection**: SE-06 - `python3 system_of_systems_graph_v2.py index.json --analyze-issues`
-
-**Checks**:
-- Services with architecture but no implementation
-- Services with implementation but only scaffolding (<50 lines, no functions/classes)
-- Reports as `unimplemented_services` in `architectural_issues`
-
-### IT System Requirements Checklist
-
-Before proceeding from SE-03 validation gate:
-
-**For UAF with Human Users OR External APIs**:
-- [ ] `security_architecture.json` created
-- [ ] `deployment_architecture.json` created
-- [ ] `ux_api_design.json` created
+**Checklist** (Before SE-03):
+- [ ] `security_architecture.json` created (auth, authorization, API gateway, rate limiting, encryption, audit)
+- [ ] `deployment_architecture.json` created (Docker, CI/CD, health checks, monitoring, RTO/RPO)
+- [ ] `ux_api_design.json` created (RESTful, errors, OpenAPI, versioning, performance)
+- [ ] `operational_environment.json` created (availability target, testing strategy, failure scenarios)
 - [ ] API gateway exists in architecture and will be fully implemented (not orphaned)
-- [ ] All three validated in SE-03-A05, SE-03-A06, SE-03-A07 (BLOCKING)
+- [ ] `port_registry.json` created and validated (for all UAF IT systems)
 
-**For UAF IT Systems (All)**:
-- [ ] `port_registry.json` created and validated
-- [ ] Health checks defined (`/health`, `/ready`)
-- [ ] Deployment documented in README
+**📖 Full Documentation**: See [docs/IT_SYSTEM_REQUIREMENTS.md](docs/IT_SYSTEM_REQUIREMENTS.md) for comprehensive guidance (security, deployment, UX, operations, checklist, templates)
 
 ## Port Management (UAF/IT Only)
 
@@ -624,7 +489,8 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 
 ## Getting Help
 
-- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 16 tools
+- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 29 tools
+- `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements (security, deployment, UX, operations)
 - `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis guide (400+ lines)
 - `docs/DECISION_FLOW_FRAMEWORK.md` - Decision Flow example (500+ lines)
 - `docs/GIT_AUTOMATION_GUIDE.md` - Git automation setup
