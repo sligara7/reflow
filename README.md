@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.4.0** | Framework-agnostic systems engineering for LLM agents
+**Version 3.7.0** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -23,6 +23,7 @@ Reflow is a structured workflow that guides LLM agents (Claude, GPT-4, etc.) thr
 3. Clone reflow: git clone https://github.com/sligara7/reflow
 4. Say: "Implement workflow in /workspaces/reflow/workflows/00-setup.json
    on system in /workspaces/my_system"
+   (Note: Use 00a-basic_setup.json for faster setup)
 ```
 
 **Claude Code** (https://claude.ai/code - requires Pro/Max):
@@ -51,76 +52,122 @@ mkdir ~/projects/my_system
 "Continue workflow from context/working_memory.json in ~/projects/my_system"
 ```
 
-## The 6 Workflows
+## The Workflows (v3.7.0 - Modular Architecture)
 
-### 1. Setup (`00-setup.json`) - 10-15 minutes
+**NEW in v3.7.0**: Workflows split for **60-95% LLM context reduction**. Load only what you need!
+
+### 1a. Basic Setup (`00a-basic_setup.json`) - 5-10 minutes
 - Configure paths (reflow_root, system_root)
-- Select architectural framework (UAF, Biology, Social, Ecological, CAS, Decision Flow, Custom)
 - Create directory structure
 - Initialize foundational documents
 - Optional: Enable automatic git commits
+- **Next**: 00b (optional) OR 01a (start architecture)
 
-### 2. Systems Engineering (`01-systems_engineering.json`) - 2-4 hours
-- **NEW: Automatic approach detection** - LLM scans system directory and routes to:
-  - **Bottom-up integration** (if existing components found) - Steps BU-01 through BU-06
-    - Component inventory, gap analysis (9 gap types), exact code-level deltas, integration architecture
-  - **Top-down design** (if empty/greenfield) - Steps SE-01 through SE-06
-    - Service identification, architecture design, validation
-- Create versioned architecture files
-- Generate system_of_systems_graph.json with NetworkX analysis
-- Validate architecture constraints
+### 1b. Framework Selection (`00b-framework_selection.json`) - 5-10 minutes [OPTIONAL]
+- Detailed framework questionnaire and scoring
+- Select architectural framework (UAF, Biology, Social, Ecological, CAS, Decision Flow, Custom)
+- **Context Reduction**: 55% - Skip if framework already known
+- **Next**: 01a (approach detection)
 
-**Automatic Detection Process:**
-- LLM scans system directory for source code, package manifests, build files
-- Decision: ≥2 indicators → bottom-up, 0-1 indicators → top-down
-- Informs user: "Auto-detection: BOTTOM-UP approach selected. Found: [services/, requirements.txt]"
-- Manual override available via legacy entry points
+### 2a. Approach Detection (`01a-approach_detection.json`) - <5 minutes
+- **NEW: Automatic approach detection** - LLM scans system directory
+- Routes to: 01b (bottom-up) OR 01c (top-down)
+- **Context Reduction**: 95% - Lightweight routing step
+- **Next**: 01b OR 01c (auto-selected)
+
+### 2b. Bottom-Up Integration (`01b-bottom_up_integration.json`) - 2-3 hours
+- For **existing components** - Steps BU-01 through BU-06
+- Component inventory, gap analysis (9 gap types), exact code-level deltas
+- Integration architecture, validation
+- **Context Reduction**: 60% - Only loads bottom-up logic (not top-down)
+- **Next**: 02 (artifacts)
+
+### 2c. Top-Down Design (`01c-top_down_design.json`) - 2-4 hours
+- For **greenfield** systems - Steps SE-01 through SE-06
+- Service identification, architecture design, validation
+- Create versioned architecture files, system_of_systems_graph.json
+- **Context Reduction**: 60% - Only loads top-down logic (not bottom-up)
+- **Next**: 02 (artifacts)
 
 ### 3. Artifacts & Visualization (`02-artifacts_visualization.json`) - 1-2 hours
 - Generate Interface Contract Documents (ICDs)
 - Create Mermaid diagrams
 - Generate versioned documentation
 - Optional: Skip if architecture-only
+- **Next**: 03a (if building) OR END (if architecture-only)
 
-### 4. Development (`03-development.json`) - Days to weeks
+### 4a. Development Implementation (`03a-development_implementation.json`) - Days to weeks
 - Optional: Research current development best practices
-- Implement services with 80% test coverage
+- Implement services
 - Observability instrumentation
+- **Context Reduction**: 58% - Coding phase separated from validation
+- **Next**: 03b (validation)
 
-### 5. Testing & Operations (`04-testing_operations.json`) - 1-2 weeks
+### 4b. Development Validation (`03b-development_validation.json`) - 1-2 days
+- 80% test coverage validation
+- Pre-deployment validation (D-07) with 3 new tools
+- Dependency validation, module structure checks, config consistency
+- **Context Reduction**: 43% - Testing phase separated from coding
+- **Next**: 04a (testing)
+
+### 5a. Testing (`04a-testing.json`) - 1 week
 - CI/CD pipeline setup
+- Automated testing workflows
+- **Context Reduction**: 55% - Testing separated from operations
+- **Next**: 04b (operations)
+
+### 5b. Operations (`04b-operations.json`) - 1 week
 - Docker Compose validation
 - Operational testing
+- Deployment and monitoring setup
+- **Context Reduction**: 42% - Operations separated from testing
+- **Next**: END
 
 ### 6. Feature Update (`feature_update.json`) - Variable
 - Update existing systems with versioning and backward compatibility tracking
 
 ## Workflow Usage Patterns
 
-### New System (Greenfield)
+### New System (Greenfield) - v3.7.0 Flow
 ```
-00-setup → 01-systems_engineering (auto-detects empty dir → top-down SE-01) →
-02-artifacts → 03-development → 04-testing_operations
+00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
+→ 01c-top_down_design (auto-selected for empty dir) → 02-artifacts
+→ 03a-development_implementation → 03b-development_validation
+→ 04a-testing → 04b-operations
 ```
 
-### Existing Components (Bottom-Up Integration)
+**Context Savings**: LLM loads only 01c (top-down), skipping 01b (bottom-up) = **60% reduction**
+
+### Existing Components (Bottom-Up Integration) - v3.7.0 Flow
 ```
-00-setup → 01-systems_engineering (auto-detects existing code → bottom-up BU-01) →
-02-artifacts → 03-development → 04-testing_operations
+00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
+→ 01b-bottom_up_integration (auto-selected for existing code) → 02-artifacts
+→ 03a-development_implementation → 03b-development_validation
+→ 04a-testing → 04b-operations
 ```
 
 Example: Integrating 10 Python packages
 - LLM scans directory, finds packages, manifests, code
-- Routes to BU-01: Creates component inventory
+- Routes to 01b (BU-01): Creates component inventory
 - BU-02: Defines integration requirements
 - BU-03: Detects 9 gap types (missing interfaces, protocol mismatches, etc.)
 - BU-04: Generates exact code-level deltas (function signatures, file locations)
 - BU-05: Designs integration architecture
 - BU-06: Validates and merges with top-down at common validation steps
 
+**Context Savings**: LLM loads only 01b (bottom-up), skipping 01c (top-down) = **60% reduction**
+
+### Fast Setup (Skip Framework Selection) - v3.7.0 Flow
+```
+00a-basic_setup → 01a-approach_detection → ...
+```
+
+**Context Savings**: Skip 00b entirely = **55% additional reduction**
+
 ### Architecture Only (No Code)
 ```
-00-setup → 01-systems_engineering → 02-artifacts (minimal) → END
+00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
+→ 01b or 01c → 02-artifacts (minimal) → END
 
 Result: Architecture specs, diagrams, ICDs - no service implementation
 ```
@@ -205,10 +252,10 @@ Reflow now supports **bottom-up integration** for existing components:
 **Reflow tooling (read-only reference):**
 ```
 reflow/
-├── workflows/           # 6 modular workflow files
+├── workflows/           # 15 workflow files (9 modular + 4 deprecated + 2 special)
 ├── workflow_steps/      # Detailed step definitions
-├── tools/              # 19 Python tools
-├── templates/          # 36+ templates
+├── tools/              # 29 Python tools (v3.6.1: +3 validation tools)
+├── templates/          # 36+ templates (v3.6.1: +3 testing templates)
 └── definitions/        # Framework definitions
 ```
 
@@ -265,8 +312,8 @@ reflow/
 ## Documentation
 
 **Tool Reference:**
-- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 19 tools
-- [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - Tool version history (v3.5.0)
+- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 29 tools
+- [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - Tool version history
 
 **Workflow & Features:**
 - [NETWORKX_ANALYSIS_GUIDE.md](docs/NETWORKX_ANALYSIS_GUIDE.md) - Framework-specific NetworkX analysis guidance (400+ lines)
@@ -277,7 +324,30 @@ reflow/
 
 ## Version History
 
-**v3.4.0 (2025-10-26)** - Current
+**v3.7.0 (2025-10-27)** - Current
+- **60-95% LLM context reduction**: Split 4 workflows into 9 modular workflows
+  - 00-setup → 00a-basic_setup + 00b-framework_selection (45-55% reduction)
+  - 01-systems_engineering → 01a-approach_detection + 01b-bottom_up + 01c-top_down (60-95% reduction)
+  - 03-development → 03a-implementation + 03b-validation (43-58% reduction)
+  - 04-testing_operations → 04a-testing + 04b-operations (42-55% reduction)
+- Load only relevant workflow paths (not both bottom-up AND top-down)
+- System cohesion validation: All 15 workflows validated with system_of_systems_graph_v2.py
+
+**v3.6.1 (2025-10-27)**
+- **6 missing components** for Early Testing Integration:
+  - 3 validation tools: validate_dependencies.py, validate_module_structure.py, validate_configuration_consistency.py
+  - 3 testing templates: operational_testing_objectives, service_risk_assessment, system_test_strategy
+- Completes D-07 pre-deployment validation workflow
+
+**v3.6.0 (2025-10-26)**
+- Early Testing Integration: Define testing strategy during architecture phase (shift-left)
+- Prevents 80-90% of deployment blockers through upfront planning
+
+**v3.5.0 (2025-10-26)**
+- Architecture lifecycle tracking: designed → as-built → as-fielded
+- Delta reports with similarity scores and drift detection
+
+**v3.4.0 (2025-10-26)**
 - Bottom-up integration workflow with 9 gap types, exact code-level deltas
 - Automatic approach detection (LLM scans directory and routes to bottom-up or top-down)
 - Framework selection enhancement with semantic matching, scoring rubric, user confirmation
@@ -304,7 +374,7 @@ reflow/
 - Knowledge gap detection
 
 **v3.0.x (2025-10-24)**
-- Modular workflow restructure (5 workflows)
+- Modular workflow restructure (6 workflows)
 - Architecture versioning
 - Git automation, development research
 
@@ -318,6 +388,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Version 3.4.0** - Framework-agnostic systems engineering with automatic approach detection and bottom-up integration
+**Version 3.7.0** - Framework-agnostic systems engineering with 60-95% context reduction and modular workflows
 
-[Documentation](docs/) • [Issues](https://github.com/sligara7/reflow/issues)
+[Documentation](docs/) • [Validation Report](docs/validation/v3.7.0_systems_cohesion_validation.md) • [Issues](https://github.com/sligara7/reflow/issues)
