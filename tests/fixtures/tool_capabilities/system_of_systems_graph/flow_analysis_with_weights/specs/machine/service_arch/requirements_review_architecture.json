@@ -1,0 +1,30 @@
+{
+  "service_id": "WF-REQ",
+  "service_name": "Requirements Review",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Initial requirements gathering and validation",
+  "service_type": "process_step",
+  "dependencies": {
+    "services_consumed": []
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-REQ-OUT",
+        "interface_name": "Approved Requirements",
+        "protocol": "workflow_transition",
+        "data_format": "requirements_document"
+      }
+    ],
+    "required_interfaces": []
+  },
+  "deployment": {
+    "execution_time_avg_hours": 40
+  },
+  "workflow_metadata": {
+    "step_type": "start_node",
+    "quality_gate": true,
+    "approval_required": true
+  }
+}

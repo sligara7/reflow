@@ -1,0 +1,22 @@
+{
+  "component_id": "gene_a",
+  "component_name": "Gene A",
+  "version": "1.0.0",
+  "framework": "systems_biology",
+  "component_type": "gene",
+  "biological_functions": [
+    {
+      "function_id": "F-GENE-A",
+      "function_name": "Protein Expression"
+    }
+  ],
+  "interactions": {
+    "provided": [
+      {
+        "interaction_id": "INT-A",
+        "interaction_type": "activation"
+      }
+    ],
+    "required": []
+  }
+}

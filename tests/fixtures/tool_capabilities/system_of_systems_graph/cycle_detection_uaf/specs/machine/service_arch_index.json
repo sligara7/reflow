@@ -1,0 +1,13 @@
+{
+  "system_metadata": {
+    "system_name": "Cycle Detection Test - UAF",
+    "system_description": "Circular dependency: auth_service \u2192 user_service \u2192 session_service \u2192 auth_service",
+    "version": "1.0.0",
+    "framework": "uaf"
+  },
+  "components": {
+    "auth_service": "specs/machine/service_arch/auth_service_architecture.json",
+    "user_service": "specs/machine/service_arch/user_service_architecture.json",
+    "session_service": "specs/machine/service_arch/session_service_architecture.json"
+  }
+}

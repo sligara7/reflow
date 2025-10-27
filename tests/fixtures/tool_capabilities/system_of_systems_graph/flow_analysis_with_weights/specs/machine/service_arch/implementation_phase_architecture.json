@@ -1,0 +1,47 @@
+{
+  "service_id": "WF-IMPL",
+  "service_name": "Implementation Phase",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Code development and unit testing",
+  "service_type": "process_step",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-DESIGN",
+        "interface_id": "IFC-DESIGN-OUT",
+        "dependency_type": "sequential",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 0.8,
+          "unit": "probability",
+          "description": "80% - design passes review"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-IMPL-OUT",
+        "interface_name": "Implemented Code",
+        "protocol": "workflow_transition",
+        "data_format": "source_code_package"
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-DESIGN-OUT",
+        "provider_service_id": "WF-DESIGN",
+        "criticality": "high"
+      }
+    ]
+  },
+  "deployment": {
+    "execution_time_avg_hours": 160
+  },
+  "workflow_metadata": {
+    "step_type": "intermediate_node",
+    "quality_gate": false
+  }
+}

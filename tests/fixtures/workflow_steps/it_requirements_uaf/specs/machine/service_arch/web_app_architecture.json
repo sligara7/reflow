@@ -1,0 +1,32 @@
+{
+  "service_id": "web_app",
+  "service_name": "Web Application",
+  "version": "1.0.0",
+  "framework": "uaf",
+  "service_type": "application",
+  "user_facing": true,
+  "functions": [
+    {
+      "function_id": "F-WEB-01",
+      "function_name": "Web Interface"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-WEB-001",
+        "protocol": "HTTPS",
+        "external_api": true
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Node.js 18",
+    "ports": {
+      "primary": {
+        "port": 8080
+      }
+    }
+  }
+}

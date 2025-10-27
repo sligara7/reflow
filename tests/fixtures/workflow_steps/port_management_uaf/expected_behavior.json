@@ -1,0 +1,22 @@
+{
+  "test_case": "port_management_uaf",
+  "description": "UAF framework - SE-02-A04 should create port_registry.json",
+  "framework": "uaf",
+  "workflow_step": "SE-02-A04",
+  "condition_check": "framework_registry['uaf']['deployment_characteristics']['port_management_applicable'] == true",
+  "expected_behavior": {
+    "step_executed": true,
+    "files_created": [
+      "specs/machine/port_registry.json"
+    ],
+    "port_assignments": {
+      "api_service": 8000,
+      "database": 5432
+    }
+  },
+  "pass_criteria": {
+    "port_registry_exists": true,
+    "contains_both_services": true,
+    "no_port_conflicts": true
+  }
+}

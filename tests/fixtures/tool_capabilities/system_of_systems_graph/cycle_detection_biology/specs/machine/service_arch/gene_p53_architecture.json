@@ -1,0 +1,30 @@
+{
+  "component_id": "gene_p53",
+  "component_name": "p53 Tumor Suppressor",
+  "version": "1.0.0",
+  "description": "Transcription factor - activates MDM2 (negative feedback loop)",
+  "framework": "systems_biology",
+  "component_type": "gene",
+  "biological_functions": [
+    {
+      "function_id": "F-P53-01",
+      "function_name": "DNA Damage Response"
+    }
+  ],
+  "interactions": {
+    "provided": [
+      {
+        "interaction_id": "INT-P53-001",
+        "interaction_name": "p53 Activation",
+        "interaction_type": "activation"
+      }
+    ],
+    "required": [
+      {
+        "interaction_id": "INT-MDM2-001",
+        "target_component": "gene_mdm2",
+        "interaction_type": "inhibition"
+      }
+    ]
+  }
+}

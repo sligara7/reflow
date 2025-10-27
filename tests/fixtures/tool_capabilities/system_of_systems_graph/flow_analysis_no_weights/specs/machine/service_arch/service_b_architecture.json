@@ -1,0 +1,39 @@
+{
+  "service_id": "SRV-SVC-B",
+  "service_name": "Service B",
+  "version": "1.0.0",
+  "framework": "uaf",
+  "description": "Backend service B - Product catalog",
+  "service_type": "business_logic",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "SRV-API-GW",
+        "interface_id": "IFC-GW-001",
+        "dependency_type": "provides_to"
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-SVC-B-001",
+        "interface_name": "Product Catalog API",
+        "protocol": "REST/HTTP",
+        "data_format": "JSON",
+        "port": 8002
+      }
+    ],
+    "required_interfaces": []
+  },
+  "deployment": {
+    "container_name": "service_b",
+    "ports": {
+      "primary": {
+        "port": 8002,
+        "protocol": "HTTP",
+        "exposure": "internal"
+      }
+    }
+  }
+}

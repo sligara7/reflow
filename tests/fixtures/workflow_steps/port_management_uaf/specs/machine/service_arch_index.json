@@ -1,0 +1,11 @@
+{
+  "system_metadata": {
+    "system_name": "Port Management Test - UAF",
+    "version": "1.0.0",
+    "framework": "uaf"
+  },
+  "components": {
+    "api_service": "specs/machine/service_arch/api_service_architecture.json",
+    "database": "specs/machine/service_arch/database_architecture.json"
+  }
+}

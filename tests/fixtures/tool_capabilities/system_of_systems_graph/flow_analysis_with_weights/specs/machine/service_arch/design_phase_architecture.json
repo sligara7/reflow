@@ -1,0 +1,57 @@
+{
+  "service_id": "WF-DESIGN",
+  "service_name": "Design Phase",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Architectural and detailed design",
+  "service_type": "process_step",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-REQ",
+        "interface_id": "IFC-REQ-OUT",
+        "dependency_type": "sequential",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 1.0,
+          "unit": "probability",
+          "description": "100% - always proceed to design after requirements approved"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-DESIGN-OUT",
+        "interface_name": "Design Documents",
+        "protocol": "workflow_transition",
+        "data_format": "architecture_specification"
+      },
+      {
+        "interface_id": "IFC-DESIGN-REWORK",
+        "interface_name": "Design Rejected - Rework Requirements",
+        "protocol": "workflow_transition",
+        "data_format": "rejection_feedback"
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-REQ-OUT",
+        "provider_service_id": "WF-REQ",
+        "criticality": "high"
+      }
+    ]
+  },
+  "deployment": {
+    "execution_time_avg_hours": 80
+  },
+  "workflow_metadata": {
+    "step_type": "intermediate_node",
+    "quality_gate": true,
+    "conditional_routing": {
+      "pass_rate": 0.8,
+      "rework_rate": 0.2
+    }
+  }
+}

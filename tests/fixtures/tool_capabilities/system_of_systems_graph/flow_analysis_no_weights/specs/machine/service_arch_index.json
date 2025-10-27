@@ -1,0 +1,13 @@
+{
+  "system_metadata": {
+    "system_name": "Flow Analysis Test - No Edge Weights",
+    "version": "1.0.0",
+    "framework": "uaf",
+    "description": "Simple microservices architecture WITHOUT edge weights"
+  },
+  "components": {
+    "api_gateway": "specs/machine/service_arch/api_gateway_architecture.json",
+    "service_a": "specs/machine/service_arch/service_a_architecture.json",
+    "service_b": "specs/machine/service_arch/service_b_architecture.json"
+  }
+}

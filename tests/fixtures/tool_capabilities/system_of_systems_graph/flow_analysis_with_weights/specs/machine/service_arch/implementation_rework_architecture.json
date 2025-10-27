@@ -1,0 +1,46 @@
+{
+  "service_id": "WF-IMPL-REWORK",
+  "service_name": "Implementation Rework (from Testing)",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Rework implementation based on testing failures",
+  "service_type": "rework_connector",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-TEST",
+        "interface_id": "IFC-TEST-REWORK",
+        "dependency_type": "conditional_rework",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 0.3,
+          "unit": "probability",
+          "description": "30% - testing failed, implementation needs rework"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-IMPL-REWORK-OUT",
+        "interface_name": "Reworked Implementation",
+        "protocol": "workflow_transition",
+        "data_format": "source_code_package",
+        "routes_to": "WF-IMPL"
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-TEST-REWORK",
+        "provider_service_id": "WF-TEST",
+        "criticality": "medium"
+      }
+    ]
+  },
+  "workflow_metadata": {
+    "step_type": "rework_loop",
+    "rework_source": "WF-TEST",
+    "rework_target": "WF-IMPL"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "test_case": "flow_analysis_with_weights",
+  "description": "Flow analysis with edge weights defined - should succeed with comprehensive metrics",
+  "framework": "decision_flow",
+  "analysis_flags": ["--flow", "--cycles", "--dag"],
+  "pass_criteria": {
+    "flow_analysis_executed": true,
+    "no_errors": true,
+    "edge_weights_detected": true,
+    "metrics_calculated": {
+      "critical_path_identified": true,
+      "success_probability_calculated": true,
+      "expected_iterations_calculated": true,
+      "rework_loops_detected": true
+    },
+    "expected_findings": {
+      "cycles_detected": {
+        "count": 2,
+        "cycles": [
+          {
+            "path": ["WF-DESIGN", "WF-REQ-REWORK", "WF-REQ", "WF-DESIGN"],
+            "probability": 0.2,
+            "interpretation": "Design rejection rework loop"
+          },
+          {
+            "path": ["WF-TEST", "WF-IMPL-REWORK", "WF-IMPL", "WF-TEST"],
+            "probability": 0.3,
+            "interpretation": "Testing failure rework loop"
+          }
+        ]
+      },
+      "critical_path": {
+        "path": ["WF-REQ", "WF-DESIGN", "WF-IMPL", "WF-TEST", "WF-PROD"],
+        "total_time_hours": 348,
+        "success_probability_first_pass": 0.56
+      },
+      "rework_metrics": {
+        "design_rework_rate": 0.2,
+        "testing_rework_rate": 0.3,
+        "expected_design_iterations": 1.25,
+        "expected_testing_iterations": 1.43,
+        "overall_efficiency": 0.56
+      }
+    }
+  },
+  "validation": {
+    "tool_execution": "python3 system_of_systems_graph_v2.py index.json --flow --cycles --dag --detect-gaps",
+    "check_output_contains": [
+      "flow_analysis",
+      "edge_weights",
+      "critical_path",
+      "success_probability"
+    ],
+    "check_no_errors": [
+      "Missing edge weights",
+      "Cannot perform flow analysis",
+      "Edge weight required"
+    ]
+  }
+}

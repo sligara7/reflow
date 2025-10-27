@@ -1,0 +1,38 @@
+{
+  "service_id": "session_service",
+  "service_name": "Session Service",
+  "version": "1.0.0",
+  "description": "Manages sessions - DEPENDS ON auth_service (completes cycle!)",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-SESSION-01",
+      "function_name": "Session Management"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-SESSION-001",
+        "interface_name": "Session API",
+        "protocol": "REST"
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-AUTH-001",
+        "target_service": "auth_service",
+        "protocol": "REST"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8002
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "service_id": "auth_service",
+  "service_name": "Authentication Service",
+  "version": "1.0.0",
+  "description": "Handles authentication - DEPENDS ON user_service (circular!)",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-AUTH-01",
+      "function_name": "User Authentication"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-AUTH-001",
+        "interface_name": "Auth API",
+        "protocol": "REST"
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-USER-001",
+        "target_service": "user_service",
+        "protocol": "REST"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8000
+      }
+    }
+  }
+}

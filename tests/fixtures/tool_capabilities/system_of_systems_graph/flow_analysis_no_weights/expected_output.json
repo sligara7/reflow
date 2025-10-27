@@ -1,0 +1,58 @@
+{
+  "test_case": "flow_analysis_no_weights",
+  "description": "Flow analysis WITHOUT edge weights - should gracefully handle, warn, and skip",
+  "framework": "uaf",
+  "analysis_flags": ["--flow", "--centrality", "--detect-gaps"],
+  "pass_criteria": {
+    "tool_executed_successfully": true,
+    "no_crashes": true,
+    "no_exceptions": true,
+    "graceful_degradation": {
+      "flow_analysis_skipped": true,
+      "warning_issued": true,
+      "other_analyses_continue": true
+    },
+    "expected_warnings": [
+      "Edge weights not found",
+      "Flow analysis requires edge weights",
+      "Skipping flow analysis",
+      "Cannot calculate flow metrics without edge weights"
+    ],
+    "other_analyses_should_succeed": {
+      "centrality_analysis": true,
+      "knowledge_gap_detection": true,
+      "interface_validation": true
+    }
+  },
+  "validation": {
+    "tool_execution": "python3 system_of_systems_graph_v2.py index.json --flow --centrality --detect-gaps",
+    "check_exit_code": 0,
+    "check_output_contains": [
+      "WARNING",
+      "edge weights",
+      "Skipping flow analysis"
+    ],
+    "check_output_does_not_contain": [
+      "ERROR",
+      "Exception",
+      "Traceback",
+      "Failed to complete analysis"
+    ],
+    "check_analyses_completed": [
+      "centrality_analysis",
+      "knowledge_gaps"
+    ],
+    "check_analyses_skipped": [
+      "flow_analysis"
+    ]
+  },
+  "expected_behavior": {
+    "on_flow_flag_with_no_weights": {
+      "action": "Issue warning and skip flow analysis",
+      "severity": "WARNING",
+      "exit_code": 0,
+      "message": "Flow analysis requires edge weights. Add edge_weight field to dependencies in service architectures.",
+      "continue_other_analyses": true
+    }
+  }
+}

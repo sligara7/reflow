@@ -1,0 +1,44 @@
+{
+  "service_id": "SRV-API-GW",
+  "service_name": "API Gateway",
+  "version": "1.0.0",
+  "framework": "uaf",
+  "description": "Central API gateway routing requests to backend services",
+  "service_type": "api_gateway",
+  "dependencies": {
+    "services_consumed": []
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-GW-001",
+        "interface_name": "External API",
+        "protocol": "REST/HTTP",
+        "data_format": "JSON",
+        "port": 8000
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-SVC-A-001",
+        "provider_service_id": "SRV-SVC-A",
+        "criticality": "high"
+      },
+      {
+        "interface_id": "IFC-SVC-B-001",
+        "provider_service_id": "SRV-SVC-B",
+        "criticality": "high"
+      }
+    ]
+  },
+  "deployment": {
+    "container_name": "api_gateway",
+    "ports": {
+      "primary": {
+        "port": 8000,
+        "protocol": "HTTP",
+        "exposure": "external"
+      }
+    }
+  }
+}

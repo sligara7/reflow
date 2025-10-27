@@ -1,0 +1,12 @@
+{
+  "system_metadata": {
+    "system_name": "Cycle Detection Test - Decision Flow",
+    "system_description": "Validation rework loop: SE-02 \u2192 SE-03 \u2192 SE-02 (30% rework rate)",
+    "version": "1.0.0",
+    "framework": "decision_flow"
+  },
+  "components": {
+    "SE-02": "specs/machine/service_arch/SE-02_architecture.json",
+    "SE-03": "specs/machine/service_arch/SE-03_architecture.json"
+  }
+}
