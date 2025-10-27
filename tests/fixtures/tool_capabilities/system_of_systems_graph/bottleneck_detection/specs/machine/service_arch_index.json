@@ -1,0 +1,16 @@
+{
+  "system_metadata": {
+    "system_name": "Bottleneck Detection Test",
+    "system_description": "API gateway with 5 dependent services (high in-degree = bottleneck)",
+    "version": "1.0.0",
+    "framework": "uaf"
+  },
+  "components": {
+    "api_gateway": "specs/machine/service_arch/api_gateway_architecture.json",
+    "service_1": "specs/machine/service_arch/service_1_architecture.json",
+    "service_2": "specs/machine/service_arch/service_2_architecture.json",
+    "service_3": "specs/machine/service_arch/service_3_architecture.json",
+    "service_4": "specs/machine/service_arch/service_4_architecture.json",
+    "service_5": "specs/machine/service_arch/service_5_architecture.json"
+  }
+}

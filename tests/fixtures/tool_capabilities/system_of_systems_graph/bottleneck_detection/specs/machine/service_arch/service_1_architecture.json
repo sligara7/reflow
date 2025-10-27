@@ -1,0 +1,39 @@
+{
+  "service_id": "service_1",
+  "service_name": "Service 1",
+  "version": "1.0.0",
+  "description": "Backend service 1 - depends on API gateway",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-SVC1-01",
+      "function_name": "Service 1 Logic"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-SVC1-001",
+        "interface_name": "Service 1 API",
+        "protocol": "REST"
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-GATEWAY-001",
+        "interface_name": "Gateway API",
+        "target_service": "api_gateway",
+        "protocol": "REST"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8001
+      }
+    }
+  }
+}
