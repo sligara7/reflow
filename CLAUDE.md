@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.3.1
-**Last Updated**: 2025-10-25
+**Version**: 3.7.0
+**Last Updated**: 2025-10-27
 
 ## What is Reflow?
 
@@ -13,10 +13,11 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 
 ### ⚠️ Version 3.0 Structure
 
-**Active (v3.0)**:
-- ✅ `workflows/*.json` - 6 separate workflow files
+**Active (v3.7.0)**:
+- ✅ `workflows/*.json` - 15 workflow files (9 modular + 4 deprecated + 2 special)
 - ✅ `workflow_steps/*/` - Step definitions by workflow
-- ✅ `workflows_master_index.json` - Workflow routing
+- ✅ `workflows_master_index.json` - Workflow routing with branching
+- ✅ **Context Reduction**: 60-95% reduction via workflow splitting
 
 **Archived (DO NOT USE)**:
 - ❌ `docs/archive/decision_flow.json.old` - Old monolithic workflow
@@ -67,45 +68,56 @@ Continue workflow from context/working_memory.json in github.com/yourname/my_sys
 Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
 ```
 
-### The 6 Workflows (In Order)
+### The Workflows (v3.7.0 - Modular)
+
+**NEW in v3.7.0**: Split workflows for **60-95% LLM context reduction**
 
 ```
-00-setup.json                    → Setup, framework selection (10-15 min)
-01-systems_engineering.json      → Architecture design (2-4 hours)
+00a-basic_setup.json             → Basic setup (5-10 min)
+00b-framework_selection.json     → Framework selection [OPTIONAL] (5-10 min)
+01a-approach_detection.json      → Auto-detect approach (<5 min)
+01b-bottom_up_integration.json   → Bottom-up integration (2-3 hours)
+01c-top_down_design.json         → Top-down design (2-4 hours)
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
-03-development.json              → Service implementation (days-weeks)
-04-testing_operations.json       → CI/CD, testing (1-2 weeks)
+03a-development_implementation.json → Implementation (days-weeks)
+03b-development_validation.json  → Validation (1-2 days)
+04a-testing.json                 → Testing workflows (1 week)
+04b-operations.json              → Operations workflows (1 week)
 feature_update.json              → Update existing systems
 ```
+
+**Deprecated (backwards compatibility)**:
+- `00-setup.json`, `01-systems_engineering.json`, `03-development.json`, `04-testing_operations.json`
 
 ## Workflow Progression
 
 ### Typical New System Flow
 
-1. **Start**: Run `00-setup.json`
+1. **Start**: Run `00a-basic_setup.json`
    - Configure paths (reflow_root, system_root)
-   - Select architectural framework (S-01A)
    - Create directory structure
    - Initialize `context/working_memory.json`
+   - **Optional**: Run `00b-framework_selection.json` for detailed framework analysis (55% context reduction if skipped)
 
-2. **Architecture**: Run `01-systems_engineering.json`
-   - **NEW: Automatic Approach Detection (SE-00)** - LLM examines system directory
-   - **If existing components found** → Bottom-up integration (BU-01 through BU-06)
+2. **Architecture**: Run `01a-approach_detection.json` → Routes to 01b OR 01c
+   - **Automatic Approach Detection (SE-00)** - LLM examines system directory (95% context reduction)
+   - **If existing components found** → Routes to `01b-bottom_up_integration.json` (BU-01 through BU-06)
      - Component inventory, gap analysis, exact code-level deltas
-   - **If empty/greenfield** → Top-down design (SE-01 through SE-06)
+   - **If empty/greenfield** → Routes to `01c-top_down_design.json` (SE-01 through SE-06)
      - Service identification, architecture design, validation
-   - Both approaches merge at common validation steps
+   - **Context Benefit**: LLM loads only relevant path (60% reduction)
 
 3. **Documentation**: Run `02-artifacts_visualization.json`
    - Generate ICDs, Mermaid diagrams
    - Create versioned documentation
 
-4. **Build** (optional): Run `03-development.json`
-   - Implement services
-   - 80% test coverage required
+4. **Build** (optional): Run `03a-development_implementation.json` then `03b-development_validation.json`
+   - 03a: Implement services (58% context reduction - coding separated from validation)
+   - 03b: 80% test coverage validation, pre-deployment checks (43% context reduction)
 
-5. **Deploy** (optional): Run `04-testing_operations.json`
-   - CI/CD, Docker Compose, operational testing
+5. **Deploy** (optional): Run `04a-testing.json` then `04b-operations.json`
+   - 04a: CI/CD, testing workflows (55% context reduction - testing separated from ops)
+   - 04b: Docker Compose, operational testing (42% context reduction)
 
 ### Automatic Approach Detection (NEW!)
 
@@ -130,7 +142,8 @@ feature_update.json              → Update existing systems
 ### Architecture-Only Flow
 
 ```
-00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → DONE
+00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
+→ 01b or 01c → 02-artifacts_visualization (minimal) → DONE
 ```
 
 ## Supported Frameworks
@@ -629,10 +642,10 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
    - Conversation history (SUPPLEMENTAL - reference if user mentions)
 5. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
 6. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
-7. **Start with 00-setup**: Configures paths, framework, structure
-8. **6 workflows in sequence**: 00-setup → 01-SE → 02-artifacts → 03-dev → 04-test (+ feature_update)
+7. **Start with 00a-basic_setup**: Configures paths, framework, structure
+8. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
 9. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-10. **v3.3.1 current**: 16 tools, comprehensive documentation, operational environment design, IT requirements, versioning
+10. **v3.7.0 current**: 29 tools, 15 workflows (9 modular + 4 deprecated + 2 special), 60-95% context reduction, system cohesion validated
 
 ### Secondary Approach: Local Machine
 
@@ -644,8 +657,10 @@ Use if user explicitly requests or web not available.
 
 ```
 User creates GitHub repo, then in code environment (Codespaces, Claude Code, etc.) says:
-"Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+"Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json
  on system in github.com/yourname/your_system_repo"
+
+(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
 **Environment Options**:
@@ -670,7 +685,9 @@ Your process:
 **Local Machine (Alternative)?**
 
 ```
-"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system"
+"Implement workflow in /path/to/reflow/workflows/00a-basic_setup.json on system in /path/to/your_system"
+
+(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
 Good luck building complex systems! 🚀
