@@ -1,0 +1,25 @@
+{
+  "system_metadata": {
+    "system_name": "Reflow Workflow System",
+    "version": "v3.7.0",
+    "description": "Self-analysis of Reflow workflows as a system of systems",
+    "framework": "uaf"
+  },
+  "components": {
+    "00-setup": "specs/machine/service_arch/reflow_workflows/00-setup_architecture.json",
+    "00a-basic_setup": "specs/machine/service_arch/reflow_workflows/00a-basic_setup_architecture.json",
+    "00b-framework_selection": "specs/machine/service_arch/reflow_workflows/00b-framework_selection_architecture.json",
+    "01-systems_engineering": "specs/machine/service_arch/reflow_workflows/01-systems_engineering_architecture.json",
+    "01a-approach_detection": "specs/machine/service_arch/reflow_workflows/01a-approach_detection_architecture.json",
+    "01b-bottom_up_integration": "specs/machine/service_arch/reflow_workflows/01b-bottom_up_integration_architecture.json",
+    "01c-top_down_design": "specs/machine/service_arch/reflow_workflows/01c-top_down_design_architecture.json",
+    "02-artifacts_visualization": "specs/machine/service_arch/reflow_workflows/02-artifacts_visualization_architecture.json",
+    "03-development": "specs/machine/service_arch/reflow_workflows/03-development_architecture.json",
+    "03a-development_implementation": "specs/machine/service_arch/reflow_workflows/03a-development_implementation_architecture.json",
+    "03b-development_validation": "specs/machine/service_arch/reflow_workflows/03b-development_validation_architecture.json",
+    "04-testing_operations": "specs/machine/service_arch/reflow_workflows/04-testing_operations_architecture.json",
+    "04a-testing": "specs/machine/service_arch/reflow_workflows/04a-testing_architecture.json",
+    "04b-operations": "specs/machine/service_arch/reflow_workflows/04b-operations_architecture.json",
+    "feature_update": "specs/machine/service_arch/reflow_workflows/feature_update_architecture.json"
+  }
+}

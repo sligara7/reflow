@@ -1,0 +1,43 @@
+{
+  "service_id": "00b-framework_selection",
+  "service_name": "Framework Selection Workflow",
+  "version": "3.7.0",
+  "description": "Detailed framework analysis and selection with 9-action questionnaire and scoring",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Framework Selection Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00a-basic_setup"
+    ],
+    "tools": [],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "00b-framework_selection_interface",
+        "interface_name": "Framework Selection Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "00b-framework_selection.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": "01a-approach_detection"
+  }
+}

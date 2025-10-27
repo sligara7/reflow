@@ -1,0 +1,215 @@
+{
+  "service_id": "01b-bottom_up_integration",
+  "service_name": "Bottom-Up Integration Workflow",
+  "version": "3.7.0",
+  "description": "Integrate existing components into cohesive architecture (bottom-up approach)",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Bottom-Up Integration Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup",
+      "01a-approach_detection"
+    ],
+    "tools": [
+      "analyze_integration_gaps.py",
+      "generate_component_deltas.py",
+      "identify_integration_points.py",
+      "system_of_systems_graph_v2.py",
+      "system_of_systems_graph_v2.py --nested-tiers",
+      "validate_architecture.py",
+      "validate_architecture.py --validate-nested",
+      "validate_component_deltas.py",
+      "validate_foundational_alignment.py",
+      "validate_port_registry.py"
+    ],
+    "templates": [
+      "component_architecture_nested_template.json",
+      "component_specification_complete_template.json",
+      "deployment_architecture_template.json",
+      "index_template.json",
+      "interface_registry_enhanced_template.json",
+      "operational_environment_template.json",
+      "operational_testing_objectives_template.json",
+      "port_registry_template.json",
+      "security_architecture_template.json",
+      "service_architecture_template.json",
+      "service_risk_assessment_template.json",
+      "system_test_strategy_template.json",
+      "ux_api_design_template.json",
+      "version_manifest_template.json"
+    ]
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "01b-bottom_up_integration_interface",
+        "interface_name": "Bottom-Up Integration Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_analyze_integration_gaps.py",
+        "interface_name": "Tool: analyze_integration_gaps.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_component_deltas.py",
+        "interface_name": "Tool: generate_component_deltas.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_identify_integration_points.py",
+        "interface_name": "Tool: identify_integration_points.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_system_of_systems_graph_v2.py",
+        "interface_name": "Tool: system_of_systems_graph_v2.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_system_of_systems_graph_v2.py --nested-tiers",
+        "interface_name": "Tool: system_of_systems_graph_v2.py --nested-tiers",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_architecture.py",
+        "interface_name": "Tool: validate_architecture.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_architecture.py --validate-nested",
+        "interface_name": "Tool: validate_architecture.py --validate-nested",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_component_deltas.py",
+        "interface_name": "Tool: validate_component_deltas.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_foundational_alignment.py",
+        "interface_name": "Tool: validate_foundational_alignment.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_port_registry.py",
+        "interface_name": "Tool: validate_port_registry.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "template_component_architecture_nested_template.json",
+        "interface_name": "Template: component_architecture_nested_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_component_specification_complete_template.json",
+        "interface_name": "Template: component_specification_complete_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_deployment_architecture_template.json",
+        "interface_name": "Template: deployment_architecture_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_index_template.json",
+        "interface_name": "Template: index_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_interface_registry_enhanced_template.json",
+        "interface_name": "Template: interface_registry_enhanced_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_operational_environment_template.json",
+        "interface_name": "Template: operational_environment_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_operational_testing_objectives_template.json",
+        "interface_name": "Template: operational_testing_objectives_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_port_registry_template.json",
+        "interface_name": "Template: port_registry_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_security_architecture_template.json",
+        "interface_name": "Template: security_architecture_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_service_architecture_template.json",
+        "interface_name": "Template: service_architecture_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_service_risk_assessment_template.json",
+        "interface_name": "Template: service_risk_assessment_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_system_test_strategy_template.json",
+        "interface_name": "Template: system_test_strategy_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_ux_api_design_template.json",
+        "interface_name": "Template: ux_api_design_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_version_manifest_template.json",
+        "interface_name": "Template: version_manifest_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "01b-bottom_up_integration.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": "02-artifacts_visualization"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "service_id": "04-testing_operations",
+  "service_name": "Testing & Operations Workflow",
+  "version": "1.0.0",
+  "description": "Test, validate, deploy, and release the system",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Testing & Operations Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup",
+      "01-systems_engineering",
+      "02-artifacts_visualization",
+      "03-development"
+    ],
+    "tools": [
+      "Alerting systems",
+      "CI/CD platform",
+      "Container registry",
+      "Docker",
+      "Docker Compose",
+      "E2E testing frameworks",
+      "Monitoring platforms",
+      "Performance testing tools",
+      "Security testing tools",
+      "Test frameworks (language-specific)",
+      "compare_architectures.py",
+      "generate_as_fielded_architecture.py",
+      "kubectl (if using Kubernetes)",
+      "verify_component_contract.py"
+    ],
+    "templates": [
+      "dte_artifacts_template.json",
+      "ote_artifacts_template.json"
+    ]
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "04-testing_operations_interface",
+        "interface_name": "Testing & Operations Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_Alerting systems",
+        "interface_name": "Tool: Alerting systems",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_CI/CD platform",
+        "interface_name": "Tool: CI/CD platform",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Container registry",
+        "interface_name": "Tool: Container registry",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Docker",
+        "interface_name": "Tool: Docker",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Docker Compose",
+        "interface_name": "Tool: Docker Compose",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_E2E testing frameworks",
+        "interface_name": "Tool: E2E testing frameworks",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Monitoring platforms",
+        "interface_name": "Tool: Monitoring platforms",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Performance testing tools",
+        "interface_name": "Tool: Performance testing tools",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Security testing tools",
+        "interface_name": "Tool: Security testing tools",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Test frameworks (language-specific)",
+        "interface_name": "Tool: Test frameworks (language-specific)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_compare_architectures.py",
+        "interface_name": "Tool: compare_architectures.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_as_fielded_architecture.py",
+        "interface_name": "Tool: generate_as_fielded_architecture.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_kubectl (if using Kubernetes)",
+        "interface_name": "Tool: kubectl (if using Kubernetes)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py",
+        "interface_name": "Tool: verify_component_contract.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "template_dte_artifacts_template.json",
+        "interface_name": "Template: dte_artifacts_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_ote_artifacts_template.json",
+        "interface_name": "Template: ote_artifacts_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "04-testing_operations.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": null
+  }
+}

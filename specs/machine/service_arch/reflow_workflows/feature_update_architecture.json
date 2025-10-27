@@ -1,0 +1,71 @@
+{
+  "service_id": "feature_update",
+  "service_name": "Feature Update Workflow",
+  "version": "1.0.0",
+  "description": "Handle changes to existing systems with foundational alignment validation",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Feature Update Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [],
+    "tools": [
+      "system_of_systems_graph_v2.py",
+      "validate_architecture.py",
+      "validate_foundational_alignment.py",
+      "verify_component_contract.py"
+    ],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "feature_update_interface",
+        "interface_name": "Feature Update Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_system_of_systems_graph_v2.py",
+        "interface_name": "Tool: system_of_systems_graph_v2.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_architecture.py",
+        "interface_name": "Tool: validate_architecture.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_foundational_alignment.py",
+        "interface_name": "Tool: validate_foundational_alignment.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py",
+        "interface_name": "Tool: verify_component_contract.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "feature_update.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": null
+  }
+}

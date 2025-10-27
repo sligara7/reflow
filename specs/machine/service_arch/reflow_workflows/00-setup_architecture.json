@@ -1,0 +1,85 @@
+{
+  "service_id": "00-setup",
+  "service_name": "Setup Workflow",
+  "version": "1.0.0",
+  "description": "Initialize system, configure paths, set up environment and foundational documents",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Setup Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [],
+    "tools": [
+      "bootstrap_development_context.py",
+      "generate_rag_embeddings.py",
+      "generate_rag_embeddings.py (optional)",
+      "identify_integration_points.py (may be used later)",
+      "validate_directory_structure.py",
+      "validate_reflow_setup.py"
+    ],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "00-setup_interface",
+        "interface_name": "Setup Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_bootstrap_development_context.py",
+        "interface_name": "Tool: bootstrap_development_context.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_rag_embeddings.py",
+        "interface_name": "Tool: generate_rag_embeddings.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_rag_embeddings.py (optional)",
+        "interface_name": "Tool: generate_rag_embeddings.py (optional)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_identify_integration_points.py (may be used later)",
+        "interface_name": "Tool: identify_integration_points.py (may be used later)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_directory_structure.py",
+        "interface_name": "Tool: validate_directory_structure.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_reflow_setup.py",
+        "interface_name": "Tool: validate_reflow_setup.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "00-setup.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": null
+  }
+}
