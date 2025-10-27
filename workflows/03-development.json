@@ -341,6 +341,53 @@
           "location": "services/build_ready_index.json",
           "purpose": "Track which services are ready for build/test",
           "includes": "List of services with build status"
+        },
+        {
+          "action_id": "D-01-A06",
+          "description": "Create lightweight service prototype to validate architecture assumptions (OPTIONAL)",
+          "when": "After environment bootstrap (D-01), before domain model implementation (D-02)",
+          "new_in_version": "v3.6.0 - Early Testing Integration",
+          "user_prompt": {
+            "ask": "Would you like to create a prototype to validate architecture assumptions before full implementation?",
+            "options": [
+              "Yes - Create prototype (recommended for complex deployments, unfamiliar tech stacks, high-risk services)",
+              "No - Skip prototyping and proceed to full implementation"
+            ],
+            "default": "No"
+          },
+          "when_to_recommend_yes": [
+            "Complex deployment (database permissions, message queues, external integrations)",
+            "Unfamiliar technology stack (first time using framework/platform)",
+            "Uncertain operational environment (cloud permissions, network policies)",
+            "High-risk service (score >= 2.6 from SE-02-A10 risk_assessment.json)"
+          ],
+          "purpose": "Quickly validate architecture assumptions before investing in full implementation",
+          "time_budget": "2-4 hours per service",
+          "what_to_implement": [
+            "Health endpoints (/health, /ready) - REAL",
+            "One API endpoint per interface - STUB (return hardcoded JSON)",
+            "Database connection - REAL (connect to actual database)",
+            "One migration - REAL (create one table)",
+            "Configuration loading - REAL (read environment variables)",
+            "Logging - REAL (emit structured logs)",
+            "Docker build - REAL (create working Dockerfile)"
+          ],
+          "what_NOT_to_implement": [
+            "Business logic (stub with hardcoded responses)",
+            "Complete data models (minimal schema, one table)",
+            "Complete test suite (smoke test only)",
+            "Full observability (basic logging sufficient)"
+          ],
+          "success_criteria": [
+            "Prototype service starts successfully",
+            "Health endpoint responds 200 OK",
+            "Database connection established as service user",
+            "Migration runs successfully",
+            "One API endpoint responds (stub data OK)",
+            "Docker build succeeds",
+            "Smoke test passes"
+          ],
+          "benefit": "Catch architectural issues (permissions, deployment config, infrastructure) in 2-4 hours instead of discovering after full implementation"
         }
       ],
       "tools_used": [
@@ -415,6 +462,24 @@
           "coverage_requirement": "Minimum 80% code coverage",
           "purpose": "Ensure domain logic correctness",
           "location_pattern": "services/{service_name}/tests/unit/"
+        },
+        {
+          "action_id": "D-02-A99",
+          "description": "Prove It Works - Validate service runs with domain model implementation",
+          "when": "After all D-02 actions complete, before proceeding to D-03",
+          "purpose": "Catch deployment issues incrementally when introduced, not all at once during operational testing",
+          "new_in_version": "v3.6.0 - Early Testing Integration",
+          "time_budget": "15-30 minutes (mostly automated)",
+          "blocking": false,
+          "enforcement": "STRONGLY RECOMMENDED to fix issues before proceeding",
+          "validation_checks": [
+            "Docker build succeeds (docker build --no-cache)",
+            "Service starts in container",
+            "Health endpoint responds 200 OK",
+            "Logs clean (no ERROR/WARNING at startup)",
+            "Basic smoke test passes (create one entity via API)"
+          ],
+          "benefit": "Deployment issues caught incrementally (per development step) instead of all at once during operational testing"
         }
       ],
       "tools_used": [],
@@ -475,6 +540,25 @@
           "description": "Create persistence layer tests",
           "types": ["Repository tests", "Migration tests", "Data integrity tests"],
           "location_pattern": "services/{service_name}/tests/persistence/"
+        },
+        {
+          "action_id": "D-03-A99",
+          "description": "Prove It Works - Validate service runs with persistence layer",
+          "when": "After all D-03 actions complete, before proceeding to D-04",
+          "purpose": "Catch database and migration issues incrementally when introduced",
+          "new_in_version": "v3.6.0 - Early Testing Integration",
+          "time_budget": "15-30 minutes (mostly automated)",
+          "blocking": false,
+          "enforcement": "STRONGLY RECOMMENDED to fix issues before proceeding",
+          "validation_checks": [
+            "Docker build succeeds",
+            "Service starts with database connection",
+            "Health endpoint responds 200 OK",
+            "Database migrations run successfully",
+            "Logs clean (no ERROR/WARNING at startup)",
+            "CRUD smoke test passes (create, read, update, delete one entity)"
+          ],
+          "benefit": "Database permission and migration issues caught immediately, not during operational testing"
         }
       ],
       "tools_used": [],
@@ -538,6 +622,25 @@
           "description": "Create integration tests",
           "types": ["API contract tests", "Integration tests", "Security tests"],
           "location_pattern": "services/{service_name}/tests/integration/"
+        },
+        {
+          "action_id": "D-04-A99",
+          "description": "Prove It Works - Validate service runs with integration and security",
+          "when": "After all D-04 actions complete, before proceeding to D-05",
+          "purpose": "Catch integration and authentication issues incrementally when introduced",
+          "new_in_version": "v3.6.0 - Early Testing Integration",
+          "time_budget": "15-30 minutes (mostly automated)",
+          "blocking": false,
+          "enforcement": "STRONGLY RECOMMENDED to fix issues before proceeding",
+          "validation_checks": [
+            "Docker build succeeds",
+            "Service starts and connects to dependencies",
+            "Health endpoint responds 200 OK",
+            "Authentication works (valid token accepted, invalid rejected)",
+            "Logs clean (no ERROR/WARNING at startup)",
+            "Integration smoke test passes (call one endpoint, verify response)"
+          ],
+          "benefit": "Integration and security issues caught immediately, not during operational testing"
         }
       ],
       "tools_used": ["verify_component_contract.py"],
@@ -609,6 +712,26 @@
           "description": "Run test coverage analysis",
           "tools": ["coverage.py (Python)", "istanbul/nyc (JS)", "JaCoCo (Java)"],
           "gate_enforcement": "Block if coverage < 80%"
+        },
+        {
+          "action_id": "D-05-A99",
+          "description": "Prove It Works - Validate service runs with observability instrumentation",
+          "when": "After all D-05 actions complete, before proceeding to D-06",
+          "purpose": "Catch observability and monitoring issues incrementally when introduced",
+          "new_in_version": "v3.6.0 - Early Testing Integration",
+          "time_budget": "15-30 minutes (mostly automated)",
+          "blocking": false,
+          "enforcement": "STRONGLY RECOMMENDED to fix issues before proceeding",
+          "validation_checks": [
+            "Docker build succeeds",
+            "Service starts with full observability",
+            "Health endpoint responds 200 OK",
+            "Metrics endpoint (/metrics) responds with Prometheus format",
+            "Logs emitted in structured JSON format",
+            "Logs clean (no ERROR/WARNING at startup)",
+            "Observability smoke test passes (verify metrics collected, logs emitted, traces work)"
+          ],
+          "benefit": "Observability issues caught immediately - ensures monitoring works before operational testing"
         }
       ],
       "tools_used": [],
