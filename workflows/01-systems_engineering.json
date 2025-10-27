@@ -560,6 +560,20 @@
           "template": "operational_environment_template.json",
           "output": "specs/machine/operational_environment.json",
           "condition": "Required for systems going to production - defines operational conditions and testing strategy"
+        },
+        {
+          "action_id": "SE-02-A09",
+          "description": "Define operational testing objectives for each service",
+          "template": "operational_testing_objectives_template.json",
+          "output": "specs/machine/service_arch/{service}/operational_testing_objectives.json",
+          "new_in_version": "v3.6.0 - Early Testing Integration"
+        },
+        {
+          "action_id": "SE-02-A10",
+          "description": "Perform risk assessment for each service to guide testing thoroughness",
+          "template": "service_risk_assessment_template.json",
+          "output": "specs/machine/service_arch/{service}/risk_assessment.json",
+          "new_in_version": "v3.6.0 - Early Testing Integration"
         }
       ],
       "tools_used": ["validate_port_registry.py"],
@@ -571,7 +585,9 @@
         "security_architecture_template.json",
         "deployment_architecture_template.json",
         "ux_api_design_template.json",
-        "operational_environment_template.json"
+        "operational_environment_template.json",
+        "operational_testing_objectives_template.json",
+        "service_risk_assessment_template.json"
       ],
       "outputs": [
         "specs/machine/service_arch/{service}/service_architecture_v{semver}-{date}.json (per service)",
@@ -580,7 +596,9 @@
         "specs/machine/security_architecture.json (if UAF with users)",
         "specs/machine/deployment_architecture.json (if UAF/IT)",
         "specs/machine/ux_api_design.json (if UAF with users/APIs)",
-        "specs/machine/operational_environment.json (if UAF production)"
+        "specs/machine/operational_environment.json (if UAF production)",
+        "specs/machine/service_arch/{service}/operational_testing_objectives.json (NEW v3.6.0)",
+        "specs/machine/service_arch/{service}/risk_assessment.json (NEW v3.6.0)"
       ],
       "gates": [],
       "next_step": "SE-03"
@@ -1209,16 +1227,24 @@
           "action_id": "SE-06-A04",
           "description": "Finalize and verify all machine-readable architecture products",
           "verification": "All required files present and valid (index, graphs, version manifest)"
+        },
+        {
+          "action_id": "SE-06-A05",
+          "description": "Define comprehensive system test strategy based on complete architecture and risk assessments",
+          "template": "system_test_strategy_template.json",
+          "output": "specs/machine/system_test_strategy.json",
+          "new_in_version": "v3.6.0 - Early Testing Integration"
         }
       ],
       "tools_used": ["system_of_systems_graph_v2.py"],
-      "templates_used": ["index_template.json", "version_manifest_template.json"],
+      "templates_used": ["index_template.json", "version_manifest_template.json", "system_test_strategy_template.json"],
       "outputs": [
         "specs/machine/index.json",
         "specs/machine/graphs/system_of_systems_graph.json",
         "specs/machine/architecture_issues.json",
         "specs/machine/version_manifest.json",
-        "context/working_memory.json (updated with analysis_configuration)"
+        "context/working_memory.json (updated with analysis_configuration)",
+        "specs/machine/system_test_strategy.json (NEW v3.6.0)"
       ],
       "gates": [
         {

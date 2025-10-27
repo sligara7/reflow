@@ -487,6 +487,245 @@
       "success_criteria": "All required files present, valid, and consistent - system ready for artifacts/visualization workflow",
 
       "llm_agent_guidance": "This is the final validation before completing systems engineering workflow. Do not proceed if any critical files are missing or invalid."
+    },
+
+    {
+      "action_id": "SE-06-A05",
+      "action_name": "Define System Test Strategy",
+      "description": "Define comprehensive test strategy for the entire system based on complete architecture",
+      "when": "After system graph generation and finalization (SE-06-A04), when complete architecture is known",
+      "purpose": "Define testing strategy upfront so development implements tests per plan and operations executes tests. Testing defined HERE (SE phase), implemented in Development, executed in Testing.",
+      "template": "system_test_strategy_template.json",
+      "creates": "specs/machine/system_test_strategy.json",
+      "new_in_version": "Reflow v3.6.0 - Early Testing Integration feature",
+
+      "applicability": {
+        "applies_to": "All frameworks",
+        "note": "Testing strategy is universal across all system types - UAF, biological systems, social networks, ecological models all need comprehensive testing"
+      },
+
+      "test_strategy_sections": {
+        "unit_test_strategy": {
+          "description": "Component-level testing strategy",
+          "includes": [
+            "Coverage targets (80% minimum for critical services per risk_assessment.json, 60% for utilities)",
+            "Test frameworks by language (pytest for Python, Jest for JavaScript, JUnit for Java)",
+            "Mocking strategy (mock external dependencies, use real internal components)",
+            "Test organization (one test file per source file, descriptive test names)",
+            "Continuous testing (run on every commit via CI/CD)"
+          ],
+          "risk_based_coverage": {
+            "high_risk_services": "85% coverage (score >= 2.6 from SE-02-A10)",
+            "medium_risk_services": "80% coverage (score 1.6-2.5)",
+            "low_risk_services": "60% coverage (score < 1.6)"
+          }
+        },
+
+        "integration_test_strategy": {
+          "description": "Cross-component testing strategy",
+          "includes": [
+            "Service pairs to test (based on system_of_systems_graph.json edges)",
+            "Test environment (Docker Compose with test database/queue)",
+            "Mocking approach (mock external systems, real internal services)",
+            "Data setup/teardown (test fixtures, database seeds)",
+            "Contract tests (consumer-driven contracts using Pact or verify_component_contract.py)"
+          ],
+          "integration_targets": {
+            "description": "Which service pairs require integration tests",
+            "source": "Derived from system_of_systems_graph.json edges",
+            "example": "If character_service → session_service edge exists, test: 'Create character → Use in session'",
+            "rule": "Every edge in system graph requires at least one integration test"
+          }
+        },
+
+        "contract_test_strategy": {
+          "description": "Consumer-driven contract testing for all external-facing APIs",
+          "approach": "Consumer defines expected contract, provider validates implementation matches contract",
+          "tools": ["Pact", "Spring Cloud Contract", "verify_component_contract.py"],
+          "includes": [
+            "Which interfaces require contract tests (all external-facing APIs from interface_registry.json)",
+            "Who owns contract definitions (consumers define contracts, providers validate)",
+            "Contract versioning strategy (semantic versioning, breaking changes = major version bump)",
+            "Provider validation frequency (on every commit to provider service)"
+          ],
+          "targets": "All interfaces with external_api: true in interface_registry.json"
+        },
+
+        "performance_test_strategy": {
+          "description": "Load, stress, and endurance testing",
+          "test_types": [
+            {
+              "type": "Load testing",
+              "purpose": "Verify system handles expected traffic without degradation",
+              "scenarios": ["1x expected load", "2x expected load", "5x expected load"],
+              "tools": ["JMeter", "Gatling", "k6", "Locust"],
+              "success_criteria": "p95 latency < 500ms at 2x load, p99 < 1000ms, no errors"
+            },
+            {
+              "type": "Stress testing",
+              "purpose": "Find breaking point and verify graceful degradation",
+              "scenarios": ["Incrementally increase load until failure", "Measure recovery after overload"],
+              "success_criteria": "System degrades gracefully (returns 503 instead of crashing), no data corruption, recovers when load decreases"
+            },
+            {
+              "type": "Soak testing",
+              "purpose": "Verify stability over time (detect memory leaks, resource exhaustion)",
+              "scenarios": ["Run at expected load for 24-48 hours continuously"],
+              "success_criteria": "No memory leaks, latency remains stable, no resource exhaustion"
+            }
+          ],
+          "target_metrics": {
+            "availability": "99.9% uptime (8.76 hours downtime/year)",
+            "latency_p50": "< 200ms",
+            "latency_p95": "< 500ms",
+            "latency_p99": "< 1000ms",
+            "throughput": "Based on expected user count (e.g., 1000 req/sec for 10,000 concurrent users)",
+            "error_rate": "< 0.1% under normal load"
+          },
+          "targets": "All services, with focus on high-risk services (from SE-02-A10 risk_assessment.json)"
+        },
+
+        "security_test_strategy": {
+          "description": "Vulnerability and penetration testing",
+          "test_types": [
+            {
+              "type": "OWASP Top 10 testing",
+              "scope": "All external-facing APIs",
+              "tools": ["OWASP ZAP", "Burp Suite"],
+              "includes": ["SQL Injection", "XSS", "Broken Authentication", "Sensitive Data Exposure", "XML External Entities", "Broken Access Control", "Security Misconfiguration", "Insecure Deserialization", "Components with Known Vulnerabilities", "Insufficient Logging & Monitoring"],
+              "frequency": "Before each release + quarterly thereafter"
+            },
+            {
+              "type": "Dependency scanning",
+              "scope": "All third-party libraries and containers",
+              "tools": ["Snyk", "Dependabot", "npm audit", "pip-audit", "Trivy"],
+              "frequency": "On every commit (CI/CD pipeline)"
+            },
+            {
+              "type": "Container scanning",
+              "scope": "All Docker images",
+              "tools": ["Trivy", "Aqua Security", "Clair", "Docker Scout"],
+              "frequency": "On image build (part of CI/CD)",
+              "success_criteria": "No critical vulnerabilities, medium/low documented with mitigation plan"
+            },
+            {
+              "type": "Penetration testing",
+              "scope": "Complete system (black-box and white-box testing)",
+              "performed_by": "External security firm (if budget allows) or internal red team",
+              "frequency": "Before production release, then quarterly",
+              "deliverable": "Penetration test report with findings and remediation plan"
+            }
+          ],
+          "success_criteria": "No critical vulnerabilities, all medium vulnerabilities have documented mitigation plans with target dates"
+        },
+
+        "operational_test_strategy": {
+          "description": "Operational acceptance testing - validates system survives real operational conditions",
+          "purpose": "Validate system survives real operational conditions (not ideal lab conditions)",
+          "note": "This is the FOCUS of this change proposal - operational testing prevents 'toss it over the fence' problem",
+          "test_types": [
+            {
+              "type": "Deployment test",
+              "scenarios": [
+                "Cold start (fresh database, no state)",
+                "Upgrade deployment (schema migration, existing data)",
+                "Rollback (revert to previous version)"
+              ],
+              "success_criteria": "All services start healthy, smoke tests pass, no manual intervention",
+              "validation": "Automated via D-06.5 pre-deployment validation"
+            },
+            {
+              "type": "Failover test",
+              "scenarios": [
+                "Database failover (primary fails, standby promoted)",
+                "Service instance failure (orchestrator restarts)",
+                "Network partition (split-brain handling)",
+                "Multi-AZ failover (entire availability zone fails)"
+              ],
+              "success_criteria": "Automatic recovery within RTO (Recovery Time Objective), no data loss within RPO (Recovery Point Objective)",
+              "applicability": "Required for high-availability systems"
+            },
+            {
+              "type": "Chaos test",
+              "scenarios": [
+                "Random pod/container kills (Chaos Monkey pattern)",
+                "Network latency injection (add 500ms latency)",
+                "CPU/memory exhaustion (stress test individual services)",
+                "Disk full (fill disk to capacity)"
+              ],
+              "tools": ["Chaos Monkey", "Litmus Chaos", "Gremlin", "Chaos Mesh"],
+              "success_criteria": "System continues operating (degraded mode acceptable), no cascading failures, automatic recovery",
+              "applicability": "Required ONLY for high-risk services (score >= 2.6 from SE-02-A10)",
+              "rationale": "Chaos testing is expensive and time-consuming - focus on high-risk services"
+            },
+            {
+              "type": "Backup and restore test",
+              "scenarios": [
+                "Scheduled backup (verify backup completes successfully)",
+                "Point-in-time restore (restore to specific timestamp)",
+                "Disaster recovery (complete system restore from backup)"
+              ],
+              "success_criteria": "Restore completes within RTO, data integrity validated (checksums match), system functional after restore",
+              "frequency": "Monthly for backups, quarterly for full DR test"
+            }
+          ],
+          "acceptance_criteria": {
+            "description": "System ready for production when these criteria met",
+            "criteria": [
+              "All deployment tests pass (cold start, upgrade, rollback)",
+              "Failover tests demonstrate automatic recovery (if HA required)",
+              "Chaos tests show resilience (if high-risk services present)",
+              "Backup/restore validated"
+            ]
+          }
+        }
+      },
+
+      "handoff_to_workflows": {
+        "development_workflow": "Implements unit, integration, contract, performance tests per this strategy (D-02 through D-05)",
+        "testing_workflow": "Executes operational tests per this strategy (TO-01 through TO-05)",
+        "critical_note": "Testing strategy defined HERE (SE phase), implemented in Development, executed in Testing. Testing phase does NOT invent new tests."
+      },
+
+      "execution_steps": [
+        "1. Read system_of_systems_graph.json to understand complete system architecture",
+        "2. Read all service risk_assessment.json files to identify high/medium/low risk services",
+        "3. Define unit test strategy (coverage targets based on risk, frameworks, mocking approach)",
+        "4. Define integration test strategy (service pairs from graph edges, test environment)",
+        "5. Define contract test strategy (all external APIs from interface_registry.json)",
+        "6. Define performance test strategy (load scenarios based on expected usage, target metrics)",
+        "7. Define security test strategy (OWASP Top 10, dependency scanning, pentesting schedule)",
+        "8. Define operational test strategy (deployment, failover, chaos for high-risk, backup/restore)",
+        "9. Include success criteria for each test type with measurable targets (not subjective)",
+        "10. Map high-risk services to comprehensive testing (chaos, load, failover)",
+        "11. Save to specs/machine/system_test_strategy.json"
+      ],
+
+      "validation": [
+        "system_test_strategy.json exists and is valid JSON",
+        "All 6 test strategy sections present (unit, integration, contract, performance, security, operational)",
+        "Risk-based testing defined (high-risk services get comprehensive tests)",
+        "Success criteria are measurable (latency < 500ms, coverage >= 80%, not 'good performance')",
+        "Integration targets derived from system_of_systems_graph.json edges",
+        "High-risk services (>= 2.6) have chaos, load, failover tests defined",
+        "Operational test strategy includes D-06.5 pre-deployment validation reference"
+      ],
+
+      "llm_agent_instructions": [
+        "Read system_of_systems_graph.json first - this shows complete system structure",
+        "Read all risk_assessment.json files (from SE-02-A10) - risk scores determine testing thoroughness",
+        "High-risk services (>= 2.6): MUST have chaos tests, load tests (5x traffic), failover tests, pentesting",
+        "Medium-risk services (1.6-2.5): Standard tests + load tests (2x traffic) + contract tests",
+        "Low-risk services (< 1.6): Standard tests only (unit + integration + smoke)",
+        "Integration test targets: Every edge in system_of_systems_graph.json needs at least one integration test",
+        "Contract test targets: Every interface with external_api: true needs contract test",
+        "Operational testing: Reference D-06.5 pre-deployment validation - this runs BEFORE operational testing",
+        "Success criteria must be measurable: Use numbers (latency < 500ms, coverage >= 80%), not adjectives ('fast', 'good')",
+        "This strategy feeds directly into: Development workflow (D-02 through D-05) and Testing workflow (TO-01 through TO-05)",
+        "Testing phase (workflow 04) EXECUTES tests defined here - it does NOT invent new tests"
+      ],
+
+      "impact": "Testing strategy defined during SE phase ensures: (1) Testing is comprehensive (covers all test types), (2) Development knows what tests to implement, (3) Testing phase executes pre-defined plan (not ad-hoc testing), (4) Testability is architectural decision, not operational afterthought. Prevents 'toss it over the fence' problem."
     }
   ],
 
@@ -550,6 +789,10 @@
     {
       "template": "version_manifest_template.json",
       "purpose": "Track architecture version history for lifecycle management"
+    },
+    {
+      "template": "system_test_strategy_template.json",
+      "purpose": "Define comprehensive test strategy for entire system - NEW in v3.6.0"
     }
   ],
 
@@ -573,6 +816,10 @@
     {
       "file": "context/working_memory.json (updated)",
       "description": "analysis_configuration section added with selected analyses, rationale, results summary"
+    },
+    {
+      "file": "specs/machine/system_test_strategy.json",
+      "description": "Comprehensive test strategy for entire system (unit, integration, contract, performance, security, operational) - NEW in v3.6.0"
     }
   ],
 

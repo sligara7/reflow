@@ -421,6 +421,287 @@
         "cost_impact": "NOT considering operational environment upfront causes budget overages and costly program delays (10-100x more expensive to retrofit)",
         "production_readiness": "Focus on scalability, reliability, security, maintainability in production from day one"
       }
+    },
+
+    {
+      "action_id": "SE-02-A09",
+      "action_name": "Define Operational Testing Objectives",
+      "description": "Define operational testing objectives and testability requirements for each service",
+      "when": "During service architecture specification (SE-02), after operational environment design (A08)",
+      "purpose": "Define how each service will be tested operationally, ensuring architecture is testable by design",
+      "template": "operational_testing_objectives_template.json",
+      "creates": "specs/machine/service_arch/{service}/operational_testing_objectives.json",
+      "new_in_version": "Reflow v3.6.0 - Early Testing Integration feature",
+
+      "applicability": {
+        "applies_to": "All frameworks",
+        "note": "Testing strategy is universal - UAF services, biological systems, social networks all need testability"
+      },
+
+      "sections": {
+        "testability_requirements": {
+          "description": "Architectural features that enable testing",
+          "includes": [
+            "Health endpoints (/health, /ready) for services",
+            "Observability hooks (metrics, logs, traces) for runtime inspection",
+            "Configuration validation endpoints for deployment verification",
+            "Test interfaces (stub dependencies, mock data sources)",
+            "Deterministic behavior (avoid randomness that prevents reproducible tests)",
+            "Graceful degradation patterns (predictable failure modes)"
+          ],
+          "examples": {
+            "uaf_service": "REST /health endpoint, Prometheus /metrics, test database mode",
+            "biological_model": "Observable state variables, simulation reproducibility via seed",
+            "social_network": "Graph state export, query API for validation"
+          }
+        },
+
+        "deployment_test_scenarios": {
+          "description": "Tests to validate deployment configuration, not business logic",
+          "scenarios": [
+            {
+              "scenario": "Startup validation",
+              "test": "Service starts successfully with production-like configuration",
+              "success_criteria": "Container starts, health endpoint responds 200 OK within 30s"
+            },
+            {
+              "scenario": "Database connection",
+              "test": "Service connects to database with correct permissions",
+              "success_criteria": "Connection established, migrations run successfully as service user"
+            },
+            {
+              "scenario": "Dependency handling",
+              "test": "Service handles missing/failed dependencies gracefully",
+              "success_criteria": "Circuit breaker trips, service returns 503 with clear error message"
+            },
+            {
+              "scenario": "Configuration validation",
+              "test": "Service validates configuration at startup",
+              "success_criteria": "Invalid config detected, service fails fast with actionable error"
+            },
+            {
+              "scenario": "Resource limits",
+              "test": "Service operates within memory/CPU constraints",
+              "success_criteria": "Container stays within limits (e.g., <512MB RAM) under load"
+            }
+          ]
+        },
+
+        "operational_acceptance_criteria": {
+          "description": "Criteria for service to be considered deployment-ready",
+          "criteria": [
+            {
+              "criterion": "Startup time",
+              "target": "< 30 seconds from container start to health check passing",
+              "rationale": "Fast startup enables rapid scaling and recovery"
+            },
+            {
+              "criterion": "Health check response",
+              "target": "< 100ms for /health endpoint",
+              "rationale": "Orchestrators need fast health checks for rapid failure detection"
+            },
+            {
+              "criterion": "Graceful shutdown",
+              "target": "Completes in-flight requests within 30s on SIGTERM",
+              "rationale": "Zero-downtime deployments require graceful draining"
+            },
+            {
+              "criterion": "Crash recovery",
+              "target": "Automatic restart and recovery without manual intervention",
+              "rationale": "Production resilience requires self-healing"
+            }
+          ]
+        },
+
+        "smoke_test_requirements": {
+          "description": "Fast tests (<30s) to validate basic functionality after deployment",
+          "tests": [
+            {
+              "test": "CRUD operations",
+              "what": "Create, read, update, delete primary entities",
+              "time": "< 5 seconds",
+              "purpose": "Verify core business logic works"
+            },
+            {
+              "test": "Authentication",
+              "what": "Valid token accepted, invalid token rejected",
+              "time": "< 2 seconds",
+              "purpose": "Verify security controls work"
+            },
+            {
+              "test": "Database migrations",
+              "what": "Schema matches expected version",
+              "time": "< 1 second (query)",
+              "purpose": "Verify database setup correct"
+            },
+            {
+              "test": "Inter-service communication",
+              "what": "Service can call dependencies and handle responses",
+              "time": "< 5 seconds",
+              "purpose": "Verify integration points work"
+            }
+          ]
+        }
+      },
+
+      "execution_steps": [
+        "1. For EACH service in architecture, create operational_testing_objectives.json",
+        "2. Load template from templates/operational_testing_objectives_template.json",
+        "3. Define testability requirements (health endpoints, observability, test interfaces)",
+        "4. Define 3-5 deployment test scenarios specific to service complexity",
+        "5. Set operational acceptance criteria with measurable targets",
+        "6. Define smoke tests that complete in < 30 seconds total",
+        "7. Customize based on service risk level (from SE-02-A10 risk assessment)",
+        "8. Save to specs/machine/service_arch/{service}/operational_testing_objectives.json"
+      ],
+
+      "validation": [
+        "All services have operational_testing_objectives.json",
+        "Testability requirements include health endpoints and observability",
+        "Deployment scenarios cover startup, database, dependencies, config, resources",
+        "Acceptance criteria have measurable targets (time, response codes)",
+        "Smoke tests defined with time limits"
+      ],
+
+      "llm_agent_instructions": [
+        "For EACH service, create operational_testing_objectives.json using template",
+        "Customize testability requirements based on service complexity",
+        "High-risk services (from A10 risk assessment) need more comprehensive testing objectives",
+        "Deployment test scenarios should validate infrastructure, not business logic",
+        "Smoke tests must be fast (< 30s total) - they run after every deployment",
+        "Operational acceptance criteria must be measurable (not subjective)",
+        "Connect to service_architecture.json: testability requirements become implementation requirements",
+        "These objectives will be used by D-06.5 (pre-deployment validation) and TO-05 (operational testing)"
+      ],
+
+      "impact": "SE phase now produces testable architecture with clear testing objectives, not just functional specifications. Prevents 'toss it over the fence' problem by defining testing requirements during architecture design."
+    },
+
+    {
+      "action_id": "SE-02-A10",
+      "action_name": "Service Risk Assessment",
+      "description": "Perform risk assessment for each service to guide testing thoroughness",
+      "when": "During service architecture specification (SE-02), after defining operational testing objectives (A09)",
+      "purpose": "Identify high-risk services requiring more thorough testing (chaos tests, load tests, failover tests)",
+      "template": "service_risk_assessment_template.json",
+      "creates": "specs/machine/service_arch/{service}/risk_assessment.json",
+      "new_in_version": "Reflow v3.6.0 - Early Testing Integration feature",
+
+      "applicability": {
+        "applies_to": "All frameworks",
+        "note": "Risk assessment is universal - applies to UAF services, biological models, social simulations, ecological systems"
+      },
+
+      "risk_categories": {
+        "deployment_risk": {
+          "description": "Likelihood of deployment failures",
+          "factors": [
+            "Complex dependencies (database, message queue, external APIs)",
+            "Stateful migrations (schema changes, data transformations)",
+            "Resource-intensive (high memory, CPU, or disk usage)",
+            "Platform-specific (native dependencies, OS-level requirements)"
+          ],
+          "severity_levels": {
+            "low": "Stateless service, minimal dependencies (e.g., utility APIs)",
+            "medium": "Database-backed service with migrations",
+            "high": "Distributed state, complex migrations, external integrations"
+          }
+        },
+
+        "integration_risk": {
+          "description": "Likelihood of integration failures",
+          "factors": [
+            "Tight coupling to other services (synchronous dependencies)",
+            "Complex data flows (multi-hop, transformations)",
+            "Protocol mismatches (REST vs gRPC vs messaging)",
+            "External system dependencies (third-party APIs, legacy systems)"
+          ],
+          "severity_levels": {
+            "low": "Standalone service, no external dependencies",
+            "medium": "Calls 1-2 internal services asynchronously",
+            "high": "Synchronous dependencies on 3+ services or external systems"
+          }
+        },
+
+        "operational_risk": {
+          "description": "Impact of service failure on system",
+          "factors": [
+            "On critical path (user-facing, revenue-generating)",
+            "High traffic volume (>1000 req/sec)",
+            "Data integrity critical (financial, health, personal data)",
+            "No redundancy or failover"
+          ],
+          "severity_levels": {
+            "low": "Non-critical, background job, batch processing",
+            "medium": "Important feature, has degraded mode or redundancy",
+            "high": "Critical path, high traffic, single point of failure"
+          }
+        }
+      },
+
+      "risk_matrix": {
+        "description": "Overall risk score determines testing thoroughness",
+        "calculation": "Average of deployment_risk, integration_risk, operational_risk (1-3 scale: 1=low, 2=medium, 3=high)",
+        "risk_levels": {
+          "low_risk": {
+            "score_range": "1.0 - 1.5",
+            "testing_strategy": "Standard testing (unit, integration, smoke tests)",
+            "examples": "Logging service, metrics collector, static content API",
+            "testing_requirements": "80% unit test coverage, integration tests for key scenarios, smoke tests"
+          },
+          "medium_risk": {
+            "score_range": "1.6 - 2.5",
+            "testing_strategy": "Standard + load testing + contract testing",
+            "examples": "Authentication service, notification service, search API",
+            "testing_requirements": "80% coverage, integration tests, contract tests, load tests (2x expected traffic)"
+          },
+          "high_risk": {
+            "score_range": "2.6 - 3.0",
+            "testing_strategy": "Standard + load + chaos + failover + security pentesting",
+            "examples": "Payment service, user data service, API gateway, database cluster",
+            "testing_requirements": "85% coverage, comprehensive integration/contract tests, load tests (5x traffic), chaos tests, failover tests, security pentesting"
+          }
+        }
+      },
+
+      "execution_steps": [
+        "1. For EACH service, assess three risk categories: deployment, integration, operational",
+        "2. For each category, review factors and assign severity level: 1=low, 2=medium, 3=high",
+        "3. Calculate overall risk score: (deployment_risk + integration_risk + operational_risk) / 3",
+        "4. Classify service: low (1.0-1.5), medium (1.6-2.5), or high (2.6-3.0) risk",
+        "5. Document rationale for each risk assessment (why this severity level?)",
+        "6. Map risk level to testing strategy per risk_matrix above",
+        "7. High-risk services (score >= 2.6) MUST have chaos, load, failover tests in TO-05",
+        "8. Save to specs/machine/service_arch/{service}/risk_assessment.json"
+      ],
+
+      "validation": [
+        "All services have risk_assessment.json",
+        "Each risk category has severity level (1, 2, or 3) with rationale",
+        "Overall risk score calculated correctly",
+        "Testing strategy matches risk level per risk_matrix",
+        "High-risk services (>= 2.6) flagged for comprehensive operational testing"
+      ],
+
+      "llm_agent_instructions": [
+        "For EACH service, perform risk assessment using three categories",
+        "Be honest about risk - underestimating risk leads to insufficient testing and production failures",
+        "Common high-risk indicators: payment processing, user authentication, data storage, API gateway, single point of failure",
+        "Common low-risk indicators: logging, metrics, static content, internal utilities",
+        "Document rationale - future maintainers need to understand WHY service is high/low risk",
+        "Risk assessment feeds into: (1) operational testing objectives (A09), (2) system test strategy (SE-06-A06), (3) operational testing (TO-05)",
+        "High-risk services require prototyping (D-01-A06) and prove-it-works gates (D-02-A99 through D-05-A99)",
+        "Use risk scores during development to prioritize testing effort on high-risk services"
+      ],
+
+      "impact": "Testing strategy becomes risk-based, focusing effort on high-risk services instead of uniform testing for all. Prevents over-testing low-risk services and under-testing high-risk services.",
+
+      "relationship_to_other_actions": {
+        "informs_SE-06-A06": "System test strategy (SE-06-A06) uses risk assessments to determine which services need chaos/load/failover tests",
+        "informs_D-01-A06": "High-risk services (>= 2.6) should use prototyping (D-01-A06) to validate assumptions early",
+        "informs_D-0X-A99": "High-risk services require stricter prove-it-works validation at each development step",
+        "informs_TO-05": "High-risk services get comprehensive operational testing (chaos, load, failover); low-risk get standard tests"
+      }
     }
   ],
 
@@ -436,7 +717,9 @@
     "security_architecture_template.json",
     "deployment_architecture_template.json",
     "ux_api_design_template.json",
-    "operational_environment_template.json"
+    "operational_environment_template.json",
+    "operational_testing_objectives_template.json",
+    "service_risk_assessment_template.json"
   ],
 
   "outputs": [
@@ -446,7 +729,9 @@
     "specs/machine/security_architecture.json (if UAF with human users)",
     "specs/machine/deployment_architecture.json (if UAF/IT system)",
     "specs/machine/ux_api_design.json (if UAF with human users/external APIs)",
-    "specs/machine/operational_environment.json (if UAF/IT system going to production)"
+    "specs/machine/operational_environment.json (if UAF/IT system going to production)",
+    "specs/machine/service_arch/{service_name}/operational_testing_objectives.json (per service) - NEW in v3.6.0",
+    "specs/machine/service_arch/{service_name}/risk_assessment.json (per service) - NEW in v3.6.0"
   ],
 
   "llm_agent_guidance": {
