@@ -745,6 +745,95 @@
           "note": "Non-blocking to allow controlled architectural drift with documentation"
         }
       ],
+      "next_step": "D-06.5"
+    },
+    {
+      "step_id": "D-06.5",
+      "name": "Pre-Deployment Integration Validation",
+      "description": "Comprehensive validation before operational testing - prevents 80-90% of deployment blockers",
+      "phase": "validation",
+      "step_file": "workflow_steps/development/D-06_5-PreDeploymentValidation.json",
+      "criticality": "CRITICAL - Prevents 'toss it over the fence' problem",
+      "new_in_version": "Reflow v3.6.0 - Early Testing Integration feature",
+      "actions": [
+        {
+          "action_id": "D-06.5-A01",
+          "description": "Dependency validation - ensure code imports match requirements.txt",
+          "tool": "validate_dependencies.py",
+          "prevents": "Category 1 issues - Missing dependencies (5 issues)"
+        },
+        {
+          "action_id": "D-06.5-A02",
+          "description": "Module structure validation - check __init__.py, circular imports, shadowing",
+          "tool": "validate_module_structure.py",
+          "prevents": "Category 2 issues - Module structure (3 issues)"
+        },
+        {
+          "action_id": "D-06.5-A03",
+          "description": "Configuration consistency - ensure code defaults match docker-compose.yml",
+          "tool": "validate_configuration_consistency.py",
+          "prevents": "Category 5 issues - Configuration drift (2 issues)"
+        },
+        {
+          "action_id": "D-06.5-A04",
+          "description": "Database permission validation - service user can run migrations",
+          "method": "Manual test with service user credentials",
+          "prevents": "Category 3 issues - Database permissions (4 issues)"
+        },
+        {
+          "action_id": "D-06.5-A05",
+          "description": "Docker build validation - builds succeed without cache",
+          "method": "docker build --no-cache",
+          "prevents": "Category 4 issues - Build infrastructure (1 issue)"
+        },
+        {
+          "action_id": "D-06.5-A06",
+          "description": "System-wide smoke test - all services start and communicate",
+          "method": "docker-compose up + end-to-end scenario",
+          "validates": "Complete system integration"
+        },
+        {
+          "action_id": "D-06.5-A07",
+          "description": "Contract validation - implementations match ICDs",
+          "tool": "verify_component_contract.py --strict",
+          "validates": "API contract compliance"
+        }
+      ],
+      "tools_used": [
+        "validate_dependencies.py (NEW)",
+        "validate_module_structure.py (NEW)",
+        "validate_configuration_consistency.py (NEW)",
+        "verify_component_contract.py (EXISTING)",
+        "Docker",
+        "Docker Compose"
+      ],
+      "outputs": [
+        "specs/machine/validation/dependency_validation_report.json",
+        "specs/machine/validation/module_structure_validation_report.json",
+        "specs/machine/validation/configuration_consistency_report.json",
+        "specs/machine/validation/contract_validation_report.json",
+        "specs/machine/pre_deployment_validation_report.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-D-06.5",
+          "name": "Pre-Deployment Integration Validation Gate",
+          "checks": [
+            "Dependency validation passes (no missing packages)",
+            "Module structure validation passes (all __init__.py present, no circular imports)",
+            "Configuration consistency passes (code matches docker-compose)",
+            "Database permission validation passes (service user can run migrations)",
+            "Docker build validation passes (all images build successfully)",
+            "System smoke test passes (all services start and communicate)",
+            "Contract validation passes (all ICDs implemented correctly)"
+          ],
+          "blocking": true,
+          "enforcement": "BLOCKING - Must pass all checks before proceeding to D-Post",
+          "impact": "Prevents 80-90% of operational testing blockers (15+ issues)",
+          "bypass_not_allowed": "This gate is ALWAYS enforced - no exceptions"
+        }
+      ],
+      "execution_time": "30-60 minutes (mostly automated)",
       "next_step": "D-Post"
     },
     {

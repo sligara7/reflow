@@ -498,426 +498,71 @@
     {
       "step_id": "SE-02",
       "name": "Service Architecture Specification",
-      "description": "Create UAF-based service_architecture.json for each service",
+      "description": "Create versioned service_architecture.json for each service with comprehensive UAF specifications",
       "phase": "architecture",
       "step_file": "workflow_steps/systems_engineering/SE-02-ServiceArchitecture.json",
       "maps_from": "Arch-02, Arch-03: Service architecture creation and validation",
+      "note": "See step_file for complete specifications of all 8 actions (A01-A08)",
       "actions": [
         {
           "action_id": "SE-02-A01",
-          "description": "For each service, create VERSIONED service_architecture.json",
+          "description": "Create versioned service_architecture.json with semantic versioning and symlinks",
           "template": "service_architecture_template.json",
-          "versioning": {
-            "filename_format": "service_architecture_v{major}.{minor}.{patch}-{YYYYMMDD}.json",
-            "initial_version": "v1.0.0-{date}",
-            "semantic_versioning": {
-              "major": "Breaking interface changes, fundamental architecture changes",
-              "minor": "New capabilities, non-breaking interface additions",
-              "patch": "Bug fixes, clarifications, documentation improvements"
-            },
-            "example": "service_architecture_v1.0.0-20251024.json"
-          },
-          "location_pattern": "specs/machine/service_arch/{service_name}/service_architecture_v1.0.0-{YYYYMMDD}.json",
-          "symlink_creation": {
-            "create": "service_architecture.json",
-            "points_to": "service_architecture_v1.0.0-{YYYYMMDD}.json",
-            "purpose": "Tools use symlink to always reference latest version",
-            "command": "ln -s service_architecture_v1.0.0-{date}.json service_architecture.json"
-          },
-          "preservation_rule": "NEVER delete old versions - they are historical record and enable rollback",
-          "uaf_compliance": "UAF 1.2 framework",
-          "required_sections": [
-            "metadata (name, version, description)",
-            "operational_view (capabilities, activities, services)",
-            "system_view (components, interfaces, data_models)",
-            "service_view (service_specs, resources)",
-            "constraints (technical, deployment, security)",
-            "deployment_architecture (environment, infrastructure)"
-          ]
+          "output_pattern": "specs/machine/service_arch/{service}/service_architecture_v{semver}-{date}.json"
         },
         {
           "action_id": "SE-02-A02",
-          "description": "Define component specifications",
-          "template": "component_specification_complete_template.json",
-          "purpose": "Detailed specification of each component within services",
-          "includes": [
-            "Component responsibilities",
-            "Internal interfaces",
-            "Data structures",
-            "Business logic"
-          ]
+          "description": "Define component specifications for internal service components",
+          "template": "component_specification_complete_template.json"
         },
         {
           "action_id": "SE-02-A02B",
-          "description": "Plan edge weights if framework requires them (CONDITIONAL - based on framework)",
-          "condition": {
-            "check": "Does selected framework support/require edge weights for flow analysis?",
-            "how_to_check": "Read working_memory.json -> framework_analysis.recommended_analyses contains 'flow'",
-            "if_true": "Plan edge weight semantics and add to architecture files",
-            "if_false": "Skip - framework doesn't use edge weights",
-            "frameworks_requiring_weights": {
-              "decision_flow": "REQUIRED - Uses transition probabilities (0.0-1.0)",
-              "ecological": "REQUIRED - Uses energy transfer rates or biomass flow",
-              "systems_biology": "OPTIONAL - Can add reaction rates",
-              "social_network": "OPTIONAL - Can add interaction frequencies",
-              "uaf": "NOT SUPPORTED - Standard UAF has no edge weight field",
-              "complex_adaptive": "OPTIONAL - Can add interaction strengths"
-            }
-          },
-          "purpose": "If framework enables flow analysis, edge weights must be designed into architecture NOW, not added later. Flow analysis will fail without weights.",
-          "rationale": "LESSON-03: Edge weights are architectural data, not operational data. They must be planned during architecture design (SE-02), not discovered during graph generation (SE-06). Without weights, flow analysis will fail with 'No capacity attribute' error.",
-          "planning_steps": [
-            {
-              "step": 1,
-              "action": "Determine edge weight semantic meaning for your framework",
-              "examples": {
-                "decision_flow": "probability (0.0-1.0) - likelihood of taking transition",
-                "ecological": "energy_transfer_rate (kcal/m²/year) - energy flowing between species",
-                "systems_biology": "reaction_rate (s⁻¹) - speed of molecular interaction",
-                "social_network": "interaction_frequency (per week) - how often agents interact"
-              }
-            },
-            {
-              "step": 2,
-              "action": "Add edge weight fields to architecture template",
-              "location": "In each architecture file's edges/transitions/interactions section",
-              "field_names": {
-                "decision_flow": "probability and weight",
-                "ecological": "energy_transfer_rate or biomass_flow",
-                "systems_biology": "reaction_rate or binding_affinity",
-                "social_network": "interaction_frequency or relationship_strength"
-              }
-            },
-            {
-              "step": 3,
-              "action": "Estimate initial edge weight values",
-              "guidance": [
-                "Use historical data if available",
-                "Use domain expert estimates if no data",
-                "Use reasonable defaults if uncertain (e.g., probability=0.5 for unknown branching)",
-                "Mark estimates vs. measured values for later refinement"
-              ],
-              "example_decision_flow": {
-                "sequential_step": "probability: 1.0, weight: 10 (always taken)",
-                "validation_success": "probability: 0.6, weight: 6 (60% pass)",
-                "validation_failure": "probability: 0.4, weight: 4 (40% fail, rework loop)",
-                "conditional_branch_A": "probability: 0.7, weight: 7 (70% take path A)",
-                "conditional_branch_B": "probability: 0.3, weight: 3 (30% take path B)"
-              }
-            },
-            {
-              "step": 4,
-              "action": "Document edge weight configuration in working_memory.json",
-              "update_fields": {
-                "analysis_configuration.edge_weights_included": true,
-                "analysis_configuration.edge_weight_semantic": "transition_probability | energy_transfer_rate | reaction_rate | etc.",
-                "analysis_configuration.edge_weight_source": "estimated | measured | historical_data | expert_opinion",
-                "analysis_configuration.edge_weight_unit": "0.0-1.0 | kcal/m²/year | s⁻¹ | interactions/week"
-              }
-            },
-            {
-              "step": 5,
-              "action": "Add edge weight examples to architecture files",
-              "purpose": "Show developers what values to use when creating architecture specs",
-              "example_in_service_architecture": {
-                "transitions": [
-                  {
-                    "transition_id": "step_A_to_step_B",
-                    "source": "step_A",
-                    "target": "step_B",
-                    "condition": "validation_passed",
-                    "probability": 0.6,
-                    "weight": 6,
-                    "weight_semantic": "Estimated 60% of executions pass validation"
-                  }
-                ]
-              }
-            }
-          ],
-          "validation": {
-            "check_in_SE-03": "Verify edge weights present if framework requires them",
-            "validation_rule": "If working_memory.json -> analysis_configuration.edge_weights_included == true, all edges in architecture files must have weight attribute"
-          },
-          "common_mistakes": {
-            "mistake_1": "Choosing Decision Flow framework but not adding edge weights → Flow analysis fails later",
-            "mistake_2": "Adding edge weights during SE-06 (graph generation) → Too late, architecture files already finalized",
-            "mistake_3": "Using UAF framework but wanting flow analysis → UAF doesn't support weights, choose different framework"
-          },
-          "reference": "See docs/NETWORKX_ANALYSIS_GUIDE.md → Edge Weight Planning section"
+          "description": "Plan edge weights if framework requires flow analysis (CONDITIONAL)",
+          "condition": "Frameworks requiring edge weights: decision_flow, ecological (see step_file)"
         },
         {
           "action_id": "SE-02-A03",
-          "description": "Define interface registry",
+          "description": "Define interface registry cataloging all service interfaces",
           "template": "interface_registry_enhanced_template.json",
-          "location": "specs/machine/interface_registry.json",
-          "purpose": "Catalog all interfaces between services and external systems",
-          "includes": [
-            "Interface definitions",
-            "Data contracts",
-            "Protocol specifications",
-            "Authentication requirements"
-          ]
+          "output": "specs/machine/interface_registry.json"
         },
         {
           "action_id": "SE-02-A04",
-          "description": "Assign ports and create port registry (CONDITIONAL - only for IT systems)",
-          "condition": {
-            "check": "framework_registry.json -> frameworks[framework_id].deployment_characteristics.port_management_applicable == true",
-            "if_true": "Execute port assignment and create port_registry.json",
-            "if_false": "Skip this action - non-IT systems don't need network ports",
-            "applicable_frameworks": ["uaf"],
-            "not_applicable_frameworks": ["systems_biology", "social_network", "ecological", "complex_adaptive"],
-            "custom_framework": "Check deployment_characteristics.port_management_applicable during framework setup"
-          },
+          "description": "Assign ports and create port registry (CONDITIONAL - UAF/IT systems only)",
           "template": "port_registry_template.json",
-          "location": "specs/machine/port_registry.json",
-          "purpose": "Prevent port conflicts by assigning unique ports to each IT service upfront",
-          "rationale": "Port conflicts cause 'Address already in use' errors during deployment. Solving this architecturally prevents operational issues. Only applicable to IT systems with network services.",
-          "port_assignment_strategy": {
-            "step_1": "Categorize each service (application|internal|data|infrastructure)",
-            "step_2": "Assign primary port based on category range (app:8000-8099, internal:8100-8199, etc.)",
-            "step_3": "Ensure no duplicate port assignments",
-            "step_4": "Assign secondary ports if needed (metrics: 9000+, admin: localhost only)",
-            "step_5": "Update each service_architecture.json -> deployment.ports with assigned port",
-            "step_6": "Create/update port_registry.json with complete port mapping"
-          },
-          "port_allocation_examples": {
-            "first_application_service": 8000,
-            "second_application_service": 8001,
-            "first_internal_service": 8100,
-            "postgres_database": 5432,
-            "redis_cache": 6379,
-            "metrics_endpoint_pattern": "primary_port + 1000 (e.g., 8000 → 9000)"
-          },
-          "validation": {
-            "tool": "validate_port_registry.py",
-            "run_after_creation": true,
-            "must_pass": "No port conflicts allowed before proceeding to development"
-          },
-          "updates_to_service_architecture": {
-            "location": "service_architecture.json -> deployment.ports.primary.port",
-            "required_fields": [
-              "port (integer)",
-              "protocol (HTTP|gRPC|TCP|UDP)",
-              "purpose (description)",
-              "binding (0.0.0.0 for all interfaces, 127.0.0.1 for localhost only)",
-              "public_facing (boolean)"
-            ]
-          },
-          "docker_implications": {
-            "docker_mapping": "Typically host_port == container_port for simplicity",
-            "example": "Service on port 8000 → docker-compose: '8000:8000'",
-            "conflict_prevention": "Port registry ensures no two containers map to same host port"
-          }
+          "output": "specs/machine/port_registry.json",
+          "condition": "Only for frameworks with network services (UAF)"
         },
         {
           "action_id": "SE-02-A05",
-          "description": "Create security architecture (CONDITIONAL - required for IT systems with human users)",
-          "condition": {
-            "check": "framework_id == 'uaf' AND system has human users OR external API access",
-            "if_true": "Create security_architecture.json with authentication, authorization, and security controls",
-            "if_false": "Skip - internal machine-to-machine systems may have lighter security requirements",
-            "applicable_frameworks": ["uaf"],
-            "user_detection": "Check if any service has 'user_facing: true' OR 'external_api: true' in service_architecture.json"
-          },
+          "description": "Create security architecture (CONDITIONAL - UAF with human users/external APIs)",
           "template": "security_architecture_template.json",
-          "location": "specs/machine/security_architecture.json",
-          "purpose": "Define comprehensive security architecture UPFRONT - authentication, authorization, API gateway, rate limiting, encryption, audit logging",
-          "rationale": "IT systems in modern, interconnected world must prioritize security from the start. Retrofitting security is expensive and risky.",
-          "required_sections": [
-            "security_posture (classification, user_types, threat_model)",
-            "authentication (strategy, session_management, MFA)",
-            "authorization (RBAC, permissions, enforcement points)",
-            "api_gateway (gateway type, SSL/TLS, CORS, routing)",
-            "rate_limiting (strategy, limits, enforcement)",
-            "input_validation (XSS, SQL injection prevention)",
-            "encryption (in-transit TLS, at-rest AES-256, key management)",
-            "audit_logging (events to log, retention, alerting)"
-          ],
-          "human_user_scenarios": [
-            "Web application with end users → REQUIRED",
-            "Mobile app with authentication → REQUIRED",
-            "Third-party developer API access → REQUIRED",
-            "Admin dashboard → REQUIRED",
-            "Internal microservices only → OPTIONAL (lighter security acceptable)"
-          ],
-          "upfront_emphasis": {
-            "critical": "Security is NOT an afterthought. Design authentication and authorization flows BEFORE implementing any service.",
-            "blocking": "Security architecture must be reviewed and approved before SE-03 validation gate",
-            "user_experience_impact": "Poor security UX (complex auth flows, unclear errors) leads to user abandonment and support tickets"
-          }
+          "output": "specs/machine/security_architecture.json",
+          "condition": "Required for systems with human users or external API access"
         },
         {
           "action_id": "SE-02-A06",
-          "description": "Create deployment architecture (CONDITIONAL - required for IT systems)",
-          "condition": {
-            "check": "framework_id == 'uaf' AND deployment_characteristics.port_management_applicable == true",
-            "if_true": "Create deployment_architecture.json emphasizing ease and simplicity",
-            "if_false": "Skip - non-IT systems (biology, ecology) don't have deployment infrastructure",
-            "applicable_frameworks": ["uaf"]
-          },
+          "description": "Create deployment architecture (CONDITIONAL - UAF/IT systems)",
           "template": "deployment_architecture_template.json",
-          "location": "specs/machine/deployment_architecture.json",
-          "purpose": "Design deployment for EASE, SIMPLICITY, and STRAIGHTFORWARD operation. Enable one-command deployment and rapid rollback.",
-          "rationale": "Complex deployment processes slow iteration, increase errors, and frustrate developers. Deployment simplicity is a competitive advantage.",
-          "required_sections": [
-            "deployment_philosophy (one_command_deployment, reproducible, automated_rollback, zero_downtime)",
-            "containerization (Docker/Podman, image standards, scanning)",
-            "orchestration (docker-compose OR kubernetes - choose simpler option)",
-            "ci_cd_pipeline (build, test, deploy stages, automated testing)",
-            "environment_management (dev, staging, prod parity)",
-            "service_discovery (DNS, health checks, readiness/liveness probes)",
-            "monitoring_observability (metrics, logging, tracing, alerting)",
-            "backup_disaster_recovery (backup strategy, restore testing, RTO/RPO)"
-          ],
-          "simplicity_first_principle": {
-            "default": "Use Docker Compose unless Kubernetes features absolutely necessary",
-            "one_command": "System MUST deploy with single command: 'docker-compose up -d' or 'kubectl apply -f manifests/'",
-            "quick_start_time": "Target: New developer can deploy entire system in < 10 minutes from git clone",
-            "documentation": "README.md must have step-by-step deployment instructions with expected outputs"
-          },
-          "upfront_emphasis": {
-            "critical": "Deployment complexity is NOT deferred to later. Design for ease of deployment NOW to enable rapid iteration.",
-            "blocking": "Deployment architecture must be validated before development begins",
-            "developer_experience_impact": "If deployment is painful, developers avoid testing integrated system → integration bugs discovered late"
-          }
+          "output": "specs/machine/deployment_architecture.json",
+          "condition": "Required for IT systems requiring deployment infrastructure"
         },
         {
           "action_id": "SE-02-A07",
-          "description": "Create UX and API design architecture (CONDITIONAL - required for IT systems with human users or external APIs)",
-          "condition": {
-            "check": "framework_id == 'uaf' AND (system has human users OR external API consumers)",
-            "if_true": "Create ux_api_design.json with user experience principles and API design standards",
-            "if_false": "Skip - internal machine-to-machine systems may not need user-facing design",
-            "applicable_frameworks": ["uaf"],
-            "user_detection": "Check if any service has 'user_facing: true' OR 'external_api: true' OR 'api_gateway' service exists"
-          },
+          "description": "Create UX and API design architecture (CONDITIONAL - UAF with users/APIs)",
           "template": "ux_api_design_template.json",
-          "location": "specs/machine/ux_api_design.json",
-          "purpose": "Ensure STRAIGHTFORWARD and POSITIVE user experience. Design intuitive APIs, clear error messages, comprehensive documentation.",
-          "rationale": "Poor UX leads to user abandonment, support burden, and negative reputation. API design affects every integration and can't be easily changed.",
-          "required_sections": [
-            "ux_philosophy (simplicity_first, clear_feedback, error_recovery, accessibility)",
-            "api_design_principles (REST/GraphQL, consistency, backwards_compatibility)",
-            "rest_api_design (resource modeling, query params, pagination, filtering)",
-            "error_handling (user-friendly messages, validation errors, recovery guidance)",
-            "api_documentation (OpenAPI spec, interactive docs, getting started guide, code examples)",
-            "versioning_strategy (url_path versioning, deprecation policy, migration guide)",
-            "performance_ux (response time targets, caching, compression)",
-            "authentication_ux (clear auth flow, token management, sandbox environment)"
-          ],
-          "api_gateway_requirement": {
-            "mandatory": "If system has human users OR external APIs, api_gateway service MUST exist",
-            "responsibilities": [
-              "Single entry point (unified base URL: https://api.example.com)",
-              "Authentication enforcement",
-              "Rate limiting",
-              "Request validation",
-              "SSL/TLS termination",
-              "CORS handling",
-              "Request ID tracking for troubleshooting"
-            ],
-            "orphaned_service_prevention": "api_gateway MUST be implemented, not just scaffolding. Validate in SE-06 graph analysis."
-          },
-          "user_experience_targets": {
-            "time_to_first_success": "New user completes first successful action in < 5 minutes",
-            "api_time_to_first_call": "Developer makes first successful API call in < 5 minutes from reading docs",
-            "task_success_rate": "> 95% of users complete common tasks without support",
-            "error_recovery": "Errors provide actionable guidance, not just failure messages"
-          },
-          "upfront_emphasis": {
-            "critical": "UX is NOT polish added later. Core user flows and API contracts designed NOW prevent costly refactoring.",
-            "blocking": "UX and API design must be reviewed before implementation",
-            "modern_world_requirement": "IT systems compete on user experience. Clunky APIs and confusing UX lose users to competitors."
-          }
+          "output": "specs/machine/ux_api_design.json",
+          "condition": "Required for systems with human users or external API consumers"
         },
         {
           "action_id": "SE-02-A08",
-          "description": "Design operational environment (CONDITIONAL - required for UAF/IT systems going to production)",
-          "condition": {
-            "check": "framework_id == 'uaf' AND system will be deployed to production",
-            "if_true": "Create operational_environment.json defining real-world operational conditions, scalability, resilience, testing strategy",
-            "if_false": "Skip - research prototypes or non-IT frameworks don't need operational environment design",
-            "applicable_frameworks": ["uaf"]
-          },
+          "description": "Design operational environment (CONDITIONAL - UAF production systems)",
           "template": "operational_environment_template.json",
-          "location": "specs/machine/operational_environment.json",
-          "purpose": "Design for REAL operational environment (not benign vacuum) UPFRONT during architecture. Define which tests to run, why, and success criteria. Testing phase executes tests defined here.",
-          "rationale": "Systems don't operate in ideal conditions - they face failures, attacks, load spikes, network partitions. NOT considering operational environment upfront causes budget overages and costly program delays.",
-          "critical_principle": "Operational environment is an ARCHITECTURAL DECISION, not an operational problem. Testing phase (workflow 04) EXECUTES tests defined here, it does NOT define new tests.",
-          "required_sections_10_considerations": [
-            {
-              "consideration": "1. Service Decomposition & Boundaries",
-              "content": "DDD bounded contexts, single responsibility per service, data ownership (dedicated DB per service), inter-service communication (sync REST vs async events)",
-              "upfront_decision": "Service boundaries affect scalability, deployment independence, team organization. Can't be easily changed after implementation."
-            },
-            {
-              "consideration": "2. Containerization & Packaging",
-              "content": "Docker from day one, multi-stage Dockerfiles, orchestration choice (ECS vs EKS), image scanning, runtime dependencies",
-              "upfront_decision": "Containerization strategy determines deployment portability, environment consistency, CI/CD pipeline design."
-            },
-            {
-              "consideration": "3. Infrastructure as Code & Automation",
-              "content": "Ansible for deployment automation, Terraform for AWS provisioning, environment separation (dev/staging/prod), dynamic inventories",
-              "upfront_decision": "IaC enables reproducible deployments, disaster recovery, environment parity. Manual infrastructure is error-prone."
-            },
-            {
-              "consideration": "4. CI/CD Pipeline Integration",
-              "content": "Git workflow, automated testing (unit, integration, security, performance), semantic versioning, secrets injection",
-              "upfront_decision": "Pipeline design determines deployment velocity, quality gates, rollback speed. Complex pipelines slow iteration."
-            },
-            {
-              "consideration": "5. Scalability & Resilience",
-              "content": "Horizontal scaling, circuit breakers, retries with backoff, timeouts, bulkheads, state management (stateless services, external state storage)",
-              "upfront_decision": "Resilience patterns prevent cascading failures. Stateful services limit scalability. Design for 10x growth from start."
-            },
-            {
-              "consideration": "6. Security & Compliance",
-              "content": "IAM roles (not credentials), Secrets Manager, VPC design (public/private subnets), security groups, WAF, mTLS, encryption (TLS 1.2+, KMS), compliance (GDPR, HIPAA, PCI-DSS)",
-              "upfront_decision": "Security architecture determines compliance eligibility, data residency, audit capabilities. Retrofitting security is expensive."
-            },
-            {
-              "consideration": "7. Monitoring, Logging, Observability",
-              "content": "Metrics (Prometheus /metrics), structured JSON logging, correlation IDs, distributed tracing, alerting (critical vs warning), dashboards, performance baselines",
-              "upfront_decision": "Observability strategy determines debuggability, incident response time, proactive issue detection. No observability = blind operations."
-            },
-            {
-              "consideration": "8. Service Discovery & Networking",
-              "content": "Discovery mechanism (Cloud Map, Consul, K8s DNS), API Gateway (single entry point), latency optimization (same VPC/AZ), CDN, connection pooling",
-              "upfront_decision": "Service discovery enables dynamic scaling. Hardcoded IPs break auto-scaling. API Gateway enforces consistent auth/rate limiting."
-            },
-            {
-              "consideration": "9. Cost Management & Optimization",
-              "content": "Right-sizing instances, spot instances for non-critical, reserved instances for baseline, auto-scaling to zero, serverless options (Lambda, Fargate), tagging for cost allocation",
-              "upfront_decision": "Cost optimization designed in prevents runaway cloud costs. Post-deployment optimization is reactive and limited."
-            },
-            {
-              "consideration": "10. Testing & Rollback Strategies",
-              "content": "Define which tests to run (unit, integration, performance, security, chaos, operational), canary deployments, feature flags, backup/DR, rollback procedures",
-              "upfront_decision": "Testing strategy defined NOW determines quality gates, operational readiness. Testing phase EXECUTES these tests, doesn't invent them."
-            }
-          ],
-          "operational_environment_conditions": {
-            "real_world_not_vacuum": "Systems face network failures, resource exhaustion, cascading failures, traffic spikes, security attacks, data corruption, third-party outages, configuration drift",
-            "design_response": "Circuit breakers, timeouts, retries, bulkheads, auto-scaling, rate limiting, WAF, input validation, data validation, fallbacks, IaC",
-            "test_plan": "Chaos engineering, load testing, spike testing, fault injection, penetration testing, configuration drift detection"
-          },
-          "testing_phase_relationship": {
-            "systems_engineering_phase": "Define operational environment, decide which tests needed, design for real-world conditions, establish success criteria",
-            "testing_phase": "Execute tests planned during SE phase, validate system survives operational conditions, measure against baselines",
-            "critical_distinction": "Testing phase does NOT define new tests - those are architectural decisions made NOW. Testing phase validates architecture works."
-          },
-          "upfront_emphasis": {
-            "critical": "Operational environment is NOT deferred to testing phase. Real operational conditions (failures, attacks, load) designed for NOW.",
-            "blocking": "Operational environment design must be validated before SE-03 gate",
-            "cost_impact": "NOT considering operational environment upfront causes budget overages and costly program delays (10-100x more expensive to retrofit)",
-            "production_readiness": "Focus on scalability, reliability, security, maintainability in production from day one"
-          }
+          "output": "specs/machine/operational_environment.json",
+          "condition": "Required for systems going to production - defines operational conditions and testing strategy"
         }
       ],
-      "tools_used": [
-        "validate_port_registry.py"
-      ],
+      "tools_used": ["validate_port_registry.py"],
       "templates_used": [
         "service_architecture_template.json",
         "component_specification_complete_template.json",
@@ -929,13 +574,13 @@
         "operational_environment_template.json"
       ],
       "outputs": [
-        "specs/machine/service_arch/{service_name}/service_architecture_v1.json (per service) - with port assignments",
+        "specs/machine/service_arch/{service}/service_architecture_v{semver}-{date}.json (per service)",
         "specs/machine/interface_registry.json",
-        "specs/machine/port_registry.json",
-        "specs/machine/security_architecture.json (if UAF with human users)",
-        "specs/machine/deployment_architecture.json (if UAF/IT system)",
-        "specs/machine/ux_api_design.json (if UAF with human users/external APIs)",
-        "specs/machine/operational_environment.json (if UAF/IT system going to production)"
+        "specs/machine/port_registry.json (if UAF/IT)",
+        "specs/machine/security_architecture.json (if UAF with users)",
+        "specs/machine/deployment_architecture.json (if UAF/IT)",
+        "specs/machine/ux_api_design.json (if UAF with users/APIs)",
+        "specs/machine/operational_environment.json (if UAF production)"
       ],
       "gates": [],
       "next_step": "SE-03"
@@ -1534,248 +1179,46 @@
     {
       "step_id": "SE-06",
       "name": "System Graph Generation",
-      "description": "Generate machine-readable system_of_systems_graph.json",
+      "description": "Generate system graph with framework-specific NetworkX analysis, knowledge gap detection, and architectural validation",
       "phase": "artifacts",
       "step_file": "workflow_steps/systems_engineering/SE-06-GraphGeneration.json",
       "maps_from": "Part of Arch-06, extracted for machine-readable artifacts",
+      "note": "See step_file for complete specifications of all 4 actions (A01-A04) with comprehensive analysis guidance",
+      "criticality": "CRITICAL - This is comprehensive architecture validation, not just graph generation",
       "actions": [
         {
           "action_id": "SE-06-A01",
-          "description": "Create index.json (points to symlinks for latest versions)",
+          "description": "Create index.json catalog with symlinks to latest architecture versions",
           "template": "index_template.json",
-          "location": "specs/machine/index.json",
-          "purpose": "Catalog all machine-readable architecture artifacts using symlinks",
-          "includes": [
-            "Service list with paths to service_architecture.json SYMLINKS (not versioned files)",
-            "Interface registry path",
-            "Graph paths",
-            "Version information"
-          ],
-          "path_format": {
-            "use_symlinks": true,
-            "example": "specs/machine/service_arch/auth_service/service_architecture.json",
-            "note": "Path points to symlink, which points to latest versioned file",
-            "benefit": "Tools always use latest version without updating index.json"
-          }
+          "output": "specs/machine/index.json"
         },
         {
           "action_id": "SE-06-A02",
-          "description": "Generate and Validate system_of_systems_graph.json with framework-specific analysis selection",
+          "description": "Generate and validate system_of_systems_graph.json with framework-specific NetworkX analysis",
           "tool": "system_of_systems_graph_v2.py",
-          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/machine/index.json --detect-gaps --analyze-issues [SELECTED_ANALYSIS_FLAGS]",
-          "purpose": "Create framework-agnostic graph with comprehensive NetworkX analysis and validation",
-          "analysis_selection_guidance": {
-            "step_1": "Read framework_id from working_memory.json -> framework_configuration.framework_id",
-            "step_2": "Load {reflow_root}/definitions/framework_registry.json -> frameworks[framework_id].recommended_analyses",
-            "step_3": "Review {reflow_root}/definitions/analysis_selection_guide.json for detailed descriptions",
-            "step_4": "Select analyses based on framework recommendations (high_priority + medium_priority as appropriate)",
-            "step_5": "Check if any selected analyses require edge weights (e.g., flow analysis)",
-            "step_6": "If edge weights required but missing: either add weights to architecture files OR skip that analysis",
-            "step_7": "Construct command with appropriate flags: --centrality --community --cycles --scc --dag --flow etc.",
-            "step_8": "Update working_memory.json -> analysis_configuration with selected analyses",
-            "framework_specific_examples": {
-              "uaf": "--centrality --dag --scc --community --connectivity (verifies no circular deps, finds critical services)",
-              "systems_biology": "--cycles --centrality --community --scc (finds feedback loops, hub genes, modules)",
-              "social_network": "--centrality --community --clustering --connectivity (finds influencers, groups, cohesion)",
-              "ecological": "--flow --centrality --connectivity --community --cycles (REQUIRES edge weights for energy flow!)",
-              "complex_adaptive": "--cycles --community --scc --centrality (finds feedback, emergent clusters)"
-            },
-            "edge_weight_guidance": {
-              "when_needed": "Flow analysis REQUIRES edge weights. Other analyses benefit from weights but work without them.",
-              "how_to_add": "Add 'weight' field to each interface/interaction/relationship in architecture files",
-              "semantic_meaning_by_framework": {
-                "uaf": "request_rate (req/sec) or data_volume (MB/sec)",
-                "systems_biology": "reaction_rate (molecules/sec) or binding_affinity (Kd)",
-                "social_network": "interaction_frequency (contacts/week) or relationship_strength (0-1 scale)",
-                "ecological": "energy_transfer_rate (kcal/m²/year) or biomass_flow (kg/year)",
-                "complex_adaptive": "flow_rate or interaction_strength"
-              }
-            }
-          },
-          "inputs": [
-            "specs/machine/index.json",
-            "All architecture files (service_architecture.json, component_architecture.json, etc via symlinks)",
-            "specs/machine/interface_registry.json",
-            "working_memory.json -> framework_configuration",
-            "{reflow_root}/definitions/framework_registry.json",
-            "{reflow_root}/definitions/analysis_selection_guide.json"
-          ],
-          "outputs": [
-            "specs/machine/graphs/system_of_systems_graph.json (with comprehensive NetworkX analysis)",
-            "specs/machine/architecture_issues.json",
-            "working_memory.json updated with analysis_configuration"
-          ],
-          "validation_loop": {
-            "description": "CRITICAL - This tool doesn't just generate a file, it VALIDATES the system architecture",
-            "step_1": "Select appropriate analyses based on framework (see analysis_selection_guidance above)",
-            "step_2": "Run system_of_systems_graph_v2.py with selected analysis flags",
-            "step_3": "Examine tool output for errors, warnings, and inconsistencies",
-            "step_4": "Analyze generated graph for system-level issues",
-            "step_5": "Fix issues in source architecture files (architecture.json files or interface_registry.json)",
-            "step_6": "Re-run system_of_systems_graph_v2.py with same flags",
-            "step_7": "If issues remain, LOOP back to step_3",
-            "step_8": "If graph generation succeeds with zero errors/warnings, proceed",
-            "termination": "Loop until clean OR max 5 iterations (then escalate to user)"
-          },
-          "system_level_issues_to_check": [
-            {
-              "issue": "Circular dependencies between services",
-              "detection": "Tool may report circular dependency chains or graph shows cycles",
-              "fix": "Refactor service boundaries to break circular dependency - one service must not depend on the other, or introduce event-driven decoupling",
-              "architectural_principle": "Services should form a DAG (directed acyclic graph)"
-            },
-            {
-              "issue": "Interface mismatches between services",
-              "detection": "Service A calls interface X on Service B, but Service B doesn't expose interface X",
-              "fix": "Either add missing interface to Service B's architecture OR correct Service A's dependency declaration",
-              "cross_reference": "Check interface_registry.json and service dependencies sections"
-            },
-            {
-              "issue": "Missing interface definitions in registry",
-              "detection": "Graph references interface but interface_registry.json doesn't contain it",
-              "fix": "Add interface definition to interface_registry.json with complete contract",
-              "ensure": "Interface has request/response schemas, authentication requirements, protocols"
-            },
-            {
-              "issue": "Inconsistent interface versions",
-              "detection": "Two services reference same interface but with different version requirements",
-              "fix": "Align interface versions OR clearly document version compatibility requirements",
-              "version_strategy": "Use semantic versioning to manage compatibility"
-            },
-            {
-              "issue": "Orphaned services (no incoming or outgoing dependencies)",
-              "detection": "Service appears in system but has no connections to other services",
-              "fix": "Either connect service to system OR remove if it's not actually part of this system",
-              "validate": "Every service should have a clear role in at least one user scenario"
-            },
-            {
-              "issue": "Data model conflicts",
-              "detection": "Multiple services define same entity with different schemas",
-              "fix": "Establish canonical data model ownership - one service owns entity definition, others reference it",
-              "pattern": "Follow domain-driven design bounded context principles"
-            },
-            {
-              "issue": "Missing external system declarations",
-              "detection": "Services depend on external systems not declared in external_systems",
-              "fix": "Add external system to system-level external_systems list with integration details",
-              "documentation": "Document external dependencies explicitly"
-            },
-            {
-              "issue": "Security boundary violations",
-              "detection": "Public-facing service directly accessing database service without auth layer",
-              "fix": "Introduce security boundaries - authentication/authorization services between public and private services",
-              "principle": "Defense in depth - multiple security layers"
-            },
-            {
-              "issue": "Async/sync framework consistency violations",
-              "detection": "Service uses async HTTP framework (python_uvicorn: true) but interfaces suggest synchronous database operations (SQLAlchemy without async, psycopg2, pymongo)",
-              "severity": "warning",
-              "fix": "Align async/sync patterns: async HTTP frameworks (uvicorn/FastAPI) should use async database drivers (asyncpg, motor, async SQLAlchemy) to avoid blocking the event loop",
-              "architectural_principle": "Async frameworks require async I/O throughout the stack - mixing sync DB with async HTTP blocks the event loop and degrades performance",
-              "common_async_drivers": {
-                "PostgreSQL": "asyncpg or databases library with async SQLAlchemy",
-                "MongoDB": "motor (async MongoDB driver)",
-                "MySQL": "aiomysql with async SQLAlchemy",
-                "SQLite": "aiosqlite",
-                "Redis": "aioredis"
-              },
-              "detection_source": "architecture_issues.json - async_sync_consistency section",
-              "fix_instructions": [
-                "1. Check architecture_issues.json for specific services with async/sync mismatches",
-                "2. For each flagged service, update service_architecture.json interfaces section",
-                "3. Update interface descriptions to explicitly specify async database drivers",
-                "4. Example: Change 'Internal database for character entities unique to this service' to 'Internal async database (asyncpg) for character entities'",
-                "5. Re-run system_of_systems_graph_v2.py --analyze-issues to verify fix"
-              ]
-            }
-          ],
-          "llm_agent_instructions": [
-            "STEP 1: Select analyses appropriate for your framework - see analysis_selection_guidance above",
-            "STEP 2: Check if flow analysis is needed - if yes, ensure edge weights are included in architecture files",
-            "STEP 3: Construct command with framework-appropriate analysis flags (e.g., for UAF: --centrality --dag --scc --community)",
-            "STEP 4: Run system_of_systems_graph_v2.py with selected flags, --detect-gaps, and --analyze-issues",
-            "STEP 5: READ the tool output carefully - it contains valuable graph analysis results",
-            "STEP 6: Review architecture_issues.json for architectural problems (circular deps, orphans, async/sync issues)",
-            "STEP 7: Review knowledge_gaps section for missing nodes or edges (\"dark matter\" components)",
-            "STEP 8: Update working_memory.json -> analysis_configuration with selected analyses and rationale",
-            "DO NOT just run the tool and assume success - ANALYZE the results",
-            "DO NOT proceed if tool reports errors - fix them first",
-            "CRITICAL: async HTTP services MUST use async database drivers (check async_sync_consistency)",
-            "Use NetworkX analysis results to validate architecture quality (centrality, clustering, modularity)"
-          ],
-          "success_criteria": [
-            "system_of_systems_graph_v2.py completes without errors",
-            "Framework-appropriate analyses selected and run successfully",
-            "Generated graph shows cohesive system (no orphans, no unexplained cycles)",
-            "All interfaces properly connected between components",
-            "NetworkX analysis results make sense for this system type",
-            "Knowledge gap detection reveals no critical missing components",
-            "working_memory.json updated with analysis_configuration"
-          ]
+          "criticality": "CRITICAL - Validates architecture quality, detects issues, requires framework-appropriate analysis selection",
+          "note": "See step_file for: analysis selection guidance, validation loop, issue detection, LLM agent instructions"
         },
         {
           "action_id": "SE-06-A03",
-          "description": "Create comprehensive version_manifest.json",
+          "description": "Create version_manifest.json tracking architecture version history",
           "template": "version_manifest_template.json",
-          "location": "specs/machine/version_manifest.json",
-          "purpose": "Track complete version history of all architecture artifacts",
-          "schema": {
-            "services": {
-              "{service_name}": {
-                "latest_version": "v1.0.0-{YYYYMMDD}",
-                "versions": [
-                  {
-                    "version": "v1.0.0-{YYYYMMDD}",
-                    "architecture_file": "service_architecture_v1.0.0-{YYYYMMDD}.json",
-                    "documentation_file": "system_description_v1.0.0-{YYYYMMDD}.md",
-                    "created_date": "YYYY-MM-DD",
-                    "change_type": "initial | major | minor | patch",
-                    "description": "What changed in this version"
-                  }
-                ]
-              }
-            },
-            "version_indexes": [
-              {
-                "name": "latest",
-                "file": "index.json",
-                "description": "Points to latest versions of all services via symlinks"
-              }
-            ],
-            "system_graphs": [
-              {
-                "version": "latest",
-                "file": "system_of_systems_graph.json",
-                "index_used": "index.json",
-                "generated_date": "YYYY-MM-DD"
-              }
-            ]
-          },
-          "update_pattern": {
-            "initial_creation": "Add entry for each service at v1.0.0-{date}",
-            "on_update": "Add new version entry, update latest_version field",
-            "preservation": "Never remove old version entries - maintain complete history"
-          }
+          "output": "specs/machine/version_manifest.json"
         },
         {
           "action_id": "SE-06-A04",
-          "description": "Finalize machine-readable architecture products",
-          "verification": "All required machine-readable files present and valid",
-          "checklist": [
-            "specs/machine/index.json",
-            "specs/machine/service_arch/{service}/service_architecture_v*.json (all services)",
-            "specs/machine/interface_registry.json",
-            "specs/machine/graphs/system_of_systems_graph.json",
-            "specs/machine/version_manifest.json"
-          ]
+          "description": "Finalize and verify all machine-readable architecture products",
+          "verification": "All required files present and valid (index, graphs, version manifest)"
         }
       ],
       "tools_used": ["system_of_systems_graph_v2.py"],
-      "templates_used": ["index_template.json"],
+      "templates_used": ["index_template.json", "version_manifest_template.json"],
       "outputs": [
         "specs/machine/index.json",
         "specs/machine/graphs/system_of_systems_graph.json",
-        "specs/machine/version_manifest.json"
+        "specs/machine/architecture_issues.json",
+        "specs/machine/version_manifest.json",
+        "context/working_memory.json (updated with analysis_configuration)"
       ],
       "gates": [
         {
@@ -1783,9 +1226,10 @@
           "name": "Architecture Completion Gate",
           "checks": [
             "All machine-readable artifacts present",
-            "system_of_systems_graph.json generated successfully",
+            "system_of_systems_graph.json generated successfully with framework-appropriate analyses",
+            "No CRITICAL architectural issues detected",
             "index.json catalogs all artifacts",
-            "version_manifest.json created"
+            "version_manifest.json tracks all service versions"
           ],
           "blocking": true
         }
