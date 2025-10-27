@@ -578,37 +578,17 @@
       ],
       "gates": [
         {
-          "gate_id": "S-01A-QG",
+          "gate_id": "G-S-01",
           "name": "Framework Selection Confirmation (BLOCKING)",
           "type": "BLOCKING",
-          "severity": "CRITICAL",
+          "severity": "critical",
           "rationale": "Framework selection is an architectural decision that determines entire analysis approach. User must explicitly confirm before proceeding.",
           "checks": [
-            {
-              "check_id": "FS-01",
-              "description": "System characteristics analyzed",
-              "validation": "working_memory.json contains framework_analysis.system_characteristics"
-            },
-            {
-              "check_id": "FS-02",
-              "description": "ALL frameworks evaluated (not just one)",
-              "validation": "working_memory.json framework_analysis.frameworks_evaluated contains at least 5 frameworks"
-            },
-            {
-              "check_id": "FS-03",
-              "description": "NetworkX analyses mapped to framework",
-              "validation": "working_memory.json framework_analysis.recommended_analyses is populated"
-            },
-            {
-              "check_id": "FS-04",
-              "description": "User explicitly confirmed framework selection",
-              "validation": "working_memory.json framework_configuration.user_confirmed == true"
-            },
-            {
-              "check_id": "FS-05",
-              "description": "Detailed rationale documented",
-              "validation": "working_memory.json framework_configuration.selected_framework_rationale is not empty"
-            }
+            "System characteristics analyzed (working_memory.json framework_analysis.system_characteristics)",
+            "ALL frameworks evaluated - at least 5 frameworks (working_memory.json framework_analysis.frameworks_evaluated)",
+            "NetworkX analyses mapped to framework (working_memory.json framework_analysis.recommended_analyses)",
+            "User explicitly confirmed framework selection (working_memory.json framework_configuration.user_confirmed == true)",
+            "Detailed rationale documented (working_memory.json framework_configuration.selected_framework_rationale)"
           ],
           "failure_action": "Cannot proceed to S-02 without user confirmation. Re-execute S-01A-A05 to obtain confirmation.",
           "success_message": "✓ Framework selection confirmed by user. Rationale and analysis documented."
