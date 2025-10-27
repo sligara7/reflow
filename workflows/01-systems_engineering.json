@@ -166,7 +166,8 @@
         "context/approach_detection_result.json",
         "context/working_memory.json (updated with detected_approach)"
       ],
-      "next_step": "Dynamic: BU-01 if bottom_up detected, SE-01 if top_down detected"
+      "next_step": "BU-01",
+      "next_step_note": "Dynamic routing: BU-01 if bottom_up detected, SE-01 if top_down detected"
     },
     {
       "step_id": "BU-01",

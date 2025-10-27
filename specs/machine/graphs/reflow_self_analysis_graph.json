@@ -1,0 +1,4061 @@
+{
+  "metadata": {
+    "generated": "2025-10-27T17:30:13.712040",
+    "framework": "UAF 1.2",
+    "framework_id": "uaf",
+    "component_term": "service",
+    "connection_term": "interface",
+    "num_nodes": 15,
+    "num_edges": 0,
+    "tool_version": "2.0"
+  },
+  "graph": {
+    "directed": true,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+      {
+        "name": "Setup Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "00-setup_interface",
+              "interface_name": "Setup Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_bootstrap_development_context.py",
+              "interface_name": "Tool: bootstrap_development_context.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_rag_embeddings.py",
+              "interface_name": "Tool: generate_rag_embeddings.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_rag_embeddings.py (optional)",
+              "interface_name": "Tool: generate_rag_embeddings.py (optional)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_identify_integration_points.py (may be used later)",
+              "interface_name": "Tool: identify_integration_points.py (may be used later)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_directory_structure.py",
+              "interface_name": "Tool: validate_directory_structure.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_reflow_setup.py",
+              "interface_name": "Tool: validate_reflow_setup.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [],
+          "tools": [
+            "bootstrap_development_context.py",
+            "generate_rag_embeddings.py",
+            "generate_rag_embeddings.py (optional)",
+            "identify_integration_points.py (may be used later)",
+            "validate_directory_structure.py",
+            "validate_reflow_setup.py"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "00-setup",
+          "service_name": "Setup Workflow",
+          "version": "1.0.0",
+          "description": "Initialize system, configure paths, set up environment and foundational documents",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Setup Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [],
+            "tools": [
+              "bootstrap_development_context.py",
+              "generate_rag_embeddings.py",
+              "generate_rag_embeddings.py (optional)",
+              "identify_integration_points.py (may be used later)",
+              "validate_directory_structure.py",
+              "validate_reflow_setup.py"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "00-setup_interface",
+                "interface_name": "Setup Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_bootstrap_development_context.py",
+                "interface_name": "Tool: bootstrap_development_context.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_rag_embeddings.py",
+                "interface_name": "Tool: generate_rag_embeddings.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_rag_embeddings.py (optional)",
+                "interface_name": "Tool: generate_rag_embeddings.py (optional)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_identify_integration_points.py (may be used later)",
+                "interface_name": "Tool: identify_integration_points.py (may be used later)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_directory_structure.py",
+                "interface_name": "Tool: validate_directory_structure.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_reflow_setup.py",
+                "interface_name": "Tool: validate_reflow_setup.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "00-setup.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "00-setup"
+      },
+      {
+        "name": "Basic Setup Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "00a-basic_setup_interface",
+              "interface_name": "Basic Setup Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_bootstrap_development_context.py",
+              "interface_name": "Tool: bootstrap_development_context.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_rag_embeddings.py",
+              "interface_name": "Tool: generate_rag_embeddings.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_rag_embeddings.py (optional)",
+              "interface_name": "Tool: generate_rag_embeddings.py (optional)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_identify_integration_points.py (may be used later)",
+              "interface_name": "Tool: identify_integration_points.py (may be used later)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_directory_structure.py",
+              "interface_name": "Tool: validate_directory_structure.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_reflow_setup.py",
+              "interface_name": "Tool: validate_reflow_setup.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [],
+          "tools": [
+            "bootstrap_development_context.py",
+            "generate_rag_embeddings.py",
+            "generate_rag_embeddings.py (optional)",
+            "identify_integration_points.py (may be used later)",
+            "validate_directory_structure.py",
+            "validate_reflow_setup.py"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "00a-basic_setup",
+          "service_name": "Basic Setup Workflow",
+          "version": "3.7.0",
+          "description": "Initialize system, configure paths, set up environment and foundational documents (framework selection separate)",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Basic Setup Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [],
+            "tools": [
+              "bootstrap_development_context.py",
+              "generate_rag_embeddings.py",
+              "generate_rag_embeddings.py (optional)",
+              "identify_integration_points.py (may be used later)",
+              "validate_directory_structure.py",
+              "validate_reflow_setup.py"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "00a-basic_setup_interface",
+                "interface_name": "Basic Setup Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_bootstrap_development_context.py",
+                "interface_name": "Tool: bootstrap_development_context.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_rag_embeddings.py",
+                "interface_name": "Tool: generate_rag_embeddings.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_rag_embeddings.py (optional)",
+                "interface_name": "Tool: generate_rag_embeddings.py (optional)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_identify_integration_points.py (may be used later)",
+                "interface_name": "Tool: identify_integration_points.py (may be used later)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_directory_structure.py",
+                "interface_name": "Tool: validate_directory_structure.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_reflow_setup.py",
+                "interface_name": "Tool: validate_reflow_setup.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "00a-basic_setup.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "00b-framework_selection OR 01a-approach_detection"
+          }
+        },
+        "id": "00a-basic_setup"
+      },
+      {
+        "name": "Framework Selection Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "00b-framework_selection_interface",
+              "interface_name": "Framework Selection Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": []
+        },
+        "dependencies": {
+          "workflows": [
+            "00a-basic_setup"
+          ],
+          "tools": [],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "00b-framework_selection",
+          "service_name": "Framework Selection Workflow",
+          "version": "3.7.0",
+          "description": "Detailed framework analysis and selection with 9-action questionnaire and scoring",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Framework Selection Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00a-basic_setup"
+            ],
+            "tools": [],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "00b-framework_selection_interface",
+                "interface_name": "Framework Selection Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": []
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "00b-framework_selection.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "01a-approach_detection"
+          }
+        },
+        "id": "00b-framework_selection"
+      },
+      {
+        "name": "Systems Engineering & Architecture Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "01-systems_engineering_interface",
+              "interface_name": "Systems Engineering & Architecture Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_analyze_features.py",
+              "interface_name": "Tool: analyze_features.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_analyze_integration_gaps.py",
+              "interface_name": "Tool: analyze_integration_gaps.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_component_deltas.py",
+              "interface_name": "Tool: generate_component_deltas.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_identify_integration_points.py",
+              "interface_name": "Tool: identify_integration_points.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py",
+              "interface_name": "Tool: system_of_systems_graph_v2.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py --nested-tiers",
+              "interface_name": "Tool: system_of_systems_graph_v2.py --nested-tiers",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py",
+              "interface_name": "Tool: validate_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py --validate-nested",
+              "interface_name": "Tool: validate_architecture.py --validate-nested",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_component_deltas.py",
+              "interface_name": "Tool: validate_component_deltas.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_foundational_alignment.py",
+              "interface_name": "Tool: validate_foundational_alignment.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_port_registry.py",
+              "interface_name": "Tool: validate_port_registry.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_component_architecture_nested_template.json",
+              "interface_name": "Template: component_architecture_nested_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_component_specification_complete_template.json",
+              "interface_name": "Template: component_specification_complete_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_deployment_architecture_template.json",
+              "interface_name": "Template: deployment_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_index_template.json",
+              "interface_name": "Template: index_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_interface_registry_enhanced_template.json",
+              "interface_name": "Template: interface_registry_enhanced_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_environment_template.json",
+              "interface_name": "Template: operational_environment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_testing_objectives_template.json",
+              "interface_name": "Template: operational_testing_objectives_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_port_registry_template.json",
+              "interface_name": "Template: port_registry_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_security_architecture_template.json",
+              "interface_name": "Template: security_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_architecture_template.json",
+              "interface_name": "Template: service_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_risk_assessment_template.json",
+              "interface_name": "Template: service_risk_assessment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_system_decomposition_template.json",
+              "interface_name": "Template: system_decomposition_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_system_test_strategy_template.json",
+              "interface_name": "Template: system_test_strategy_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_ux_api_design_template.json",
+              "interface_name": "Template: ux_api_design_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_version_manifest_template.json",
+              "interface_name": "Template: version_manifest_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup"
+          ],
+          "tools": [
+            "analyze_features.py",
+            "analyze_integration_gaps.py",
+            "generate_component_deltas.py",
+            "identify_integration_points.py",
+            "system_of_systems_graph_v2.py",
+            "system_of_systems_graph_v2.py --nested-tiers",
+            "validate_architecture.py",
+            "validate_architecture.py --validate-nested",
+            "validate_component_deltas.py",
+            "validate_foundational_alignment.py",
+            "validate_port_registry.py"
+          ],
+          "templates": [
+            "component_architecture_nested_template.json",
+            "component_specification_complete_template.json",
+            "deployment_architecture_template.json",
+            "index_template.json",
+            "interface_registry_enhanced_template.json",
+            "operational_environment_template.json",
+            "operational_testing_objectives_template.json",
+            "port_registry_template.json",
+            "security_architecture_template.json",
+            "service_architecture_template.json",
+            "service_risk_assessment_template.json",
+            "system_decomposition_template.json",
+            "system_test_strategy_template.json",
+            "ux_api_design_template.json",
+            "version_manifest_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "01-systems_engineering",
+          "service_name": "Systems Engineering & Architecture Workflow",
+          "version": "1.0.0",
+          "description": "Design and validate complete system architecture, create machine-readable architecture products",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Systems Engineering & Architecture Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup"
+            ],
+            "tools": [
+              "analyze_features.py",
+              "analyze_integration_gaps.py",
+              "generate_component_deltas.py",
+              "identify_integration_points.py",
+              "system_of_systems_graph_v2.py",
+              "system_of_systems_graph_v2.py --nested-tiers",
+              "validate_architecture.py",
+              "validate_architecture.py --validate-nested",
+              "validate_component_deltas.py",
+              "validate_foundational_alignment.py",
+              "validate_port_registry.py"
+            ],
+            "templates": [
+              "component_architecture_nested_template.json",
+              "component_specification_complete_template.json",
+              "deployment_architecture_template.json",
+              "index_template.json",
+              "interface_registry_enhanced_template.json",
+              "operational_environment_template.json",
+              "operational_testing_objectives_template.json",
+              "port_registry_template.json",
+              "security_architecture_template.json",
+              "service_architecture_template.json",
+              "service_risk_assessment_template.json",
+              "system_decomposition_template.json",
+              "system_test_strategy_template.json",
+              "ux_api_design_template.json",
+              "version_manifest_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "01-systems_engineering_interface",
+                "interface_name": "Systems Engineering & Architecture Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_analyze_features.py",
+                "interface_name": "Tool: analyze_features.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_analyze_integration_gaps.py",
+                "interface_name": "Tool: analyze_integration_gaps.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_component_deltas.py",
+                "interface_name": "Tool: generate_component_deltas.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_identify_integration_points.py",
+                "interface_name": "Tool: identify_integration_points.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py",
+                "interface_name": "Tool: system_of_systems_graph_v2.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py --nested-tiers",
+                "interface_name": "Tool: system_of_systems_graph_v2.py --nested-tiers",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py",
+                "interface_name": "Tool: validate_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py --validate-nested",
+                "interface_name": "Tool: validate_architecture.py --validate-nested",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_component_deltas.py",
+                "interface_name": "Tool: validate_component_deltas.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_foundational_alignment.py",
+                "interface_name": "Tool: validate_foundational_alignment.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_port_registry.py",
+                "interface_name": "Tool: validate_port_registry.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_component_architecture_nested_template.json",
+                "interface_name": "Template: component_architecture_nested_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_component_specification_complete_template.json",
+                "interface_name": "Template: component_specification_complete_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_deployment_architecture_template.json",
+                "interface_name": "Template: deployment_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_index_template.json",
+                "interface_name": "Template: index_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_interface_registry_enhanced_template.json",
+                "interface_name": "Template: interface_registry_enhanced_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_environment_template.json",
+                "interface_name": "Template: operational_environment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_testing_objectives_template.json",
+                "interface_name": "Template: operational_testing_objectives_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_port_registry_template.json",
+                "interface_name": "Template: port_registry_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_security_architecture_template.json",
+                "interface_name": "Template: security_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_architecture_template.json",
+                "interface_name": "Template: service_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_risk_assessment_template.json",
+                "interface_name": "Template: service_risk_assessment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_system_decomposition_template.json",
+                "interface_name": "Template: system_decomposition_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_system_test_strategy_template.json",
+                "interface_name": "Template: system_test_strategy_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_ux_api_design_template.json",
+                "interface_name": "Template: ux_api_design_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_version_manifest_template.json",
+                "interface_name": "Template: version_manifest_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "01-systems_engineering.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "01-systems_engineering"
+      },
+      {
+        "name": "Approach Detection Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "01a-approach_detection_interface",
+              "interface_name": "Approach Detection Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": []
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup"
+          ],
+          "tools": [],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "01a-approach_detection",
+          "service_name": "Approach Detection Workflow",
+          "version": "3.7.0",
+          "description": "Automatically detect bottom-up (existing components) vs top-down (greenfield) approach",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Approach Detection Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup"
+            ],
+            "tools": [],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "01a-approach_detection_interface",
+                "interface_name": "Approach Detection Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": []
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "01a-approach_detection.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": {
+              "if_bottom_up": "01b-bottom_up_integration",
+              "if_top_down": "01c-top_down_design",
+              "routing_note": "LLM reads context/approach_detection_result.json to determine next workflow"
+            }
+          }
+        },
+        "id": "01a-approach_detection"
+      },
+      {
+        "name": "Bottom-Up Integration Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "01b-bottom_up_integration_interface",
+              "interface_name": "Bottom-Up Integration Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_analyze_integration_gaps.py",
+              "interface_name": "Tool: analyze_integration_gaps.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_component_deltas.py",
+              "interface_name": "Tool: generate_component_deltas.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_identify_integration_points.py",
+              "interface_name": "Tool: identify_integration_points.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py",
+              "interface_name": "Tool: system_of_systems_graph_v2.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py --nested-tiers",
+              "interface_name": "Tool: system_of_systems_graph_v2.py --nested-tiers",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py",
+              "interface_name": "Tool: validate_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py --validate-nested",
+              "interface_name": "Tool: validate_architecture.py --validate-nested",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_component_deltas.py",
+              "interface_name": "Tool: validate_component_deltas.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_foundational_alignment.py",
+              "interface_name": "Tool: validate_foundational_alignment.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_port_registry.py",
+              "interface_name": "Tool: validate_port_registry.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_component_architecture_nested_template.json",
+              "interface_name": "Template: component_architecture_nested_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_component_specification_complete_template.json",
+              "interface_name": "Template: component_specification_complete_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_deployment_architecture_template.json",
+              "interface_name": "Template: deployment_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_index_template.json",
+              "interface_name": "Template: index_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_interface_registry_enhanced_template.json",
+              "interface_name": "Template: interface_registry_enhanced_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_environment_template.json",
+              "interface_name": "Template: operational_environment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_testing_objectives_template.json",
+              "interface_name": "Template: operational_testing_objectives_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_port_registry_template.json",
+              "interface_name": "Template: port_registry_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_security_architecture_template.json",
+              "interface_name": "Template: security_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_architecture_template.json",
+              "interface_name": "Template: service_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_risk_assessment_template.json",
+              "interface_name": "Template: service_risk_assessment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_system_test_strategy_template.json",
+              "interface_name": "Template: system_test_strategy_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_ux_api_design_template.json",
+              "interface_name": "Template: ux_api_design_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_version_manifest_template.json",
+              "interface_name": "Template: version_manifest_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01a-approach_detection"
+          ],
+          "tools": [
+            "analyze_integration_gaps.py",
+            "generate_component_deltas.py",
+            "identify_integration_points.py",
+            "system_of_systems_graph_v2.py",
+            "system_of_systems_graph_v2.py --nested-tiers",
+            "validate_architecture.py",
+            "validate_architecture.py --validate-nested",
+            "validate_component_deltas.py",
+            "validate_foundational_alignment.py",
+            "validate_port_registry.py"
+          ],
+          "templates": [
+            "component_architecture_nested_template.json",
+            "component_specification_complete_template.json",
+            "deployment_architecture_template.json",
+            "index_template.json",
+            "interface_registry_enhanced_template.json",
+            "operational_environment_template.json",
+            "operational_testing_objectives_template.json",
+            "port_registry_template.json",
+            "security_architecture_template.json",
+            "service_architecture_template.json",
+            "service_risk_assessment_template.json",
+            "system_test_strategy_template.json",
+            "ux_api_design_template.json",
+            "version_manifest_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "01b-bottom_up_integration",
+          "service_name": "Bottom-Up Integration Workflow",
+          "version": "3.7.0",
+          "description": "Integrate existing components into cohesive architecture (bottom-up approach)",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Bottom-Up Integration Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01a-approach_detection"
+            ],
+            "tools": [
+              "analyze_integration_gaps.py",
+              "generate_component_deltas.py",
+              "identify_integration_points.py",
+              "system_of_systems_graph_v2.py",
+              "system_of_systems_graph_v2.py --nested-tiers",
+              "validate_architecture.py",
+              "validate_architecture.py --validate-nested",
+              "validate_component_deltas.py",
+              "validate_foundational_alignment.py",
+              "validate_port_registry.py"
+            ],
+            "templates": [
+              "component_architecture_nested_template.json",
+              "component_specification_complete_template.json",
+              "deployment_architecture_template.json",
+              "index_template.json",
+              "interface_registry_enhanced_template.json",
+              "operational_environment_template.json",
+              "operational_testing_objectives_template.json",
+              "port_registry_template.json",
+              "security_architecture_template.json",
+              "service_architecture_template.json",
+              "service_risk_assessment_template.json",
+              "system_test_strategy_template.json",
+              "ux_api_design_template.json",
+              "version_manifest_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "01b-bottom_up_integration_interface",
+                "interface_name": "Bottom-Up Integration Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_analyze_integration_gaps.py",
+                "interface_name": "Tool: analyze_integration_gaps.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_component_deltas.py",
+                "interface_name": "Tool: generate_component_deltas.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_identify_integration_points.py",
+                "interface_name": "Tool: identify_integration_points.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py",
+                "interface_name": "Tool: system_of_systems_graph_v2.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py --nested-tiers",
+                "interface_name": "Tool: system_of_systems_graph_v2.py --nested-tiers",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py",
+                "interface_name": "Tool: validate_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py --validate-nested",
+                "interface_name": "Tool: validate_architecture.py --validate-nested",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_component_deltas.py",
+                "interface_name": "Tool: validate_component_deltas.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_foundational_alignment.py",
+                "interface_name": "Tool: validate_foundational_alignment.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_port_registry.py",
+                "interface_name": "Tool: validate_port_registry.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_component_architecture_nested_template.json",
+                "interface_name": "Template: component_architecture_nested_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_component_specification_complete_template.json",
+                "interface_name": "Template: component_specification_complete_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_deployment_architecture_template.json",
+                "interface_name": "Template: deployment_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_index_template.json",
+                "interface_name": "Template: index_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_interface_registry_enhanced_template.json",
+                "interface_name": "Template: interface_registry_enhanced_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_environment_template.json",
+                "interface_name": "Template: operational_environment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_testing_objectives_template.json",
+                "interface_name": "Template: operational_testing_objectives_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_port_registry_template.json",
+                "interface_name": "Template: port_registry_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_security_architecture_template.json",
+                "interface_name": "Template: security_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_architecture_template.json",
+                "interface_name": "Template: service_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_risk_assessment_template.json",
+                "interface_name": "Template: service_risk_assessment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_system_test_strategy_template.json",
+                "interface_name": "Template: system_test_strategy_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_ux_api_design_template.json",
+                "interface_name": "Template: ux_api_design_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_version_manifest_template.json",
+                "interface_name": "Template: version_manifest_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "01b-bottom_up_integration.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "02-artifacts_visualization"
+          }
+        },
+        "id": "01b-bottom_up_integration"
+      },
+      {
+        "name": "Top-Down Design Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "01c-top_down_design_interface",
+              "interface_name": "Top-Down Design Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_analyze_features.py",
+              "interface_name": "Tool: analyze_features.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_identify_integration_points.py",
+              "interface_name": "Tool: identify_integration_points.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py",
+              "interface_name": "Tool: system_of_systems_graph_v2.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py",
+              "interface_name": "Tool: validate_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_foundational_alignment.py",
+              "interface_name": "Tool: validate_foundational_alignment.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_port_registry.py",
+              "interface_name": "Tool: validate_port_registry.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_component_specification_complete_template.json",
+              "interface_name": "Template: component_specification_complete_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_deployment_architecture_template.json",
+              "interface_name": "Template: deployment_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_index_template.json",
+              "interface_name": "Template: index_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_interface_registry_enhanced_template.json",
+              "interface_name": "Template: interface_registry_enhanced_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_environment_template.json",
+              "interface_name": "Template: operational_environment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_operational_testing_objectives_template.json",
+              "interface_name": "Template: operational_testing_objectives_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_port_registry_template.json",
+              "interface_name": "Template: port_registry_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_security_architecture_template.json",
+              "interface_name": "Template: security_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_architecture_template.json",
+              "interface_name": "Template: service_architecture_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_service_risk_assessment_template.json",
+              "interface_name": "Template: service_risk_assessment_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_system_decomposition_template.json",
+              "interface_name": "Template: system_decomposition_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_system_test_strategy_template.json",
+              "interface_name": "Template: system_test_strategy_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_ux_api_design_template.json",
+              "interface_name": "Template: ux_api_design_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_version_manifest_template.json",
+              "interface_name": "Template: version_manifest_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01a-approach_detection"
+          ],
+          "tools": [
+            "analyze_features.py",
+            "identify_integration_points.py",
+            "system_of_systems_graph_v2.py",
+            "validate_architecture.py",
+            "validate_foundational_alignment.py",
+            "validate_port_registry.py"
+          ],
+          "templates": [
+            "component_specification_complete_template.json",
+            "deployment_architecture_template.json",
+            "index_template.json",
+            "interface_registry_enhanced_template.json",
+            "operational_environment_template.json",
+            "operational_testing_objectives_template.json",
+            "port_registry_template.json",
+            "security_architecture_template.json",
+            "service_architecture_template.json",
+            "service_risk_assessment_template.json",
+            "system_decomposition_template.json",
+            "system_test_strategy_template.json",
+            "ux_api_design_template.json",
+            "version_manifest_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "01c-top_down_design",
+          "service_name": "Top-Down Design Workflow",
+          "version": "3.7.0",
+          "description": "Design new system architecture from requirements (top-down approach)",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Top-Down Design Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01a-approach_detection"
+            ],
+            "tools": [
+              "analyze_features.py",
+              "identify_integration_points.py",
+              "system_of_systems_graph_v2.py",
+              "validate_architecture.py",
+              "validate_foundational_alignment.py",
+              "validate_port_registry.py"
+            ],
+            "templates": [
+              "component_specification_complete_template.json",
+              "deployment_architecture_template.json",
+              "index_template.json",
+              "interface_registry_enhanced_template.json",
+              "operational_environment_template.json",
+              "operational_testing_objectives_template.json",
+              "port_registry_template.json",
+              "security_architecture_template.json",
+              "service_architecture_template.json",
+              "service_risk_assessment_template.json",
+              "system_decomposition_template.json",
+              "system_test_strategy_template.json",
+              "ux_api_design_template.json",
+              "version_manifest_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "01c-top_down_design_interface",
+                "interface_name": "Top-Down Design Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_analyze_features.py",
+                "interface_name": "Tool: analyze_features.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_identify_integration_points.py",
+                "interface_name": "Tool: identify_integration_points.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py",
+                "interface_name": "Tool: system_of_systems_graph_v2.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py",
+                "interface_name": "Tool: validate_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_foundational_alignment.py",
+                "interface_name": "Tool: validate_foundational_alignment.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_port_registry.py",
+                "interface_name": "Tool: validate_port_registry.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_component_specification_complete_template.json",
+                "interface_name": "Template: component_specification_complete_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_deployment_architecture_template.json",
+                "interface_name": "Template: deployment_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_index_template.json",
+                "interface_name": "Template: index_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_interface_registry_enhanced_template.json",
+                "interface_name": "Template: interface_registry_enhanced_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_environment_template.json",
+                "interface_name": "Template: operational_environment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_operational_testing_objectives_template.json",
+                "interface_name": "Template: operational_testing_objectives_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_port_registry_template.json",
+                "interface_name": "Template: port_registry_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_security_architecture_template.json",
+                "interface_name": "Template: security_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_architecture_template.json",
+                "interface_name": "Template: service_architecture_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_service_risk_assessment_template.json",
+                "interface_name": "Template: service_risk_assessment_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_system_decomposition_template.json",
+                "interface_name": "Template: system_decomposition_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_system_test_strategy_template.json",
+                "interface_name": "Template: system_test_strategy_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_ux_api_design_template.json",
+                "interface_name": "Template: ux_api_design_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_version_manifest_template.json",
+                "interface_name": "Template: version_manifest_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "01c-top_down_design.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "02-artifacts_visualization"
+          }
+        },
+        "id": "01c-top_down_design"
+      },
+      {
+        "name": "Artifacts & Visualization Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "02-artifacts_visualization_interface",
+              "interface_name": "Artifacts & Visualization Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_export_system_to_github.py",
+              "interface_name": "Tool: export_system_to_github.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_export_system_to_github.py (optional)",
+              "interface_name": "Tool: export_system_to_github.py (optional)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_interface_contracts.py",
+              "interface_name": "Tool: generate_interface_contracts.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_architecture_context_summary_template.json",
+              "interface_name": "Template: architecture_context_summary_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01-systems_engineering"
+          ],
+          "tools": [
+            "export_system_to_github.py",
+            "export_system_to_github.py (optional)",
+            "generate_interface_contracts.py"
+          ],
+          "templates": [
+            "architecture_context_summary_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "02-artifacts_visualization",
+          "service_name": "Artifacts & Visualization Workflow",
+          "version": "1.0.0",
+          "description": "Generate human-readable documentation, Mermaid diagrams, ICDs, and visualizations",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Artifacts & Visualization Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01-systems_engineering"
+            ],
+            "tools": [
+              "export_system_to_github.py",
+              "export_system_to_github.py (optional)",
+              "generate_interface_contracts.py"
+            ],
+            "templates": [
+              "architecture_context_summary_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "02-artifacts_visualization_interface",
+                "interface_name": "Artifacts & Visualization Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_export_system_to_github.py",
+                "interface_name": "Tool: export_system_to_github.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_export_system_to_github.py (optional)",
+                "interface_name": "Tool: export_system_to_github.py (optional)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_interface_contracts.py",
+                "interface_name": "Tool: generate_interface_contracts.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_architecture_context_summary_template.json",
+                "interface_name": "Template: architecture_context_summary_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "02-artifacts_visualization.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "02-artifacts_visualization"
+      },
+      {
+        "name": "Development Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "03-development_interface",
+              "interface_name": "Development Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_Docker",
+              "interface_name": "Tool: Docker",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker Compose",
+              "interface_name": "Tool: Docker Compose",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_bootstrap_development_context.py",
+              "interface_name": "Tool: bootstrap_development_context.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_compare_architectures.py",
+              "interface_name": "Tool: compare_architectures.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_as_built_architecture.py",
+              "interface_name": "Tool: generate_as_built_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_select_development_languages.py",
+              "interface_name": "Tool: select_development_languages.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_configuration_consistency.py",
+              "interface_name": "Tool: validate_configuration_consistency.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_configuration_consistency.py (NEW)",
+              "interface_name": "Tool: validate_configuration_consistency.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_dependencies.py",
+              "interface_name": "Tool: validate_dependencies.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_dependencies.py (NEW)",
+              "interface_name": "Tool: validate_dependencies.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_module_structure.py",
+              "interface_name": "Tool: validate_module_structure.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_module_structure.py (NEW)",
+              "interface_name": "Tool: validate_module_structure.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py",
+              "interface_name": "Tool: verify_component_contract.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py (EXISTING)",
+              "interface_name": "Tool: verify_component_contract.py (EXISTING)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py --strict",
+              "interface_name": "Tool: verify_component_contract.py --strict",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01-systems_engineering",
+            "02-artifacts_visualization"
+          ],
+          "tools": [
+            "Docker",
+            "Docker Compose",
+            "bootstrap_development_context.py",
+            "compare_architectures.py",
+            "generate_as_built_architecture.py",
+            "select_development_languages.py",
+            "validate_configuration_consistency.py",
+            "validate_configuration_consistency.py (NEW)",
+            "validate_dependencies.py",
+            "validate_dependencies.py (NEW)",
+            "validate_module_structure.py",
+            "validate_module_structure.py (NEW)",
+            "verify_component_contract.py",
+            "verify_component_contract.py (EXISTING)",
+            "verify_component_contract.py --strict"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "03-development",
+          "service_name": "Development Workflow",
+          "version": "1.1.0",
+          "description": "Implement services according to architecture specifications OR analyze existing implementation (meta-analysis/brownfield)",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Development Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01-systems_engineering",
+              "02-artifacts_visualization"
+            ],
+            "tools": [
+              "Docker",
+              "Docker Compose",
+              "bootstrap_development_context.py",
+              "compare_architectures.py",
+              "generate_as_built_architecture.py",
+              "select_development_languages.py",
+              "validate_configuration_consistency.py",
+              "validate_configuration_consistency.py (NEW)",
+              "validate_dependencies.py",
+              "validate_dependencies.py (NEW)",
+              "validate_module_structure.py",
+              "validate_module_structure.py (NEW)",
+              "verify_component_contract.py",
+              "verify_component_contract.py (EXISTING)",
+              "verify_component_contract.py --strict"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "03-development_interface",
+                "interface_name": "Development Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_Docker",
+                "interface_name": "Tool: Docker",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker Compose",
+                "interface_name": "Tool: Docker Compose",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_bootstrap_development_context.py",
+                "interface_name": "Tool: bootstrap_development_context.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_compare_architectures.py",
+                "interface_name": "Tool: compare_architectures.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_as_built_architecture.py",
+                "interface_name": "Tool: generate_as_built_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_select_development_languages.py",
+                "interface_name": "Tool: select_development_languages.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_configuration_consistency.py",
+                "interface_name": "Tool: validate_configuration_consistency.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_configuration_consistency.py (NEW)",
+                "interface_name": "Tool: validate_configuration_consistency.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_dependencies.py",
+                "interface_name": "Tool: validate_dependencies.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_dependencies.py (NEW)",
+                "interface_name": "Tool: validate_dependencies.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_module_structure.py",
+                "interface_name": "Tool: validate_module_structure.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_module_structure.py (NEW)",
+                "interface_name": "Tool: validate_module_structure.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py",
+                "interface_name": "Tool: verify_component_contract.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py (EXISTING)",
+                "interface_name": "Tool: verify_component_contract.py (EXISTING)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py --strict",
+                "interface_name": "Tool: verify_component_contract.py --strict",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "03-development.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "03-development"
+      },
+      {
+        "name": "Development Implementation Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "03a-development_implementation_interface",
+              "interface_name": "Development Implementation Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_bootstrap_development_context.py",
+              "interface_name": "Tool: bootstrap_development_context.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_select_development_languages.py",
+              "interface_name": "Tool: select_development_languages.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py",
+              "interface_name": "Tool: verify_component_contract.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01-systems_engineering",
+            "02-artifacts_visualization"
+          ],
+          "tools": [
+            "bootstrap_development_context.py",
+            "select_development_languages.py",
+            "verify_component_contract.py"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "03a-development_implementation",
+          "service_name": "Development Implementation Workflow",
+          "version": "3.7.0",
+          "description": "Research, implement core functionality, and integrate APIs/security",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Development Implementation Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01-systems_engineering",
+              "02-artifacts_visualization"
+            ],
+            "tools": [
+              "bootstrap_development_context.py",
+              "select_development_languages.py",
+              "verify_component_contract.py"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "03a-development_implementation_interface",
+                "interface_name": "Development Implementation Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_bootstrap_development_context.py",
+                "interface_name": "Tool: bootstrap_development_context.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_select_development_languages.py",
+                "interface_name": "Tool: select_development_languages.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py",
+                "interface_name": "Tool: verify_component_contract.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "03a-development_implementation.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "03b-development_validation"
+          }
+        },
+        "id": "03a-development_implementation"
+      },
+      {
+        "name": "Development Validation Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "03b-development_validation_interface",
+              "interface_name": "Development Validation Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_Docker",
+              "interface_name": "Tool: Docker",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker Compose",
+              "interface_name": "Tool: Docker Compose",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_compare_architectures.py",
+              "interface_name": "Tool: compare_architectures.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_as_built_architecture.py",
+              "interface_name": "Tool: generate_as_built_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_configuration_consistency.py",
+              "interface_name": "Tool: validate_configuration_consistency.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_configuration_consistency.py (NEW)",
+              "interface_name": "Tool: validate_configuration_consistency.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_dependencies.py",
+              "interface_name": "Tool: validate_dependencies.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_dependencies.py (NEW)",
+              "interface_name": "Tool: validate_dependencies.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_module_structure.py",
+              "interface_name": "Tool: validate_module_structure.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_module_structure.py (NEW)",
+              "interface_name": "Tool: validate_module_structure.py (NEW)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py (EXISTING)",
+              "interface_name": "Tool: verify_component_contract.py (EXISTING)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py --strict",
+              "interface_name": "Tool: verify_component_contract.py --strict",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "02-artifacts_visualization",
+            "03a-development_implementation"
+          ],
+          "tools": [
+            "Docker",
+            "Docker Compose",
+            "compare_architectures.py",
+            "generate_as_built_architecture.py",
+            "validate_configuration_consistency.py",
+            "validate_configuration_consistency.py (NEW)",
+            "validate_dependencies.py",
+            "validate_dependencies.py (NEW)",
+            "validate_module_structure.py",
+            "validate_module_structure.py (NEW)",
+            "verify_component_contract.py (EXISTING)",
+            "verify_component_contract.py --strict"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "03b-development_validation",
+          "service_name": "Development Validation Workflow",
+          "version": "3.7.0",
+          "description": "Testing, observability, pre-deployment validation, and review",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Development Validation Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "02-artifacts_visualization",
+              "03a-development_implementation"
+            ],
+            "tools": [
+              "Docker",
+              "Docker Compose",
+              "compare_architectures.py",
+              "generate_as_built_architecture.py",
+              "validate_configuration_consistency.py",
+              "validate_configuration_consistency.py (NEW)",
+              "validate_dependencies.py",
+              "validate_dependencies.py (NEW)",
+              "validate_module_structure.py",
+              "validate_module_structure.py (NEW)",
+              "verify_component_contract.py (EXISTING)",
+              "verify_component_contract.py --strict"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "03b-development_validation_interface",
+                "interface_name": "Development Validation Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_Docker",
+                "interface_name": "Tool: Docker",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker Compose",
+                "interface_name": "Tool: Docker Compose",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_compare_architectures.py",
+                "interface_name": "Tool: compare_architectures.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_as_built_architecture.py",
+                "interface_name": "Tool: generate_as_built_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_configuration_consistency.py",
+                "interface_name": "Tool: validate_configuration_consistency.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_configuration_consistency.py (NEW)",
+                "interface_name": "Tool: validate_configuration_consistency.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_dependencies.py",
+                "interface_name": "Tool: validate_dependencies.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_dependencies.py (NEW)",
+                "interface_name": "Tool: validate_dependencies.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_module_structure.py",
+                "interface_name": "Tool: validate_module_structure.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_module_structure.py (NEW)",
+                "interface_name": "Tool: validate_module_structure.py (NEW)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py (EXISTING)",
+                "interface_name": "Tool: verify_component_contract.py (EXISTING)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py --strict",
+                "interface_name": "Tool: verify_component_contract.py --strict",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "03b-development_validation.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "04-testing_operations"
+          }
+        },
+        "id": "03b-development_validation"
+      },
+      {
+        "name": "Testing & Operations Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "04-testing_operations_interface",
+              "interface_name": "Testing & Operations Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_Alerting systems",
+              "interface_name": "Tool: Alerting systems",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_CI/CD platform",
+              "interface_name": "Tool: CI/CD platform",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Container registry",
+              "interface_name": "Tool: Container registry",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker",
+              "interface_name": "Tool: Docker",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker Compose",
+              "interface_name": "Tool: Docker Compose",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_E2E testing frameworks",
+              "interface_name": "Tool: E2E testing frameworks",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Monitoring platforms",
+              "interface_name": "Tool: Monitoring platforms",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Performance testing tools",
+              "interface_name": "Tool: Performance testing tools",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Security testing tools",
+              "interface_name": "Tool: Security testing tools",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Test frameworks (language-specific)",
+              "interface_name": "Tool: Test frameworks (language-specific)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_compare_architectures.py",
+              "interface_name": "Tool: compare_architectures.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_as_fielded_architecture.py",
+              "interface_name": "Tool: generate_as_fielded_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_kubectl (if using Kubernetes)",
+              "interface_name": "Tool: kubectl (if using Kubernetes)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py",
+              "interface_name": "Tool: verify_component_contract.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_dte_artifacts_template.json",
+              "interface_name": "Template: dte_artifacts_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_ote_artifacts_template.json",
+              "interface_name": "Template: ote_artifacts_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01-systems_engineering",
+            "02-artifacts_visualization",
+            "03-development"
+          ],
+          "tools": [
+            "Alerting systems",
+            "CI/CD platform",
+            "Container registry",
+            "Docker",
+            "Docker Compose",
+            "E2E testing frameworks",
+            "Monitoring platforms",
+            "Performance testing tools",
+            "Security testing tools",
+            "Test frameworks (language-specific)",
+            "compare_architectures.py",
+            "generate_as_fielded_architecture.py",
+            "kubectl (if using Kubernetes)",
+            "verify_component_contract.py"
+          ],
+          "templates": [
+            "dte_artifacts_template.json",
+            "ote_artifacts_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "04-testing_operations",
+          "service_name": "Testing & Operations Workflow",
+          "version": "1.0.0",
+          "description": "Test, validate, deploy, and release the system",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Testing & Operations Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01-systems_engineering",
+              "02-artifacts_visualization",
+              "03-development"
+            ],
+            "tools": [
+              "Alerting systems",
+              "CI/CD platform",
+              "Container registry",
+              "Docker",
+              "Docker Compose",
+              "E2E testing frameworks",
+              "Monitoring platforms",
+              "Performance testing tools",
+              "Security testing tools",
+              "Test frameworks (language-specific)",
+              "compare_architectures.py",
+              "generate_as_fielded_architecture.py",
+              "kubectl (if using Kubernetes)",
+              "verify_component_contract.py"
+            ],
+            "templates": [
+              "dte_artifacts_template.json",
+              "ote_artifacts_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "04-testing_operations_interface",
+                "interface_name": "Testing & Operations Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_Alerting systems",
+                "interface_name": "Tool: Alerting systems",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_CI/CD platform",
+                "interface_name": "Tool: CI/CD platform",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Container registry",
+                "interface_name": "Tool: Container registry",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker",
+                "interface_name": "Tool: Docker",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker Compose",
+                "interface_name": "Tool: Docker Compose",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_E2E testing frameworks",
+                "interface_name": "Tool: E2E testing frameworks",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Monitoring platforms",
+                "interface_name": "Tool: Monitoring platforms",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Performance testing tools",
+                "interface_name": "Tool: Performance testing tools",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Security testing tools",
+                "interface_name": "Tool: Security testing tools",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Test frameworks (language-specific)",
+                "interface_name": "Tool: Test frameworks (language-specific)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_compare_architectures.py",
+                "interface_name": "Tool: compare_architectures.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_as_fielded_architecture.py",
+                "interface_name": "Tool: generate_as_fielded_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_kubectl (if using Kubernetes)",
+                "interface_name": "Tool: kubectl (if using Kubernetes)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py",
+                "interface_name": "Tool: verify_component_contract.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_dte_artifacts_template.json",
+                "interface_name": "Template: dte_artifacts_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_ote_artifacts_template.json",
+                "interface_name": "Template: ote_artifacts_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "04-testing_operations.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "04-testing_operations"
+      },
+      {
+        "name": "Testing Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "04a-testing_interface",
+              "interface_name": "Testing Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_E2E testing frameworks",
+              "interface_name": "Tool: E2E testing frameworks",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Performance testing tools",
+              "interface_name": "Tool: Performance testing tools",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Security testing tools",
+              "interface_name": "Tool: Security testing tools",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Test frameworks (language-specific)",
+              "interface_name": "Tool: Test frameworks (language-specific)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py",
+              "interface_name": "Tool: verify_component_contract.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "template_dte_artifacts_template.json",
+              "interface_name": "Template: dte_artifacts_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            },
+            {
+              "interface_id": "template_ote_artifacts_template.json",
+              "interface_name": "Template: ote_artifacts_template.json",
+              "protocol": "template_usage",
+              "target_type": "template"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "00-setup",
+            "01-systems_engineering",
+            "02-artifacts_visualization",
+            "03-development"
+          ],
+          "tools": [
+            "E2E testing frameworks",
+            "Performance testing tools",
+            "Security testing tools",
+            "Test frameworks (language-specific)",
+            "verify_component_contract.py"
+          ],
+          "templates": [
+            "dte_artifacts_template.json",
+            "ote_artifacts_template.json"
+          ]
+        },
+        "raw": {
+          "service_id": "04a-testing",
+          "service_name": "Testing Workflow",
+          "version": "3.7.0",
+          "description": "Integration testing and comprehensive testing (E2E, performance, security)",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Testing Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "00-setup",
+              "01-systems_engineering",
+              "02-artifacts_visualization",
+              "03-development"
+            ],
+            "tools": [
+              "E2E testing frameworks",
+              "Performance testing tools",
+              "Security testing tools",
+              "Test frameworks (language-specific)",
+              "verify_component_contract.py"
+            ],
+            "templates": [
+              "dte_artifacts_template.json",
+              "ote_artifacts_template.json"
+            ]
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "04a-testing_interface",
+                "interface_name": "Testing Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_E2E testing frameworks",
+                "interface_name": "Tool: E2E testing frameworks",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Performance testing tools",
+                "interface_name": "Tool: Performance testing tools",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Security testing tools",
+                "interface_name": "Tool: Security testing tools",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Test frameworks (language-specific)",
+                "interface_name": "Tool: Test frameworks (language-specific)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py",
+                "interface_name": "Tool: verify_component_contract.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "template_dte_artifacts_template.json",
+                "interface_name": "Template: dte_artifacts_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              },
+              {
+                "interface_id": "template_ote_artifacts_template.json",
+                "interface_name": "Template: ote_artifacts_template.json",
+                "protocol": "template_usage",
+                "target_type": "template"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "04a-testing.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": "04b-operations"
+          }
+        },
+        "id": "04a-testing"
+      },
+      {
+        "name": "Operations Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "04b-operations_interface",
+              "interface_name": "Operations Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_Alerting systems",
+              "interface_name": "Tool: Alerting systems",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_CI/CD platform",
+              "interface_name": "Tool: CI/CD platform",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Container registry",
+              "interface_name": "Tool: Container registry",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker",
+              "interface_name": "Tool: Docker",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Docker Compose",
+              "interface_name": "Tool: Docker Compose",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_Monitoring platforms",
+              "interface_name": "Tool: Monitoring platforms",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_compare_architectures.py",
+              "interface_name": "Tool: compare_architectures.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_generate_as_fielded_architecture.py",
+              "interface_name": "Tool: generate_as_fielded_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_kubectl (if using Kubernetes)",
+              "interface_name": "Tool: kubectl (if using Kubernetes)",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [
+            "03-development",
+            "04a-testing"
+          ],
+          "tools": [
+            "Alerting systems",
+            "CI/CD platform",
+            "Container registry",
+            "Docker",
+            "Docker Compose",
+            "Monitoring platforms",
+            "compare_architectures.py",
+            "generate_as_fielded_architecture.py",
+            "kubectl (if using Kubernetes)"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "04b-operations",
+          "service_name": "Operations Workflow",
+          "version": "3.7.0",
+          "description": "CI/CD setup, deployment, monitoring, and as-fielded architecture tracking",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Operations Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [
+              "03-development",
+              "04a-testing"
+            ],
+            "tools": [
+              "Alerting systems",
+              "CI/CD platform",
+              "Container registry",
+              "Docker",
+              "Docker Compose",
+              "Monitoring platforms",
+              "compare_architectures.py",
+              "generate_as_fielded_architecture.py",
+              "kubectl (if using Kubernetes)"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "04b-operations_interface",
+                "interface_name": "Operations Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_Alerting systems",
+                "interface_name": "Tool: Alerting systems",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_CI/CD platform",
+                "interface_name": "Tool: CI/CD platform",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Container registry",
+                "interface_name": "Tool: Container registry",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker",
+                "interface_name": "Tool: Docker",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Docker Compose",
+                "interface_name": "Tool: Docker Compose",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_Monitoring platforms",
+                "interface_name": "Tool: Monitoring platforms",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_compare_architectures.py",
+                "interface_name": "Tool: compare_architectures.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_generate_as_fielded_architecture.py",
+                "interface_name": "Tool: generate_as_fielded_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_kubectl (if using Kubernetes)",
+                "interface_name": "Tool: kubectl (if using Kubernetes)",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "04b-operations.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "04b-operations"
+      },
+      {
+        "name": "Feature Update Workflow",
+        "type": null,
+        "functions": [],
+        "interfaces": {
+          "provided": [
+            {
+              "interface_id": "feature_update_interface",
+              "interface_name": "Feature Update Workflow Interface",
+              "protocol": "workflow_execution",
+              "operations": [
+                "execute",
+                "validate"
+              ]
+            }
+          ],
+          "required": [
+            {
+              "interface_id": "tool_system_of_systems_graph_v2.py",
+              "interface_name": "Tool: system_of_systems_graph_v2.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_architecture.py",
+              "interface_name": "Tool: validate_architecture.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_validate_foundational_alignment.py",
+              "interface_name": "Tool: validate_foundational_alignment.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            },
+            {
+              "interface_id": "tool_verify_component_contract.py",
+              "interface_name": "Tool: verify_component_contract.py",
+              "protocol": "tool_invocation",
+              "target_type": "tool"
+            }
+          ]
+        },
+        "dependencies": {
+          "workflows": [],
+          "tools": [
+            "system_of_systems_graph_v2.py",
+            "validate_architecture.py",
+            "validate_foundational_alignment.py",
+            "verify_component_contract.py"
+          ],
+          "templates": []
+        },
+        "raw": {
+          "service_id": "feature_update",
+          "service_name": "Feature Update Workflow",
+          "version": "1.0.0",
+          "description": "Handle changes to existing systems with foundational alignment validation",
+          "service_type": "workflow",
+          "framework": "uaf",
+          "capabilities": {
+            "primary_functions": [
+              "Execute Feature Update Workflow workflow"
+            ]
+          },
+          "dependencies": {
+            "workflows": [],
+            "tools": [
+              "system_of_systems_graph_v2.py",
+              "validate_architecture.py",
+              "validate_foundational_alignment.py",
+              "verify_component_contract.py"
+            ],
+            "templates": []
+          },
+          "interfaces": {
+            "provided": [
+              {
+                "interface_id": "feature_update_interface",
+                "interface_name": "Feature Update Workflow Interface",
+                "protocol": "workflow_execution",
+                "operations": [
+                  "execute",
+                  "validate"
+                ]
+              }
+            ],
+            "required": [
+              {
+                "interface_id": "tool_system_of_systems_graph_v2.py",
+                "interface_name": "Tool: system_of_systems_graph_v2.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_architecture.py",
+                "interface_name": "Tool: validate_architecture.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_validate_foundational_alignment.py",
+                "interface_name": "Tool: validate_foundational_alignment.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              },
+              {
+                "interface_id": "tool_verify_component_contract.py",
+                "interface_name": "Tool: verify_component_contract.py",
+                "protocol": "tool_invocation",
+                "target_type": "tool"
+              }
+            ]
+          },
+          "deployment": {
+            "runtime": "reflow_executor",
+            "file": "feature_update.json"
+          },
+          "metadata": {
+            "deprecated": false,
+            "replaced_by": [],
+            "next_workflow": null
+          }
+        },
+        "id": "feature_update"
+      }
+    ],
+    "links": []
+  },
+  "knowledge_gaps": {
+    "orphaned_interfaces": [],
+    "unmet_dependencies": [
+      {
+        "component": "00-setup",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '00-setup' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "00-setup",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '00-setup' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "00-setup",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '00-setup' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "00a-basic_setup",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '00a-basic_setup' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "00a-basic_setup",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '00a-basic_setup' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "00a-basic_setup",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '00a-basic_setup' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "00b-framework_selection",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '00b-framework_selection' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "00b-framework_selection",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '00b-framework_selection' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "00b-framework_selection",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '00b-framework_selection' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "01-systems_engineering",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '01-systems_engineering' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "01-systems_engineering",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '01-systems_engineering' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "01-systems_engineering",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '01-systems_engineering' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "01a-approach_detection",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '01a-approach_detection' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "01a-approach_detection",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '01a-approach_detection' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "01a-approach_detection",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '01a-approach_detection' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "01b-bottom_up_integration",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '01b-bottom_up_integration' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "01b-bottom_up_integration",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '01b-bottom_up_integration' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "01b-bottom_up_integration",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '01b-bottom_up_integration' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "01c-top_down_design",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '01c-top_down_design' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "01c-top_down_design",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '01c-top_down_design' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "01c-top_down_design",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '01c-top_down_design' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "02-artifacts_visualization",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '02-artifacts_visualization' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "02-artifacts_visualization",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '02-artifacts_visualization' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "02-artifacts_visualization",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '02-artifacts_visualization' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "03-development",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '03-development' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "03-development",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '03-development' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "03-development",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '03-development' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "03a-development_implementation",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '03a-development_implementation' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "03a-development_implementation",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '03a-development_implementation' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "03a-development_implementation",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '03a-development_implementation' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "03b-development_validation",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '03b-development_validation' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "03b-development_validation",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '03b-development_validation' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "03b-development_validation",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '03b-development_validation' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "04-testing_operations",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '04-testing_operations' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "04-testing_operations",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '04-testing_operations' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "04-testing_operations",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '04-testing_operations' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "04a-testing",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '04a-testing' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "04a-testing",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '04a-testing' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "04a-testing",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '04a-testing' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "04b-operations",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component '04b-operations' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "04b-operations",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component '04b-operations' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "04b-operations",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component '04b-operations' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      },
+      {
+        "component": "feature_update",
+        "required_capability": "workflows",
+        "severity": "warning",
+        "description": "Component 'feature_update' requires 'workflows' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'workflows' or add function to existing component"
+      },
+      {
+        "component": "feature_update",
+        "required_capability": "tools",
+        "severity": "warning",
+        "description": "Component 'feature_update' requires 'tools' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'tools' or add function to existing component"
+      },
+      {
+        "component": "feature_update",
+        "required_capability": "templates",
+        "severity": "warning",
+        "description": "Component 'feature_update' requires 'templates' but no component provides it",
+        "implication": "Missing component or function",
+        "recommendation": "Add component that provides 'templates' or add function to existing component"
+      }
+    ],
+    "implied_mediators": [],
+    "structural_holes": [],
+    "unexplained_outputs": [],
+    "missing_bidirectional": []
+  },
+  "knowledge_gaps_summary": {
+    "total_gaps": 45,
+    "by_type": {
+      "orphaned_interfaces": 0,
+      "unmet_dependencies": 45,
+      "implied_mediators": 0,
+      "structural_holes": 0,
+      "unexplained_outputs": 0,
+      "missing_bidirectional": 0
+    }
+  },
+  "graph_analysis": {
+    "centrality": {
+      "degree_centrality": {
+        "00-setup": 0.0,
+        "00a-basic_setup": 0.0,
+        "00b-framework_selection": 0.0,
+        "01-systems_engineering": 0.0,
+        "01a-approach_detection": 0.0,
+        "01b-bottom_up_integration": 0.0,
+        "01c-top_down_design": 0.0,
+        "02-artifacts_visualization": 0.0,
+        "03-development": 0.0,
+        "03a-development_implementation": 0.0,
+        "03b-development_validation": 0.0,
+        "04-testing_operations": 0.0,
+        "04a-testing": 0.0,
+        "04b-operations": 0.0,
+        "feature_update": 0.0
+      },
+      "betweenness_centrality": {
+        "00-setup": 0.0,
+        "00a-basic_setup": 0.0,
+        "00b-framework_selection": 0.0,
+        "01-systems_engineering": 0.0,
+        "01a-approach_detection": 0.0,
+        "01b-bottom_up_integration": 0.0,
+        "01c-top_down_design": 0.0,
+        "02-artifacts_visualization": 0.0,
+        "03-development": 0.0,
+        "03a-development_implementation": 0.0,
+        "03b-development_validation": 0.0,
+        "04-testing_operations": 0.0,
+        "04a-testing": 0.0,
+        "04b-operations": 0.0,
+        "feature_update": 0.0
+      },
+      "closeness_centrality": {
+        "00-setup": 0.0,
+        "00a-basic_setup": 0.0,
+        "00b-framework_selection": 0.0,
+        "01-systems_engineering": 0.0,
+        "01a-approach_detection": 0.0,
+        "01b-bottom_up_integration": 0.0,
+        "01c-top_down_design": 0.0,
+        "02-artifacts_visualization": 0.0,
+        "03-development": 0.0,
+        "03a-development_implementation": 0.0,
+        "03b-development_validation": 0.0,
+        "04-testing_operations": 0.0,
+        "04a-testing": 0.0,
+        "04b-operations": 0.0,
+        "feature_update": 0.0
+      },
+      "eigenvector_centrality": {
+        "00-setup": 0.25819888974716115,
+        "00a-basic_setup": 0.25819888974716115,
+        "00b-framework_selection": 0.25819888974716115,
+        "01-systems_engineering": 0.25819888974716115,
+        "01a-approach_detection": 0.25819888974716115,
+        "01b-bottom_up_integration": 0.25819888974716115,
+        "01c-top_down_design": 0.25819888974716115,
+        "02-artifacts_visualization": 0.25819888974716115,
+        "03-development": 0.25819888974716115,
+        "03a-development_implementation": 0.25819888974716115,
+        "03b-development_validation": 0.25819888974716115,
+        "04-testing_operations": 0.25819888974716115,
+        "04a-testing": 0.25819888974716115,
+        "04b-operations": 0.25819888974716115,
+        "feature_update": 0.25819888974716115
+      },
+      "pagerank": "Error computing PageRank",
+      "top_nodes": {
+        "degree_centrality": [
+          [
+            "00-setup",
+            0.0
+          ],
+          [
+            "00a-basic_setup",
+            0.0
+          ],
+          [
+            "00b-framework_selection",
+            0.0
+          ],
+          [
+            "01-systems_engineering",
+            0.0
+          ],
+          [
+            "01a-approach_detection",
+            0.0
+          ]
+        ],
+        "betweenness_centrality": [
+          [
+            "00-setup",
+            0.0
+          ],
+          [
+            "00a-basic_setup",
+            0.0
+          ],
+          [
+            "00b-framework_selection",
+            0.0
+          ],
+          [
+            "01-systems_engineering",
+            0.0
+          ],
+          [
+            "01a-approach_detection",
+            0.0
+          ]
+        ],
+        "closeness_centrality": [
+          [
+            "00-setup",
+            0.0
+          ],
+          [
+            "00a-basic_setup",
+            0.0
+          ],
+          [
+            "00b-framework_selection",
+            0.0
+          ],
+          [
+            "01-systems_engineering",
+            0.0
+          ],
+          [
+            "01a-approach_detection",
+            0.0
+          ]
+        ],
+        "eigenvector_centrality": [
+          [
+            "00-setup",
+            0.25819888974716115
+          ],
+          [
+            "00a-basic_setup",
+            0.25819888974716115
+          ],
+          [
+            "00b-framework_selection",
+            0.25819888974716115
+          ],
+          [
+            "01-systems_engineering",
+            0.25819888974716115
+          ],
+          [
+            "01a-approach_detection",
+            0.25819888974716115
+          ]
+        ],
+        "top_nodes": [
+          [
+            "eigenvector_centrality",
+            [
+              [
+                "00-setup",
+                0.25819888974716115
+              ],
+              [
+                "00a-basic_setup",
+                0.25819888974716115
+              ],
+              [
+                "00b-framework_selection",
+                0.25819888974716115
+              ],
+              [
+                "01-systems_engineering",
+                0.25819888974716115
+              ],
+              [
+                "01a-approach_detection",
+                0.25819888974716115
+              ]
+            ]
+          ],
+          [
+            "degree_centrality",
+            [
+              [
+                "00-setup",
+                0.0
+              ],
+              [
+                "00a-basic_setup",
+                0.0
+              ],
+              [
+                "00b-framework_selection",
+                0.0
+              ],
+              [
+                "01-systems_engineering",
+                0.0
+              ],
+              [
+                "01a-approach_detection",
+                0.0
+              ]
+            ]
+          ],
+          [
+            "betweenness_centrality",
+            [
+              [
+                "00-setup",
+                0.0
+              ],
+              [
+                "00a-basic_setup",
+                0.0
+              ],
+              [
+                "00b-framework_selection",
+                0.0
+              ],
+              [
+                "01-systems_engineering",
+                0.0
+              ],
+              [
+                "01a-approach_detection",
+                0.0
+              ]
+            ]
+          ],
+          [
+            "closeness_centrality",
+            [
+              [
+                "00-setup",
+                0.0
+              ],
+              [
+                "00a-basic_setup",
+                0.0
+              ],
+              [
+                "00b-framework_selection",
+                0.0
+              ],
+              [
+                "01-systems_engineering",
+                0.0
+              ],
+              [
+                "01a-approach_detection",
+                0.0
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    "communities": {
+      "louvain_communities": "Error in Louvain: division by zero",
+      "label_propagation": {
+        "num_communities": 15,
+        "sizes": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "girvan_newman": {
+        "iterations": 1,
+        "final_num_communities": 15,
+        "note": "Limited to 3 iterations for performance"
+      }
+    },
+    "cycles": {
+      "has_cycles": false,
+      "cycle_count": 0,
+      "cycle_length_distribution": {},
+      "cycles": [],
+      "cycle_basis": {
+        "num_fundamental_cycles": 0,
+        "basis_cycles": []
+      },
+      "feedback_loops": {
+        "count": 0,
+        "examples": []
+      }
+    },
+    "strongly_connected": {
+      "is_strongly_connected": false,
+      "num_sccs": 15,
+      "scc_sizes": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "largest_scc_size": 1,
+      "largest_scc_nodes": [
+        "00-setup"
+      ],
+      "single_node_sccs": 15,
+      "multi_node_sccs": 0,
+      "condensation": {
+        "num_nodes": 15,
+        "num_edges": 0,
+        "is_dag": true,
+        "note": "Each node represents an SCC from original graph"
+      }
+    },
+    "dag": {
+      "is_dag": true,
+      "topological_sort": [
+        "00-setup",
+        "00a-basic_setup",
+        "00b-framework_selection",
+        "01-systems_engineering",
+        "01a-approach_detection",
+        "01b-bottom_up_integration",
+        "01c-top_down_design",
+        "02-artifacts_visualization",
+        "03-development",
+        "03a-development_implementation",
+        "03b-development_validation",
+        "04-testing_operations",
+        "04a-testing",
+        "04b-operations",
+        "feature_update"
+      ],
+      "num_nodes_sorted": 15,
+      "longest_path": {
+        "path": [
+          "00-setup"
+        ],
+        "length": 0,
+        "weighted_length": 0
+      },
+      "topological_levels": {
+        "num_levels": 1,
+        "nodes_per_level": [
+          15
+        ],
+        "levels": [
+          [
+            "00-setup",
+            "00a-basic_setup",
+            "00b-framework_selection",
+            "01-systems_engineering",
+            "01a-approach_detection",
+            "01b-bottom_up_integration",
+            "01c-top_down_design",
+            "02-artifacts_visualization",
+            "03-development",
+            "03a-development_implementation",
+            "03b-development_validation",
+            "04-testing_operations",
+            "04a-testing",
+            "04b-operations",
+            "feature_update"
+          ]
+        ]
+      },
+      "antichains": {
+        "count": 32768,
+        "note": "Sets of nodes with no ordering relationship"
+      }
+    }
+  }
+}

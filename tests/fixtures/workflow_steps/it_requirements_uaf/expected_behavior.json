@@ -1,0 +1,28 @@
+{
+  "test_case": "it_requirements_uaf",
+  "description": "UAF web app with human users - SE-02-A05 through A08 should RUN",
+  "framework": "uaf",
+  "has_human_users": true,
+  "workflow_steps": [
+    "SE-02-A05",
+    "SE-02-A06",
+    "SE-02-A07",
+    "SE-02-A08"
+  ],
+  "condition_check": "framework_id == 'uaf' AND (user_facing == true OR external_api == true)",
+  "expected_behavior": {
+    "steps_executed": true,
+    "files_created": [
+      "specs/machine/security_architecture.json",
+      "specs/machine/deployment_architecture.json",
+      "specs/machine/ux_api_design.json",
+      "specs/machine/operational_environment.json"
+    ]
+  },
+  "pass_criteria": {
+    "all_it_files_exist": true,
+    "security_includes_api_gateway": true,
+    "deployment_includes_docker": true,
+    "ux_includes_openapi": true
+  }
+}

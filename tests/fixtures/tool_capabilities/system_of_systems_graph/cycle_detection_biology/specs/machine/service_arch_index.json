@@ -1,0 +1,12 @@
+{
+  "system_metadata": {
+    "system_name": "Cycle Detection Test - Systems Biology",
+    "system_description": "p53-MDM2 negative feedback loop (fundamental regulatory circuit)",
+    "version": "1.0.0",
+    "framework": "systems_biology"
+  },
+  "components": {
+    "gene_p53": "specs/machine/service_arch/gene_p53_architecture.json",
+    "gene_mdm2": "specs/machine/service_arch/gene_mdm2_architecture.json"
+  }
+}

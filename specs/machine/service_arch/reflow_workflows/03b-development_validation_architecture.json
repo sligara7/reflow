@@ -1,0 +1,130 @@
+{
+  "service_id": "03b-development_validation",
+  "service_name": "Development Validation Workflow",
+  "version": "3.7.0",
+  "description": "Testing, observability, pre-deployment validation, and review",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Development Validation Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "02-artifacts_visualization",
+      "03a-development_implementation"
+    ],
+    "tools": [
+      "Docker",
+      "Docker Compose",
+      "compare_architectures.py",
+      "generate_as_built_architecture.py",
+      "validate_configuration_consistency.py",
+      "validate_configuration_consistency.py (NEW)",
+      "validate_dependencies.py",
+      "validate_dependencies.py (NEW)",
+      "validate_module_structure.py",
+      "validate_module_structure.py (NEW)",
+      "verify_component_contract.py (EXISTING)",
+      "verify_component_contract.py --strict"
+    ],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "03b-development_validation_interface",
+        "interface_name": "Development Validation Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_Docker",
+        "interface_name": "Tool: Docker",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Docker Compose",
+        "interface_name": "Tool: Docker Compose",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_compare_architectures.py",
+        "interface_name": "Tool: compare_architectures.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_as_built_architecture.py",
+        "interface_name": "Tool: generate_as_built_architecture.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_configuration_consistency.py",
+        "interface_name": "Tool: validate_configuration_consistency.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_configuration_consistency.py (NEW)",
+        "interface_name": "Tool: validate_configuration_consistency.py (NEW)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_dependencies.py",
+        "interface_name": "Tool: validate_dependencies.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_dependencies.py (NEW)",
+        "interface_name": "Tool: validate_dependencies.py (NEW)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_module_structure.py",
+        "interface_name": "Tool: validate_module_structure.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_validate_module_structure.py (NEW)",
+        "interface_name": "Tool: validate_module_structure.py (NEW)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py (EXISTING)",
+        "interface_name": "Tool: verify_component_contract.py (EXISTING)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py --strict",
+        "interface_name": "Tool: verify_component_contract.py --strict",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "03b-development_validation.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": "04-testing_operations"
+  }
+}

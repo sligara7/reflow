@@ -1,0 +1,37 @@
+{
+  "step_id": "SE-03",
+  "step_name": "Architecture Validation",
+  "version": "1.0.0",
+  "description": "Validate architectures - may require rework",
+  "framework": "decision_flow",
+  "step_type": "validation",
+  "functions": [
+    {
+      "function_id": "F-SE03-01",
+      "function_name": "Architecture Validation"
+    }
+  ],
+  "transitions": {
+    "provided": [
+      {
+        "transition_id": "TRANS-SE03-001",
+        "transition_name": "Validation Passed",
+        "transition_type": "sequential",
+        "probability": 0.7
+      },
+      {
+        "transition_id": "TRANS-SE03-002",
+        "transition_name": "Validation Failed - Rework",
+        "transition_type": "rework",
+        "probability": 0.3
+      }
+    ],
+    "required": [
+      {
+        "transition_id": "TRANS-SE02-001",
+        "source_step": "SE-02",
+        "transition_type": "sequential"
+      }
+    ]
+  }
+}

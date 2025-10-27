@@ -1,0 +1,55 @@
+{
+  "service_id": "user_service",
+  "service_name": "User Service",
+  "version": "1.0.0",
+  "description": "Manages user accounts and authentication",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-USER-01",
+      "function_name": "User Management",
+      "description": "CRUD operations for users"
+    },
+    {
+      "function_id": "F-USER-02",
+      "function_name": "Authentication",
+      "description": "User login and session management"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-USER-001",
+        "interface_name": "User Management API",
+        "protocol": "REST",
+        "data_format": "JSON",
+        "operations": [
+          {
+            "operation_id": "OP-USER-001",
+            "operation_name": "Get User",
+            "method": "GET",
+            "endpoint": "/api/v1/users/{id}"
+          },
+          {
+            "operation_id": "OP-USER-002",
+            "operation_name": "Create User",
+            "method": "POST",
+            "endpoint": "/api/v1/users"
+          }
+        ]
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "framework_dependencies": ["FastAPI", "SQLAlchemy"],
+    "ports": {
+      "primary": {
+        "port": 8000,
+        "protocol": "HTTP"
+      }
+    }
+  }
+}

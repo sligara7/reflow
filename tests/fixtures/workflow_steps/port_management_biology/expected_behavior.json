@@ -1,0 +1,16 @@
+{
+  "test_case": "port_management_biology",
+  "description": "Biology framework - SE-02-A04 should be SKIPPED",
+  "framework": "systems_biology",
+  "workflow_step": "SE-02-A04",
+  "condition_check": "framework_registry['systems_biology']['deployment_characteristics']['port_management_applicable'] == false",
+  "expected_behavior": {
+    "step_executed": false,
+    "files_created": [],
+    "rationale": "Biological systems don't have network ports"
+  },
+  "pass_criteria": {
+    "port_registry_exists": false,
+    "step_skipped": true
+  }
+}

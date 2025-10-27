@@ -1,0 +1,75 @@
+{
+  "service_id": "02-artifacts_visualization",
+  "service_name": "Artifacts & Visualization Workflow",
+  "version": "1.0.0",
+  "description": "Generate human-readable documentation, Mermaid diagrams, ICDs, and visualizations",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Artifacts & Visualization Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup",
+      "01-systems_engineering"
+    ],
+    "tools": [
+      "export_system_to_github.py",
+      "export_system_to_github.py (optional)",
+      "generate_interface_contracts.py"
+    ],
+    "templates": [
+      "architecture_context_summary_template.json"
+    ]
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "02-artifacts_visualization_interface",
+        "interface_name": "Artifacts & Visualization Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_export_system_to_github.py",
+        "interface_name": "Tool: export_system_to_github.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_export_system_to_github.py (optional)",
+        "interface_name": "Tool: export_system_to_github.py (optional)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_interface_contracts.py",
+        "interface_name": "Tool: generate_interface_contracts.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "template_architecture_context_summary_template.json",
+        "interface_name": "Template: architecture_context_summary_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "02-artifacts_visualization.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": null
+  }
+}

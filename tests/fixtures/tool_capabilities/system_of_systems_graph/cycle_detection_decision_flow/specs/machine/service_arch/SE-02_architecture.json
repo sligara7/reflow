@@ -1,0 +1,33 @@
+{
+  "step_id": "SE-02",
+  "step_name": "Service Architecture Design",
+  "version": "1.0.0",
+  "description": "Design service architectures",
+  "framework": "decision_flow",
+  "step_type": "design",
+  "functions": [
+    {
+      "function_id": "F-SE02-01",
+      "function_name": "Architecture Design"
+    }
+  ],
+  "transitions": {
+    "provided": [
+      {
+        "transition_id": "TRANS-SE02-001",
+        "transition_name": "Design Complete",
+        "transition_type": "sequential",
+        "probability": 1.0
+      }
+    ],
+    "required": [
+      {
+        "transition_id": "TRANS-SE03-002",
+        "source_step": "SE-03",
+        "transition_type": "rework",
+        "probability": 0.3,
+        "condition": "validation_failed"
+      }
+    ]
+  }
+}

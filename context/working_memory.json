@@ -1,10 +1,11 @@
 {
   "template_version": "2.0",
   "system_name": "Reflow Workflow System",
-  "current_workflow": "feature_update",
-  "current_step": "FU-04",
-  "current_substep": "FU-04-Phase1-COMPLETE",
-  "feature_being_implemented": "early-testing-integration",
+  "current_workflow": "01-systems_engineering",
+  "current_step": "BU-01",
+  "current_substep": "BU-01-A01",
+  "detected_approach": "bottom_up",
+  "analysis_purpose": "Full systems analysis to validate cohesion of workflows, tools, templates, and schemas after v3.4-v3.6 updates",
   "path_configuration": {
     "reflow_root": "/home/user/reflow",
     "system_root": "/home/user/reflow",

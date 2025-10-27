@@ -1,0 +1,17 @@
+{
+  "system_metadata": {
+    "system_name": "Flow Analysis Test - With Edge Weights",
+    "version": "1.0.0",
+    "framework": "decision_flow",
+    "description": "Software development workflow with quality gates and rework loops"
+  },
+  "components": {
+    "requirements_review": "specs/machine/service_arch/requirements_review_architecture.json",
+    "design_phase": "specs/machine/service_arch/design_phase_architecture.json",
+    "implementation_phase": "specs/machine/service_arch/implementation_phase_architecture.json",
+    "testing_phase": "specs/machine/service_arch/testing_phase_architecture.json",
+    "production_deployment": "specs/machine/service_arch/production_deployment_architecture.json",
+    "requirements_rework": "specs/machine/service_arch/requirements_rework_architecture.json",
+    "implementation_rework": "specs/machine/service_arch/implementation_rework_architecture.json"
+  }
+}

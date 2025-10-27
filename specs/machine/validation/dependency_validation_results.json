@@ -1,0 +1,54 @@
+{
+  "validation_type": "dependency_validation",
+  "system_root": "/home/user/reflow",
+  "python": {
+    "language": "python",
+    "critical_issues": [
+      {
+        "issue": "missing_dependencies",
+        "description": "Code imports 10 packages not in requirements.txt",
+        "packages": [
+          "asyncio",
+          "fnmatch",
+          "json_utils",
+          "mcp",
+          "path_utils",
+          "retrieve_rag_context",
+          "system_of_systems_graph_v2",
+          "traceback",
+          "validate_workflow_files",
+          "yaml"
+        ],
+        "impact": "CRITICAL - will cause ModuleNotFoundError at runtime"
+      }
+    ],
+    "warnings": [
+      {
+        "issue": "unpinned_versions",
+        "description": "4 packages without exact version pins",
+        "packages": [
+          "jsonschema",
+          "networkx",
+          "pytest",
+          "pytest-cov"
+        ],
+        "recommendation": "Pin to exact versions (use ==) for reproducible builds"
+      }
+    ],
+    "info": [
+      "Found requirements.txt at requirements.txt",
+      "Declared dependencies: 4",
+      "Analyzing 39 Python files",
+      "Found 12 third-party imports",
+      "Potentially unused dependencies: pytest, pytest-cov"
+    ]
+  },
+  "nodejs": {
+    "language": "nodejs",
+    "critical_issues": [],
+    "warnings": [],
+    "info": [
+      "No package.json found, skipping Node.js validation"
+    ]
+  }
+}

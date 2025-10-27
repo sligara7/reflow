@@ -1,0 +1,88 @@
+{
+  "detection_timestamp": "2025-10-26T08:20:00Z",
+  "system_name": "Reflow Workflow System",
+  "detected_approach": "bottom_up",
+  "confidence": "very_high",
+  "evidence": {
+    "existing_components_found": true,
+    "indicators": [
+      {
+        "type": "source_code",
+        "description": "28 Python tool files in tools/ directory",
+        "files_found": 28,
+        "significance": "critical"
+      },
+      {
+        "type": "configuration_files",
+        "description": "6 workflow JSON files defining system behavior",
+        "files_found": 6,
+        "significance": "critical"
+      },
+      {
+        "type": "architecture_artifacts",
+        "description": "Existing architecture files in specs/machine/",
+        "directories": ["service_arch/", "workflow_arch/", "graphs/", "interfaces/"],
+        "significance": "high"
+      },
+      {
+        "type": "templates",
+        "description": "Template files for system generation",
+        "location": "templates/",
+        "significance": "high"
+      },
+      {
+        "type": "definitions",
+        "description": "Framework and schema definitions",
+        "location": "definitions/",
+        "significance": "high"
+      },
+      {
+        "type": "test_code",
+        "description": "Test files demonstrating existing functionality",
+        "location": "tests/",
+        "significance": "medium"
+      },
+      {
+        "type": "documentation",
+        "description": "Extensive documentation and guides",
+        "locations": ["docs/", "CLAUDE.md", "README.md"],
+        "significance": "medium"
+      },
+      {
+        "type": "git_history",
+        "description": "Substantial git history showing evolution",
+        "recent_versions": ["v3.6.0", "v3.5.0", "v3.4.0", "v3.3.1"],
+        "significance": "high"
+      }
+    ]
+  },
+  "component_categories_detected": [
+    {
+      "category": "workflows",
+      "count": 6,
+      "examples": ["00-setup.json", "01-systems_engineering.json", "02-artifacts_visualization.json"]
+    },
+    {
+      "category": "tools",
+      "count": 28,
+      "examples": ["system_of_systems_graph_v2.py", "validate_architecture.py", "migrate_framework.py"]
+    },
+    {
+      "category": "templates",
+      "count": "multiple",
+      "examples": ["working_memory_template.json", "service_architecture_template.json"]
+    },
+    {
+      "category": "definitions",
+      "count": "multiple",
+      "examples": ["framework_registry.json", "analysis_selection_guide.json"]
+    }
+  ],
+  "routing_decision": {
+    "next_step": "BU-01",
+    "rationale": "System has extensive existing components (workflows, tools, templates, definitions) that need to be analyzed and integrated into cohesive architecture documentation. Bottom-up approach will inventory existing components and create comprehensive architecture artifacts.",
+    "greenfield_indicators_found": 0,
+    "existing_component_indicators_found": 8
+  },
+  "analysis_goal": "Validate cohesion of all workflows, tools, templates, and schemas after v3.4-v3.6 updates by creating comprehensive architecture documentation through bottom-up analysis of existing components."
+}

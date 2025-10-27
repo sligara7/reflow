@@ -1,0 +1,50 @@
+{
+  "service_id": "product_service",
+  "service_name": "Product Service",
+  "version": "1.0.0",
+  "description": "Manages product catalog - ORPHANED: No service uses this interface!",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-PROD-01",
+      "function_name": "Product Catalog Management",
+      "description": "CRUD operations for products"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-PROD-001",
+        "interface_name": "Product Catalog API",
+        "protocol": "REST",
+        "data_format": "JSON",
+        "operations": [
+          {
+            "operation_id": "OP-PROD-001",
+            "operation_name": "Get Product",
+            "method": "GET",
+            "endpoint": "/api/v1/products/{id}"
+          },
+          {
+            "operation_id": "OP-PROD-002",
+            "operation_name": "List Products",
+            "method": "GET",
+            "endpoint": "/api/v1/products"
+          }
+        ]
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "framework_dependencies": ["FastAPI", "SQLAlchemy"],
+    "ports": {
+      "primary": {
+        "port": 8001,
+        "protocol": "HTTP"
+      }
+    }
+  }
+}

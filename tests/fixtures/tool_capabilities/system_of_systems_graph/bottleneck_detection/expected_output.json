@@ -1,0 +1,29 @@
+{
+  "test_case": "bottleneck_detection",
+  "description": "API gateway has high in-degree (5 services depend on it), should be identified as bottleneck",
+  "tool": "system_of_systems_graph_v2.py",
+  "required_flags": [
+    "--centrality"
+  ],
+  "expected_analysis": {
+    "centrality": {
+      "degree_centrality": {
+        "api_gateway": {
+          "min_value": 0.7,
+          "reason": "5 out of 6 total services = 83% centrality"
+        }
+      },
+      "in_degree": {
+        "api_gateway": {
+          "min_value": 5,
+          "reason": "5 services depend on api_gateway"
+        }
+      }
+    }
+  },
+  "pass_criteria": {
+    "api_gateway_degree_centrality": ">= 0.7",
+    "api_gateway_in_degree": ">= 5",
+    "identified_as_bottleneck": true
+  }
+}

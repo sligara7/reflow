@@ -1,0 +1,36 @@
+{
+  "test_case": "02_unmet_dependency",
+  "description": "Payment service requires billing interface that no service provides",
+  "expected_knowledge_gaps": {
+    "orphaned_interfaces": [],
+    "unmet_dependencies": [
+      {
+        "interface_id": "IFC-BILL-001",
+        "interface_name": "Billing API",
+        "requester": "payment_service",
+        "severity": "error",
+        "description": "Interface 'IFC-BILL-001' required by 'payment_service' has no provider"
+      }
+    ],
+    "implied_mediators": [],
+    "structural_holes": [],
+    "unexplained_outputs": [],
+    "missing_bidirectional": []
+  },
+  "expected_totals": {
+    "total_gaps": 1,
+    "by_type": {
+      "orphaned_interfaces": 0,
+      "unmet_dependencies": 1,
+      "implied_mediators": 0,
+      "structural_holes": 0,
+      "unexplained_outputs": 0,
+      "missing_bidirectional": 0
+    }
+  },
+  "pass_criteria": {
+    "must_detect_unmet_dependency": "IFC-BILL-001",
+    "must_identify_requester": "payment_service",
+    "total_gaps_must_equal": 1
+  }
+}

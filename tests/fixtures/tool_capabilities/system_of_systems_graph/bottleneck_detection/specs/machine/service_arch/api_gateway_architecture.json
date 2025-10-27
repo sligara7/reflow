@@ -1,0 +1,32 @@
+{
+  "service_id": "api_gateway",
+  "service_name": "API Gateway",
+  "version": "1.0.0",
+  "description": "Central API gateway - BOTTLENECK (5 services depend on it)",
+  "framework": "uaf",
+  "service_type": "infrastructure",
+  "functions": [
+    {
+      "function_id": "F-API-01",
+      "function_name": "Request Routing"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-GATEWAY-001",
+        "interface_name": "Gateway API",
+        "protocol": "REST"
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Node.js 18",
+    "ports": {
+      "primary": {
+        "port": 8080
+      }
+    }
+  }
+}

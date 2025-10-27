@@ -1,0 +1,25 @@
+{
+  "test_case": "cycle_detection_biology",
+  "description": "Systems Biology framework with feedback loop - should be INFO severity",
+  "framework": "systems_biology",
+  "tool": "system_of_systems_graph_v2.py",
+  "required_flags": [
+    "--cycles"
+  ],
+  "expected_analysis": {
+    "cycles": {
+      "cycle_found": true,
+      "cycle_nodes": [
+        "gene_p53",
+        "gene_mdm2"
+      ],
+      "severity": "info",
+      "interpretation": "Negative feedback loop detected - fundamental regulatory mechanism"
+    }
+  },
+  "pass_criteria": {
+    "cycles_detected": ">= 1",
+    "severity": "info",
+    "interpretation": "Feedback loop (not error)"
+  }
+}

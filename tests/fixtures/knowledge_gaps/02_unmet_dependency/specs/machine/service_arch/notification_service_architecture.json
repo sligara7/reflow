@@ -1,0 +1,42 @@
+{
+  "service_id": "notification_service",
+  "service_name": "Notification Service",
+  "version": "1.0.0",
+  "description": "Sends notifications - independent service",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-NOT-01",
+      "function_name": "Send Notifications",
+      "description": "Email and SMS notifications"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-NOT-001",
+        "interface_name": "Notification API",
+        "protocol": "REST",
+        "operations": [
+          {
+            "operation_id": "OP-NOT-001",
+            "operation_name": "Send Notification",
+            "method": "POST",
+            "endpoint": "/api/v1/notifications"
+          }
+        ]
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8011,
+        "protocol": "HTTP"
+      }
+    }
+  }
+}

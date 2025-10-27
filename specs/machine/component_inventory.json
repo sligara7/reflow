@@ -1,0 +1,510 @@
+{
+  "inventory_metadata": {
+    "generated": "2025-10-27T16:45:00Z",
+    "system_name": "Reflow Workflow System",
+    "version": "v3.6.1",
+    "analysis_approach": "bottom_up",
+    "purpose": "Comprehensive component inventory after v3.6.1 patch (added 3 missing testing templates to complete Early Testing Integration feature)"
+  },
+  "component_summary": {
+    "total_components": 80,
+    "workflows": 6,
+    "tools": 28,
+    "templates": 39,
+    "definitions": 7
+  },
+  "workflows": {
+    "tier": "TIER_0_Core_Orchestration",
+    "description": "Core workflow definitions that orchestrate the entire Reflow system",
+    "components": [
+      {
+        "component_id": "workflow_00_setup",
+        "name": "00-setup.json",
+        "type": "workflow",
+        "capabilities": [
+          "Path configuration",
+          "Framework selection (S-01A with 8 lessons learned)",
+          "Directory structure creation",
+          "Foundational document generation"
+        ],
+        "key_steps": ["S-01", "S-01A", "S-02", "S-03"],
+        "critical": true,
+        "reason": "Entry point for all Reflow execution"
+      },
+      {
+        "component_id": "workflow_01_systems_engineering",
+        "name": "01-systems_engineering.json",
+        "type": "workflow",
+        "capabilities": [
+          "Auto-detect bottom-up vs top-down (SE-00)",
+          "Component inventory (BU-01+)",
+          "System analysis and decomposition (SE-01)",
+          "Service architecture design (SE-02)",
+          "Architecture validation (SE-03)",
+          "System graph generation (SE-06)",
+          "Early testing strategy integration (SE-02-A03, SE-02-A04, SE-02-A05)"
+        ],
+        "key_steps": ["SE-00", "BU-01-BU-06", "SE-01", "SE-02", "SE-03", "SE-06"],
+        "critical": true,
+        "reason": "Core architecture design and validation"
+      },
+      {
+        "component_id": "workflow_02_artifacts_visualization",
+        "name": "02-artifacts_visualization.json",
+        "type": "workflow",
+        "capabilities": [
+          "Interface Contract Document generation",
+          "Mermaid diagram generation",
+          "Human-readable documentation",
+          "Architecture-only vs full development decision"
+        ],
+        "key_steps": ["AV-00-decision", "AV-01", "AV-02", "AV-03", "AV-04"],
+        "critical": false,
+        "reason": "Human deliverables generation"
+      },
+      {
+        "component_id": "workflow_03_development",
+        "name": "03-development.json",
+        "type": "workflow",
+        "capabilities": [
+          "Development environment initialization",
+          "Component implementation",
+          "Testing and validation",
+          "As-built architecture tracking (D-06)"
+        ],
+        "key_steps": ["D-01", "D-02", "D-03", "D-06"],
+        "critical": false,
+        "reason": "Optional implementation support"
+      },
+      {
+        "component_id": "workflow_04_testing_operations",
+        "name": "04-testing_operations.json",
+        "type": "workflow",
+        "capabilities": [
+          "Integration testing",
+          "CI/CD pipeline setup",
+          "Operational deployment",
+          "As-fielded architecture tracking (TO-06)"
+        ],
+        "key_steps": ["TO-01", "TO-02", "TO-03", "TO-06"],
+        "critical": false,
+        "reason": "Optional deployment support"
+      },
+      {
+        "component_id": "workflow_feature_update",
+        "name": "feature_update.json",
+        "type": "workflow",
+        "capabilities": [
+          "Load existing architecture",
+          "Propose and validate changes",
+          "Update architecture with versioning",
+          "Regenerate artifacts"
+        ],
+        "key_steps": ["FU-01", "FU-02", "FU-03", "FU-04", "FU-05", "FU-06"],
+        "critical": false,
+        "reason": "Existing system updates"
+      }
+    ]
+  },
+  "tools": {
+    "tier": "TIER_1_Core_Tools",
+    "description": "Executable tools that implement Reflow functionality",
+    "component_count": 28,
+    "categories": {
+      "architecture_analysis": {
+        "tools": [
+          {
+            "component_id": "tool_system_of_systems_graph_v2",
+            "name": "system_of_systems_graph_v2.py",
+            "capabilities": [
+              "Framework-agnostic graph generation",
+              "Knowledge gap detection (6 types)",
+              "25+ NetworkX analyses across 10 categories",
+              "Supports UAF, Decision Flow, Biology, Social, Ecological, CAS"
+            ],
+            "critical": true,
+            "reason": "FLAGSHIP TOOL - Core architecture analysis"
+          },
+          {
+            "component_id": "tool_validate_architecture",
+            "name": "validate_architecture.py",
+            "capabilities": [
+              "Validate architecture files against schemas",
+              "Framework compliance checking"
+            ],
+            "critical": true,
+            "reason": "Quality gate validation"
+          },
+          {
+            "component_id": "tool_migrate_framework",
+            "name": "migrate_framework.py",
+            "capabilities": [
+              "Automated UAF ↔ Decision Flow migrations",
+              "Field mapping and transformation",
+              "Migration report generation"
+            ],
+            "critical": false,
+            "reason": "Framework switching (LESSON-08)"
+          }
+        ]
+      },
+      "interface_management": {
+        "tools": [
+          {
+            "component_id": "tool_generate_interface_contracts",
+            "name": "generate_interface_contracts.py",
+            "capabilities": [
+              "Generate ICDs from architecture",
+              "Interface specification creation"
+            ],
+            "critical": false,
+            "reason": "Human documentation generation"
+          },
+          {
+            "component_id": "tool_verify_component_contract",
+            "name": "verify_component_contract.py",
+            "capabilities": [
+              "Validate implementation against contracts"
+            ],
+            "critical": false,
+            "reason": "Development validation"
+          }
+        ]
+      },
+      "integration_analysis": {
+        "tools": [
+          {
+            "component_id": "tool_analyze_integration_gaps",
+            "name": "analyze_integration_gaps.py",
+            "capabilities": [
+              "Identify missing integration points",
+              "Dependency gap analysis"
+            ],
+            "critical": false,
+            "reason": "Bottom-up integration support"
+          },
+          {
+            "component_id": "tool_identify_integration_points",
+            "name": "identify_integration_points.py",
+            "capabilities": [
+              "Extract integration points from components"
+            ],
+            "critical": false,
+            "reason": "Bottom-up integration support"
+          }
+        ]
+      },
+      "architecture_lifecycle": {
+        "tools": [
+          {
+            "component_id": "tool_generate_as_built_architecture",
+            "name": "generate_as_built_architecture.py",
+            "capabilities": [
+              "Generate as-built architecture from implementation"
+            ],
+            "critical": false,
+            "reason": "Architecture lifecycle tracking (v3.5.0)"
+          },
+          {
+            "component_id": "tool_generate_as_fielded_architecture",
+            "name": "generate_as_fielded_architecture.py",
+            "capabilities": [
+              "Generate as-fielded architecture from deployment"
+            ],
+            "critical": false,
+            "reason": "Architecture lifecycle tracking (v3.5.0)"
+          },
+          {
+            "component_id": "tool_compare_architectures",
+            "name": "compare_architectures.py",
+            "capabilities": [
+              "Compare designed vs as-built vs as-fielded architectures"
+            ],
+            "critical": false,
+            "reason": "Architecture lifecycle tracking (v3.5.0)"
+          }
+        ]
+      },
+      "validation_suite": {
+        "tools": [
+          {
+            "component_id": "tool_validate_workflow_files",
+            "name": "validate_workflow_files.py",
+            "capabilities": [
+              "Validate workflow JSON syntax and structure"
+            ],
+            "critical": true,
+            "reason": "Workflow integrity validation"
+          },
+          {
+            "component_id": "tool_validate_dependencies",
+            "name": "validate_dependencies.py",
+            "capabilities": [
+              "Check tool and template dependencies"
+            ],
+            "critical": true,
+            "reason": "Dependency integrity validation"
+          },
+          {
+            "component_id": "tool_validate_directory_structure",
+            "name": "validate_directory_structure.py",
+            "capabilities": [
+              "Verify required directories exist"
+            ],
+            "critical": true,
+            "reason": "Setup validation"
+          },
+          {
+            "component_id": "tool_validate_foundational_alignment",
+            "name": "validate_foundational_alignment.py",
+            "capabilities": [
+              "Verify mission, scenarios, criteria alignment"
+            ],
+            "critical": true,
+            "reason": "Requirements validation"
+          },
+          {
+            "component_id": "tool_validate_configuration_consistency",
+            "name": "validate_configuration_consistency.py",
+            "capabilities": [
+              "Check configuration consistency across files"
+            ],
+            "critical": true,
+            "reason": "Configuration validation"
+          },
+          {
+            "component_id": "tool_validate_port_registry",
+            "name": "validate_port_registry.py",
+            "capabilities": [
+              "Validate port assignments (UAF/IT systems)"
+            ],
+            "critical": false,
+            "reason": "UAF port conflict detection"
+          },
+          {
+            "component_id": "tool_validate_module_structure",
+            "name": "validate_module_structure.py",
+            "capabilities": [
+              "Validate Python module structure"
+            ],
+            "critical": false,
+            "reason": "Development structure validation"
+          },
+          {
+            "component_id": "tool_validate_component_deltas",
+            "name": "validate_component_deltas.py",
+            "capabilities": [
+              "Validate component delta files"
+            ],
+            "critical": false,
+            "reason": "Bottom-up delta validation"
+          }
+        ]
+      },
+      "development_support": {
+        "tools": [
+          {
+            "component_id": "tool_bootstrap_development_context",
+            "name": "bootstrap_development_context.py",
+            "capabilities": [
+              "Initialize development environment"
+            ],
+            "critical": false,
+            "reason": "Development initialization"
+          },
+          {
+            "component_id": "tool_select_development_languages",
+            "name": "select_development_languages.py",
+            "capabilities": [
+              "Language selection for implementation"
+            ],
+            "critical": false,
+            "reason": "Development configuration"
+          },
+          {
+            "component_id": "tool_analyze_features",
+            "name": "analyze_features.py",
+            "capabilities": [
+              "Feature analysis and planning"
+            ],
+            "critical": false,
+            "reason": "Feature planning support"
+          },
+          {
+            "component_id": "tool_generate_component_deltas",
+            "name": "generate_component_deltas.py",
+            "capabilities": [
+              "Generate exact component-level changes"
+            ],
+            "critical": false,
+            "reason": "Bottom-up integration support"
+          }
+        ]
+      },
+      "rag_context": {
+        "tools": [
+          {
+            "component_id": "tool_rag_agent_wrapper",
+            "name": "rag_agent_wrapper.py",
+            "capabilities": [
+              "RAG-enhanced context management",
+              "Automatic context refresh"
+            ],
+            "critical": false,
+            "reason": "Advanced context management"
+          },
+          {
+            "component_id": "tool_generate_rag_embeddings",
+            "name": "generate_rag_embeddings.py",
+            "capabilities": [
+              "Generate embeddings for RAG"
+            ],
+            "critical": false,
+            "reason": "RAG setup support"
+          }
+        ]
+      },
+      "export_integration": {
+        "tools": [
+          {
+            "component_id": "tool_export_system_to_github",
+            "name": "export_system_to_github.py",
+            "capabilities": [
+              "Export system to GitHub"
+            ],
+            "critical": false,
+            "reason": "GitHub integration"
+          },
+          {
+            "component_id": "tool_reflow_mcp_server",
+            "name": "reflow_mcp_server.py",
+            "capabilities": [
+              "MCP server for Claude Desktop integration"
+            ],
+            "critical": false,
+            "reason": "MCP protocol support"
+          }
+        ]
+      },
+      "utilities": {
+        "tools": [
+          {
+            "component_id": "tool_json_utils",
+            "name": "json_utils.py",
+            "capabilities": [
+              "JSON manipulation utilities"
+            ],
+            "critical": false,
+            "reason": "Utility library"
+          },
+          {
+            "component_id": "tool_path_utils",
+            "name": "path_utils.py",
+            "capabilities": [
+              "Path manipulation utilities"
+            ],
+            "critical": false,
+            "reason": "Utility library"
+          }
+        ]
+      }
+    }
+  },
+  "templates": {
+    "tier": "TIER_2_Templates",
+    "description": "JSON templates for generating Reflow artifacts",
+    "component_count": 39,
+    "critical_templates": [
+      "working_memory_template.json",
+      "service_architecture_template.json",
+      "component_architecture_template.json",
+      "interface_contract_complete_template.json",
+      "framework_definition_template.json",
+      "operational_testing_objectives_template.json",
+      "service_risk_assessment_template.json",
+      "system_test_strategy_template.json"
+    ],
+    "note": "Templates provide structure for all generated artifacts. v3.6.1 added 3 testing templates for Early Testing Integration feature."
+  },
+  "definitions": {
+    "tier": "TIER_2_Definitions",
+    "description": "Schema and framework definitions",
+    "component_count": 7,
+    "critical_definitions": [
+      "framework_registry.json",
+      "analysis_selection_guide.json",
+      "architectural_definitions.json"
+    ],
+    "note": "Definitions enable framework-agnostic architecture"
+  },
+  "integration_analysis": {
+    "primary_interfaces": [
+      {
+        "interface": "workflow_to_tool",
+        "description": "Workflows invoke tools via command-line",
+        "examples": [
+          "SE-06 invokes system_of_systems_graph_v2.py",
+          "SE-03 invokes validate_architecture.py"
+        ]
+      },
+      {
+        "interface": "tool_to_template",
+        "description": "Tools load templates to generate artifacts",
+        "examples": [
+          "system_of_systems_graph_v2.py reads framework definitions",
+          "bootstrap_development_context.py loads working_memory_template.json"
+        ]
+      },
+      {
+        "interface": "workflow_to_definition",
+        "description": "Workflows reference definitions for configuration",
+        "examples": [
+          "S-01A references framework_registry.json",
+          "SE-06 references analysis_selection_guide.json"
+        ]
+      }
+    ],
+    "critical_dependencies": [
+      {
+        "dependent": "All workflows",
+        "dependency": "context/working_memory.json",
+        "reason": "State tracking and path configuration"
+      },
+      {
+        "dependent": "SE-06 (System Graph)",
+        "dependency": "system_of_systems_graph_v2.py",
+        "reason": "Core architecture analysis"
+      },
+      {
+        "dependent": "S-01A (Framework Selection)",
+        "dependency": "framework_registry.json",
+        "reason": "Framework definitions and scoring"
+      },
+      {
+        "dependent": "All validation steps",
+        "dependency": "validate_* tools",
+        "reason": "Quality gate enforcement"
+      }
+    ]
+  },
+  "cohesion_metrics": {
+    "workflow_tool_integration": "All 6 workflows reference appropriate tools",
+    "template_coverage": "36 templates support all artifact types",
+    "definition_usage": "7 definitions provide framework-agnostic support",
+    "validation_coverage": "9 validation tools cover all quality gates",
+    "framework_support": "6+ frameworks supported (UAF, Decision Flow, Biology, Social, Ecological, CAS)",
+    "recent_additions": [
+      "Early testing integration (v3.6.0): SE-02-A03, SE-02-A04, SE-02-A05",
+      "As-fielded architecture tracking (v3.5.0): D-06, TO-06, 3 tools",
+      "8 lessons learned (v3.4.0): S-01A redesign, migrate_framework.py, NetworkX guide",
+      "Bottom-up integration (v3.3+): SE-00, BU-01 through BU-06"
+    ]
+  },
+  "validation_needed": {
+    "check_workflow_tool_references": "Verify all tool paths are correct",
+    "check_template_integrity": "Verify all templates have valid JSON",
+    "check_definition_schemas": "Verify framework definitions are complete",
+    "check_dependency_graph": "Ensure no circular dependencies",
+    "check_version_consistency": "Verify all components reference correct versions"
+  }
+}
