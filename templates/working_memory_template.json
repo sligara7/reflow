@@ -6,13 +6,14 @@
   "current_workflow": "CURRENT_WORKFLOW_ID (e.g., 01-systems_engineering)",
   "current_step": "CURRENT_STEP_ID",
   "current_substep": "CURRENT_SUBSTEP_ID",
-  "path_configuration": {
+  "paths": {
     "reflow_root": "/absolute/path/to/reflow",
     "system_root": "/absolute/path/to/system",
     "tools_path": "/absolute/path/to/reflow/tools",
     "templates_path": "/absolute/path/to/reflow/templates",
     "workflow_steps_path": "/absolute/path/to/reflow/workflow_steps",
-    "note": "These paths are set during Setup workflow (00-setup) and must NEVER be hardcoded elsewhere"
+    "definitions_path": "/absolute/path/to/reflow/definitions",
+    "note": "CRITICAL: These paths MUST be read and used for ALL tool/template/workflow references. Set during Setup workflow (00a-basic_setup). LLM agents: ALWAYS extract these paths from working_memory.json before invoking tools."
   },
   "framework_configuration": {
     "framework_id": "FRAMEWORK_ID (uaf|decision_flow|systems_biology|social_network|ecological|complex_adaptive|custom)",
