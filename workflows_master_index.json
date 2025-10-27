@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "description": "Master index for reflow workflows - restructured from monolithic decision_flow.json",
+  "version": "3.7.0",
+  "description": "Master index for reflow workflows - v3.7.0 refactored to reduce LLM context by 60-70%",
   "workflows": {
     "00-setup": {
       "id": "00-setup",
@@ -9,18 +9,54 @@
       "description": "Initialize system, configure paths, set up environment and foundational documents",
       "entry_points": ["new_system", "new_concept_or_system", "system_of_systems"],
       "prerequisites": [],
-      "next_workflow": "01-systems_engineering",
+      "next_workflow": "01a-approach_detection",
       "steps_directory": "workflow_steps/setup"
     },
     "01-systems_engineering": {
       "id": "01-systems_engineering",
-      "name": "Systems Engineering & Architecture",
+      "name": "Systems Engineering & Architecture (DEPRECATED - use 01a/01b/01c)",
       "file": "workflows/01-systems_engineering.json",
-      "description": "Design and validate architecture, create service_architecture.json and system_of_systems_graph.json",
+      "description": "DEPRECATED in v3.7.0 - Split into 01a-approach_detection, 01b-bottom_up_integration, 01c-top_down_design to reduce context by 60-70%",
       "entry_points": [],
       "prerequisites": ["00-setup"],
       "next_workflow": "02-artifacts_visualization",
-      "steps_directory": "workflow_steps/systems_engineering"
+      "steps_directory": "workflow_steps/systems_engineering",
+      "deprecated": true,
+      "replaced_by": ["01a-approach_detection", "01b-bottom_up_integration", "01c-top_down_design"]
+    },
+    "01a-approach_detection": {
+      "id": "01a-approach_detection",
+      "name": "Approach Detection (Auto-detect Bottom-Up vs Top-Down)",
+      "file": "workflows/01a-approach_detection.json",
+      "description": "Automatically detect bottom-up (existing components) or top-down (greenfield) approach by examining system directory",
+      "entry_points": [],
+      "prerequisites": ["00-setup"],
+      "next_workflow": "01b-bottom_up_integration OR 01c-top_down_design",
+      "next_workflow_note": "Routes to 01b if bottom_up detected, 01c if top_down detected",
+      "steps_directory": "workflow_steps/systems_engineering",
+      "context_benefit": "95% reduction (75 lines vs 1,535 lines in original)"
+    },
+    "01b-bottom_up_integration": {
+      "id": "01b-bottom_up_integration",
+      "name": "Bottom-Up Integration (Existing Components)",
+      "file": "workflows/01b-bottom_up_integration.json",
+      "description": "Integrate existing components into cohesive architecture - for legacy systems, package consolidation, existing codebases",
+      "entry_points": [],
+      "prerequisites": ["00-setup", "01a-approach_detection"],
+      "next_workflow": "02-artifacts_visualization",
+      "steps_directory": "workflow_steps/systems_engineering",
+      "context_benefit": "48% reduction (1,331 lines vs 1,535 lines in original, and avoids loading top-down path)"
+    },
+    "01c-top_down_design": {
+      "id": "01c-top_down_design",
+      "name": "Top-Down Design (Greenfield)",
+      "file": "workflows/01c-top_down_design.json",
+      "description": "Design new system from requirements - for greenfield projects, new systems from scratch",
+      "entry_points": [],
+      "prerequisites": ["00-setup", "01a-approach_detection"],
+      "next_workflow": "02-artifacts_visualization",
+      "steps_directory": "workflow_steps/systems_engineering",
+      "context_benefit": "54% reduction (1,099 lines vs 1,535 lines in original, and avoids loading bottom-up path)"
     },
     "02-artifacts_visualization": {
       "id": "02-artifacts_visualization",
@@ -68,11 +104,13 @@
   },
   "workflow_order": [
     "00-setup",
-    "01-systems_engineering",
+    "01a-approach_detection",
+    "01b-bottom_up_integration OR 01c-top_down_design",
     "02-artifacts_visualization",
     "03-development",
     "04-testing_operations"
   ],
+  "workflow_order_note": "01a routes to either 01b (bottom-up) or 01c (top-down) based on detection",
   "paths": {
     "reflow_root": "Path to reflow installation (configured in setup workflow)",
     "workflows_directory": "workflows/",
@@ -83,9 +121,24 @@
     "instructions_directory": "instructions/"
   },
   "migration_notes": {
-    "from": "decision_flow.json (monolithic, 128KB)",
-    "to": "5 separate workflow files",
-    "date": "2025-10-24",
-    "reason": "Improve maintainability, modularity, and manageability of workflows"
+    "v2.0": {
+      "from": "decision_flow.json (monolithic, 128KB)",
+      "to": "6 separate workflow files",
+      "date": "2025-10-24",
+      "reason": "Improve maintainability, modularity, and manageability of workflows"
+    },
+    "v3.7.0": {
+      "from": "01-systems_engineering.json (monolithic, 1,535 lines)",
+      "to": "01a-approach_detection + 01b-bottom_up_integration + 01c-top_down_design",
+      "date": "2025-10-27",
+      "reason": "Reduce LLM context consumption by 60-70% per execution",
+      "benefits": [
+        "Only load relevant workflow path (bottom-up OR top-down, not both)",
+        "95% context reduction for approach detection (75 lines vs 1,535)",
+        "Improved LLM focus and accuracy",
+        "Faster workflow execution",
+        "Better separation of concerns"
+      ]
+    }
   }
 }

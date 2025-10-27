@@ -13,9 +13,9 @@
       "properties": {
         "workflow_id": {
           "type": "string",
-          "pattern": "^[0-9]{2}-[a-z_]+$|^feature_update$",
-          "description": "Workflow identifier (e.g., 01-systems_engineering or feature_update)",
-          "examples": ["00-setup", "01-systems_engineering", "feature_update"]
+          "pattern": "^[0-9]{2}[a-z]?-[a-z_]+$|^feature_update$",
+          "description": "Workflow identifier (e.g., 01-systems_engineering, 01a-approach_detection, or feature_update)",
+          "examples": ["00-setup", "01-systems_engineering", "01a-approach_detection", "01b-bottom_up_integration", "01c-top_down_design", "feature_update"]
         },
         "name": {
           "type": "string",
