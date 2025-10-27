@@ -1,0 +1,13 @@
+{
+  "system_metadata": {
+    "system_name": "Test Case 02: Unmet Dependency",
+    "system_description": "Payment service requires non-existent billing_service",
+    "version": "1.0.0",
+    "framework": "uaf",
+    "created_date": "2025-10-27"
+  },
+  "components": {
+    "payment_service": "specs/machine/service_arch/payment_service_architecture.json",
+    "notification_service": "specs/machine/service_arch/notification_service_architecture.json"
+  }
+}

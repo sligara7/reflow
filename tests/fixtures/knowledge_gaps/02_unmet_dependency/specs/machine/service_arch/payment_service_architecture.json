@@ -1,0 +1,50 @@
+{
+  "service_id": "payment_service",
+  "service_name": "Payment Service",
+  "version": "1.0.0",
+  "description": "Processes payments - REQUIRES billing_service that doesn't exist!",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-PAY-01",
+      "function_name": "Payment Processing",
+      "description": "Process credit card payments"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-PAY-001",
+        "interface_name": "Payment API",
+        "protocol": "REST",
+        "operations": [
+          {
+            "operation_id": "OP-PAY-001",
+            "operation_name": "Process Payment",
+            "method": "POST",
+            "endpoint": "/api/v1/payments"
+          }
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-BILL-001",
+        "interface_name": "Billing API",
+        "target_service": "billing_service",
+        "protocol": "REST",
+        "usage": "Generate invoices for payments"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8010,
+        "protocol": "HTTP"
+      }
+    }
+  }
+}
