@@ -1,6 +1,6 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.8.0
+**Version**: 3.9.0
 **Last Updated**: 2025-10-28
 
 ## What is Reflow?
@@ -310,6 +310,88 @@ python3 {paths.tools_path}/component_swap.py \
 - Step AV-02-A05: Render Mermaid diagrams to PNG/SVG for distribution
 - User-initiated: When stakeholders request architecture review
 - User-initiated: When proposing component replacements
+
+## Context Flow Analysis (v3.9.0)
+
+**Purpose**: Predictive context management for LLM agents - prevent context overflow before it happens
+
+**Key Concept**: Model LLM context as a first-class architectural parameter, enabling proactive refresh recommendations
+
+**Usage**:
+```bash
+python3 {paths.tools_path}/system_of_systems_graph_v2.py \
+  {paths.system_root}/specs/machine/index.json \
+  --context-flow --context-threshold 40000
+```
+
+**What It Does**:
+1. **Analyzes workflow paths** - Traces all possible paths through your workflow
+2. **Calculates cumulative context** - Tracks token accumulation step-by-step
+3. **Identifies bottlenecks** - Flags steps exceeding threshold (default 40k tokens)
+4. **Recommends refresh points** - Suggests where to refresh BEFORE overflow
+
+**Output**:
+```json
+{
+  "context_flow": {
+    "paths_analyzed": 5,
+    "bottlenecks": {
+      "total_count": 3,
+      "critical_count": 1,
+      "details": [
+        {
+          "step_id": "SE-06",
+          "cumulative_context": 45000,
+          "severity": "CRITICAL",
+          "overflow_tokens": 5000
+        }
+      ]
+    },
+    "refresh_recommendations": [
+      {
+        "refresh_before_step": "SE-06",
+        "refresh_after_step": "SE-05",
+        "reason": "Predicted overflow (45000 tokens > 40000 threshold)"
+      }
+    ],
+    "optimization_opportunities": {
+      "context_efficiency": "MEDIUM",
+      "suggestions": [
+        "Consider splitting high-context steps or inserting additional refresh points"
+      ]
+    }
+  }
+}
+```
+
+**Benefits**:
+- ✅ **Predictive** (not reactive) - Prevent context loss before it happens
+- ✅ **Workflow optimization** - Identify high-context steps (SE-06, D-02, D-03)
+- ✅ **LLM capability matching** - Recommend minimum LLM for workflow paths
+- ✅ **Context efficiency metric** - Architectural quality parameter
+
+**When to Use**:
+- Step SE-06: Auto-run context flow analysis when generating system graph
+- User-initiated: When experiencing context degradation signals
+- Workflow design: Optimize new workflows for context efficiency
+
+**working_memory.json Integration**:
+```json
+{
+  "context_management": {
+    "cumulative_context_tokens": 38000,
+    "context_flow_analysis": {
+      "enabled": true,
+      "predicted_cumulative": 53000,
+      "threshold": 40000,
+      "refresh_recommended": true,
+      "refresh_reason": "Predicted overflow at SE-06"
+    }
+  }
+}
+```
+
+**LLMs should**: Read `refresh_recommended` field, auto-execute refresh when `true`
 
 ## Quality Gates
 
@@ -684,7 +766,7 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 8. **Start with 00a-basic_setup**: Configures paths, framework, structure
 9. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
 10. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-11. **v3.8.0 current**: 32 tools (3 new for human documentation), 15 workflows, 60-95% context reduction, bidirectional human-machine translation
+11. **v3.9.0 current**: 32 tools (context flow analysis integrated), 15 workflows, 60-95% context reduction, predictive context management
 
 **CRITICAL PATH EXTRACTION FLOW**:
 ```

@@ -1030,6 +1030,189 @@ def analyze_flow(G: nx.DiGraph) -> Dict[str, Any]:
     return results
 
 
+def analyze_context_flow(G: nx.DiGraph, threshold: int = 40000) -> Dict[str, Any]:
+    """Analyze LLM context flow through workflow paths (v3.9.0).
+
+    Models LLM context as a flow parameter, predicting cumulative token
+    accumulation and identifying bottlenecks before overflow occurs.
+
+    Args:
+        G: Directed graph with workflow steps
+        threshold: Context threshold in tokens (default: 40000)
+
+    Returns:
+        - paths: All workflow paths with cumulative context
+        - bottlenecks: Steps exceeding threshold
+        - refresh_points: Recommended context refresh locations
+        - optimization_opportunities: Suggestions for reducing context cost
+    """
+    results = {
+        'metadata': {
+            'threshold_tokens': threshold,
+            'analysis_date': datetime.now().isoformat()
+        }
+    }
+
+    try:
+        # Find start and end nodes (nodes with 0 in-degree and 0 out-degree)
+        in_degrees = dict(G.in_degree())
+        out_degrees = dict(G.out_degree())
+
+        start_nodes = [n for n, d in in_degrees.items() if d == 0]
+        end_nodes = [n for n, d in out_degrees.items() if d == 0]
+
+        if not start_nodes:
+            # No pure start nodes, use nodes with lowest in-degree
+            start_nodes = sorted(in_degrees.items(), key=lambda x: x[1])[:3]
+            start_nodes = [n for n, d in start_nodes]
+
+        if not end_nodes:
+            # No pure end nodes, use nodes with lowest out-degree
+            end_nodes = sorted(out_degrees.items(), key=lambda x: x[1])[:3]
+            end_nodes = [n for n, d in end_nodes]
+
+        results['workflow_endpoints'] = {
+            'start_nodes': start_nodes,
+            'end_nodes': end_nodes
+        }
+
+    except Exception as e:
+        results['error'] = f"Error identifying workflow endpoints: {e}"
+        return results
+
+    # Analyze paths from each start to each end
+    all_paths = []
+    bottlenecks = []
+    refresh_recommendations = []
+
+    for start in start_nodes:
+        for end in end_nodes:
+            if start == end:
+                continue
+
+            try:
+                # Find all simple paths (no cycles)
+                paths = list(nx.all_simple_paths(G, start, end, cutoff=50))  # Max 50 steps
+
+                for path in paths[:10]:  # Analyze first 10 paths to avoid explosion
+                    path_analysis = {
+                        'path': path,
+                        'length': len(path),
+                        'steps': []
+                    }
+
+                    cumulative_context = 0
+                    step_bottlenecks = []
+
+                    for i, step_id in enumerate(path):
+                        node_data = G.nodes[step_id]
+
+                        # Extract context cost from node metadata
+                        context_cost = 0
+                        if 'context_metadata' in node_data:
+                            context_cost = node_data['context_metadata'].get('context_cost', 0)
+                        elif 'context_cost' in node_data:
+                            context_cost = node_data['context_cost']
+                        else:
+                            # Default estimates based on step type
+                            if 'SE-06' in step_id or 'GraphGeneration' in str(node_data.get('step_name', '')):
+                                context_cost = 15000  # Heavy step
+                            elif 'SE-' in step_id or 'BU-' in step_id:
+                                context_cost = 8000   # Architecture steps
+                            elif 'D-' in step_id:
+                                context_cost = 10000  # Development steps
+                            elif 'AV-' in step_id:
+                                context_cost = 5000   # Visualization steps
+                            else:
+                                context_cost = 3000   # Default steps
+
+                        cumulative_context += context_cost
+
+                        step_info = {
+                            'step_id': step_id,
+                            'step_name': node_data.get('step_name', 'Unknown'),
+                            'context_cost': context_cost,
+                            'cumulative_context': cumulative_context,
+                            'position': i
+                        }
+
+                        # Check for bottleneck
+                        if cumulative_context > threshold:
+                            severity = 'CRITICAL' if cumulative_context > threshold * 1.25 else 'WARNING'
+                            step_bottlenecks.append({
+                                **step_info,
+                                'severity': severity,
+                                'overflow_tokens': cumulative_context - threshold
+                            })
+
+                        path_analysis['steps'].append(step_info)
+
+                    path_analysis['total_cumulative_context'] = cumulative_context
+                    path_analysis['bottlenecks'] = step_bottlenecks
+
+                    # Generate refresh recommendations for this path
+                    if step_bottlenecks:
+                        for bottleneck in step_bottlenecks:
+                            # Recommend refresh before the bottleneck step
+                            refresh_point = path[max(0, bottleneck['position'] - 1)]
+                            refresh_recommendations.append({
+                                'path_id': f"{start}_to_{end}",
+                                'refresh_before_step': bottleneck['step_id'],
+                                'refresh_after_step': refresh_point,
+                                'reason': f"Predicted overflow ({bottleneck['cumulative_context']} tokens > {threshold} threshold)",
+                                'severity': bottleneck['severity']
+                            })
+
+                    all_paths.append(path_analysis)
+                    bottlenecks.extend(step_bottlenecks)
+
+            except nx.NetworkXNoPath:
+                pass  # No path exists between these nodes
+            except Exception as e:
+                results['path_analysis_errors'] = results.get('path_analysis_errors', [])
+                results['path_analysis_errors'].append(f"Error analyzing path {start}→{end}: {e}")
+
+    # Summarize results
+    results['paths_analyzed'] = len(all_paths)
+    results['paths'] = all_paths[:5]  # Include first 5 paths in detail
+    results['bottlenecks'] = {
+        'total_count': len(bottlenecks),
+        'critical_count': len([b for b in bottlenecks if b.get('severity') == 'CRITICAL']),
+        'warning_count': len([b for b in bottlenecks if b.get('severity') == 'WARNING']),
+        'details': bottlenecks[:10]  # First 10 bottlenecks
+    }
+    results['refresh_recommendations'] = {
+        'total_count': len(refresh_recommendations),
+        'recommendations': refresh_recommendations[:10]  # First 10 recommendations
+    }
+
+    # Optimization opportunities
+    if all_paths:
+        max_cumulative = max(p['total_cumulative_context'] for p in all_paths)
+        min_cumulative = min(p['total_cumulative_context'] for p in all_paths)
+        avg_cumulative = sum(p['total_cumulative_context'] for p in all_paths) / len(all_paths)
+
+        results['optimization_opportunities'] = {
+            'max_cumulative_context': max_cumulative,
+            'min_cumulative_context': min_cumulative,
+            'avg_cumulative_context': avg_cumulative,
+            'context_efficiency': 'HIGH' if avg_cumulative < threshold else ('MEDIUM' if avg_cumulative < threshold * 1.5 else 'LOW'),
+            'suggestions': []
+        }
+
+        if max_cumulative > threshold * 2:
+            results['optimization_opportunities']['suggestions'].append(
+                "Consider splitting high-context steps or inserting additional refresh points"
+            )
+
+        if max_cumulative - min_cumulative > threshold:
+            results['optimization_opportunities']['suggestions'].append(
+                f"Path variation is high ({max_cumulative - min_cumulative} tokens). Consider workflow refactoring for consistency."
+            )
+
+    return results
+
+
 def run_all_analysis(G: nx.DiGraph) -> Dict[str, Any]:
     """Run all NetworkX analysis methods and return comprehensive results."""
     print("Running comprehensive NetworkX analysis...")
@@ -1330,6 +1513,10 @@ Supported Frameworks:
                        help='Analyze DAG properties (topological sort, longest path, levels)')
     parser.add_argument('--flow', action='store_true',
                        help='Analyze flow (maximum flow, minimum cut, node connectivity)')
+    parser.add_argument('--context-flow', action='store_true',
+                       help='Analyze context flow (LLM token accumulation, bottlenecks, refresh points) - v3.9.0')
+    parser.add_argument('--context-threshold', type=int, default=40000,
+                       help='Context threshold in tokens for bottleneck detection (default: 40000)')
     parser.add_argument('--analyze-all', action='store_true',
                        help='Run all analysis methods (centrality, paths, connectivity, clustering, properties, community, cycles, scc, dag, flow)')
 
@@ -1480,6 +1667,14 @@ Supported Frameworks:
 
         if args.analyze_all or args.flow:
             analysis_results['flow'] = analyze_flow(G)
+
+        if args.context_flow:
+            print("\nAnalyzing context flow...")
+            analysis_results['context_flow'] = analyze_context_flow(G, threshold=args.context_threshold)
+            cf = analysis_results['context_flow']
+            print(f"Analyzed {cf.get('paths_analyzed', 0)} workflow paths")
+            print(f"Found {cf.get('bottlenecks', {}).get('total_count', 0)} context bottlenecks")
+            print(f"Generated {cf.get('refresh_recommendations', {}).get('total_count', 0)} refresh recommendations")
 
     # Generate output (with path security validation)
     try:
