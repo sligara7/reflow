@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.7.0** | Framework-agnostic systems engineering for LLM agents
+**Version 3.8.0** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -254,8 +254,8 @@ Reflow now supports **bottom-up integration** for existing components:
 reflow/
 ├── workflows/           # 15 workflow files (9 modular + 4 deprecated + 2 special)
 ├── workflow_steps/      # Detailed step definitions
-├── tools/              # 29 Python tools (v3.6.1: +3 validation tools)
-├── templates/          # 36+ templates (v3.6.1: +3 testing templates)
+├── tools/              # 32 Python tools (v3.8.0: +3 human documentation tools)
+├── templates/          # 36+ templates
 └── definitions/        # Framework definitions
 ```
 
@@ -289,6 +289,14 @@ reflow/
 - Deployment: One-command deployment, automated rollback, health checks
 - UX: Intuitive APIs, clear error messages, comprehensive documentation
 
+**Human Documentation & Bidirectional Translation (NEW v3.8.0):**
+- Auto-generate human-readable markdown from machine specs
+- Bidirectional translation: Edit markdown → Propagate to JSON with validation
+- Safe component swapping with interface compatibility checking
+- PNG/SVG diagram rendering for stakeholder presentations
+- Version-controlled architecture evolution tracking
+- Non-technical stakeholders can review and propose architecture changes
+
 **Architecture Lifecycle Tracking (NEW v3.5.0):**
 - Track architecture evolution: designed → as-built → as-fielded
 - Compare implementation vs design to identify drift
@@ -312,19 +320,31 @@ reflow/
 ## Documentation
 
 **Tool Reference:**
-- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 29 tools
+- [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - Comprehensive guide to all 32 tools
 - [TOOL_VERSION_MANIFEST.md](docs/TOOL_VERSION_MANIFEST.md) - Tool version history
 
 **Workflow & Features:**
 - [NETWORKX_ANALYSIS_GUIDE.md](docs/NETWORKX_ANALYSIS_GUIDE.md) - Framework-specific NetworkX analysis guidance (400+ lines)
 - [DECISION_FLOW_FRAMEWORK.md](docs/DECISION_FLOW_FRAMEWORK.md) - Decision Flow Framework documentation (500+ lines)
+- [HUMAN_DOCUMENTATION_WORKFLOW_ANALYSIS.md](docs/HUMAN_DOCUMENTATION_WORKFLOW_ANALYSIS.md) - Human documentation workflow (973 lines)
 - [BOTTOM_UP_INTEGRATION_DESIGN.md](docs/BOTTOM_UP_INTEGRATION_DESIGN.md) - Bottom-up integration design
 - [GIT_AUTOMATION_GUIDE.md](docs/GIT_AUTOMATION_GUIDE.md) - Automatic git commits setup
 - [NEW_STRUCTURE_README.md](docs/restructuring/NEW_STRUCTURE_README.md) - Workflow structure reference
 
 ## Version History
 
-**v3.7.0 (2025-10-27)** - Current
+**v3.8.0 (2025-10-28)** - Current
+- **Human Documentation & Bidirectional Translation**
+  - `generate_human_documentation.py` - Convert machine specs to human-readable markdown
+  - `parse_human_documentation.py` - Parse human edits back to machine specs with validation
+  - `component_swap.py` - Safe component swapping with interface compatibility checking
+  - PNG/SVG rendering support for Mermaid diagrams
+  - Bidirectional translation: Human ↔ Machine documentation synchronization
+  - Non-technical stakeholders can review architecture and propose changes via markdown edits
+- Workflow updates: `02-artifacts_visualization.json` now mandatory (removed "conditional" flag)
+- Documentation: Added comprehensive analysis (973 lines) and implementation guide (1,257 lines)
+
+**v3.7.0 (2025-10-27)**
 - **60-95% LLM context reduction**: Split 4 workflows into 9 modular workflows
   - 00-setup → 00a-basic_setup + 00b-framework_selection (45-55% reduction)
   - 01-systems_engineering → 01a-approach_detection + 01b-bottom_up + 01c-top_down (60-95% reduction)

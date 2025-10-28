@@ -1,0 +1,97 @@
+{
+  "reflow_version": "3.8.0",
+  "last_updated": "2025-10-28",
+  "features": {
+    "human_documentation": {
+      "version": "1.0.0",
+      "status": "active",
+      "description": "Human-readable documentation generation and bidirectional translation",
+      "tools": [
+        "generate_human_documentation.py",
+        "parse_human_documentation.py",
+        "component_swap.py"
+      ],
+      "templates": [],
+      "workflows": [],
+      "introduced_in": "3.8.0"
+    },
+    "framework_agnostic_workflows": {
+      "version": "3.7.0",
+      "status": "active",
+      "description": "Support for 6+ architectural frameworks with modular workflows",
+      "tools": [
+        "system_of_systems_graph_v2.py",
+        "validate_architecture.py"
+      ],
+      "workflows": [
+        "00a-basic_setup.json",
+        "00b-framework_selection.json",
+        "01a-approach_detection.json",
+        "01b-bottom_up_integration.json",
+        "01c-top_down_design.json",
+        "02-artifacts_visualization.json",
+        "03a-development_implementation.json",
+        "03b-development_validation.json",
+        "04a-testing.json",
+        "04b-operations.json",
+        "feature_update.json"
+      ],
+      "introduced_in": "3.7.0"
+    },
+    "context_reduction": {
+      "version": "3.7.0",
+      "status": "active",
+      "description": "60-95% LLM context reduction via workflow splitting and modular design",
+      "introduced_in": "3.7.0"
+    },
+    "decision_flow_framework": {
+      "version": "3.4.0",
+      "status": "active",
+      "description": "Workflow modeling with state machines, transitions, and flow analysis",
+      "introduced_in": "3.4.0"
+    },
+    "as_fielded_architecture_tracking": {
+      "version": "3.5.0",
+      "status": "active",
+      "description": "Architecture lifecycle tracking (designed → as-built → as-fielded)",
+      "tools": [
+        "track_as_fielded_architecture.py",
+        "compare_architecture_versions.py",
+        "generate_architecture_delta_report.py"
+      ],
+      "introduced_in": "3.5.0"
+    }
+  },
+  "version_history": [
+    {
+      "version": "3.8.0",
+      "date": "2025-10-28",
+      "type": "minor",
+      "summary": "Human documentation workflow with bidirectional translation"
+    },
+    {
+      "version": "3.7.0",
+      "date": "2025-10-27",
+      "type": "minor",
+      "summary": "Modular workflows with 60-95% context reduction"
+    },
+    {
+      "version": "3.6.1",
+      "date": "2025-10-26",
+      "type": "patch",
+      "summary": "Path extraction fixes and troubleshooting enhancements"
+    },
+    {
+      "version": "3.5.0",
+      "date": "2025-10-25",
+      "type": "minor",
+      "summary": "As-fielded architecture tracking and lifecycle management"
+    },
+    {
+      "version": "3.4.0",
+      "date": "2025-10-24",
+      "type": "minor",
+      "summary": "Decision Flow Framework introduction"
+    }
+  ]
+}

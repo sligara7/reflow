@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.7.0
-**Last Updated**: 2025-10-27
+**Version**: 3.8.0
+**Last Updated**: 2025-10-28
 
 ## What is Reflow?
 
@@ -255,6 +255,62 @@ service_architecture.json                     ← Symlink to current
 
 **Benefits**: Complete history, rollback support, version manifest tracking
 
+## Human Documentation Workflow (v3.8.0)
+
+**Purpose**: Enable human-in-the-loop architecture editing with bidirectional translation
+
+**Workflow**:
+1. Generate human docs from machine specs:
+   ```bash
+   python3 {paths.tools_path}/generate_human_documentation.py --system-root {paths.system_root}
+   ```
+
+2. Human reviews/edits markdown files:
+   ```bash
+   vim specs/human/documentation/services/my_service.md
+   ```
+
+3. Parse human docs back to machine specs:
+   ```bash
+   python3 {paths.tools_path}/parse_human_documentation.py --system-root {paths.system_root} --validate
+   ```
+
+4. If validation passes: Changes committed
+   If validation fails: Conflict report generated
+
+**Key Files**:
+- **Human Docs**: `specs/human/documentation/services/*.md`
+- **Machine Specs**: `specs/machine/service_arch/*/service_architecture.json`
+- **Visualizations**: `specs/human/visualizations/*.{mmd,png,svg}`
+
+**Tools**:
+- `generate_human_documentation.py` - Machine → Human translation
+- `parse_human_documentation.py` - Human → Machine translation (with validation)
+- `component_swap.py` - Safe component replacement with compatibility checking
+
+**Component Swapping Example**:
+```bash
+# Replace Apache proxy with HAProxy
+python3 {paths.tools_path}/component_swap.py \
+  --index specs/machine/index.json \
+  --remove apache_proxy \
+  --add haproxy_proxy \
+  --validate
+```
+
+**Benefits**:
+- ✅ Non-technical stakeholders can review architecture
+- ✅ Propose changes via markdown edits (not JSON)
+- ✅ Automatic validation prevents broken dependencies
+- ✅ Version control tracks architecture evolution
+- ✅ PNG/SVG diagrams for presentations and wikis
+
+**When to Use**:
+- Step AV-01-A04: Auto-generate human docs after creating service architectures
+- Step AV-02-A05: Render Mermaid diagrams to PNG/SVG for distribution
+- User-initiated: When stakeholders request architecture review
+- User-initiated: When proposing component replacements
+
 ## Quality Gates
 
 **10 gates (7 blocking)**:
@@ -271,7 +327,7 @@ service_architecture.json                     ← Symlink to current
 
 ## Tools & Templates
 
-**16 Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
+**19 Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
 
 **Architecture** (Framework-Agnostic):
 - `system_of_systems_graph_v2.py` - **FLAGSHIP**: Graph generation with:
@@ -286,6 +342,11 @@ service_architecture.json                     ← Symlink to current
 
 **Visualization**:
 - `generate_mermaid_*.py` - Various diagram generators
+
+**Human Documentation** (v3.8.0):
+- `generate_human_documentation.py` - Machine → Human translation
+- `parse_human_documentation.py` - Human → Machine translation with validation
+- `component_swap.py` - Safe component replacement with compatibility checking
 
 **Context**:
 - `context_refresh.py`, `detect_context_drift.py`
@@ -599,11 +660,12 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 
 ## Getting Help
 
-- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 29 tools
+- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 32 tools
 - `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements (security, deployment, UX, operations)
 - `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis guide (400+ lines)
 - `docs/DECISION_FLOW_FRAMEWORK.md` - Decision Flow example (500+ lines)
 - `docs/GIT_AUTOMATION_GUIDE.md` - Git automation setup
+- `docs/HUMAN_DOCUMENTATION_WORKFLOW_ANALYSIS.md` - Human documentation analysis (973 lines)
 - `README.md` - Overview and quick start
 
 ## Summary for LLM Agents
@@ -622,7 +684,7 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 8. **Start with 00a-basic_setup**: Configures paths, framework, structure
 9. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
 10. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-11. **v3.7.0 current**: 29 tools, 15 workflows (9 modular + 4 deprecated + 2 special), 60-95% context reduction, system cohesion validated
+11. **v3.8.0 current**: 32 tools (3 new for human documentation), 15 workflows, 60-95% context reduction, bidirectional human-machine translation
 
 **CRITICAL PATH EXTRACTION FLOW**:
 ```
