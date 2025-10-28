@@ -211,6 +211,8 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
 
 **Location**: `<your_system>/context/working_memory.json`
 
+**⚠️ CRITICAL FOR LLM AGENTS**: `working_memory.json` contains THE ONLY SOURCE OF TRUTH for paths. You MUST read this file FIRST before any workflow operation and extract the paths.
+
 **Key fields**:
 ```json
 {
@@ -218,13 +220,28 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
   "current_step": "SE-02",
   "paths": {
     "reflow_root": "/path/to/reflow",
-    "system_root": "/path/to/your_system"
+    "system_root": "/path/to/your_system",
+    "tools_path": "/path/to/reflow/tools",
+    "templates_path": "/path/to/reflow/templates",
+    "workflow_steps_path": "/path/to/reflow/workflow_steps",
+    "definitions_path": "/path/to/reflow/definitions"
   },
   "operations_since_refresh": 2
 }
 ```
 
-**Rules**:
+**MANDATORY Path Usage Rules**:
+1. **ALWAYS** read `context/working_memory.json` FIRST before any operation
+2. **EXTRACT** the `paths` object and store in your working context
+3. **USE** these paths for ALL tool/template/workflow references:
+   - Tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
+   - Templates: `{paths.templates_path}/service_architecture_template.json`
+   - Workflows: `{paths.workflow_steps_path}/systems_engineering/SE-06-GraphGeneration.json`
+   - Definitions: `{paths.definitions_path}/framework_registry.json`
+4. **NEVER** hardcode paths or guess locations
+5. **VERIFY** tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+
+**Context Update Rules**:
 - Read before every step
 - Update after completing actions
 - Refresh context every 4 operations
@@ -392,7 +409,9 @@ kill -9 <PID>
 
 **LLM Best Practices**:
 - ALWAYS read `context/working_memory.json` first when user says "continue"
+- **EXTRACT AND STORE** the `paths` object - you'll need it for EVERY tool invocation
 - Check `current_workflow` and `current_step` to know where to resume
+- **USE** extracted paths for all tool/template/workflow references (NEVER hardcode)
 - Update context after each operation
 - Commit to GitHub after major milestones
 
@@ -411,14 +430,23 @@ Result: Complete architecture specs, diagrams, ICDs - no service code
 
 **LLM Process**:
 1. Read `github.com/yourname/my_system/context/working_memory.json`
-2. Extract: `current_workflow`, `current_step`, `paths`, `operations_since_refresh`
+2. **EXTRACT** (MANDATORY):
+   - `current_workflow` (e.g., "01-systems_engineering")
+   - `current_step` (e.g., "SE-06")
+   - **`paths` object** (reflow_root, system_root, tools_path, templates_path, etc.) - STORE THIS!
+   - `operations_since_refresh`
 3. Check if refresh needed (>4 operations → refresh)
-4. Load workflow: `github.com/sligara7/reflow/workflows/{current_workflow}.json`
-5. Resume from exact step
-6. Update context after operations
-7. Commit to GitHub at milestones
+4. Load workflow: `{paths.reflow_root}/workflows/{current_workflow}.json`
+5. Load step definition: `{paths.workflow_steps_path}/systems_engineering/{current_step}-*.json`
+6. Resume from exact step
+7. **USE extracted paths** for ALL tool/template references:
+   - Example: `python3 {paths.tools_path}/system_of_systems_graph_v2.py {paths.system_root}/specs/machine/index.json`
+8. Update context after operations
+9. Commit to GitHub at milestones
 
-**CRITICAL**: Context folder IS the source of truth. Conversation history is supplemental.
+**CRITICAL**:
+- Context folder IS the source of truth. Conversation history is supplemental.
+- **PATHS MUST BE EXTRACTED FROM working_memory.json** - NEVER hardcode or guess locations!
 
 ### Pattern 4: Feature Update
 
@@ -429,6 +457,84 @@ Process: Read existing architecture → Propose changes → Validate impact → 
 Result: Updated system with backward compatibility tracking
 ```
 
+## Troubleshooting
+
+### "Can't find tool X" or "Tool doesn't exist"
+
+**Symptom**: LLM claims `system_of_systems_graph_v2.py` or other tools don't exist
+
+**Root Cause**: Paths not extracted from `working_memory.json`
+
+**Fix (for LLM agents)**:
+1. **READ** `{system_root}/context/working_memory.json`
+2. **EXTRACT** the `paths` object:
+   ```json
+   {
+     "reflow_root": "/actual/path/to/reflow",
+     "tools_path": "/actual/path/to/reflow/tools",
+     ...
+   }
+   ```
+3. **VERIFY** tool exists: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+4. **USE** extracted path: `python3 {paths.tools_path}/system_of_systems_graph_v2.py ...`
+
+**NEVER**:
+- ❌ Hardcode paths like `/home/user/reflow/tools/`
+- ❌ Guess locations like `./tools/`
+- ❌ Create new tools when existing ones can't be found
+- ❌ Skip reading `working_memory.json` because you "know" the paths
+- ❌ Download templates/tools from GitHub using `curl` - Reflow is ALREADY LOCAL!
+- ❌ Fetch from `https://raw.githubusercontent.com/sligara7/reflow/` URLs
+
+**ALWAYS**:
+- ✅ Read `working_memory.json` FIRST before EVERY workflow step
+- ✅ Extract all paths from the `paths` object
+- ✅ Verify tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+- ✅ Use LOCAL extracted paths in ALL commands
+- ✅ Read LOCAL templates: `cat {paths.templates_path}/service_architecture_template.json`
+- ✅ Run LOCAL tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
+
+### "Downloading templates from GitHub with curl"
+
+**Symptom**: LLM tries to download templates/tools using `curl https://raw.githubusercontent.com/sligara7/reflow/...`
+
+**Root Cause**: LLM doesn't realize Reflow is ALREADY installed locally
+
+**Why This is Wrong**:
+- Reflow tooling is ALREADY on your machine (local installation)
+- Templates, tools, workflows are LOCAL files, not remote
+- `working_memory.json` contains paths to LOCAL installation
+
+**Fix (for LLM agents)**:
+1. **STOP** using `curl` to download from GitHub
+2. **READ** `{system_root}/context/working_memory.json`
+3. **EXTRACT** paths: `paths.templates_path`, `paths.tools_path`, etc.
+4. **USE** local files:
+   - ❌ WRONG: `curl https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template.json`
+   - ✅ CORRECT: `cat {paths.templates_path}/service_architecture_template.json`
+
+**Example from Real Session** (what NOT to do):
+```bash
+# WRONG - Downloading from GitHub
+curl -s https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template_uaf.json -o templates/...
+# Result: 0 lines (file doesn't exist remotely)
+
+# CORRECT - Use local installation
+cat /path/extracted/from/working_memory/templates/service_architecture_template.json
+# Result: 400+ lines (file exists locally)
+```
+
+### "Working memory doesn't exist"
+
+**Symptom**: `context/working_memory.json` file not found
+
+**Root Cause**: Setup workflow (00a-basic_setup.json) not run yet
+
+**Fix**:
+1. Run: `Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json on system in {your_system_path}`
+2. This creates `context/working_memory.json` with all required paths
+3. Then proceed with your intended workflow (01a, 01b, 01c, etc.)
+
 ## What to Avoid vs Do
 
 **❌ Don't**:
@@ -437,6 +543,8 @@ Result: Updated system with backward compatibility tracking
 - Skip setup workflow
 - Mix reflow and system directories
 - Skip quality gates
+- Hardcode paths or guess tool locations
+- Create new tools when existing ones can't be found
 
 **✅ Do**:
 - Reference reflow as read-only library
@@ -444,6 +552,8 @@ Result: Updated system with backward compatibility tracking
 - Follow workflow sequence
 - Use versioning (semver, symlinks)
 - Run validation tools before advancing
+- Always read `working_memory.json` FIRST and extract paths
+- Verify tools exist before invoking them
 
 ## File Structure
 
@@ -502,16 +612,26 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 
 1. **Web-based is PRIMARY**: Users create GitHub repo, you read from `github.com/sligara7/reflow`, write to their repo
 2. **Context is SOURCE OF TRUTH**: ALWAYS read `context/working_memory.json` FIRST when user says "continue"
-3. **Multi-day projects normal**: User may work 10 min today, resume 3 days later - context preserves state
-4. **Two context mechanisms**:
+3. **⚠️ EXTRACT PATHS**: Read `working_memory.json` → Extract `paths` object → Use for ALL tool/template/workflow references - NEVER hardcode or guess
+4. **Multi-day projects normal**: User may work 10 min today, resume 3 days later - context preserves state
+5. **Two context mechanisms**:
    - `context/working_memory.json` (PRIMARY - read this first!)
    - Conversation history (SUPPLEMENTAL - reference if user mentions)
-5. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
-6. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
-7. **Start with 00a-basic_setup**: Configures paths, framework, structure
-8. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
-9. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-10. **v3.7.0 current**: 29 tools, 15 workflows (9 modular + 4 deprecated + 2 special), 60-95% context reduction, system cohesion validated
+6. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
+7. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
+8. **Start with 00a-basic_setup**: Configures paths, framework, structure
+9. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
+10. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
+11. **v3.7.0 current**: 29 tools, 15 workflows (9 modular + 4 deprecated + 2 special), 60-95% context reduction, system cohesion validated
+
+**CRITICAL PATH EXTRACTION FLOW**:
+```
+1. User says: "Continue workflow from context/working_memory.json"
+2. LLM reads: {system_root}/context/working_memory.json
+3. LLM extracts: paths.tools_path, paths.templates_path, paths.reflow_root, etc.
+4. LLM uses: python3 {paths.tools_path}/system_of_systems_graph_v2.py
+5. LLM NEVER: Hardcodes paths or creates new tools
+```
 
 ### Secondary Approach: Local Machine
 
