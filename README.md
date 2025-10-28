@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.8.0** | Framework-agnostic systems engineering for LLM agents
+**Version 3.9.0** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -333,7 +333,19 @@ reflow/
 
 ## Version History
 
-**v3.8.0 (2025-10-28)** - Current
+**v3.9.0 (2025-10-28)** - Current
+- **Context Flow Analysis** - Predictive context management for LLM agents
+  - Extended `system_of_systems_graph_v2.py` with `--context-flow` analysis mode
+  - Models LLM context as first-class architectural parameter
+  - Predicts cumulative token accumulation through workflow paths
+  - Identifies context bottlenecks BEFORE overflow occurs (default threshold: 40k tokens)
+  - Generates automatic refresh recommendations
+  - Calculates "context efficiency" as architectural quality metric
+  - Enables workflow optimization and LLM capability matching
+- Enhanced `working_memory_template.json` with context flow fields
+- Shift from reactive to predictive context management
+
+**v3.8.0 (2025-10-28)**
 - **Human Documentation & Bidirectional Translation**
   - `generate_human_documentation.py` - Convert machine specs to human-readable markdown
   - `parse_human_documentation.py` - Parse human edits back to machine specs with validation

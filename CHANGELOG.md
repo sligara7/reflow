@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.9.0] - 2025-10-28
+
+### Added
+
+- **Context Flow Analysis** - Predictive context management for LLM agents
+  - Extended `system_of_systems_graph_v2.py` with `--context-flow` analysis mode
+  - Models LLM context as first-class architectural parameter
+  - Predicts cumulative token accumulation through workflow paths
+  - Identifies context bottlenecks BEFORE overflow occurs
+  - Generates automatic refresh recommendations
+  - Detects optimization opportunities for workflow reordering
+- **Enhanced working_memory template** - Added `context_flow_analysis` section
+  - Tracks cumulative context tokens
+  - Provides predicted overflow warnings
+  - Recommends refresh points proactively
+- **Context threshold configuration** - `--context-threshold` flag (default: 40000 tokens)
+
+### Changed
+
+- **Context management philosophy** - Shifted from reactive to predictive
+  - Before: Detect degradation AFTER problems occur
+  - After: Predict overflow BEFORE problems, auto-recommend refresh
+
+### Features
+
+- **Predictive Context Management**:
+  - Analyze workflow paths for context accumulation
+  - Flag bottlenecks at configurable threshold (default 40k tokens)
+  - Generate refresh recommendations before overflow
+- **Workflow Optimization**:
+  - Identify high-context steps (SE-06, D-02, D-03)
+  - Suggest optimal step ordering to minimize context cost
+  - Calculate "context efficiency" metric
+- **LLM Capability Matching**:
+  - Compare workflow context requirements vs LLM capabilities
+  - Recommend minimum LLM for each workflow path
+  - Example: Claude Sonnet 200k vs GPT-4 128k
+
+### Documentation
+
+- Added `docs/changes/CHANGE_PROPOSAL_2025-10-28_context_flow.md` - Feature proposal
+- Updated `templates/working_memory_template.json` - Added context flow fields
+
+### Technical Details
+
+**Algorithm**:
+```
+For each workflow path:
+  cumulative_context = 0
+  for each step:
+    cumulative_context += step.context_cost
+    if cumulative_context > threshold:
+      flag_bottleneck(step)
+      recommend_refresh(before=step)
+```
+
+**Usage**:
+```bash
+python3 system_of_systems_graph_v2.py index.json \
+  --context-flow --context-threshold 40000
+```
+
+**Output**:
+- Workflow paths with cumulative context
+- Context bottlenecks (WARNING/CRITICAL severity)
+- Refresh recommendations (specific step locations)
+- Optimization opportunities
+
 ## [3.8.0] - 2025-10-28
 
 ### Added
