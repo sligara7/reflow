@@ -77,6 +77,17 @@
     "last_degradation_signal": null,
     "context_health": "HEALTHY|DEGRADING|CRITICAL",
     "cumulative_context_tokens": 0,
+    "llm_capabilities": {
+      "model_name": "DETECTED_MODEL_NAME (e.g., Claude Sonnet 4.5, GPT-4 Turbo)",
+      "context_window_tokens": 0,
+      "recommended_threshold": 0,
+      "safety_margin_percent": 80,
+      "refresh_strategy": "conservative|moderate|aggressive",
+      "auto_detected": false,
+      "detection_timestamp": "YYYY-MM-DD HH:MM:SS",
+      "detection_method": "interactive|manual",
+      "note": "v3.9.1 - Auto-detect LLM context window at workflow start/resume. Run: python3 {paths.tools_path}/detect_llm_capabilities.py --interactive --update-working-memory {paths.system_root}"
+    },
     "context_flow_analysis": {
       "enabled": false,
       "current_step": "CURRENT_STEP_ID",
@@ -86,14 +97,15 @@
       "refresh_recommended": false,
       "refresh_reason": null,
       "recommended_refresh_before": null,
-      "note": "v3.9.0 - Predictive context management via flow analysis"
+      "note": "v3.9.0 - Predictive context management via flow analysis. v3.9.1: Threshold auto-set from llm_capabilities"
     },
     "notes": [
+      "v3.9.1: FIRST ACTION when starting/resuming workflow: Detect LLM capabilities (see llm_capabilities.note)",
       "Increment operations_since_refresh after each real operation (see context_management_template.json)",
       "When operations_since_refresh >= 5, execute context refresh sequence",
       "When degradation signal detected, execute refresh immediately regardless of counter",
       "v3.9.0: When context_flow_analysis.refresh_recommended is true, execute refresh before predicted bottleneck",
-      "After refresh, reset operations_since_refresh to 0 and update last_refresh_timestamp"
+      "After refresh, reset operations_since_refresh to 0 and update last_refresh_timestamp AND re-detect LLM capabilities"
     ]
   },
   "hierarchy_level": "LEVEL_0_CLASSIFICATION",

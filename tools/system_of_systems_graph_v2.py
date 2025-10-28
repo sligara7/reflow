@@ -1670,7 +1670,39 @@ Supported Frameworks:
 
         if args.context_flow:
             print("\nAnalyzing context flow...")
-            analysis_results['context_flow'] = analyze_context_flow(G, threshold=args.context_threshold)
+
+            # v3.9.1: Try to load LLM-specific threshold from working_memory.json
+            detected_threshold = None
+            llm_model_name = "Unknown LLM"
+
+            possible_wm_paths = [
+                system_root / 'context' / 'working_memory.json',
+                Path.cwd() / 'context' / 'working_memory.json',
+            ]
+
+            for wm_path in possible_wm_paths:
+                if wm_path.exists():
+                    try:
+                        with open(wm_path, 'r') as f:
+                            wm_data = json.load(f)
+
+                        llm_caps = wm_data.get('context_management', {}).get('llm_capabilities', {})
+                        if llm_caps.get('recommended_threshold'):
+                            detected_threshold = llm_caps['recommended_threshold']
+                            llm_model_name = llm_caps.get('model_name', 'Unknown LLM')
+                            print(f"✅ Using auto-detected threshold for {llm_model_name}: {detected_threshold:,} tokens")
+                            break
+                    except Exception as e:
+                        pass  # Continue to next option or use default
+
+            # Use detected threshold if available, otherwise use command-line argument
+            threshold_to_use = detected_threshold if detected_threshold else args.context_threshold
+
+            if not detected_threshold:
+                print(f"ℹ️  Using default threshold: {threshold_to_use:,} tokens")
+                print(f"   Tip: Run detect_llm_capabilities.py for model-specific thresholds")
+
+            analysis_results['context_flow'] = analyze_context_flow(G, threshold=threshold_to_use)
             cf = analysis_results['context_flow']
             print(f"Analyzed {cf.get('paths_analyzed', 0)} workflow paths")
             print(f"Found {cf.get('bottlenecks', {}).get('total_count', 0)} context bottlenecks")

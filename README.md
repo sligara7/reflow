@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.9.0** | Framework-agnostic systems engineering for LLM agents
+**Version 3.9.1** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -333,7 +333,17 @@ reflow/
 
 ## Version History
 
-**v3.9.0 (2025-10-28)** - Current
+**v3.9.1 (2025-10-28)** - Current
+- **Automatic LLM Context Detection** - Self-reporting for optimal thresholds
+  - New tool: `detect_llm_capabilities.py` - LLMs self-report context window
+  - Auto-detects model-specific thresholds (Claude 200k → 160k, GPT-4 128k → 102k)
+  - System automatically adjusts when switching models (Claude ↔ GPT-4)
+  - Context flow analysis uses detected thresholds from working_memory.json
+  - Safety margins: 80% (200k+), 75% (100k-200k), 70% (<100k)
+- Enhanced CLAUDE.md with mandatory LLM self-reporting instructions
+- No manual configuration needed when switching between models!
+
+**v3.9.0 (2025-10-28)**
 - **Context Flow Analysis** - Predictive context management for LLM agents
   - Extended `system_of_systems_graph_v2.py` with `--context-flow` analysis mode
   - Models LLM context as first-class architectural parameter

@@ -7,6 +7,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.9.1] - 2025-10-28
+
+### Added
+
+- **Automatic LLM Context Detection** - Self-reporting for optimal threshold configuration
+  - New tool: `detect_llm_capabilities.py` - Prompts LLM to self-report context window
+  - Auto-detects model-specific thresholds (Claude 200k, GPT-4 128k, GPT-3.5 16k)
+  - Calculates recommended thresholds with safety margins (80%/75%/70%)
+  - Stores capabilities in `working_memory.json` for automatic reuse
+
+### Changed
+
+- **Context Flow Analysis** - Now uses auto-detected thresholds from working_memory.json
+  - Falls back to `--context-threshold` flag if not detected
+  - Displays which model and threshold is being used
+  - System automatically adjusts when switching between models (Claude ↔ GPT-4)
+- **working_memory template** - Added `llm_capabilities` section
+  - Tracks: model_name, context_window_tokens, recommended_threshold
+  - Includes: safety_margin_percent, refresh_strategy, detection_timestamp
+- **CLAUDE.md** - Added mandatory LLM self-reporting instructions
+  - First action when starting/resuming workflow
+  - Re-detect after context refresh (model switching)
+
+### Features
+
+- **Automatic Model Switching**: When user switches from Claude Code to VS Code GPT-4.1 (or vice versa):
+  1. LLM self-reports new capabilities at workflow start/resume
+  2. System updates `llm_capabilities` in working_memory.json
+  3. Context flow analysis automatically uses new threshold
+  4. No manual configuration needed!
+
+- **Safety Margins**:
+  - 200k+ tokens: 80% threshold (conservative) → 160k for Claude
+  - 100k-200k: 75% threshold (moderate) → 96k for GPT-4
+  - <100k: 70% threshold (aggressive) → 11.2k for GPT-3.5
+
+- **Refresh Strategies**:
+  - Conservative: Large window, infrequent refreshes
+  - Moderate: Medium window, balanced refreshes
+  - Aggressive: Small window, frequent refreshes
+
+### Usage
+
+**Method 1: Quick Self-Report** (when LLM starts workflow):
+```
+I'm Claude Sonnet 4.5 with a 200,000 token context window.
+
+Configuring capabilities:
+- Model: Claude Sonnet 4.5
+- Context Window: 200,000 tokens
+- Recommended Threshold: 160,000 tokens
+```
+
+**Method 2: Detection Tool**:
+```bash
+python3 detect_llm_capabilities.py --interactive --update-working-memory /path/to/system
+# Or manually specify:
+python3 detect_llm_capabilities.py --model "GPT-4 Turbo" --context-window 128000 \
+  --update-working-memory /path/to/system
+```
+
+**Result**: Context flow analysis automatically uses YOUR model's threshold!
+
+### Technical Details
+
+**Detection Flow**:
+1. LLM starts/resumes workflow
+2. Self-reports context window (via prompt or tool)
+3. Threshold calculated: `int(context_window * safety_margin)`
+4. Stored in `working_memory.json`
+5. All context flow analysis uses detected threshold
+6. When switching models: repeat steps 1-5
+
+**Threshold Lookup**:
+- system_of_systems_graph_v2.py reads working_memory.json
+- Extracts `context_management.llm_capabilities.recommended_threshold`
+- Uses detected threshold if available, otherwise uses `--context-threshold` flag
+
+---
+
 ## [3.9.0] - 2025-10-28
 
 ### Added

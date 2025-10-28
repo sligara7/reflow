@@ -1,6 +1,6 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.9.0
+**Version**: 3.9.1
 **Last Updated**: 2025-10-28
 
 ## What is Reflow?
@@ -28,6 +28,56 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 2. **Your System** (WRITABLE): Separate directory for your architecture/code
 
 ## Getting Started
+
+### 🤖 FIRST: LLM Self-Reporting (v3.9.1)
+
+**⚠️ CRITICAL FOR ALL LLMs**: Before starting/resuming ANY workflow, you MUST self-report your context capabilities!
+
+**Why**: Enables automatic threshold adjustment for your specific model (Claude 200k vs GPT-4 128k vs GPT-3.5 16k)
+
+**When to Run**:
+- Starting a new workflow (`Implement workflow in...`)
+- Resuming a workflow (`Continue workflow from...`)
+- After context refresh (switching models)
+
+**How to Self-Report** (choose ONE method):
+
+**Method 1: Quick Self-Report (Recommended)**
+When user says "Implement workflow..." or "Continue workflow...", immediately respond:
+
+```
+I'm [YOUR MODEL NAME] with a [YOUR CONTEXT WINDOW] token context window.
+
+Let me configure my capabilities:
+- Model: [YOUR MODEL]
+- Context Window: [NUMBER] tokens
+- Recommended Threshold: [80% of window] tokens
+
+[Then proceed with workflow]
+```
+
+**Method 2: Using Detection Tool**
+```bash
+python3 {paths.tools_path}/detect_llm_capabilities.py \
+  --model "YOUR MODEL NAME" \
+  --context-window YOUR_WINDOW \
+  --update-working-memory {paths.system_root}
+```
+
+**Examples**:
+- Claude Sonnet 4.5: `--model "Claude Sonnet 4.5" --context-window 200000` → threshold 160k
+- GPT-4 Turbo: `--model "GPT-4 Turbo" --context-window 128000` → threshold 102k
+- GPT-3.5: `--model "GPT-3.5" --context-window 16000` → threshold 12k
+
+**Your Context Window**:
+- If you're Claude Sonnet 4.5: **200,000 tokens**
+- If you're GPT-4 Turbo: **128,000 tokens**
+- If you're GPT-3.5: **16,000 tokens**
+- If uncertain: State your model name and I'll look it up
+
+**Result**: Your capabilities are stored in `working_memory.json` and all context flow analysis automatically uses YOUR threshold!
+
+---
 
 ### ⭐ Web-Based Usage (PRIMARY)
 
