@@ -1,0 +1,30 @@
+{
+  "test_case": "cycle_detection_decision_flow",
+  "description": "Decision Flow framework with rework loop - should be WARNING severity",
+  "framework": "decision_flow",
+  "tool": "system_of_systems_graph_v2.py",
+  "required_flags": [
+    "--cycles",
+    "--flow"
+  ],
+  "expected_analysis": {
+    "cycles": {
+      "cycle_found": true,
+      "cycle_nodes": [
+        "SE-02",
+        "SE-03"
+      ],
+      "severity": "warning",
+      "interpretation": "Rework loop detected - validation failures require iteration"
+    },
+    "flow": {
+      "rework_rate": 0.3,
+      "interpretation": "30% of workflows require rework - measure efficiency"
+    }
+  },
+  "pass_criteria": {
+    "cycles_detected": ">= 1",
+    "severity": "warning",
+    "interpretation": "Rework loop (not error, not just info)"
+  }
+}

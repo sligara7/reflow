@@ -1,0 +1,46 @@
+{
+  "service_id": "WF-REQ-REWORK",
+  "service_name": "Requirements Rework (from Design)",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Rework requirements based on design rejection",
+  "service_type": "rework_connector",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-DESIGN",
+        "interface_id": "IFC-DESIGN-REWORK",
+        "dependency_type": "conditional_rework",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 0.2,
+          "unit": "probability",
+          "description": "20% - design rejected, requirements need rework"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-REQ-REWORK-OUT",
+        "interface_name": "Reworked Requirements",
+        "protocol": "workflow_transition",
+        "data_format": "requirements_document",
+        "routes_to": "WF-REQ"
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-DESIGN-REWORK",
+        "provider_service_id": "WF-DESIGN",
+        "criticality": "medium"
+      }
+    ]
+  },
+  "workflow_metadata": {
+    "step_type": "rework_loop",
+    "rework_source": "WF-DESIGN",
+    "rework_target": "WF-REQ"
+  }
+}

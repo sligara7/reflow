@@ -1,0 +1,26 @@
+{
+  "test_case": "cycle_detection_uaf",
+  "description": "UAF framework with circular dependency - should be ERROR severity",
+  "framework": "uaf",
+  "tool": "system_of_systems_graph_v2.py",
+  "required_flags": [
+    "--cycles"
+  ],
+  "expected_analysis": {
+    "cycles": {
+      "cycle_found": true,
+      "cycle_nodes": [
+        "auth_service",
+        "user_service",
+        "session_service"
+      ],
+      "severity": "error",
+      "interpretation": "Circular dependencies violate clean architecture principles"
+    }
+  },
+  "pass_criteria": {
+    "cycles_detected": ">= 1",
+    "severity": "error",
+    "recommendation": "Refactor to break dependency cycle"
+  }
+}

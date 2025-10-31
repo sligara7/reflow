@@ -1,0 +1,10 @@
+{
+  "system_metadata": {
+    "system_name": "Port Management Test - Biology",
+    "version": "1.0.0",
+    "framework": "systems_biology"
+  },
+  "components": {
+    "gene_a": "specs/machine/service_arch/gene_a_architecture.json"
+  }
+}

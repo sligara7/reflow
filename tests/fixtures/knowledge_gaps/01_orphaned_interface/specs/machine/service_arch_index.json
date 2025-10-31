@@ -1,0 +1,14 @@
+{
+  "system_metadata": {
+    "system_name": "Test Case 01: Orphaned Interface",
+    "system_description": "E-commerce system with orphaned product_service interface",
+    "version": "1.0.0",
+    "framework": "uaf",
+    "created_date": "2025-10-27"
+  },
+  "components": {
+    "user_service": "specs/machine/service_arch/user_service_architecture.json",
+    "product_service": "specs/machine/service_arch/product_service_architecture.json",
+    "order_service": "specs/machine/service_arch/order_service_architecture.json"
+  }
+}

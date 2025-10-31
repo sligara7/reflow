@@ -1,0 +1,30 @@
+{
+  "service_id": "api_service",
+  "service_name": "API Service",
+  "version": "1.0.0",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-API-01",
+      "function_name": "API Endpoint"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-API-001",
+        "protocol": "REST"
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8000
+      }
+    }
+  }
+}

@@ -1,534 +1,522 @@
 {
-  "template_version": "1.0.0",
-  "template_id": "service_risk_assessment",
-  "description": "Risk assessment for a service to determine testing thoroughness (SE-02-A10)",
-  "created_date": "{timestamp}",
-  "service_name": "{service_name}",
-  "service_version": "{service_version}",
-  "workflow_step": "SE-02-A10",
-  "workflow_step_name": "Service Risk Assessment",
-  "new_in_version": "Reflow v3.6.0 - Early Testing Integration",
+  "template_version": "1.0",
+  "template_description": "Service Risk Assessment - Identify and mitigate risks during architecture design (SE-02-A04)",
+  "created_for": "Reflow v3.6.0 - Early Testing Integration Feature",
+  "purpose": "Identify architectural, technical, and operational risks BEFORE implementation to prevent costly rework",
 
-  "risk_assessment_philosophy": {
-    "purpose": "Determine testing thoroughness based on risk, not uniform testing for all services",
-    "principle": "Focus effort on high-risk services (payment, auth, data storage) while avoiding over-testing low-risk services (logging, metrics)",
-    "honesty": "Be honest about risk - underestimating risk leads to insufficient testing and production failures",
-    "rationale_required": "Every risk score must have documented rationale for future maintainers"
+  "service_name": "REPLACE_WITH_SERVICE_NAME",
+  "service_id": "REPLACE_WITH_SERVICE_ID",
+  "version": "1.0.0",
+  "date_created": "YYYY-MM-DD",
+  "assessment_date": "YYYY-MM-DD",
+  "assessed_by": "ARCHITECT_NAME or LLM_AGENT",
+
+  "risk_assessment_methodology": {
+    "approach": "Qualitative risk matrix (likelihood × impact)",
+    "likelihood_scale": {
+      "1": "Rare (< 10% chance)",
+      "2": "Unlikely (10-30% chance)",
+      "3": "Possible (30-50% chance)",
+      "4": "Likely (50-70% chance)",
+      "5": "Almost Certain (> 70% chance)"
+    },
+    "impact_scale": {
+      "1": "Negligible (minor inconvenience)",
+      "2": "Minor (some functionality affected)",
+      "3": "Moderate (significant functionality affected)",
+      "4": "Major (service unusable)",
+      "5": "Catastrophic (data loss, security breach, system-wide failure)"
+    },
+    "risk_score_calculation": "Likelihood × Impact = Risk Score (1-25)",
+    "risk_levels": {
+      "1-5": "Low risk - Monitor",
+      "6-10": "Medium risk - Plan mitigation",
+      "11-15": "High risk - Implement mitigation",
+      "16-25": "Critical risk - Must address before deployment"
+    }
   },
 
-  "risk_categories": {
-    "description": "Three independent risk categories, each scored 1-3 (low/medium/high)",
-
-    "deployment_risk": {
-      "description": "Complexity of deploying and configuring the service",
-      "score": "{1, 2, or 3}",
-      "severity_level": "{low, medium, or high}",
-      "rationale": "{Why this severity level? What factors led to this assessment?}",
-
-      "factors": [
-        "Complex deployment (multi-stage, multi-region, stateful)",
-        "Novel technology stack (new language/framework for team)",
-        "Extensive infrastructure dependencies (message queue, cache, search engine)",
-        "Complex configuration (50+ environment variables, intricate setup)",
-        "Database migrations with complex schema or data transformations"
-      ],
-
-      "severity_levels": {
-        "low": {
-          "score": 1,
-          "description": "Simple stateless service, familiar tech stack",
-          "indicators": [
-            "Single container deployment",
-            "Familiar language/framework (team has expertise)",
-            "Minimal dependencies (just database, no MQ/cache/search)",
-            "Simple configuration (< 10 environment variables)",
-            "Straightforward database schema"
-          ],
-          "examples": [
-            "REST API in Python/FastAPI (team knows Python)",
-            "CRUD service with PostgreSQL only",
-            "Static content API"
-          ]
+  "architectural_risks": {
+    "description": "Risks related to system design, structure, and component interactions",
+    "risks": [
+      {
+        "risk_id": "ARCH-001",
+        "category": "architectural",
+        "subcategory": "CHOOSE: coupling | cohesion | scalability | complexity | technology_choice",
+        "title": "EXAMPLE: High coupling between services",
+        "description": "Detailed description of the risk and why it's a concern",
+        "likelihood": 3,
+        "impact": 4,
+        "risk_score": 12,
+        "risk_level": "HIGH",
+        "triggers": [
+          "What conditions would cause this risk to materialize"
+        ],
+        "consequences": [
+          "What happens if this risk occurs",
+          "Impact on system availability",
+          "Impact on development velocity"
+        ],
+        "affected_components": [
+          "SERVICE_A",
+          "SERVICE_B"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Introduce API gateway to decouple services",
+            "effort": "CHOOSE: low | medium | high",
+            "effectiveness": "Reduces likelihood from 3 to 2",
+            "implementation_phase": "CHOOSE: architecture | development | testing | deployment",
+            "status": "CHOOSE: proposed | approved | in_progress | completed | rejected"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 2,
+          "impact": 4,
+          "risk_score": 8,
+          "acceptable": true
         },
-        "medium": {
-          "score": 2,
-          "description": "Moderate deployment complexity or semi-familiar tech",
-          "indicators": [
-            "Stateful service or multi-container deployment",
-            "Somewhat familiar tech (team has some experience, not experts)",
-            "2-3 infrastructure dependencies (DB + Redis cache, or DB + MQ)",
-            "Moderate configuration (10-30 environment variables)",
-            "Database migrations with some complexity"
-          ],
-          "examples": [
-            "Service with Redis cache + PostgreSQL",
-            "Service in newer framework (FastAPI for team used to Flask)",
-            "Service with background workers (Celery + Redis)"
-          ]
-        },
-        "high": {
-          "score": 3,
-          "description": "Complex deployment or unfamiliar tech stack",
-          "indicators": [
-            "Multi-stage deployment (blue-green, canary) or multi-region",
-            "Novel tech stack (team has no prior experience)",
-            "4+ infrastructure dependencies (DB + MQ + cache + search + monitoring)",
-            "Complex configuration (> 30 variables, intricate setup)",
-            "Database migrations with data transformations, complex constraints"
-          ],
-          "examples": [
-            "Service in language team doesn't know (Rust for Python team)",
-            "Distributed stateful service (Kafka, Elasticsearch cluster)",
-            "Service requiring complex infrastructure (K8s operators, service mesh)"
-          ]
-        }
+        "owner": "ARCHITECT_NAME or TEAM_NAME",
+        "target_resolution_date": "YYYY-MM-DD or null"
       }
-    },
+    ]
+  },
 
-    "integration_risk": {
-      "description": "Risk from dependencies on other services or external systems",
-      "score": "{1, 2, or 3}",
-      "severity_level": "{low, medium, or high}",
-      "rationale": "{Why this severity level? What dependencies create risk?}",
-
-      "factors": [
-        "Synchronous dependencies (service waits for response, blocks on failure)",
-        "Multiple service dependencies (3+ services)",
-        "External system dependencies (third-party APIs, payment gateways)",
-        "Tight coupling (assumes specific response format, no graceful degradation)",
-        "No circuit breakers or fallback mechanisms"
-      ],
-
-      "severity_levels": {
-        "low": {
-          "score": 1,
-          "description": "Standalone service, no external dependencies",
-          "indicators": [
-            "No calls to other services (or only async event publishing)",
-            "Self-contained business logic",
-            "Database is only dependency",
-            "Can function independently"
-          ],
-          "examples": [
-            "Logging service (writes to DB only)",
-            "Metrics collector (standalone aggregation)",
-            "Static content API (reads from DB only)"
-          ]
+  "technical_risks": {
+    "description": "Risks related to technology choices, dependencies, and implementation",
+    "risks": [
+      {
+        "risk_id": "TECH-001",
+        "category": "technical",
+        "subcategory": "CHOOSE: dependencies | performance | security | data_integrity | technology_maturity",
+        "title": "EXAMPLE: Dependency on unmaintained library",
+        "description": "Service depends on library X which has not been updated in 3 years",
+        "likelihood": 4,
+        "impact": 3,
+        "risk_score": 12,
+        "risk_level": "HIGH",
+        "triggers": [
+          "Library has critical security vulnerability",
+          "Library incompatible with new Python/Node version"
+        ],
+        "consequences": [
+          "Cannot upgrade runtime version",
+          "Security vulnerabilities remain unpatched",
+          "Must fork and maintain library ourselves"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Evaluate alternative libraries with active maintenance",
+            "effort": "medium",
+            "effectiveness": "Eliminates risk entirely",
+            "implementation_phase": "architecture",
+            "status": "proposed"
+          },
+          {
+            "strategy": "Plan to fork library if needed",
+            "effort": "high",
+            "effectiveness": "Provides fallback option",
+            "implementation_phase": "development",
+            "status": "contingency"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 1,
+          "impact": 2,
+          "risk_score": 2,
+          "acceptable": true
         },
-        "medium": {
-          "score": 2,
-          "description": "Calls 1-2 internal services asynchronously",
-          "indicators": [
-            "1-2 service dependencies",
-            "Asynchronous communication (message queue, events)",
-            "Graceful degradation on dependency failure",
-            "Circuit breakers or retries implemented"
-          ],
-          "examples": [
-            "Notification service (calls user service async for user details)",
-            "Search service (calls 1-2 services for data enrichment, can return partial results)",
-            "Report generator (publishes events, doesn't wait for processing)"
-          ]
-        },
-        "high": {
-          "score": 3,
-          "description": "Synchronous dependencies on 3+ services or external systems",
-          "indicators": [
-            "3+ service dependencies (synchronous calls)",
-            "External API dependencies (payment gateway, shipping API, third-party auth)",
-            "Tight coupling (service fails if dependency unavailable)",
-            "Complex dependency chains (service A → B → C)",
-            "Real-time requirements (can't tolerate latency or failures)"
-          ],
-          "examples": [
-            "API gateway (calls 5+ backend services synchronously)",
-            "Payment service (calls external payment gateway + fraud detection + user service)",
-            "Checkout service (calls inventory + pricing + tax + shipping services)"
-          ]
-        }
+        "owner": "TECH_LEAD",
+        "target_resolution_date": "Before development starts"
       }
-    },
+    ]
+  },
 
-    "operational_risk": {
-      "description": "Impact of service failure on system and business",
-      "score": "{1, 2, or 3}",
-      "severity_level": "{low, medium, or high}",
-      "rationale": "{Why this severity level? What is the impact of failure?}",
-
-      "factors": [
-        "On critical path (user-facing, revenue-generating, blocks core functionality)",
-        "High traffic volume (> 1000 req/sec sustained)",
-        "Data integrity critical (financial transactions, health data, PII)",
-        "No redundancy or failover (single point of failure)",
-        "Security-critical (authentication, authorization, data access control)"
-      ],
-
-      "severity_levels": {
-        "low": {
-          "score": 1,
-          "description": "Non-critical, background job, batch processing",
-          "indicators": [
-            "Not on critical path (background job, analytics, reporting)",
-            "Low traffic (< 100 req/sec or batch processing)",
-            "Non-critical data (logs, metrics, caches)",
-            "Has redundancy or can be temporarily unavailable",
-            "Failure doesn't block users or revenue"
-          ],
-          "examples": [
-            "Logging service (can buffer logs temporarily)",
-            "Analytics pipeline (batch jobs, can run delayed)",
-            "Email service (can retry sends, not blocking)",
-            "Metrics aggregation (can tolerate gaps)"
-          ]
+  "operational_risks": {
+    "description": "Risks related to deployment, operations, and production environment",
+    "risks": [
+      {
+        "risk_id": "OPS-001",
+        "category": "operational",
+        "subcategory": "CHOOSE: deployment | monitoring | scaling | recovery | maintenance",
+        "title": "EXAMPLE: No automated rollback mechanism",
+        "description": "If deployment fails in production, manual rollback required (15-30 min MTTR)",
+        "likelihood": 3,
+        "impact": 4,
+        "risk_score": 12,
+        "risk_level": "HIGH",
+        "triggers": [
+          "Bad deployment reaches production",
+          "Bug not caught in testing"
+        ],
+        "consequences": [
+          "Extended downtime (15-30 minutes)",
+          "Impact to users",
+          "SLA breach potential"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Implement automated rollback in CI/CD pipeline",
+            "effort": "medium",
+            "effectiveness": "Reduces MTTR to < 5 minutes",
+            "implementation_phase": "testing",
+            "status": "proposed"
+          },
+          {
+            "strategy": "Blue-green deployment with traffic shifting",
+            "effort": "high",
+            "effectiveness": "Zero-downtime rollback",
+            "implementation_phase": "deployment",
+            "status": "future_consideration"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 3,
+          "impact": 2,
+          "risk_score": 6,
+          "acceptable": true
         },
-        "medium": {
-          "score": 2,
-          "description": "Important feature, has degraded mode or redundancy",
-          "indicators": [
-            "Important but not critical feature",
-            "Moderate traffic (100-1000 req/sec)",
-            "Important data but not financial/health (user preferences, search history)",
-            "Has degraded mode or fallback (can return cached data, default values)",
-            "Failure affects some users but not all"
-          ],
-          "examples": [
-            "Search service (can return cached results or no results)",
-            "Recommendation service (can show default recommendations)",
-            "Notification service (can queue for later, not blocking)",
-            "User profile service (can show partial profile)"
-          ]
-        },
-        "high": {
-          "score": 3,
-          "description": "Critical path, high traffic, single point of failure",
-          "indicators": [
-            "On critical path (login, checkout, payment, data access)",
-            "High traffic (> 1000 req/sec sustained)",
-            "Critical data (financial, health, PII, authentication credentials)",
-            "No redundancy (single point of failure, no degraded mode)",
-            "Failure blocks all users or stops revenue"
-          ],
-          "examples": [
-            "Authentication service (users can't log in)",
-            "Payment service (can't process orders)",
-            "API gateway (single entry point, failure blocks all traffic)",
-            "User data service (PII storage, must be available and secure)",
-            "Database cluster (all services depend on it)"
-          ]
-        }
+        "owner": "DEVOPS_LEAD",
+        "target_resolution_date": "Before production deployment"
       }
-    }
+    ]
   },
 
-  "overall_risk_score": {
-    "description": "Overall risk score determines testing thoroughness",
-    "calculation": "Average of deployment_risk, integration_risk, operational_risk scores (1-3 scale)",
-    "formula": "(deployment_risk + integration_risk + operational_risk) / 3",
-    "example": "(2 + 1 + 3) / 3 = 2.0",
-    "score": "{calculated score, e.g., 2.33}",
-    "classification": "{low_risk, medium_risk, or high_risk}"
+  "security_risks": {
+    "description": "Risks related to authentication, authorization, data protection, and vulnerabilities",
+    "risks": [
+      {
+        "risk_id": "SEC-001",
+        "category": "security",
+        "subcategory": "CHOOSE: authentication | authorization | encryption | injection | exposure | compliance",
+        "title": "EXAMPLE: API endpoints accessible without authentication",
+        "description": "Several admin endpoints not protected by authentication middleware",
+        "likelihood": 4,
+        "impact": 5,
+        "risk_score": 20,
+        "risk_level": "CRITICAL",
+        "triggers": [
+          "Attacker discovers unprotected endpoints",
+          "Misconfiguration in production"
+        ],
+        "consequences": [
+          "Unauthorized access to admin functions",
+          "Data breach potential",
+          "Compliance violations (GDPR, HIPAA, etc.)",
+          "Reputational damage"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Apply authentication middleware to ALL endpoints by default",
+            "effort": "low",
+            "effectiveness": "Eliminates risk",
+            "implementation_phase": "architecture",
+            "status": "approved"
+          },
+          {
+            "strategy": "Security testing in pre-deployment validation (D-07)",
+            "effort": "low",
+            "effectiveness": "Catch misconfigurations before production",
+            "implementation_phase": "testing",
+            "status": "approved"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 1,
+          "impact": 5,
+          "risk_score": 5,
+          "acceptable": true
+        },
+        "owner": "SECURITY_LEAD",
+        "target_resolution_date": "Before development starts",
+        "compliance_requirements": ["GDPR", "HIPAA", "PCI-DSS"]
+      }
+    ]
   },
 
-  "risk_classification": {
-    "description": "Risk level mapped from overall risk score",
-
-    "low_risk": {
-      "score_range": "1.0 - 1.5",
-      "classification": "Low Risk - Standard Testing",
-      "testing_strategy": {
-        "summary": "Standard testing (unit, integration, smoke tests)",
-        "unit_tests": {
-          "coverage_target": "80%",
-          "focus": "Core business logic, edge cases"
+  "data_risks": {
+    "description": "Risks related to data integrity, consistency, backup, and privacy",
+    "risks": [
+      {
+        "risk_id": "DATA-001",
+        "category": "data",
+        "subcategory": "CHOOSE: integrity | consistency | backup | recovery | privacy | migration",
+        "title": "EXAMPLE: No database backup strategy",
+        "description": "Production database has no automated backups, risking data loss",
+        "likelihood": 2,
+        "impact": 5,
+        "risk_score": 10,
+        "risk_level": "MEDIUM",
+        "triggers": [
+          "Hardware failure",
+          "Data corruption",
+          "Accidental deletion"
+        ],
+        "consequences": [
+          "Complete data loss",
+          "Business continuity failure",
+          "Cannot meet RPO requirements"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Implement automated daily backups with 30-day retention",
+            "effort": "low",
+            "effectiveness": "Meets RPO of 24 hours",
+            "implementation_phase": "deployment",
+            "status": "approved"
+          },
+          {
+            "strategy": "Enable point-in-time recovery (PITR)",
+            "effort": "medium",
+            "effectiveness": "Improves RPO to 5 minutes",
+            "implementation_phase": "deployment",
+            "status": "future_consideration"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 1,
+          "impact": 3,
+          "risk_score": 3,
+          "acceptable": true
         },
-        "integration_tests": {
-          "scope": "Key scenarios (happy path, common errors)",
-          "examples": "Create entity, read entity, update entity, delete entity, handle invalid input"
-        },
-        "smoke_tests": {
-          "scope": "Basic functionality after deployment",
-          "time_budget": "< 30 seconds total"
-        },
-        "advanced_testing": {
-          "load_testing": "Not required (or light load at 2x expected traffic)",
-          "chaos_testing": "Not required",
-          "failover_testing": "Not required",
-          "security_pentesting": "Not required (standard OWASP scans only)"
-        }
-      },
-      "examples": [
-        "Logging service (writes to DB, no dependencies)",
-        "Metrics collector (standalone aggregation)",
-        "Static content API (reads from DB)",
-        "Internal utility service (simple data transformation)"
-      ],
-      "operational_testing_focus": "Standard smoke tests, basic integration validation",
-      "prototype_recommended": false
-    },
-
-    "medium_risk": {
-      "score_range": "1.6 - 2.5",
-      "classification": "Medium Risk - Standard + Enhanced Testing",
-      "testing_strategy": {
-        "summary": "Standard testing + load testing + contract testing",
-        "unit_tests": {
-          "coverage_target": "80%",
-          "focus": "Business logic, error handling, edge cases"
-        },
-        "integration_tests": {
-          "scope": "Comprehensive scenarios (happy path, error cases, dependency failures)",
-          "examples": "Normal operation, dependency timeout, dependency returns error, invalid input, concurrency"
-        },
-        "contract_tests": {
-          "scope": "Validate API contracts with consumers and providers",
-          "tools": "Pact, Spring Cloud Contract, or OpenAPI validation",
-          "purpose": "Ensure API changes don't break consumers"
-        },
-        "load_tests": {
-          "scope": "Load at 2x expected traffic",
-          "success_criteria": "p95 latency < 500ms, no errors at 2x load",
-          "duration": "10-30 minutes sustained load"
-        },
-        "smoke_tests": {
-          "scope": "Comprehensive functionality validation",
-          "time_budget": "< 60 seconds total"
-        },
-        "advanced_testing": {
-          "chaos_testing": "Not required (but recommended for services with 2+ dependencies)",
-          "failover_testing": "Not required",
-          "security_pentesting": "Not required (standard OWASP scans + dependency scanning)"
-        }
-      },
-      "examples": [
-        "Authentication service (JWT tokens, user validation)",
-        "Notification service (emails, SMS, push notifications)",
-        "Search API (Elasticsearch, moderate traffic)",
-        "User profile service (moderate traffic, some dependencies)"
-      ],
-      "operational_testing_focus": "Load testing, contract validation, dependency failure handling",
-      "prototype_recommended": "Optional (if unfamiliar tech stack or complex deployment)"
-    },
-
-    "high_risk": {
-      "score_range": "2.6 - 3.0",
-      "classification": "High Risk - Comprehensive Testing",
-      "testing_strategy": {
-        "summary": "Standard + load + chaos + failover + security pentesting",
-        "unit_tests": {
-          "coverage_target": "85%",
-          "focus": "All business logic, error handling, edge cases, security paths"
-        },
-        "integration_tests": {
-          "scope": "Comprehensive scenarios including failure modes",
-          "examples": "Normal operation, all error cases, dependency failures, circuit breaker trips, fallback mechanisms, concurrency, race conditions"
-        },
-        "contract_tests": {
-          "scope": "Full contract validation with all consumers and providers",
-          "backward_compatibility": "Strict validation - breaking changes require versioning"
-        },
-        "load_tests": {
-          "scope": "Load at 5x expected traffic",
-          "success_criteria": "p95 latency < 500ms at 5x load, p99 < 1000ms, no errors",
-          "duration": "30-60 minutes sustained load",
-          "spike_testing": "Test sudden traffic spikes (0 to peak in 1 minute)"
-        },
-        "chaos_tests": {
-          "scope": "Inject failures to validate resilience",
-          "scenarios": [
-            "Kill service instances (verify auto-restart)",
-            "Network latency (500ms, 1000ms added latency)",
-            "Dependency failures (DB down, service unavailable)",
-            "Resource exhaustion (CPU 100%, memory limit)",
-            "Partial failures (50% of requests fail)"
-          ],
-          "success_criteria": "Service continues operating, degrades gracefully, recovers automatically"
-        },
-        "failover_tests": {
-          "scope": "Validate high availability and disaster recovery",
-          "scenarios": [
-            "Database failover (primary DB fails, switch to replica)",
-            "Multi-AZ failover (entire AZ fails)",
-            "Service instance failure (kill 50% of instances)",
-            "Network partition (split brain scenarios)"
-          ],
-          "success_criteria": "Failover completes in < 30 seconds, no data loss, no user-visible errors"
-        },
-        "security_pentesting": {
-          "scope": "Comprehensive security testing",
-          "tests": [
-            "OWASP Top 10 (injection, XSS, broken auth, etc.)",
-            "Authentication bypass attempts",
-            "Authorization bypass (horizontal/vertical privilege escalation)",
-            "Rate limiting and DDoS protection",
-            "Input validation and fuzzing",
-            "Sensitive data exposure",
-            "Dependency vulnerabilities (Snyk, Trivy)"
-          ],
-          "success_criteria": "No critical or high vulnerabilities"
-        },
-        "smoke_tests": {
-          "scope": "Comprehensive end-to-end validation",
-          "time_budget": "< 90 seconds total"
-        }
-      },
-      "examples": [
-        "Payment service (financial transactions, PCI compliance)",
-        "User authentication service (security-critical)",
-        "API gateway (single entry point, high traffic)",
-        "User data service (PII storage, GDPR compliance)",
-        "Database cluster (single point of failure for all services)"
-      ],
-      "operational_testing_focus": "Comprehensive operational testing - chaos, load, failover, security, disaster recovery",
-      "prototype_recommended": true,
-      "prototype_rationale": "High-risk services MUST validate architecture assumptions early with 2-4 hour prototype (D-01-A06)"
-    }
+        "owner": "DATABASE_ADMIN",
+        "rpo_target": "24 hours",
+        "rto_target": "4 hours"
+      }
+    ]
   },
 
-  "testing_requirements_summary": {
-    "description": "Testing requirements based on risk classification",
-    "low_risk": "80% coverage, integration tests, smoke tests",
-    "medium_risk": "80% coverage, integration tests, contract tests, load tests (2x traffic)",
-    "high_risk": "85% coverage, comprehensive integration/contract tests, load tests (5x traffic), chaos tests, failover tests, security pentesting"
+  "integration_risks": {
+    "description": "Risks related to external dependencies, APIs, and third-party services",
+    "risks": [
+      {
+        "risk_id": "INT-001",
+        "category": "integration",
+        "subcategory": "CHOOSE: external_api | third_party_service | network | protocol | version_compatibility",
+        "title": "EXAMPLE: Dependency on external API with no SLA",
+        "description": "Service depends on external weather API that has no availability guarantees",
+        "likelihood": 3,
+        "impact": 3,
+        "risk_score": 9,
+        "risk_level": "MEDIUM",
+        "triggers": [
+          "External API downtime",
+          "API rate limiting",
+          "Breaking API changes"
+        ],
+        "consequences": [
+          "Service functionality degraded",
+          "User-facing errors",
+          "Cannot meet availability SLA"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Implement caching layer for API responses",
+            "effort": "medium",
+            "effectiveness": "Reduces impact, service works with stale data",
+            "implementation_phase": "development",
+            "status": "approved"
+          },
+          {
+            "strategy": "Graceful degradation - disable feature if API unavailable",
+            "effort": "low",
+            "effectiveness": "Maintains core functionality",
+            "implementation_phase": "development",
+            "status": "approved"
+          },
+          {
+            "strategy": "Identify backup API provider",
+            "effort": "high",
+            "effectiveness": "Eliminates single point of failure",
+            "implementation_phase": "architecture",
+            "status": "future_consideration"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 2,
+          "impact": 2,
+          "risk_score": 4,
+          "acceptable": true
+        },
+        "owner": "INTEGRATION_LEAD",
+        "external_dependency": "weather-api.com",
+        "sla_required": false
+      }
+    ]
   },
 
-  "development_impact": {
-    "description": "How risk level affects development workflow",
-    "low_risk": {
-      "prototype": "Not recommended (D-01-A06 skipped)",
-      "prove_it_works_gates": "Standard validation (service starts, basic smoke test)",
-      "d_06_5_validation": "Standard checks (dependencies, module structure, config)"
-    },
-    "medium_risk": {
-      "prototype": "Optional, recommended if unfamiliar tech stack (D-01-A06)",
-      "prove_it_works_gates": "Enhanced validation (smoke tests include dependency scenarios)",
-      "d_06_5_validation": "Standard checks + load test preparation"
-    },
-    "high_risk": {
-      "prototype": "REQUIRED - 2-4 hour prototype to validate assumptions (D-01-A06)",
-      "prove_it_works_gates": "Strict validation (comprehensive smoke tests, all scenarios)",
-      "d_06_5_validation": "Comprehensive validation - all checks must pass before operational testing"
-    }
+  "compliance_risks": {
+    "description": "Risks related to regulatory compliance, legal requirements, and industry standards",
+    "risks": [
+      {
+        "risk_id": "COMP-001",
+        "category": "compliance",
+        "subcategory": "CHOOSE: gdpr | hipaa | pci_dss | sox | iso27001 | industry_standard",
+        "title": "EXAMPLE: PII stored without encryption at rest",
+        "description": "User email addresses and phone numbers stored in plaintext in database",
+        "likelihood": 5,
+        "impact": 5,
+        "risk_score": 25,
+        "risk_level": "CRITICAL",
+        "triggers": [
+          "Data breach",
+          "Compliance audit",
+          "User complaint"
+        ],
+        "consequences": [
+          "GDPR violations (€20M or 4% revenue fine)",
+          "Legal action",
+          "Reputational damage",
+          "Cannot operate in EU"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Enable database encryption at rest (AES-256)",
+            "effort": "low",
+            "effectiveness": "Meets compliance requirements",
+            "implementation_phase": "deployment",
+            "status": "must_implement"
+          },
+          {
+            "strategy": "Implement field-level encryption for PII",
+            "effort": "medium",
+            "effectiveness": "Additional layer of protection",
+            "implementation_phase": "development",
+            "status": "must_implement"
+          },
+          {
+            "strategy": "Data retention policy with automatic deletion after 90 days",
+            "effort": "medium",
+            "effectiveness": "Reduces exposure window",
+            "implementation_phase": "development",
+            "status": "approved"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 1,
+          "impact": 5,
+          "risk_score": 5,
+          "acceptable": true
+        },
+        "owner": "COMPLIANCE_OFFICER",
+        "regulatory_requirements": ["GDPR Article 32", "CCPA"],
+        "audit_frequency": "Annual",
+        "must_implement_before_deployment": true
+      }
+    ]
   },
 
-  "example_risk_assessments": {
-    "description": "Example assessments for common service types",
-
-    "example_1_low_risk": {
-      "service_name": "logging_service",
-      "service_description": "Accepts log messages via HTTP, writes to PostgreSQL, no dependencies",
-      "deployment_risk": {
-        "score": 1,
-        "severity_level": "low",
-        "rationale": "Simple FastAPI service, familiar Python stack, single container, minimal config (5 env vars)"
-      },
-      "integration_risk": {
-        "score": 1,
-        "severity_level": "low",
-        "rationale": "No service dependencies, writes to DB only, fully standalone"
-      },
-      "operational_risk": {
-        "score": 1,
-        "severity_level": "low",
-        "rationale": "Not on critical path, logs can be buffered temporarily, low traffic (< 50 req/sec), failure doesn't block users"
-      },
-      "overall_risk_score": 1.0,
-      "classification": "low_risk",
-      "testing_strategy": "Standard testing - 80% unit coverage, integration tests, smoke tests"
-    },
-
-    "example_2_medium_risk": {
-      "service_name": "notification_service",
-      "service_description": "Sends emails and SMS, calls user service for contact details, publishes events",
-      "deployment_risk": {
-        "score": 2,
-        "severity_level": "medium",
-        "rationale": "Moderate complexity - uses SendGrid API + Twilio API, background Celery workers, Redis queue, 15 env vars"
-      },
-      "integration_risk": {
-        "score": 2,
-        "severity_level": "medium",
-        "rationale": "Calls user service asynchronously for contact details, external APIs (SendGrid, Twilio), circuit breakers implemented"
-      },
-      "operational_risk": {
-        "score": 2,
-        "severity_level": "medium",
-        "rationale": "Important feature but not critical path, moderate traffic (200 req/sec), can queue notifications for later, degraded mode returns 'queued' status"
-      },
-      "overall_risk_score": 2.0,
-      "classification": "medium_risk",
-      "testing_strategy": "Standard + contract tests (user service API) + load tests (2x traffic = 400 req/sec)"
-    },
-
-    "example_3_high_risk": {
-      "service_name": "payment_service",
-      "service_description": "Processes payments via Stripe, handles refunds, stores transaction history, critical for checkout",
-      "deployment_risk": {
-        "score": 2,
-        "severity_level": "medium",
-        "rationale": "Moderate deployment complexity - single container but complex Stripe integration, 25 env vars including sensitive keys, requires Stripe webhook configuration"
-      },
-      "integration_risk": {
-        "score": 3,
-        "severity_level": "high",
-        "rationale": "Synchronous dependency on Stripe API (payment gateway), calls user service for customer details, calls order service to update order status, tight coupling - payment failure blocks checkout"
-      },
-      "operational_risk": {
-        "score": 3,
-        "severity_level": "high",
-        "rationale": "CRITICAL PATH - payment failure stops revenue, high traffic during sales (1500 req/sec sustained), handles financial data (PCI compliance), single point of failure for checkout flow"
-      },
-      "overall_risk_score": 2.67,
-      "classification": "high_risk",
-      "testing_strategy": "Comprehensive - 85% coverage, contract tests, load tests (5x = 7500 req/sec), chaos (Stripe API failure, timeout scenarios), failover (Stripe outage, fallback to queued processing), security pentesting (PCI compliance validation)"
-    }
+  "business_risks": {
+    "description": "Risks related to business objectives, user adoption, and market factors",
+    "risks": [
+      {
+        "risk_id": "BIZ-001",
+        "category": "business",
+        "subcategory": "CHOOSE: adoption | market_timing | cost_overrun | resource_availability | scope_creep",
+        "title": "EXAMPLE: Complex user interface may reduce adoption",
+        "description": "Service API is complex with steep learning curve for developers",
+        "likelihood": 3,
+        "impact": 3,
+        "risk_score": 9,
+        "risk_level": "MEDIUM",
+        "triggers": [
+          "Developer feedback indicates confusion",
+          "Low API usage after launch",
+          "High support ticket volume"
+        ],
+        "consequences": [
+          "Poor developer adoption",
+          "Business objectives not met",
+          "Need to redesign API (costly)"
+        ],
+        "mitigation_strategies": [
+          {
+            "strategy": "Simplify API design with sensible defaults",
+            "effort": "medium",
+            "effectiveness": "Improves developer experience",
+            "implementation_phase": "architecture",
+            "status": "approved"
+          },
+          {
+            "strategy": "Create comprehensive documentation with examples",
+            "effort": "low",
+            "effectiveness": "Reduces learning curve",
+            "implementation_phase": "development",
+            "status": "approved"
+          },
+          {
+            "strategy": "User testing with sample developers before launch",
+            "effort": "low",
+            "effectiveness": "Validates usability",
+            "implementation_phase": "testing",
+            "status": "approved"
+          }
+        ],
+        "residual_risk": {
+          "likelihood": 2,
+          "impact": 2,
+          "risk_score": 4,
+          "acceptable": true
+        },
+        "owner": "PRODUCT_MANAGER",
+        "business_objective": "Achieve 1000 API calls/day within 3 months of launch"
+      }
+    ]
   },
 
-  "integration_with_other_artifacts": {
-    "operational_testing_objectives": {
-      "file": "specs/machine/service_arch/{service_name}/operational_testing_objectives.json",
-      "relationship": "Risk level determines operational testing objectives - high-risk services need stricter acceptance criteria"
+  "risk_summary": {
+    "total_risks_identified": 0,
+    "risk_distribution": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
     },
-    "system_test_strategy": {
-      "file": "specs/machine/system_test_strategy.json",
-      "relationship": "System test strategy aggregates risk assessments to determine which services need chaos/load/failover tests"
+    "risks_by_category": {
+      "architectural": 0,
+      "technical": 0,
+      "operational": 0,
+      "security": 0,
+      "data": 0,
+      "integration": 0,
+      "compliance": 0,
+      "business": 0
     },
-    "service_architecture": {
-      "file": "specs/machine/service_arch/{service_name}/service_architecture.json",
-      "relationship": "Service architecture provides deployment complexity, dependencies, and operational characteristics used in risk assessment"
+    "mitigation_status": {
+      "must_implement": 0,
+      "approved": 0,
+      "in_progress": 0,
+      "completed": 0,
+      "proposed": 0,
+      "rejected": 0
     },
-    "d_01_a06_prototype": {
-      "workflow_step": "D-01-A06",
-      "relationship": "High-risk services (>= 2.6) MUST create rapid prototype to validate assumptions early"
-    },
-    "d_0x_a99_gates": {
-      "workflow_steps": "D-02-A99, D-03-A99, D-04-A99, D-05-A99",
-      "relationship": "Prove-it-works gates are stricter for high-risk services (comprehensive smoke tests vs basic validation)"
-    },
-    "d_06_5_validation": {
-      "workflow_step": "D-06.5",
-      "relationship": "High-risk services require all D-06.5 validation checks to pass before operational testing"
-    },
-    "to_05_operational_testing": {
-      "workflow_step": "TO-05",
-      "relationship": "High-risk services get comprehensive operational testing (chaos, load, failover); low-risk get standard tests"
-    }
+    "overall_risk_profile": "CALCULATE: critical_count * 4 + high_count * 3 + medium_count * 2 + low_count * 1",
+    "acceptable_for_deployment": false,
+    "blockers": [
+      "List all CRITICAL or must_implement risks that block deployment"
+    ]
   },
 
-  "llm_agent_guidance": {
-    "honesty": "Be honest about risk - underestimating leads to production failures. Common high-risk indicators: payment, auth, data storage, API gateway, SPOF",
-    "rationale_required": "Document rationale for each risk score - future maintainers need to understand WHY service is high/low risk",
-    "no_gut_feelings": "Use objective factors from severity_levels, not subjective 'feels risky' assessments",
-    "ask_clarifying_questions": "If service description is vague, ask user about traffic volume, criticality, dependencies before scoring",
-    "risk_feeds_into": "Risk assessment informs: (1) operational testing objectives (A09), (2) system test strategy (SE-06-A05), (3) operational testing (TO-05), (4) prototyping (D-01-A06), (5) prove-it-works gates (D-02-A99+)",
-    "high_risk_examples": "Payment processing, user authentication, API gateway, user data storage, single points of failure, services handling PII/financial data",
-    "low_risk_examples": "Logging, metrics, static content, internal utilities, background jobs without strict SLAs",
-    "when_in_doubt": "If factors span multiple severity levels, choose higher severity (err on side of caution) and document why"
+  "risk_monitoring": {
+    "review_frequency": "Weekly during development, Monthly in production",
+    "risk_owner_responsibilities": [
+      "Monitor risk triggers",
+      "Update mitigation status",
+      "Escalate if risk materializes",
+      "Report on residual risk"
+    ],
+    "escalation_criteria": [
+      "New CRITICAL risk identified",
+      "Risk score increases by >5 points",
+      "Mitigation strategy fails"
+    ]
   },
 
-  "metadata": {
-    "template_created_by": "Reflow v3.6.0",
-    "feature": "early-testing-integration",
-    "usage": "Used by SE-02-A10 during service architecture specification",
-    "output_location": "specs/machine/service_arch/{service_name}/risk_assessment.json"
-  }
+  "notes": [
+    "This document is created during SE-02-A04 (architecture design phase)",
+    "Risk assessment informs architecture decisions and testing priorities",
+    "High/Critical risks should have mitigation strategies implemented during development",
+    "Update this document as architecture evolves and new risks are identified",
+    "Reference this during D-07 pre-deployment validation to verify risks are mitigated"
+  ]
 }

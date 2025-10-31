@@ -1,0 +1,109 @@
+{
+  "service_id": "04b-operations",
+  "service_name": "Operations Workflow",
+  "version": "3.7.0",
+  "description": "CI/CD setup, deployment, monitoring, and as-fielded architecture tracking",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Operations Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "03-development",
+      "04a-testing"
+    ],
+    "tools": [
+      "Alerting systems",
+      "CI/CD platform",
+      "Container registry",
+      "Docker",
+      "Docker Compose",
+      "Monitoring platforms",
+      "compare_architectures.py",
+      "generate_as_fielded_architecture.py",
+      "kubectl (if using Kubernetes)"
+    ],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "04b-operations_interface",
+        "interface_name": "Operations Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_Alerting systems",
+        "interface_name": "Tool: Alerting systems",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_CI/CD platform",
+        "interface_name": "Tool: CI/CD platform",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Container registry",
+        "interface_name": "Tool: Container registry",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Docker",
+        "interface_name": "Tool: Docker",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Docker Compose",
+        "interface_name": "Tool: Docker Compose",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Monitoring platforms",
+        "interface_name": "Tool: Monitoring platforms",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_compare_architectures.py",
+        "interface_name": "Tool: compare_architectures.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_generate_as_fielded_architecture.py",
+        "interface_name": "Tool: generate_as_fielded_architecture.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_kubectl (if using Kubernetes)",
+        "interface_name": "Tool: kubectl (if using Kubernetes)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "04b-operations.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": null
+  }
+}

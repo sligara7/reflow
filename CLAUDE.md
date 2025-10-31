@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.3.1
-**Last Updated**: 2025-10-25
+**Version**: 3.9.1
+**Last Updated**: 2025-10-28
 
 ## What is Reflow?
 
@@ -13,10 +13,11 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 
 ### ⚠️ Version 3.0 Structure
 
-**Active (v3.0)**:
-- ✅ `workflows/*.json` - 6 separate workflow files
+**Active (v3.7.0)**:
+- ✅ `workflows/*.json` - 15 workflow files (9 modular + 4 deprecated + 2 special)
 - ✅ `workflow_steps/*/` - Step definitions by workflow
-- ✅ `workflows_master_index.json` - Workflow routing
+- ✅ `workflows_master_index.json` - Workflow routing with branching
+- ✅ **Context Reduction**: 60-95% reduction via workflow splitting
 
 **Archived (DO NOT USE)**:
 - ❌ `docs/archive/decision_flow.json.old` - Old monolithic workflow
@@ -27,6 +28,56 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 2. **Your System** (WRITABLE): Separate directory for your architecture/code
 
 ## Getting Started
+
+### 🤖 FIRST: LLM Self-Reporting (v3.9.1)
+
+**⚠️ CRITICAL FOR ALL LLMs**: Before starting/resuming ANY workflow, you MUST self-report your context capabilities!
+
+**Why**: Enables automatic threshold adjustment for your specific model (Claude 200k vs GPT-4 128k vs GPT-3.5 16k)
+
+**When to Run**:
+- Starting a new workflow (`Implement workflow in...`)
+- Resuming a workflow (`Continue workflow from...`)
+- After context refresh (switching models)
+
+**How to Self-Report** (choose ONE method):
+
+**Method 1: Quick Self-Report (Recommended)**
+When user says "Implement workflow..." or "Continue workflow...", immediately respond:
+
+```
+I'm [YOUR MODEL NAME] with a [YOUR CONTEXT WINDOW] token context window.
+
+Let me configure my capabilities:
+- Model: [YOUR MODEL]
+- Context Window: [NUMBER] tokens
+- Recommended Threshold: [80% of window] tokens
+
+[Then proceed with workflow]
+```
+
+**Method 2: Using Detection Tool**
+```bash
+python3 {paths.tools_path}/detect_llm_capabilities.py \
+  --model "YOUR MODEL NAME" \
+  --context-window YOUR_WINDOW \
+  --update-working-memory {paths.system_root}
+```
+
+**Examples**:
+- Claude Sonnet 4.5: `--model "Claude Sonnet 4.5" --context-window 200000` → threshold 160k
+- GPT-4 Turbo: `--model "GPT-4 Turbo" --context-window 128000` → threshold 102k
+- GPT-3.5: `--model "GPT-3.5" --context-window 16000` → threshold 12k
+
+**Your Context Window**:
+- If you're Claude Sonnet 4.5: **200,000 tokens**
+- If you're GPT-4 Turbo: **128,000 tokens**
+- If you're GPT-3.5: **16,000 tokens**
+- If uncertain: State your model name and I'll look it up
+
+**Result**: Your capabilities are stored in `working_memory.json` and all context flow analysis automatically uses YOUR threshold!
+
+---
 
 ### ⭐ Web-Based Usage (PRIMARY)
 
@@ -67,45 +118,56 @@ Continue workflow from context/working_memory.json in github.com/yourname/my_sys
 Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
 ```
 
-### The 6 Workflows (In Order)
+### The Workflows (v3.7.0 - Modular)
+
+**NEW in v3.7.0**: Split workflows for **60-95% LLM context reduction**
 
 ```
-00-setup.json                    → Setup, framework selection (10-15 min)
-01-systems_engineering.json      → Architecture design (2-4 hours)
+00a-basic_setup.json             → Basic setup (5-10 min)
+00b-framework_selection.json     → Framework selection [OPTIONAL] (5-10 min)
+01a-approach_detection.json      → Auto-detect approach (<5 min)
+01b-bottom_up_integration.json   → Bottom-up integration (2-3 hours)
+01c-top_down_design.json         → Top-down design (2-4 hours)
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
-03-development.json              → Service implementation (days-weeks)
-04-testing_operations.json       → CI/CD, testing (1-2 weeks)
+03a-development_implementation.json → Implementation (days-weeks)
+03b-development_validation.json  → Validation (1-2 days)
+04a-testing.json                 → Testing workflows (1 week)
+04b-operations.json              → Operations workflows (1 week)
 feature_update.json              → Update existing systems
 ```
+
+**Deprecated (backwards compatibility)**:
+- `00-setup.json`, `01-systems_engineering.json`, `03-development.json`, `04-testing_operations.json`
 
 ## Workflow Progression
 
 ### Typical New System Flow
 
-1. **Start**: Run `00-setup.json`
+1. **Start**: Run `00a-basic_setup.json`
    - Configure paths (reflow_root, system_root)
-   - Select architectural framework (S-01A)
    - Create directory structure
    - Initialize `context/working_memory.json`
+   - **Optional**: Run `00b-framework_selection.json` for detailed framework analysis (55% context reduction if skipped)
 
-2. **Architecture**: Run `01-systems_engineering.json`
-   - **NEW: Automatic Approach Detection (SE-00)** - LLM examines system directory
-   - **If existing components found** → Bottom-up integration (BU-01 through BU-06)
+2. **Architecture**: Run `01a-approach_detection.json` → Routes to 01b OR 01c
+   - **Automatic Approach Detection (SE-00)** - LLM examines system directory (95% context reduction)
+   - **If existing components found** → Routes to `01b-bottom_up_integration.json` (BU-01 through BU-06)
      - Component inventory, gap analysis, exact code-level deltas
-   - **If empty/greenfield** → Top-down design (SE-01 through SE-06)
+   - **If empty/greenfield** → Routes to `01c-top_down_design.json` (SE-01 through SE-06)
      - Service identification, architecture design, validation
-   - Both approaches merge at common validation steps
+   - **Context Benefit**: LLM loads only relevant path (60% reduction)
 
 3. **Documentation**: Run `02-artifacts_visualization.json`
    - Generate ICDs, Mermaid diagrams
    - Create versioned documentation
 
-4. **Build** (optional): Run `03-development.json`
-   - Implement services
-   - 80% test coverage required
+4. **Build** (optional): Run `03a-development_implementation.json` then `03b-development_validation.json`
+   - 03a: Implement services (58% context reduction - coding separated from validation)
+   - 03b: 80% test coverage validation, pre-deployment checks (43% context reduction)
 
-5. **Deploy** (optional): Run `04-testing_operations.json`
-   - CI/CD, Docker Compose, operational testing
+5. **Deploy** (optional): Run `04a-testing.json` then `04b-operations.json`
+   - 04a: CI/CD, testing workflows (55% context reduction - testing separated from ops)
+   - 04b: Docker Compose, operational testing (42% context reduction)
 
 ### Automatic Approach Detection (NEW!)
 
@@ -130,7 +192,8 @@ feature_update.json              → Update existing systems
 ### Architecture-Only Flow
 
 ```
-00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → DONE
+00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
+→ 01b or 01c → 02-artifacts_visualization (minimal) → DONE
 ```
 
 ## Supported Frameworks
@@ -198,6 +261,8 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
 
 **Location**: `<your_system>/context/working_memory.json`
 
+**⚠️ CRITICAL FOR LLM AGENTS**: `working_memory.json` contains THE ONLY SOURCE OF TRUTH for paths. You MUST read this file FIRST before any workflow operation and extract the paths.
+
 **Key fields**:
 ```json
 {
@@ -205,13 +270,28 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
   "current_step": "SE-02",
   "paths": {
     "reflow_root": "/path/to/reflow",
-    "system_root": "/path/to/your_system"
+    "system_root": "/path/to/your_system",
+    "tools_path": "/path/to/reflow/tools",
+    "templates_path": "/path/to/reflow/templates",
+    "workflow_steps_path": "/path/to/reflow/workflow_steps",
+    "definitions_path": "/path/to/reflow/definitions"
   },
   "operations_since_refresh": 2
 }
 ```
 
-**Rules**:
+**MANDATORY Path Usage Rules**:
+1. **ALWAYS** read `context/working_memory.json` FIRST before any operation
+2. **EXTRACT** the `paths` object and store in your working context
+3. **USE** these paths for ALL tool/template/workflow references:
+   - Tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
+   - Templates: `{paths.templates_path}/service_architecture_template.json`
+   - Workflows: `{paths.workflow_steps_path}/systems_engineering/SE-06-GraphGeneration.json`
+   - Definitions: `{paths.definitions_path}/framework_registry.json`
+4. **NEVER** hardcode paths or guess locations
+5. **VERIFY** tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+
+**Context Update Rules**:
 - Read before every step
 - Update after completing actions
 - Refresh context every 4 operations
@@ -224,6 +304,144 @@ service_architecture.json                     ← Symlink to current
 ```
 
 **Benefits**: Complete history, rollback support, version manifest tracking
+
+## Human Documentation Workflow (v3.8.0)
+
+**Purpose**: Enable human-in-the-loop architecture editing with bidirectional translation
+
+**Workflow**:
+1. Generate human docs from machine specs:
+   ```bash
+   python3 {paths.tools_path}/generate_human_documentation.py --system-root {paths.system_root}
+   ```
+
+2. Human reviews/edits markdown files:
+   ```bash
+   vim specs/human/documentation/services/my_service.md
+   ```
+
+3. Parse human docs back to machine specs:
+   ```bash
+   python3 {paths.tools_path}/parse_human_documentation.py --system-root {paths.system_root} --validate
+   ```
+
+4. If validation passes: Changes committed
+   If validation fails: Conflict report generated
+
+**Key Files**:
+- **Human Docs**: `specs/human/documentation/services/*.md`
+- **Machine Specs**: `specs/machine/service_arch/*/service_architecture.json`
+- **Visualizations**: `specs/human/visualizations/*.{mmd,png,svg}`
+
+**Tools**:
+- `generate_human_documentation.py` - Machine → Human translation
+- `parse_human_documentation.py` - Human → Machine translation (with validation)
+- `component_swap.py` - Safe component replacement with compatibility checking
+
+**Component Swapping Example**:
+```bash
+# Replace Apache proxy with HAProxy
+python3 {paths.tools_path}/component_swap.py \
+  --index specs/machine/index.json \
+  --remove apache_proxy \
+  --add haproxy_proxy \
+  --validate
+```
+
+**Benefits**:
+- ✅ Non-technical stakeholders can review architecture
+- ✅ Propose changes via markdown edits (not JSON)
+- ✅ Automatic validation prevents broken dependencies
+- ✅ Version control tracks architecture evolution
+- ✅ PNG/SVG diagrams for presentations and wikis
+
+**When to Use**:
+- Step AV-01-A04: Auto-generate human docs after creating service architectures
+- Step AV-02-A05: Render Mermaid diagrams to PNG/SVG for distribution
+- User-initiated: When stakeholders request architecture review
+- User-initiated: When proposing component replacements
+
+## Context Flow Analysis (v3.9.0)
+
+**Purpose**: Predictive context management for LLM agents - prevent context overflow before it happens
+
+**Key Concept**: Model LLM context as a first-class architectural parameter, enabling proactive refresh recommendations
+
+**Usage**:
+```bash
+python3 {paths.tools_path}/system_of_systems_graph_v2.py \
+  {paths.system_root}/specs/machine/index.json \
+  --context-flow --context-threshold 40000
+```
+
+**What It Does**:
+1. **Analyzes workflow paths** - Traces all possible paths through your workflow
+2. **Calculates cumulative context** - Tracks token accumulation step-by-step
+3. **Identifies bottlenecks** - Flags steps exceeding threshold (default 40k tokens)
+4. **Recommends refresh points** - Suggests where to refresh BEFORE overflow
+
+**Output**:
+```json
+{
+  "context_flow": {
+    "paths_analyzed": 5,
+    "bottlenecks": {
+      "total_count": 3,
+      "critical_count": 1,
+      "details": [
+        {
+          "step_id": "SE-06",
+          "cumulative_context": 45000,
+          "severity": "CRITICAL",
+          "overflow_tokens": 5000
+        }
+      ]
+    },
+    "refresh_recommendations": [
+      {
+        "refresh_before_step": "SE-06",
+        "refresh_after_step": "SE-05",
+        "reason": "Predicted overflow (45000 tokens > 40000 threshold)"
+      }
+    ],
+    "optimization_opportunities": {
+      "context_efficiency": "MEDIUM",
+      "suggestions": [
+        "Consider splitting high-context steps or inserting additional refresh points"
+      ]
+    }
+  }
+}
+```
+
+**Benefits**:
+- ✅ **Predictive** (not reactive) - Prevent context loss before it happens
+- ✅ **Workflow optimization** - Identify high-context steps (SE-06, D-02, D-03)
+- ✅ **LLM capability matching** - Recommend minimum LLM for workflow paths
+- ✅ **Context efficiency metric** - Architectural quality parameter
+
+**When to Use**:
+- Step SE-06: Auto-run context flow analysis when generating system graph
+- User-initiated: When experiencing context degradation signals
+- Workflow design: Optimize new workflows for context efficiency
+
+**working_memory.json Integration**:
+```json
+{
+  "context_management": {
+    "cumulative_context_tokens": 38000,
+    "context_flow_analysis": {
+      "enabled": true,
+      "predicted_cumulative": 53000,
+      "threshold": 40000,
+      "refresh_recommended": true,
+      "refresh_reason": "Predicted overflow at SE-06"
+    }
+  }
+}
+```
+
+**LLMs should**: Read `refresh_recommended` field, auto-execute refresh when `true`
 
 ## Quality Gates
 
@@ -241,7 +459,7 @@ service_architecture.json                     ← Symlink to current
 
 ## Tools & Templates
 
-**16 Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
+**19 Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
 
 **Architecture** (Framework-Agnostic):
 - `system_of_systems_graph_v2.py` - **FLAGSHIP**: Graph generation with:
@@ -256,6 +474,11 @@ service_architecture.json                     ← Symlink to current
 
 **Visualization**:
 - `generate_mermaid_*.py` - Various diagram generators
+
+**Human Documentation** (v3.8.0):
+- `generate_human_documentation.py` - Machine → Human translation
+- `parse_human_documentation.py` - Human → Machine translation with validation
+- `component_swap.py` - Safe component replacement with compatibility checking
 
 **Context**:
 - `context_refresh.py`, `detect_context_drift.py`
@@ -289,172 +512,37 @@ service_architecture.json                     ← Symlink to current
 
 ## IT System Requirements (UAF with Human Users) - CRITICAL!
 
-### ⚠️ Design Upfront, Not Retrofit
+**Applicability**: UAF framework systems with human users or external API access
 
-**IMPORTANT**: IT systems with human users/external APIs **MUST** address upfront (not afterthoughts):
+**⚠️ Design Upfront, Not Retrofit**: IT systems with human users/external APIs **MUST** address these upfront (not afterthoughts):
 
-1. **Security** - Authentication, authorization, encryption, audit logging
-2. **Deployment Ease** - One-command deployment, automated rollback
-3. **User Experience** - Intuitive APIs, clear errors, documentation
+1. **Security** (SE-02-A05) - Authentication, authorization, **API gateway** (MANDATORY), rate limiting, encryption, audit logging
+2. **Deployment** (SE-02-A06) - One-command deploy, health checks, CI/CD, monitoring, RTO/RPO targets
+3. **UX/API** (SE-02-A07) - RESTful design, user-friendly errors, **OpenAPI docs** (MANDATORY), versioning, performance targets
+4. **Operational Environment** (SE-02-A08) - Design for failures, attacks, scale; define testing strategy NOW
 
 **Rationale**: Retrofitting after launch is **10-100x more expensive** than designing correctly upfront.
 
-**When**: Steps SE-02-A05 through SE-02-A08 during architecture design
+**When**: Steps SE-02-A05 through SE-02-A08 during architecture design (workflows `01b-bottom_up_integration.json` or `01c-top_down_design.json`)
 
-### Security Architecture (SE-02-A05)
+**Validation Gates**: SE-03-A05, SE-03-A06, SE-03-A07, SE-03-A08 (ALL BLOCKING)
 
-**Applicability**:
-- ✅ UAF with human users (web/mobile apps)
-- ✅ UAF with external API access
-- ❌ Internal machine-to-machine only
+**CRITICAL Requirements**:
+- **API Gateway**: MUST be fully implemented (not orphaned scaffolding) - Checked in SE-06 orphaned service detection
+- **Security**: MFA for admins, TLS 1.2+, AES-256 at-rest encryption for sensitive data
+- **Deployment**: `docker-compose up -d` or equivalent, <10 min developer setup, <5 min rollback
+- **UX/API**: OpenAPI spec, Swagger UI, error messages with field names and descriptions
+- **Operations**: 10 IT considerations (service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing)
 
-**Template**: `security_architecture_template.json`
-
-**Required Sections**:
-- Authentication (JWT/OAuth2/SAML), MFA for admins
-- Authorization (RBAC/ABAC), roles, permissions
-- **API Gateway** (MANDATORY for human-facing) - single entry, auth, rate limits, SSL/TLS
-- Rate limiting (e.g., 100 req/min per user, 5 login attempts per 15 min)
-- Input validation (XSS prevention, SQL injection prevention)
-- Encryption (TLS 1.2+ in-transit, AES-256 at-rest, KMS/Vault)
-- Audit logging (auth attempts, data access, admin actions)
-
-**API Gateway Requirement**:
-- IF human users OR external APIs → api_gateway **MUST** exist
-- Gateway must be **fully implemented** (not orphaned scaffolding)
-- Checked in SE-06 orphaned service detection
-
-**Validation**: SE-03-A05 (BLOCKING)
-
-**Common Issues**:
-- Missing/orphaned API gateway → **CRITICAL**
-- Weak auth (no MFA) → **HIGH RISK**
-- No encryption at rest for sensitive data → **HIGH RISK**
-
-### Deployment Architecture (SE-02-A06)
-
-**Template**: `deployment_architecture_template.json`
-
-**Philosophy - SIMPLICITY FIRST**:
-- One-command deploy (`docker-compose up -d`)
-- <10 min setup for new developer
-- <5 min automated rollback
-- Clear README with step-by-step instructions
-
-**Required**:
-- Containerization (Docker/Podman), image scanning
-- Orchestration (Docker Compose default, K8s only if scale/HA needed)
-- CI/CD (build → test → deploy, rollback on failure)
-- Health checks (`/health`, `/ready`)
-- Monitoring (Prometheus, centralized logging, alerting)
-- Backup & DR (RTO/RPO targets)
-
-**Validation**: SE-03-A06 (BLOCKING)
-
-**Common Issues**:
-- Overcomplicated orchestration → Slows iteration
-- No health checks → Can't detect failures
-- Manual deployment → Error-prone
-
-### UX & API Design (SE-02-A07)
-
-**Template**: `ux_api_design_template.json`
-
-**Targets**:
-- Time to first success: <5 min
-- API time to first call: <5 min
-- Task success rate: >95%
-
-**Required**:
-- RESTful design, consistent naming
-- User-friendly errors ("Email is required" vs "500 Internal Server Error")
-- **API Documentation** (MANDATORY) - OpenAPI spec, Swagger UI, code examples
-- Versioning (URL path: `/api/v1/users`)
-- Performance (p95 <500ms), caching
-
-**Validation**: SE-03-A07 (BLOCKING)
-
-**Common Issues**:
-- Inconsistent naming → Developer confusion
-- Poor error messages → Users can't recover
-- Missing docs → Can't use API
-- Orphaned API gateway → System non-functional
-
-### Operational Environment Design (SE-02-A08)
-
-**CRITICAL PRINCIPLE**: Operational environment is **ARCHITECTURAL DECISION** made NOW, NOT operational problem solved during testing.
-
-**Template**: `operational_environment_template.json` (1100+ lines)
-
-**Design for Reality** - Systems face:
-- Network failures, partitions
-- Resource exhaustion (CPU, memory, disk)
-- Cascading failures
-- Traffic spikes
-- Security attacks (DDoS, injection, credential stuffing)
-- Data corruption
-- Third-party outages
-- Configuration drift
-
-**10 IT-Specific Considerations** (UPFRONT Design):
-
-1. **Service Decomposition** - DDD bounded contexts, single responsibility, data ownership
-2. **Containerization** - Docker from day one, multi-stage Dockerfiles, image scanning
-3. **Infrastructure as Code** - Ansible (deploy.yml, rollback.yml), Terraform (AWS provisioning)
-4. **CI/CD Integration** - Pipeline stages, automated testing, semantic versioning
-5. **Scalability & Resilience** - Auto-scaling, circuit breakers, retries, timeouts, bulkheads
-6. **Security & Compliance** - IAM roles, VPC design, encryption, GDPR/HIPAA/PCI-DSS
-7. **Monitoring & Observability** - Prometheus metrics, structured logging, correlation IDs, alerting
-8. **Service Discovery** - AWS Cloud Map, Consul, K8s DNS, API Gateway
-9. **Cost Management** - Right-sizing, spot instances, auto-scale to zero (non-prod)
-10. **Testing & Rollback** - Define test types NOW (unit, integration, perf, security, chaos, operational)
-
-**Testing Strategy Defined NOW**:
-- Unit: 80% coverage, every commit
-- Integration: Real APIs/DBs in isolated env
-- Performance: 2x/5x/10x load, p95 <500ms at 5x
-- Security: OWASP Top 10, penetration testing
-- Chaos: Inject failures (kill instances, network latency, resource exhaustion)
-- Operational: Multi-AZ failover, DB failover, auto-scaling, backup/restore
-
-**Success Criteria**:
-- Availability: 99.9%, 99.95%, 99.99%?
-- RTO: 1 hour, 4 hours?
-- RPO: 15 min, 1 hour data loss?
-- Performance: p50 <100ms, p95 <500ms, p99 <1000ms
-
-**Validation**: SE-03-A08 (BLOCKING)
-
-**Cost Impact**: NOT designing for ops upfront causes **budget overages and costly program delays**
-
-### Orphaned Service Detection (UAF)
-
-**Problem**: Services defined in architecture but never implemented (scaffolding only)
-
-**Example**: API gateway defined with `service_architecture.json` but only empty scaffolding → System fails
-
-**Detection**: SE-06 - `python3 system_of_systems_graph_v2.py index.json --analyze-issues`
-
-**Checks**:
-- Services with architecture but no implementation
-- Services with implementation but only scaffolding (<50 lines, no functions/classes)
-- Reports as `unimplemented_services` in `architectural_issues`
-
-### IT System Requirements Checklist
-
-Before proceeding from SE-03 validation gate:
-
-**For UAF with Human Users OR External APIs**:
-- [ ] `security_architecture.json` created
-- [ ] `deployment_architecture.json` created
-- [ ] `ux_api_design.json` created
+**Checklist** (Before SE-03):
+- [ ] `security_architecture.json` created (auth, authorization, API gateway, rate limiting, encryption, audit)
+- [ ] `deployment_architecture.json` created (Docker, CI/CD, health checks, monitoring, RTO/RPO)
+- [ ] `ux_api_design.json` created (RESTful, errors, OpenAPI, versioning, performance)
+- [ ] `operational_environment.json` created (availability target, testing strategy, failure scenarios)
 - [ ] API gateway exists in architecture and will be fully implemented (not orphaned)
-- [ ] All three validated in SE-03-A05, SE-03-A06, SE-03-A07 (BLOCKING)
+- [ ] `port_registry.json` created and validated (for all UAF IT systems)
 
-**For UAF IT Systems (All)**:
-- [ ] `port_registry.json` created and validated
-- [ ] Health checks defined (`/health`, `/ready`)
-- [ ] Deployment documented in README
+**📖 Full Documentation**: See [docs/IT_SYSTEM_REQUIREMENTS.md](docs/IT_SYSTEM_REQUIREMENTS.md) for comprehensive guidance (security, deployment, UX, operations, checklist, templates)
 
 ## Port Management (UAF/IT Only)
 
@@ -514,7 +602,9 @@ kill -9 <PID>
 
 **LLM Best Practices**:
 - ALWAYS read `context/working_memory.json` first when user says "continue"
+- **EXTRACT AND STORE** the `paths` object - you'll need it for EVERY tool invocation
 - Check `current_workflow` and `current_step` to know where to resume
+- **USE** extracted paths for all tool/template/workflow references (NEVER hardcode)
 - Update context after each operation
 - Commit to GitHub after major milestones
 
@@ -533,14 +623,23 @@ Result: Complete architecture specs, diagrams, ICDs - no service code
 
 **LLM Process**:
 1. Read `github.com/yourname/my_system/context/working_memory.json`
-2. Extract: `current_workflow`, `current_step`, `paths`, `operations_since_refresh`
+2. **EXTRACT** (MANDATORY):
+   - `current_workflow` (e.g., "01-systems_engineering")
+   - `current_step` (e.g., "SE-06")
+   - **`paths` object** (reflow_root, system_root, tools_path, templates_path, etc.) - STORE THIS!
+   - `operations_since_refresh`
 3. Check if refresh needed (>4 operations → refresh)
-4. Load workflow: `github.com/sligara7/reflow/workflows/{current_workflow}.json`
-5. Resume from exact step
-6. Update context after operations
-7. Commit to GitHub at milestones
+4. Load workflow: `{paths.reflow_root}/workflows/{current_workflow}.json`
+5. Load step definition: `{paths.workflow_steps_path}/systems_engineering/{current_step}-*.json`
+6. Resume from exact step
+7. **USE extracted paths** for ALL tool/template references:
+   - Example: `python3 {paths.tools_path}/system_of_systems_graph_v2.py {paths.system_root}/specs/machine/index.json`
+8. Update context after operations
+9. Commit to GitHub at milestones
 
-**CRITICAL**: Context folder IS the source of truth. Conversation history is supplemental.
+**CRITICAL**:
+- Context folder IS the source of truth. Conversation history is supplemental.
+- **PATHS MUST BE EXTRACTED FROM working_memory.json** - NEVER hardcode or guess locations!
 
 ### Pattern 4: Feature Update
 
@@ -551,6 +650,84 @@ Process: Read existing architecture → Propose changes → Validate impact → 
 Result: Updated system with backward compatibility tracking
 ```
 
+## Troubleshooting
+
+### "Can't find tool X" or "Tool doesn't exist"
+
+**Symptom**: LLM claims `system_of_systems_graph_v2.py` or other tools don't exist
+
+**Root Cause**: Paths not extracted from `working_memory.json`
+
+**Fix (for LLM agents)**:
+1. **READ** `{system_root}/context/working_memory.json`
+2. **EXTRACT** the `paths` object:
+   ```json
+   {
+     "reflow_root": "/actual/path/to/reflow",
+     "tools_path": "/actual/path/to/reflow/tools",
+     ...
+   }
+   ```
+3. **VERIFY** tool exists: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+4. **USE** extracted path: `python3 {paths.tools_path}/system_of_systems_graph_v2.py ...`
+
+**NEVER**:
+- ❌ Hardcode paths like `/home/user/reflow/tools/`
+- ❌ Guess locations like `./tools/`
+- ❌ Create new tools when existing ones can't be found
+- ❌ Skip reading `working_memory.json` because you "know" the paths
+- ❌ Download templates/tools from GitHub using `curl` - Reflow is ALREADY LOCAL!
+- ❌ Fetch from `https://raw.githubusercontent.com/sligara7/reflow/` URLs
+
+**ALWAYS**:
+- ✅ Read `working_memory.json` FIRST before EVERY workflow step
+- ✅ Extract all paths from the `paths` object
+- ✅ Verify tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
+- ✅ Use LOCAL extracted paths in ALL commands
+- ✅ Read LOCAL templates: `cat {paths.templates_path}/service_architecture_template.json`
+- ✅ Run LOCAL tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
+
+### "Downloading templates from GitHub with curl"
+
+**Symptom**: LLM tries to download templates/tools using `curl https://raw.githubusercontent.com/sligara7/reflow/...`
+
+**Root Cause**: LLM doesn't realize Reflow is ALREADY installed locally
+
+**Why This is Wrong**:
+- Reflow tooling is ALREADY on your machine (local installation)
+- Templates, tools, workflows are LOCAL files, not remote
+- `working_memory.json` contains paths to LOCAL installation
+
+**Fix (for LLM agents)**:
+1. **STOP** using `curl` to download from GitHub
+2. **READ** `{system_root}/context/working_memory.json`
+3. **EXTRACT** paths: `paths.templates_path`, `paths.tools_path`, etc.
+4. **USE** local files:
+   - ❌ WRONG: `curl https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template.json`
+   - ✅ CORRECT: `cat {paths.templates_path}/service_architecture_template.json`
+
+**Example from Real Session** (what NOT to do):
+```bash
+# WRONG - Downloading from GitHub
+curl -s https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template_uaf.json -o templates/...
+# Result: 0 lines (file doesn't exist remotely)
+
+# CORRECT - Use local installation
+cat /path/extracted/from/working_memory/templates/service_architecture_template.json
+# Result: 400+ lines (file exists locally)
+```
+
+### "Working memory doesn't exist"
+
+**Symptom**: `context/working_memory.json` file not found
+
+**Root Cause**: Setup workflow (00a-basic_setup.json) not run yet
+
+**Fix**:
+1. Run: `Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json on system in {your_system_path}`
+2. This creates `context/working_memory.json` with all required paths
+3. Then proceed with your intended workflow (01a, 01b, 01c, etc.)
+
 ## What to Avoid vs Do
 
 **❌ Don't**:
@@ -559,6 +736,8 @@ Result: Updated system with backward compatibility tracking
 - Skip setup workflow
 - Mix reflow and system directories
 - Skip quality gates
+- Hardcode paths or guess tool locations
+- Create new tools when existing ones can't be found
 
 **✅ Do**:
 - Reference reflow as read-only library
@@ -566,6 +745,8 @@ Result: Updated system with backward compatibility tracking
 - Follow workflow sequence
 - Use versioning (semver, symlinks)
 - Run validation tools before advancing
+- Always read `working_memory.json` FIRST and extract paths
+- Verify tools exist before invoking them
 
 ## File Structure
 
@@ -755,10 +936,12 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 
 ## Getting Help
 
-- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 16 tools
+- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 32 tools
+- `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements (security, deployment, UX, operations)
 - `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis guide (400+ lines)
 - `docs/DECISION_FLOW_FRAMEWORK.md` - Decision Flow example (500+ lines)
 - `docs/GIT_AUTOMATION_GUIDE.md` - Git automation setup
+- `docs/HUMAN_DOCUMENTATION_WORKFLOW_ANALYSIS.md` - Human documentation analysis (973 lines)
 - `README.md` - Overview and quick start
 
 ## Summary for LLM Agents
@@ -767,16 +950,26 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 
 1. **Web-based is PRIMARY**: Users create GitHub repo, you read from `github.com/sligara7/reflow`, write to their repo
 2. **Context is SOURCE OF TRUTH**: ALWAYS read `context/working_memory.json` FIRST when user says "continue"
-3. **Multi-day projects normal**: User may work 10 min today, resume 3 days later - context preserves state
-4. **Two context mechanisms**:
+3. **⚠️ EXTRACT PATHS**: Read `working_memory.json` → Extract `paths` object → Use for ALL tool/template/workflow references - NEVER hardcode or guess
+4. **Multi-day projects normal**: User may work 10 min today, resume 3 days later - context preserves state
+5. **Two context mechanisms**:
    - `context/working_memory.json` (PRIMARY - read this first!)
    - Conversation history (SUPPLEMENTAL - reference if user mentions)
-5. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
-6. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
-7. **Start with 00-setup**: Configures paths, framework, structure
-8. **6 workflows in sequence**: 00-setup → 01-SE → 02-artifacts → 03-dev → 04-test (+ feature_update)
-9. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-10. **v3.3.1 current**: 16 tools, comprehensive documentation, operational environment design, IT requirements, versioning
+6. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
+7. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
+8. **Start with 00a-basic_setup**: Configures paths, framework, structure
+9. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
+10. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
+11. **v3.9.0 current**: 32 tools (context flow analysis integrated), 15 workflows, 60-95% context reduction, predictive context management
+
+**CRITICAL PATH EXTRACTION FLOW**:
+```
+1. User says: "Continue workflow from context/working_memory.json"
+2. LLM reads: {system_root}/context/working_memory.json
+3. LLM extracts: paths.tools_path, paths.templates_path, paths.reflow_root, etc.
+4. LLM uses: python3 {paths.tools_path}/system_of_systems_graph_v2.py
+5. LLM NEVER: Hardcodes paths or creates new tools
+```
 
 ### Secondary Approach: Local Machine
 
@@ -788,8 +981,10 @@ Use if user explicitly requests or web not available.
 
 ```
 User creates GitHub repo, then in code environment (Codespaces, Claude Code, etc.) says:
-"Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+"Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json
  on system in github.com/yourname/your_system_repo"
+
+(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
 **Environment Options**:
@@ -814,7 +1009,9 @@ Your process:
 **Local Machine (Alternative)?**
 
 ```
-"Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system"
+"Implement workflow in /path/to/reflow/workflows/00a-basic_setup.json on system in /path/to/your_system"
+
+(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
 Good luck building complex systems! 🚀

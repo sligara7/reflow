@@ -1,0 +1,22 @@
+{
+  "component_id": "protein_network",
+  "component_name": "Protein Interaction Network",
+  "version": "1.0.0",
+  "framework": "systems_biology",
+  "component_type": "protein",
+  "biological_functions": [
+    {
+      "function_id": "F-PROT-01",
+      "function_name": "Signaling"
+    }
+  ],
+  "interactions": {
+    "provided": [
+      {
+        "interaction_id": "INT-PROT",
+        "interaction_type": "binding"
+      }
+    ],
+    "required": []
+  }
+}

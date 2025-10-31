@@ -1,0 +1,10 @@
+{
+  "system_metadata": {
+    "system_name": "IT Requirements Test - Biology",
+    "version": "1.0.0",
+    "framework": "systems_biology"
+  },
+  "components": {
+    "protein_network": "specs/machine/service_arch/protein_network_architecture.json"
+  }
+}

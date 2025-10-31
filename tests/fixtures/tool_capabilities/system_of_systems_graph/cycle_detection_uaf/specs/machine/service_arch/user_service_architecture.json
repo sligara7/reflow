@@ -1,0 +1,38 @@
+{
+  "service_id": "user_service",
+  "service_name": "User Service",
+  "version": "1.0.0",
+  "description": "Manages users - DEPENDS ON session_service",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-USER-01",
+      "function_name": "User Management"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-USER-001",
+        "interface_name": "User API",
+        "protocol": "REST"
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-SESSION-001",
+        "target_service": "session_service",
+        "protocol": "REST"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "ports": {
+      "primary": {
+        "port": 8001
+      }
+    }
+  }
+}

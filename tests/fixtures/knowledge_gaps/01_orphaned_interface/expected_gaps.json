@@ -1,0 +1,36 @@
+{
+  "test_case": "01_orphaned_interface",
+  "description": "Product service provides an interface that no other service requires",
+  "expected_knowledge_gaps": {
+    "orphaned_interfaces": [
+      {
+        "interface_id": "IFC-PROD-001",
+        "interface_name": "Product Catalog API",
+        "provider": "product_service",
+        "severity": "warning",
+        "description": "Interface 'IFC-PROD-001' provided by 'product_service' has no consumers"
+      }
+    ],
+    "unmet_dependencies": [],
+    "implied_mediators": [],
+    "structural_holes": [],
+    "unexplained_outputs": [],
+    "missing_bidirectional": []
+  },
+  "expected_totals": {
+    "total_gaps": 1,
+    "by_type": {
+      "orphaned_interfaces": 1,
+      "unmet_dependencies": 0,
+      "implied_mediators": 0,
+      "structural_holes": 0,
+      "unexplained_outputs": 0,
+      "missing_bidirectional": 0
+    }
+  },
+  "pass_criteria": {
+    "must_detect_orphaned_interface": "IFC-PROD-001",
+    "must_identify_provider": "product_service",
+    "total_gaps_must_equal": 1
+  }
+}

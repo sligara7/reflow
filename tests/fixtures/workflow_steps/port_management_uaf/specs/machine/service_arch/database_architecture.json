@@ -1,0 +1,30 @@
+{
+  "service_id": "database",
+  "service_name": "Database Service",
+  "version": "1.0.0",
+  "framework": "uaf",
+  "service_type": "data",
+  "functions": [
+    {
+      "function_id": "F-DB-01",
+      "function_name": "Data Storage"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-DB-001",
+        "protocol": "PostgreSQL"
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "PostgreSQL 15",
+    "ports": {
+      "primary": {
+        "port": 5432
+      }
+    }
+  }
+}

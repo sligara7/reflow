@@ -1,0 +1,10 @@
+{
+  "system_metadata": {
+    "system_name": "IT Requirements Test - UAF Web App",
+    "version": "1.0.0",
+    "framework": "uaf"
+  },
+  "components": {
+    "web_app": "specs/machine/service_arch/web_app_architecture.json"
+  }
+}

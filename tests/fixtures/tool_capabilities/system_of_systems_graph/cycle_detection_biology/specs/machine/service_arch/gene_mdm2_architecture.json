@@ -1,0 +1,30 @@
+{
+  "component_id": "gene_mdm2",
+  "component_name": "MDM2 E3 Ubiquitin Ligase",
+  "version": "1.0.0",
+  "description": "Degrades p53 - creates negative feedback loop for homeostasis",
+  "framework": "systems_biology",
+  "component_type": "gene",
+  "biological_functions": [
+    {
+      "function_id": "F-MDM2-01",
+      "function_name": "p53 Degradation"
+    }
+  ],
+  "interactions": {
+    "provided": [
+      {
+        "interaction_id": "INT-MDM2-001",
+        "interaction_name": "MDM2 Inhibition",
+        "interaction_type": "inhibition"
+      }
+    ],
+    "required": [
+      {
+        "interaction_id": "INT-P53-001",
+        "target_component": "gene_p53",
+        "interaction_type": "activation"
+      }
+    ]
+  }
+}

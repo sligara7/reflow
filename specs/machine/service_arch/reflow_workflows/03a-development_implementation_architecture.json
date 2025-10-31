@@ -1,0 +1,68 @@
+{
+  "service_id": "03a-development_implementation",
+  "service_name": "Development Implementation Workflow",
+  "version": "3.7.0",
+  "description": "Research, implement core functionality, and integrate APIs/security",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Development Implementation Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup",
+      "01-systems_engineering",
+      "02-artifacts_visualization"
+    ],
+    "tools": [
+      "bootstrap_development_context.py",
+      "select_development_languages.py",
+      "verify_component_contract.py"
+    ],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "03a-development_implementation_interface",
+        "interface_name": "Development Implementation Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_bootstrap_development_context.py",
+        "interface_name": "Tool: bootstrap_development_context.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_select_development_languages.py",
+        "interface_name": "Tool: select_development_languages.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py",
+        "interface_name": "Tool: verify_component_contract.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "03a-development_implementation.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": "03b-development_validation"
+  }
+}

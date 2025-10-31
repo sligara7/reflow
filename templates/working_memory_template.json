@@ -6,13 +6,14 @@
   "current_workflow": "CURRENT_WORKFLOW_ID (e.g., 01-systems_engineering)",
   "current_step": "CURRENT_STEP_ID",
   "current_substep": "CURRENT_SUBSTEP_ID",
-  "path_configuration": {
+  "paths": {
     "reflow_root": "/absolute/path/to/reflow",
     "system_root": "/absolute/path/to/system",
     "tools_path": "/absolute/path/to/reflow/tools",
     "templates_path": "/absolute/path/to/reflow/templates",
     "workflow_steps_path": "/absolute/path/to/reflow/workflow_steps",
-    "note": "These paths are set during Setup workflow (00-setup) and must NEVER be hardcoded elsewhere"
+    "definitions_path": "/absolute/path/to/reflow/definitions",
+    "note": "CRITICAL: These paths MUST be read and used for ALL tool/template/workflow references. Set during Setup workflow (00a-basic_setup). LLM agents: ALWAYS extract these paths from working_memory.json before invoking tools."
   },
   "framework_configuration": {
     "framework_id": "FRAMEWORK_ID (uaf|decision_flow|systems_biology|social_network|ecological|complex_adaptive|custom)",
@@ -69,16 +70,42 @@
     "refresh_triggers": {
       "threshold_triggered": 0,
       "degradation_triggered": 0,
-      "manual_triggered": 0
+      "manual_triggered": 0,
+      "context_flow_triggered": 0
     },
     "degradation_signals_detected": [],
     "last_degradation_signal": null,
     "context_health": "HEALTHY|DEGRADING|CRITICAL",
+    "cumulative_context_tokens": 0,
+    "llm_capabilities": {
+      "model_name": "DETECTED_MODEL_NAME (e.g., Claude Sonnet 4.5, GPT-4 Turbo)",
+      "context_window_tokens": 0,
+      "recommended_threshold": 0,
+      "safety_margin_percent": 80,
+      "refresh_strategy": "conservative|moderate|aggressive",
+      "auto_detected": false,
+      "detection_timestamp": "YYYY-MM-DD HH:MM:SS",
+      "detection_method": "interactive|manual",
+      "note": "v3.9.1 - Auto-detect LLM context window at workflow start/resume. Run: python3 {paths.tools_path}/detect_llm_capabilities.py --interactive --update-working-memory {paths.system_root}"
+    },
+    "context_flow_analysis": {
+      "enabled": false,
+      "current_step": "CURRENT_STEP_ID",
+      "next_step": "NEXT_STEP_ID",
+      "predicted_cumulative": 0,
+      "threshold": 40000,
+      "refresh_recommended": false,
+      "refresh_reason": null,
+      "recommended_refresh_before": null,
+      "note": "v3.9.0 - Predictive context management via flow analysis. v3.9.1: Threshold auto-set from llm_capabilities"
+    },
     "notes": [
+      "v3.9.1: FIRST ACTION when starting/resuming workflow: Detect LLM capabilities (see llm_capabilities.note)",
       "Increment operations_since_refresh after each real operation (see context_management_template.json)",
       "When operations_since_refresh >= 5, execute context refresh sequence",
       "When degradation signal detected, execute refresh immediately regardless of counter",
-      "After refresh, reset operations_since_refresh to 0 and update last_refresh_timestamp"
+      "v3.9.0: When context_flow_analysis.refresh_recommended is true, execute refresh before predicted bottleneck",
+      "After refresh, reset operations_since_refresh to 0 and update last_refresh_timestamp AND re-detect LLM capabilities"
     ]
   },
   "hierarchy_level": "LEVEL_0_CLASSIFICATION",

@@ -1,406 +1,427 @@
 #!/usr/bin/env python3
 """
-Dependency Validation Tool
+Dependency Validation Tool (D-07-A01)
+Part of v3.6.0 Early Testing Integration - Pre-Deployment Validation
 
-Validates that all code imports exist in requirements.txt/pyproject.toml.
-Prevents "missing dependency" issues during Docker builds and runtime.
+Validates that:
+1. All imports in code exist in requirements.txt / package.json
+2. No unused dependencies in requirements files
+3. Version pinning is consistent
+4. No conflicting dependency versions
 
 Usage:
-    python3 validate_dependencies.py --system-root /path/to/system --service service_name
-    python3 validate_dependencies.py --system-root /path/to/system --all-services
+    python3 validate_dependencies.py <system_root>
 
-Part of Reflow v3.6.0 - Early Testing Integration feature (D-06.5-A01)
-Prevents Category 1 issues: Dependencies not matching code (5 issues from operational testing)
+Example:
+    python3 validate_dependencies.py /home/user/my_system
+
+Outputs:
+    - validation_results.json with findings
+    - Exit code 0 if all pass, 1 if critical issues, 2 if warnings only
 """
 
-import argparse
-import ast
-import json
 import sys
+import json
+import ast
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Set, Dict, List, Tuple
 import re
 
+def extract_python_imports(file_path: Path) -> Set[str]:
+    """
+    Extract all import statements from a Python file.
 
-class DependencyValidator:
-    """Validates that code imports match declared dependencies."""
+    Returns:
+        Set of base package names (e.g., 'requests' from 'import requests' or 'from requests import get')
+    """
+    imports = set()
 
-    # Standard library modules (don't need to be in requirements.txt)
-    STDLIB_MODULES = {
-        'abc', 'argparse', 'ast', 'asyncio', 'base64', 'collections', 'copy',
-        'csv', 'datetime', 'decimal', 'email', 'enum', 'functools', 'hashlib',
-        'http', 'io', 'itertools', 'json', 'logging', 'math', 'os', 'pathlib',
-        're', 'secrets', 'shutil', 'signal', 'socket', 'ssl', 'string', 'subprocess',
-        'sys', 'tempfile', 'threading', 'time', 'traceback', 'typing', 'unittest',
-        'urllib', 'uuid', 'warnings', 'weakref', 'xml'
-    }
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            tree = ast.parse(f.read(), filename=str(file_path))
 
-    # Import name to package name mappings (when they differ)
-    IMPORT_TO_PACKAGE = {
-        'PIL': 'Pillow',
-        'cv2': 'opencv-python',
-        'yaml': 'PyYAML',
-        'dotenv': 'python-dotenv',
-        'jwt': 'PyJWT',
-        'dateutil': 'python-dateutil',
-        'psycopg2': 'psycopg2-binary',
-        'sklearn': 'scikit-learn',
-        'bs4': 'beautifulsoup4'
-    }
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    # Get base package (e.g., 'requests' from 'requests.auth')
+                    imports.add(alias.name.split('.')[0])
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    imports.add(node.module.split('.')[0])
+    except SyntaxError:
+        print(f"Warning: Syntax error in {file_path}, skipping")
+    except Exception as e:
+        print(f"Warning: Could not parse {file_path}: {e}")
 
-    def __init__(self, system_root: Path):
-        self.system_root = Path(system_root)
-        self.services_dir = self.system_root / "services"
-        self.issues = []
+    return imports
 
-    def validate_service(self, service_name: str) -> Dict:
-        """Validate dependencies for a single service."""
-        service_dir = self.services_dir / service_name
 
-        if not service_dir.exists():
-            return {
-                "service": service_name,
-                "status": "error",
-                "error": f"Service directory not found: {service_dir}"
-            }
+def parse_requirements_txt(req_file: Path) -> Dict[str, str]:
+    """
+    Parse requirements.txt and return package → version mapping.
 
-        print(f"\nValidating dependencies for service: {service_name}")
+    Returns:
+        Dict mapping package name to version specifier (e.g., {'requests': '==2.28.0'})
+    """
+    requirements = {}
 
-        # Step 1: Extract imports from code
-        src_dir = service_dir / "src"
-        if not src_dir.exists():
-            return {
-                "service": service_name,
-                "status": "error",
-                "error": f"Source directory not found: {src_dir}"
-            }
+    if not req_file.exists():
+        return requirements
 
-        imported_modules = self._extract_imports_from_code(src_dir)
-        print(f"  Found {len(imported_modules)} imported modules in code")
+    with open(req_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
 
-        # Step 2: Read declared dependencies
-        declared_packages = self._read_declared_dependencies(service_dir)
-        if declared_packages is None:
-            return {
-                "service": service_name,
-                "status": "error",
-                "error": "No requirements.txt or pyproject.toml found"
-            }
+            # Skip comments and empty lines
+            if not line or line.startswith('#'):
+                continue
 
-        print(f"  Found {len(declared_packages)} declared packages")
+            # Skip -e and -r directives
+            if line.startswith('-e') or line.startswith('-r'):
+                continue
 
-        # Step 3: Compare and find missing dependencies
-        missing_deps = self._find_missing_dependencies(
-            imported_modules, declared_packages
-        )
+            # Parse package==version or package>=version
+            match = re.match(r'^([a-zA-Z0-9_-]+)([>=<~!]*[0-9.]*)', line)
+            if match:
+                package = match.group(1).lower()
+                version_spec = match.group(2) if match.group(2) else ''
+                requirements[package] = version_spec
 
-        # Step 4: Check for common issues
-        version_warnings = self._check_version_patterns(service_dir)
+    return requirements
 
-        # Build result
-        result = {
-            "service": service_name,
-            "status": "pass" if not missing_deps else "fail",
-            "imported_modules_count": len(imported_modules),
-            "declared_packages_count": len(declared_packages),
-            "missing_dependencies": missing_deps,
-            "version_warnings": version_warnings
-        }
 
-        if missing_deps:
-            print(f"  ❌ FAIL: {len(missing_deps)} missing dependencies")
-            for dep in missing_deps:
-                print(f"    - {dep['package']} (imported in {dep['example_file']})")
-        else:
-            print(f"  ✅ PASS: All imports found in dependencies")
+def parse_package_json(pkg_file: Path) -> Dict[str, str]:
+    """
+    Parse package.json and return dependencies.
 
-        return result
+    Returns:
+        Dict mapping package name to version (e.g., {'express': '^4.18.0'})
+    """
+    dependencies = {}
 
-    def _extract_imports_from_code(self, src_dir: Path) -> Set[str]:
-        """Extract all import statements from Python files using AST."""
-        imported_modules = set()
+    if not pkg_file.exists():
+        return dependencies
 
-        # Find all Python files
-        python_files = list(src_dir.rglob("*.py"))
+    try:
+        with open(pkg_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-        for py_file in python_files:
-            try:
-                with open(py_file, 'r', encoding='utf-8') as f:
-                    tree = ast.parse(f.read(), filename=str(py_file))
+        # Merge dependencies and devDependencies
+        dependencies.update(data.get('dependencies', {}))
+        dependencies.update(data.get('devDependencies', {}))
+    except Exception as e:
+        print(f"Warning: Could not parse {pkg_file}: {e}")
 
-                for node in ast.walk(tree):
-                    # Handle: import X
-                    if isinstance(node, ast.Import):
-                        for alias in node.names:
-                            module_name = alias.name.split('.')[0]
-                            imported_modules.add(module_name)
+    return dependencies
 
-                    # Handle: from X import Y
-                    elif isinstance(node, ast.ImportFrom):
-                        if node.module:
-                            module_name = node.module.split('.')[0]
-                            imported_modules.add(module_name)
 
-            except SyntaxError as e:
-                print(f"  Warning: Syntax error in {py_file}: {e}")
-            except Exception as e:
-                print(f"  Warning: Could not parse {py_file}: {e}")
+def extract_nodejs_imports(file_path: Path) -> Set[str]:
+    """
+    Extract require() and import statements from JavaScript/TypeScript files.
 
-        # Filter out standard library modules
-        external_modules = {
-            mod for mod in imported_modules
-            if mod not in self.STDLIB_MODULES
-        }
+    Returns:
+        Set of package names
+    """
+    imports = set()
 
-        return external_modules
-
-    def _read_declared_dependencies(self, service_dir: Path) -> Set[str]:
-        """Read dependencies from requirements.txt or pyproject.toml."""
-        # Try requirements.txt first
-        req_file = service_dir / "requirements.txt"
-        if req_file.exists():
-            return self._parse_requirements_txt(req_file)
-
-        # Try pyproject.toml
-        pyproject_file = service_dir / "pyproject.toml"
-        if pyproject_file.exists():
-            return self._parse_pyproject_toml(pyproject_file)
-
-        return None
-
-    def _parse_requirements_txt(self, req_file: Path) -> Set[str]:
-        """Parse requirements.txt and extract package names."""
-        packages = set()
-
-        with open(req_file, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-
-                # Skip comments and empty lines
-                if not line or line.startswith('#'):
-                    continue
-
-                # Extract package name (before ==, >=, <=, etc.)
-                match = re.match(r'^([a-zA-Z0-9_\-\.]+)', line)
-                if match:
-                    package_name = match.group(1).lower()
-                    packages.add(package_name)
-
-        return packages
-
-    def _parse_pyproject_toml(self, pyproject_file: Path) -> Set[str]:
-        """Parse pyproject.toml and extract package names."""
-        packages = set()
-
-        try:
-            import tomli
-        except ImportError:
-            # Fallback: simple regex parsing (not perfect but works for basic cases)
-            with open(pyproject_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-
-                # Find dependencies section
-                in_deps = False
-                for line in content.split('\n'):
-                    if 'dependencies' in line and '=' in line:
-                        in_deps = True
-                        continue
-
-                    if in_deps:
-                        if line.strip().startswith(']'):
-                            break
-
-                        # Extract package name from "package>=version" format
-                        match = re.search(r'"([a-zA-Z0-9_\-\.]+)', line)
-                        if match:
-                            package_name = match.group(1).lower()
-                            packages.add(package_name)
-
-            return packages
-
-        # Use tomli if available
-        with open(pyproject_file, 'rb') as f:
-            data = tomli.load(f)
-
-        # Try different locations in pyproject.toml
-        if 'project' in data and 'dependencies' in data['project']:
-            for dep in data['project']['dependencies']:
-                match = re.match(r'^([a-zA-Z0-9_\-\.]+)', dep)
-                if match:
-                    package_name = match.group(1).lower()
-                    packages.add(package_name)
-
-        return packages
-
-    def _find_missing_dependencies(
-        self,
-        imported_modules: Set[str],
-        declared_packages: Set[str]
-    ) -> List[Dict]:
-        """Find imported modules not in declared packages."""
-        missing = []
-
-        for module in sorted(imported_modules):
-            # Convert import name to package name if needed
-            package_name = self.IMPORT_TO_PACKAGE.get(module, module).lower()
-
-            # Check if package is declared
-            if package_name not in declared_packages:
-                # Try with hyphens/underscores variations
-                package_hyphen = package_name.replace('_', '-')
-                package_underscore = package_name.replace('-', '_')
-
-                if (package_hyphen not in declared_packages and
-                    package_underscore not in declared_packages):
-
-                    # Find example file where this module is imported
-                    example_file = self._find_import_location(module)
-
-                    missing.append({
-                        "module": module,
-                        "package": package_name,
-                        "example_file": example_file,
-                        "suggestion": f"Add '{package_name}' to requirements.txt"
-                    })
-
-        return missing
-
-    def _find_import_location(self, module: str) -> str:
-        """Find a file where this module is imported (for error reporting)."""
-        # This is a simplified version - we could cache this during extraction
-        return f"(search codebase for 'import {module}')"
-
-    def _check_version_patterns(self, service_dir: Path) -> List[str]:
-        """Check for common version-related issues."""
-        warnings = []
-
-        req_file = service_dir / "requirements.txt"
-        if not req_file.exists():
-            return warnings
-
-        with open(req_file, 'r', encoding='utf-8') as f:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Check for unpinned versions (no version specified)
-        unpinned = re.findall(r'^([a-zA-Z0-9_\-\.]+)\s*$', content, re.MULTILINE)
-        if unpinned:
-            warnings.append(
-                f"Unpinned versions found: {', '.join(unpinned[:3])}... "
-                f"(consider pinning versions for reproducible builds)"
-            )
+        # Match require('package') or require("package")
+        require_pattern = r"require\(['\"]([^'\"./][^'\"]*)['\"]"
+        imports.update(re.findall(require_pattern, content))
 
-        # Check for very loose constraints (>=)
-        loose = re.findall(r'([a-zA-Z0-9_\-\.]+)>=', content)
-        if len(loose) > 5:
-            warnings.append(
-                f"{len(loose)} packages with >= constraints "
-                f"(consider using == for deterministic builds)"
-            )
+        # Match import ... from 'package' or import ... from "package"
+        import_pattern = r"import\s+.*\s+from\s+['\"]([^'\"./][^'\"]*)['\"]"
+        imports.update(re.findall(import_pattern, content))
 
-        return warnings
+        # Get base package (e.g., 'express' from 'express/lib/router')
+        imports = {pkg.split('/')[0] for pkg in imports}
+    except Exception as e:
+        print(f"Warning: Could not parse {file_path}: {e}")
 
-    def validate_all_services(self) -> Dict:
-        """Validate dependencies for all services."""
-        if not self.services_dir.exists():
-            return {
-                "status": "error",
-                "error": f"Services directory not found: {self.services_dir}"
-            }
+    return imports
 
-        # Find all service directories
-        services = [
-            d.name for d in self.services_dir.iterdir()
-            if d.is_dir() and not d.name.startswith('.')
-        ]
 
-        if not services:
-            return {
-                "status": "error",
-                "error": "No services found"
-            }
+def validate_python_dependencies(system_root: Path) -> Dict:
+    """
+    Validate Python dependencies.
 
-        print(f"Found {len(services)} services: {', '.join(services)}")
+    Returns:
+        Dict with validation results
+    """
+    results = {
+        "language": "python",
+        "critical_issues": [],
+        "warnings": [],
+        "info": []
+    }
 
-        results = []
-        for service in services:
-            result = self.validate_service(service)
-            results.append(result)
+    # Find requirements.txt
+    req_files = list(system_root.rglob('requirements.txt'))
+    if not req_files:
+        results["info"].append("No requirements.txt found, skipping Python validation")
+        return results
 
-        # Overall status
-        failed_services = [r for r in results if r.get('status') == 'fail']
-        overall_status = 'fail' if failed_services else 'pass'
+    req_file = req_files[0]
+    declared_deps = parse_requirements_txt(req_file)
+    results["info"].append(f"Found requirements.txt at {req_file.relative_to(system_root)}")
+    results["info"].append(f"Declared dependencies: {len(declared_deps)}")
 
-        return {
-            "status": overall_status,
-            "services_validated": len(services),
-            "services_passed": len(services) - len(failed_services),
-            "services_failed": len(failed_services),
-            "results": results
-        }
+    # Find all Python files
+    py_files = [
+        f for f in system_root.rglob('*.py')
+        if not any(part.startswith('.') for part in f.parts)  # Skip hidden dirs
+        and 'venv' not in f.parts
+        and '__pycache__' not in f.parts
+    ]
+
+    if not py_files:
+        results["warnings"].append("No Python files found")
+        return results
+
+    results["info"].append(f"Analyzing {len(py_files)} Python files")
+
+    # Extract all imports
+    all_imports = set()
+    for py_file in py_files:
+        all_imports.update(extract_python_imports(py_file))
+
+    # Filter out stdlib and local imports
+    stdlib_modules = {
+        'sys', 'os', 'json', 'ast', 're', 'pathlib', 'typing', 'collections',
+        'itertools', 'functools', 'datetime', 'time', 'logging', 'argparse',
+        'subprocess', 'shutil', 'tempfile', 'urllib', 'http', 'copy', 'math',
+        'random', 'string', 'unittest', 'pytest', 'enum', 'dataclasses', 'abc'
+    }
+
+    third_party_imports = {
+        imp for imp in all_imports
+        if imp not in stdlib_modules and not imp.startswith('_')
+    }
+
+    results["info"].append(f"Found {len(third_party_imports)} third-party imports")
+
+    # Check for missing dependencies
+    missing_deps = []
+    for imp in third_party_imports:
+        # Normalize package names (e.g., 'PIL' → 'pillow')
+        normalized = imp.lower().replace('_', '-')
+
+        if normalized not in declared_deps:
+            missing_deps.append(imp)
+
+    if missing_deps:
+        results["critical_issues"].append({
+            "issue": "missing_dependencies",
+            "description": f"Code imports {len(missing_deps)} packages not in requirements.txt",
+            "packages": sorted(missing_deps),
+            "impact": "CRITICAL - will cause ModuleNotFoundError at runtime"
+        })
+
+    # Check for unpinned versions
+    unpinned = []
+    for pkg, version in declared_deps.items():
+        if not version or version.startswith('>=') or version.startswith('>'):
+            unpinned.append(pkg)
+
+    if unpinned:
+        results["warnings"].append({
+            "issue": "unpinned_versions",
+            "description": f"{len(unpinned)} packages without exact version pins",
+            "packages": sorted(unpinned),
+            "recommendation": "Pin to exact versions (use ==) for reproducible builds"
+        })
+
+    # Check for unused dependencies
+    unused = []
+    for pkg in declared_deps.keys():
+        normalized = pkg.replace('-', '_')
+        if normalized not in [imp.lower().replace('-', '_') for imp in third_party_imports]:
+            unused.append(pkg)
+
+    if unused:
+        results["info"].append(f"Potentially unused dependencies: {', '.join(sorted(unused))}")
+
+    return results
+
+
+def validate_nodejs_dependencies(system_root: Path) -> Dict:
+    """
+    Validate Node.js dependencies.
+
+    Returns:
+        Dict with validation results
+    """
+    results = {
+        "language": "nodejs",
+        "critical_issues": [],
+        "warnings": [],
+        "info": []
+    }
+
+    # Find package.json
+    pkg_files = list(system_root.rglob('package.json'))
+    if not pkg_files:
+        results["info"].append("No package.json found, skipping Node.js validation")
+        return results
+
+    pkg_file = pkg_files[0]
+    declared_deps = parse_package_json(pkg_file)
+    results["info"].append(f"Found package.json at {pkg_file.relative_to(system_root)}")
+    results["info"].append(f"Declared dependencies: {len(declared_deps)}")
+
+    # Find all JS/TS files
+    js_files = [
+        f for f in system_root.rglob('*.js')
+        if not any(part.startswith('.') for part in f.parts)
+        and 'node_modules' not in f.parts
+    ]
+    ts_files = [
+        f for f in system_root.rglob('*.ts')
+        if not any(part.startswith('.') for part in f.parts)
+        and 'node_modules' not in f.parts
+    ]
+
+    all_files = js_files + ts_files
+
+    if not all_files:
+        results["warnings"].append("No JavaScript/TypeScript files found")
+        return results
+
+    results["info"].append(f"Analyzing {len(all_files)} JS/TS files")
+
+    # Extract all imports
+    all_imports = set()
+    for file in all_files:
+        all_imports.update(extract_nodejs_imports(file))
+
+    # Filter out Node.js built-ins
+    builtin_modules = {
+        'fs', 'path', 'http', 'https', 'url', 'util', 'events', 'stream',
+        'crypto', 'os', 'process', 'buffer', 'child_process', 'cluster'
+    }
+
+    third_party_imports = {
+        imp for imp in all_imports
+        if imp not in builtin_modules and not imp.startswith('.')
+    }
+
+    results["info"].append(f"Found {len(third_party_imports)} third-party imports")
+
+    # Check for missing dependencies
+    missing_deps = []
+    for imp in third_party_imports:
+        if imp not in declared_deps:
+            missing_deps.append(imp)
+
+    if missing_deps:
+        results["critical_issues"].append({
+            "issue": "missing_dependencies",
+            "description": f"Code imports {len(missing_deps)} packages not in package.json",
+            "packages": sorted(missing_deps),
+            "impact": "CRITICAL - will cause MODULE_NOT_FOUND error at runtime"
+        })
+
+    # Check for semver ranges
+    wide_ranges = []
+    for pkg, version in declared_deps.items():
+        if version.startswith('^') or version.startswith('~') or version == '*':
+            wide_ranges.append(f"{pkg}: {version}")
+
+    if wide_ranges:
+        results["warnings"].append({
+            "issue": "semver_ranges",
+            "description": f"{len(wide_ranges)} packages use semver ranges (^, ~, *)",
+            "packages": sorted(wide_ranges),
+            "recommendation": "Consider using exact versions or package-lock.json for reproducibility"
+        })
+
+    return results
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Validate that code imports match declared dependencies"
-    )
-    parser.add_argument(
-        '--system-root',
-        required=True,
-        help='Path to system root directory'
-    )
-    parser.add_argument(
-        '--service',
-        help='Validate specific service'
-    )
-    parser.add_argument(
-        '--all-services',
-        action='store_true',
-        help='Validate all services'
-    )
-    parser.add_argument(
-        '--output',
-        help='Output JSON report to file'
-    )
-
-    args = parser.parse_args()
-
-    validator = DependencyValidator(args.system_root)
-
-    # Validate
-    if args.service:
-        result = validator.validate_service(args.service)
-    elif args.all_services:
-        result = validator.validate_all_services()
-    else:
-        print("Error: Must specify --service or --all-services")
+    if len(sys.argv) != 2:
+        print("Usage: python3 validate_dependencies.py <system_root>")
         sys.exit(1)
 
-    # Output result
-    if args.output:
-        output_file = Path(args.output)
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_file, 'w') as f:
-            json.dump(result, f, indent=2)
-        print(f"\nValidation report written to: {output_file}")
+    system_root = Path(sys.argv[1]).resolve()
+
+    if not system_root.exists():
+        print(f"Error: System root does not exist: {system_root}")
+        sys.exit(1)
+
+    print(f"Validating dependencies in: {system_root}")
+    print("=" * 80)
+
+    # Validate Python dependencies
+    python_results = validate_python_dependencies(system_root)
+
+    # Validate Node.js dependencies
+    nodejs_results = validate_nodejs_dependencies(system_root)
+
+    # Combine results
+    combined_results = {
+        "validation_type": "dependency_validation",
+        "system_root": str(system_root),
+        "python": python_results,
+        "nodejs": nodejs_results
+    }
+
+    # Count issues
+    total_critical = len(python_results["critical_issues"]) + len(nodejs_results["critical_issues"])
+    total_warnings = len(python_results["warnings"]) + len(nodejs_results["warnings"])
 
     # Print summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 80)
     print("DEPENDENCY VALIDATION SUMMARY")
-    print("="*60)
+    print("=" * 80)
 
-    if result['status'] == 'pass':
-        print("✅ PASS: All dependencies validated successfully")
-        sys.exit(0)
-    elif result['status'] == 'fail':
-        print("❌ FAIL: Missing dependencies found")
-        print("\nAction required:")
-        print("  1. Add missing packages to requirements.txt or pyproject.toml")
-        print("  2. Re-run validation to confirm fixes")
+    if total_critical > 0:
+        print(f"\n🔴 CRITICAL ISSUES: {total_critical}")
+        for lang_results in [python_results, nodejs_results]:
+            for issue in lang_results["critical_issues"]:
+                print(f"\n  [{lang_results['language'].upper()}] {issue['issue']}")
+                print(f"  {issue['description']}")
+                print(f"  Impact: {issue['impact']}")
+                print(f"  Packages: {', '.join(issue['packages'][:10])}")
+                if len(issue['packages']) > 10:
+                    print(f"  ... and {len(issue['packages']) - 10} more")
+
+    if total_warnings > 0:
+        print(f"\n⚠️  WARNINGS: {total_warnings}")
+        for lang_results in [python_results, nodejs_results]:
+            for warning in lang_results["warnings"]:
+                if isinstance(warning, dict):
+                    print(f"\n  [{lang_results['language'].upper()}] {warning['issue']}")
+                    print(f"  {warning['description']}")
+                else:
+                    print(f"  [{lang_results['language'].upper()}] {warning}")
+
+    if total_critical == 0 and total_warnings == 0:
+        print("\n✅ All dependency validations passed!")
+
+    # Write results to file
+    output_file = system_root / "specs" / "machine" / "validation" / "dependency_validation_results.json"
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(combined_results, f, indent=2)
+
+    print(f"\nDetailed results written to: {output_file}")
+
+    # Exit with appropriate code
+    if total_critical > 0:
+        print("\n❌ VALIDATION FAILED - Critical issues detected")
         sys.exit(1)
+    elif total_warnings > 0:
+        print("\n⚠️  VALIDATION PASSED WITH WARNINGS")
+        sys.exit(2)
     else:
-        print(f"⚠️  ERROR: {result.get('error', 'Unknown error')}")
-        sys.exit(1)
+        print("\n✅ VALIDATION PASSED")
+        sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

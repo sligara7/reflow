@@ -1,0 +1,40 @@
+{
+  "service_id": "WF-PROD",
+  "service_name": "Production Deployment",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Deploy to production environment",
+  "service_type": "process_step",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-TEST",
+        "interface_id": "IFC-TEST-OUT",
+        "dependency_type": "sequential",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 0.7,
+          "unit": "probability",
+          "description": "70% - testing passes on first attempt"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-TEST-OUT",
+        "provider_service_id": "WF-TEST",
+        "criticality": "high"
+      }
+    ]
+  },
+  "deployment": {
+    "execution_time_avg_hours": 8
+  },
+  "workflow_metadata": {
+    "step_type": "end_node",
+    "quality_gate": false
+  }
+}

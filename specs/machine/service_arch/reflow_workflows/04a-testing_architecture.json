@@ -1,0 +1,98 @@
+{
+  "service_id": "04a-testing",
+  "service_name": "Testing Workflow",
+  "version": "3.7.0",
+  "description": "Integration testing and comprehensive testing (E2E, performance, security)",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Testing Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup",
+      "01-systems_engineering",
+      "02-artifacts_visualization",
+      "03-development"
+    ],
+    "tools": [
+      "E2E testing frameworks",
+      "Performance testing tools",
+      "Security testing tools",
+      "Test frameworks (language-specific)",
+      "verify_component_contract.py"
+    ],
+    "templates": [
+      "dte_artifacts_template.json",
+      "ote_artifacts_template.json"
+    ]
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "04a-testing_interface",
+        "interface_name": "Testing Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "tool_E2E testing frameworks",
+        "interface_name": "Tool: E2E testing frameworks",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Performance testing tools",
+        "interface_name": "Tool: Performance testing tools",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Security testing tools",
+        "interface_name": "Tool: Security testing tools",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_Test frameworks (language-specific)",
+        "interface_name": "Tool: Test frameworks (language-specific)",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "tool_verify_component_contract.py",
+        "interface_name": "Tool: verify_component_contract.py",
+        "protocol": "tool_invocation",
+        "target_type": "tool"
+      },
+      {
+        "interface_id": "template_dte_artifacts_template.json",
+        "interface_name": "Template: dte_artifacts_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      },
+      {
+        "interface_id": "template_ote_artifacts_template.json",
+        "interface_name": "Template: ote_artifacts_template.json",
+        "protocol": "template_usage",
+        "target_type": "template"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "04a-testing.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": "04b-operations"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "service_id": "order_service",
+  "service_name": "Order Service",
+  "version": "1.0.0",
+  "description": "Manages customer orders - Uses user_service but NOT product_service",
+  "framework": "uaf",
+  "service_type": "application",
+  "functions": [
+    {
+      "function_id": "F-ORD-01",
+      "function_name": "Order Management",
+      "description": "CRUD operations for orders"
+    }
+  ],
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "IFC-ORD-001",
+        "interface_name": "Order Management API",
+        "protocol": "REST",
+        "data_format": "JSON",
+        "operations": [
+          {
+            "operation_id": "OP-ORD-001",
+            "operation_name": "Create Order",
+            "method": "POST",
+            "endpoint": "/api/v1/orders"
+          }
+        ]
+      }
+    ],
+    "required": [
+      {
+        "interface_id": "IFC-USER-001",
+        "interface_name": "User Management API",
+        "target_service": "user_service",
+        "protocol": "REST",
+        "usage": "Validate user exists before creating order"
+      }
+    ]
+  },
+  "deployment": {
+    "runtime": "Python 3.11",
+    "framework_dependencies": ["FastAPI", "SQLAlchemy"],
+    "ports": {
+      "primary": {
+        "port": 8002,
+        "protocol": "HTTP"
+      }
+    }
+  }
+}

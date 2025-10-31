@@ -1,0 +1,57 @@
+{
+  "service_id": "WF-TEST",
+  "service_name": "Testing Phase",
+  "version": "1.0.0",
+  "framework": "decision_flow",
+  "description": "Integration and system testing",
+  "service_type": "process_step",
+  "dependencies": {
+    "services_consumed": [
+      {
+        "service_id": "WF-IMPL",
+        "interface_id": "IFC-IMPL-OUT",
+        "dependency_type": "sequential",
+        "edge_weight": {
+          "metric": "transition_probability",
+          "value": 1.0,
+          "unit": "probability",
+          "description": "100% - always proceed to testing after implementation"
+        }
+      }
+    ]
+  },
+  "interfaces": {
+    "provided_interfaces": [
+      {
+        "interface_id": "IFC-TEST-OUT",
+        "interface_name": "Testing Complete - Ready for Production",
+        "protocol": "workflow_transition",
+        "data_format": "test_report"
+      },
+      {
+        "interface_id": "IFC-TEST-REWORK",
+        "interface_name": "Testing Failed - Rework Implementation",
+        "protocol": "workflow_transition",
+        "data_format": "defect_report"
+      }
+    ],
+    "required_interfaces": [
+      {
+        "interface_id": "IFC-IMPL-OUT",
+        "provider_service_id": "WF-IMPL",
+        "criticality": "high"
+      }
+    ]
+  },
+  "deployment": {
+    "execution_time_avg_hours": 60
+  },
+  "workflow_metadata": {
+    "step_type": "intermediate_node",
+    "quality_gate": true,
+    "conditional_routing": {
+      "pass_rate": 0.7,
+      "rework_rate": 0.3
+    }
+  }
+}

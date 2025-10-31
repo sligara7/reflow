@@ -1,0 +1,47 @@
+{
+  "service_id": "01a-approach_detection",
+  "service_name": "Approach Detection Workflow",
+  "version": "3.7.0",
+  "description": "Automatically detect bottom-up (existing components) vs top-down (greenfield) approach",
+  "service_type": "workflow",
+  "framework": "uaf",
+  "capabilities": {
+    "primary_functions": [
+      "Execute Approach Detection Workflow workflow"
+    ]
+  },
+  "dependencies": {
+    "workflows": [
+      "00-setup"
+    ],
+    "tools": [],
+    "templates": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_id": "01a-approach_detection_interface",
+        "interface_name": "Approach Detection Workflow Interface",
+        "protocol": "workflow_execution",
+        "operations": [
+          "execute",
+          "validate"
+        ]
+      }
+    ],
+    "required": []
+  },
+  "deployment": {
+    "runtime": "reflow_executor",
+    "file": "01a-approach_detection.json"
+  },
+  "metadata": {
+    "deprecated": false,
+    "replaced_by": [],
+    "next_workflow": {
+      "if_bottom_up": "01b-bottom_up_integration",
+      "if_top_down": "01c-top_down_design",
+      "routing_note": "LLM reads context/approach_detection_result.json to determine next workflow"
+    }
+  }
+}

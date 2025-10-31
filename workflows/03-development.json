@@ -868,55 +868,55 @@
           "note": "Non-blocking to allow controlled architectural drift with documentation"
         }
       ],
-      "next_step": "D-06.5"
+      "next_step": "D-07"
     },
     {
-      "step_id": "D-06.5",
+      "step_id": "D-07",
       "name": "Pre-Deployment Integration Validation",
       "description": "Comprehensive validation before operational testing - prevents 80-90% of deployment blockers",
       "phase": "validation",
-      "step_file": "workflow_steps/development/D-06_5-PreDeploymentValidation.json",
+      "step_file": "workflow_steps/development/D-07-PreDeploymentValidation.json",
       "criticality": "CRITICAL - Prevents 'toss it over the fence' problem",
       "new_in_version": "Reflow v3.6.0 - Early Testing Integration feature",
       "actions": [
         {
-          "action_id": "D-06.5-A01",
+          "action_id": "D-07-A01",
           "description": "Dependency validation - ensure code imports match requirements.txt",
           "tool": "validate_dependencies.py",
           "prevents": "Category 1 issues - Missing dependencies (5 issues)"
         },
         {
-          "action_id": "D-06.5-A02",
+          "action_id": "D-07-A02",
           "description": "Module structure validation - check __init__.py, circular imports, shadowing",
           "tool": "validate_module_structure.py",
           "prevents": "Category 2 issues - Module structure (3 issues)"
         },
         {
-          "action_id": "D-06.5-A03",
+          "action_id": "D-07-A03",
           "description": "Configuration consistency - ensure code defaults match docker-compose.yml",
           "tool": "validate_configuration_consistency.py",
           "prevents": "Category 5 issues - Configuration drift (2 issues)"
         },
         {
-          "action_id": "D-06.5-A04",
+          "action_id": "D-07-A04",
           "description": "Database permission validation - service user can run migrations",
           "method": "Manual test with service user credentials",
           "prevents": "Category 3 issues - Database permissions (4 issues)"
         },
         {
-          "action_id": "D-06.5-A05",
+          "action_id": "D-07-A05",
           "description": "Docker build validation - builds succeed without cache",
           "method": "docker build --no-cache",
           "prevents": "Category 4 issues - Build infrastructure (1 issue)"
         },
         {
-          "action_id": "D-06.5-A06",
+          "action_id": "D-07-A06",
           "description": "System-wide smoke test - all services start and communicate",
           "method": "docker-compose up + end-to-end scenario",
           "validates": "Complete system integration"
         },
         {
-          "action_id": "D-06.5-A07",
+          "action_id": "D-07-A07",
           "description": "Contract validation - implementations match ICDs",
           "tool": "verify_component_contract.py --strict",
           "validates": "API contract compliance"
@@ -939,7 +939,7 @@
       ],
       "gates": [
         {
-          "gate_id": "G-D-06.5",
+          "gate_id": "G-D-07",
           "name": "Pre-Deployment Integration Validation Gate",
           "checks": [
             "Dependency validation passes (no missing packages)",
@@ -951,7 +951,19 @@
             "Contract validation passes (all ICDs implemented correctly)"
           ],
           "blocking": true,
-          "enforcement": "BLOCKING - Must pass all checks before proceeding to D-Post",
+          "enforcement": {
+            "tier_1_critical": [
+              "Dependency validation passes",
+              "Module structure validation passes",
+              "Configuration consistency validation passes",
+              "Contract validation passes"
+            ],
+            "tier_2_important": [
+              "Component delta alignment check",
+              "Architecture drift documentation",
+              "System smoke test"
+            ]
+          },
           "impact": "Prevents 80-90% of operational testing blockers (15+ issues)",
           "bypass_not_allowed": "This gate is ALWAYS enforced - no exceptions"
         }
