@@ -1,0 +1,865 @@
+{
+  "template_version": "1.0.0",
+  "template_id": "system_test_strategy",
+  "description": "Comprehensive test strategy for the entire system based on complete architecture (SE-06-A05)",
+  "created_date": "{timestamp}",
+  "system_name": "{system_name}",
+  "system_version": "{system_version}",
+  "workflow_step": "SE-06-A05",
+  "workflow_step_name": "Define System Test Strategy",
+  "new_in_version": "Reflow v3.6.0 - Early Testing Integration",
+
+  "test_strategy_philosophy": {
+    "purpose": "Define testing strategy UPFRONT (in SE phase) so development implements tests per plan and operations executes tests",
+    "principle": "Testing is an ARCHITECTURAL decision, not an operational afterthought",
+    "critical_note": "Testing strategy defined HERE (SE phase), implemented in Development workflow (D-02 to D-05), executed in Testing workflow (TO-01 to TO-05). Testing phase does NOT invent new tests.",
+    "risk_based": "Focus effort on high-risk services (comprehensive testing) while avoiding over-testing low-risk services",
+    "prevents": "Toss-it-over-the-fence problem - developers know testing requirements upfront, operators execute pre-defined plan"
+  },
+
+  "applicability": {
+    "applies_to": "All frameworks (UAF, Biology, Social, Ecological, CAS, Custom)",
+    "note": "Testing strategy is universal - all system types need validation, although specific test types may vary by framework"
+  },
+
+  "test_strategy_sections": {
+    "unit_test_strategy": {
+      "description": "Component-level testing strategy for individual services/components",
+      "purpose": "Validate individual components work correctly in isolation",
+
+      "coverage_targets": {
+        "description": "Minimum test coverage based on service risk level",
+        "source": "Risk levels from SE-02-A10 (risk_assessment.json per service)",
+        "targets": {
+          "high_risk_services": {
+            "score_range": "2.6 - 3.0",
+            "coverage_target": "85%",
+            "rationale": "Critical services (payment, auth, data storage) require comprehensive testing",
+            "example_services": ["payment_service", "authentication_service", "api_gateway", "user_data_service"]
+          },
+          "medium_risk_services": {
+            "score_range": "1.6 - 2.5",
+            "coverage_target": "80%",
+            "rationale": "Important services require solid test coverage",
+            "example_services": ["notification_service", "search_service", "user_profile_service"]
+          },
+          "low_risk_services": {
+            "score_range": "1.0 - 1.5",
+            "coverage_target": "60%",
+            "rationale": "Non-critical services (logging, metrics) need basic coverage, not comprehensive",
+            "example_services": ["logging_service", "metrics_collector", "static_content_api"]
+          }
+        }
+      },
+
+      "test_frameworks": {
+        "description": "Language-specific test frameworks",
+        "python": {
+          "framework": "pytest",
+          "plugins": ["pytest-cov (coverage)", "pytest-asyncio (async tests)", "pytest-mock (mocking)"],
+          "example": "pytest tests/ --cov=src --cov-report=html"
+        },
+        "javascript": {
+          "framework": "Jest or Vitest",
+          "features": "Built-in mocking, coverage, snapshot testing",
+          "example": "npm test -- --coverage"
+        },
+        "java": {
+          "framework": "JUnit 5",
+          "libraries": ["Mockito (mocking)", "AssertJ (assertions)", "JaCoCo (coverage)"],
+          "example": "mvn test jacoco:report"
+        },
+        "go": {
+          "framework": "go test (built-in)",
+          "tools": ["testify (assertions)", "gomock (mocking)"],
+          "example": "go test -cover ./..."
+        }
+      },
+
+      "mocking_strategy": {
+        "external_dependencies": "Mock external systems (databases, message queues, third-party APIs)",
+        "internal_dependencies": "Use real internal components where possible, mock only at service boundaries",
+        "rationale": "Mocking external deps keeps tests fast and reliable; using real internal components catches integration issues early",
+        "tools": {
+          "python": "unittest.mock, pytest-mock",
+          "javascript": "Jest mocks, Sinon.js",
+          "java": "Mockito, WireMock",
+          "go": "gomock, testify/mock"
+        }
+      },
+
+      "test_organization": {
+        "structure": "Mirror source code structure in tests/ directory",
+        "naming": "test_{module_name}.py or {module_name}.test.ts",
+        "descriptive_names": "Use descriptive test names: test_create_character_with_valid_data_returns_201() not test_create()",
+        "arrange_act_assert": "Follow AAA pattern: Arrange (setup), Act (execute), Assert (verify)"
+      },
+
+      "continuous_testing": {
+        "frequency": "Run on every commit via CI/CD pipeline",
+        "failure_handling": "Block pull request merge if tests fail or coverage drops below target",
+        "fast_feedback": "Unit tests should complete in < 5 minutes for rapid feedback"
+      },
+
+      "success_criteria": [
+        "All services meet risk-based coverage targets (85% high-risk, 80% medium, 60% low)",
+        "All tests pass (zero failures)",
+        "Tests run in < 5 minutes",
+        "No flaky tests (tests that randomly fail)"
+      ]
+    },
+
+    "integration_test_strategy": {
+      "description": "Cross-component testing strategy for service interactions",
+      "purpose": "Validate services work correctly together, catching interface mismatches and integration bugs",
+
+      "integration_targets": {
+        "description": "Which service pairs require integration tests",
+        "source": "Derived from system_of_systems_graph.json edges",
+        "rule": "Every edge in system graph requires at least one integration test",
+        "example_targets": [
+          {
+            "service_pair": "character_service → session_service",
+            "edge_description": "Create character → Use character in session",
+            "test_scenario": "Create character via character_service API, start session with character ID, verify session_service fetches character details",
+            "integration_points": ["character_api interface", "character ID validation", "cross-service data consistency"]
+          },
+          {
+            "service_pair": "api_gateway → authentication_service → user_service",
+            "edge_description": "User login flow",
+            "test_scenario": "POST /login to api_gateway → api_gateway calls authentication_service → authentication_service validates credentials in user_service",
+            "integration_points": ["JWT token generation", "token validation", "user existence check"]
+          }
+        ]
+      },
+
+      "test_environment": {
+        "approach": "Docker Compose with test database/queue/cache",
+        "isolation": "Each test suite gets fresh environment (or database transaction rollback)",
+        "configuration": "Use test-specific config (TEST_MODE=true, in-memory databases where applicable)",
+        "example": "docker-compose -f docker-compose.test.yml up -d"
+      },
+
+      "mocking_approach": {
+        "external_systems": "Mock third-party APIs (payment gateways, email services, external data sources)",
+        "internal_services": "Use real internal services (not mocks) to catch integration issues",
+        "test_doubles": "Use stubs for unavailable services during development, replace with real services before merge"
+      },
+
+      "data_setup_teardown": {
+        "fixtures": "Use test fixtures to create known data state before tests",
+        "database_seeding": "Seed test database with realistic data (users, entities, relationships)",
+        "cleanup": "Tear down data after each test (transaction rollback or DELETE operations)",
+        "idempotency": "Tests should be idempotent (can run multiple times without side effects)"
+      },
+
+      "contract_tests": {
+        "description": "Consumer-driven contract tests ensure API compatibility",
+        "tools": ["Pact (for HTTP APIs)", "Spring Cloud Contract", "verify_component_contract.py (Reflow tool)"],
+        "approach": "Consumer defines expected contract, provider validates implementation matches",
+        "example": "character_service (consumer) defines contract for session_service API (provider), session_service validates it provides expected responses"
+      },
+
+      "success_criteria": [
+        "All service pairs (edges in system graph) have at least one integration test",
+        "Integration tests pass in test environment (Docker Compose)",
+        "Tests catch interface mismatches (wrong response format, missing fields)",
+        "Tests complete in < 10 minutes"
+      ]
+    },
+
+    "contract_test_strategy": {
+      "description": "Consumer-driven contract testing for all external-facing APIs",
+      "purpose": "Prevent breaking changes to APIs that would break consumers",
+
+      "approach": {
+        "pattern": "Consumer-driven contracts",
+        "workflow": [
+          "1. Consumer defines expected contract (request format, response format, status codes)",
+          "2. Contract published to contract repository (Git repo or Pact Broker)",
+          "3. Provider fetches contract and validates implementation matches",
+          "4. Provider runs contract tests on every commit (CI/CD)"
+        ],
+        "benefit": "Consumers specify what they need, providers guarantee compatibility - prevents 'it works on my machine' integration failures"
+      },
+
+      "tools": {
+        "pact": {
+          "name": "Pact",
+          "language_support": "Python, JavaScript, Java, Go, Ruby, .NET",
+          "features": "Consumer-driven contracts, Pact Broker for contract sharing, CI/CD integration",
+          "example": "Consumer: pact-python library; Provider: pytest-pact plugin"
+        },
+        "spring_cloud_contract": {
+          "name": "Spring Cloud Contract",
+          "language_support": "Java/Spring Boot",
+          "features": "Contract-first API development, stub generation, consumer/provider testing",
+          "use_case": "Java microservices"
+        },
+        "verify_component_contract": {
+          "name": "verify_component_contract.py",
+          "description": "Reflow tool for contract validation",
+          "use_case": "Validate service implementation matches service_architecture.json contract"
+        }
+      },
+
+      "contract_targets": {
+        "description": "Which interfaces require contract tests",
+        "rule": "All interfaces with external_api: true in interface_registry.json require contract tests",
+        "example_targets": [
+          {
+            "interface": "character_api",
+            "consumers": ["web_frontend", "mobile_app"],
+            "provider": "character_service",
+            "contract_includes": ["GET /characters/{id} returns 200 + character JSON", "POST /characters with valid data returns 201", "POST /characters with invalid data returns 400 + error details"]
+          }
+        ]
+      },
+
+      "versioning_strategy": {
+        "approach": "Semantic versioning for API contracts",
+        "major_version": "Breaking changes (field removed, field type changed, required field added) → Increment major version (v1 → v2)",
+        "minor_version": "Backward-compatible additions (new optional field, new endpoint) → Increment minor version (v2.1 → v2.2)",
+        "patch_version": "Bug fixes (no API changes) → Increment patch version (v2.1.1 → v2.1.2)",
+        "compatibility": "Providers must support current major version + previous major version for 6 months (e.g., v2.x and v1.x simultaneously)"
+      },
+
+      "provider_validation_frequency": {
+        "frequency": "On every commit to provider service (CI/CD pipeline)",
+        "failure_handling": "Block merge if contract tests fail (provider broke contract with consumer)",
+        "notification": "Notify consumers when provider makes breaking changes (even if major version bump planned)"
+      },
+
+      "success_criteria": [
+        "All external APIs have contract tests (coverage = 100% of external_api interfaces)",
+        "Contract tests run on every provider commit",
+        "Breaking changes detected before merge",
+        "Versioning strategy enforced (breaking change = major version bump)"
+      ]
+    },
+
+    "performance_test_strategy": {
+      "description": "Load, stress, and endurance testing to validate system performance",
+      "purpose": "Ensure system handles expected traffic and degrades gracefully under stress",
+
+      "test_types": [
+        {
+          "type": "Load testing",
+          "purpose": "Verify system handles expected traffic without degradation",
+          "scenarios": [
+            {
+              "scenario": "1x expected load",
+              "description": "Normal production traffic",
+              "purpose": "Establish baseline performance",
+              "example": "100 req/sec sustained for 10 minutes"
+            },
+            {
+              "scenario": "2x expected load",
+              "description": "Traffic spike (e.g., marketing campaign)",
+              "purpose": "Verify system handles moderate overload",
+              "example": "200 req/sec sustained for 10 minutes"
+            },
+            {
+              "scenario": "5x expected load",
+              "description": "Severe traffic spike",
+              "purpose": "Find capacity limits, validate auto-scaling",
+              "example": "500 req/sec sustained for 30 minutes",
+              "applicability": "Required ONLY for high-risk services (score >= 2.6)"
+            }
+          ],
+          "tools": ["JMeter", "Gatling", "k6", "Locust", "Apache Bench"],
+          "success_criteria": {
+            "latency_p50": "< 200ms at 2x load",
+            "latency_p95": "< 500ms at 2x load",
+            "latency_p99": "< 1000ms at 2x load",
+            "error_rate": "< 0.1% at 2x load",
+            "throughput": "Handles 2x expected traffic without errors"
+          }
+        },
+        {
+          "type": "Stress testing",
+          "purpose": "Find breaking point and verify graceful degradation",
+          "scenarios": [
+            {
+              "scenario": "Incremental load increase",
+              "description": "Increase load incrementally until system fails",
+              "steps": ["Start at 1x load", "Increase by 50% every 5 minutes", "Continue until error rate > 5% or latency > 5 seconds"],
+              "metrics": "Record breaking point (max throughput before failure)"
+            },
+            {
+              "scenario": "Recovery after overload",
+              "description": "Verify system recovers when load decreases",
+              "steps": ["Push system past breaking point", "Reduce load to normal", "Verify system recovers (latency returns to baseline, error rate drops to 0%)"]
+            }
+          ],
+          "success_criteria": {
+            "graceful_degradation": "System returns 503 Service Unavailable (not crashes) when overloaded",
+            "no_data_corruption": "Database integrity maintained even during overload",
+            "automatic_recovery": "System recovers when load decreases (no manual intervention)"
+          }
+        },
+        {
+          "type": "Soak testing",
+          "purpose": "Verify stability over time (detect memory leaks, resource exhaustion)",
+          "scenarios": [
+            {
+              "scenario": "24-hour soak test",
+              "description": "Run at expected load continuously for 24 hours",
+              "metrics": ["Memory usage (should be stable, not growing)", "CPU usage (should be stable)", "Latency (should not degrade over time)", "Error rate (should remain near 0%)"]
+            },
+            {
+              "scenario": "48-hour soak test",
+              "description": "Extended soak test for critical services",
+              "applicability": "Required ONLY for high-risk services (score >= 2.6)"
+            }
+          ],
+          "success_criteria": {
+            "no_memory_leaks": "Memory usage stable (< 5% growth over 24 hours)",
+            "stable_latency": "Latency p95 < 500ms throughout test (no degradation)",
+            "no_resource_exhaustion": "No disk full, no connection pool exhaustion, no file descriptor limits hit"
+          }
+        }
+      ],
+
+      "target_metrics": {
+        "description": "System-wide performance targets",
+        "availability": {
+          "target": "99.9% uptime",
+          "downtime_allowed": "8.76 hours per year (43.8 minutes per month)",
+          "measurement": "Percentage of successful requests over time window"
+        },
+        "latency": {
+          "p50": "< 200ms (median response time)",
+          "p95": "< 500ms (95th percentile - 19/20 requests)",
+          "p99": "< 1000ms (99th percentile - 99/100 requests)",
+          "rationale": "p95 is more important than average - represents typical user experience"
+        },
+        "throughput": {
+          "calculation": "Based on expected user count and usage patterns",
+          "example": "10,000 concurrent users × 1 request per 10 seconds = 1,000 req/sec",
+          "target": "Handle 2x expected throughput without degradation"
+        },
+        "error_rate": {
+          "target": "< 0.1% under normal load (1 error per 1000 requests)",
+          "unacceptable": "> 1% error rate indicates system instability"
+        }
+      },
+
+      "risk_based_performance_testing": {
+        "high_risk_services": "Load at 5x traffic, stress testing, 48-hour soak tests",
+        "medium_risk_services": "Load at 2x traffic, stress testing, 24-hour soak test (optional)",
+        "low_risk_services": "Load at 2x traffic (optional, not required)"
+      },
+
+      "success_criteria": [
+        "All services meet latency targets (p95 < 500ms at 2x load)",
+        "High-risk services tested at 5x load and pass",
+        "Soak tests show no memory leaks or resource exhaustion",
+        "System degrades gracefully under stress (returns 503, not crashes)"
+      ]
+    },
+
+    "security_test_strategy": {
+      "description": "Vulnerability and penetration testing to ensure system security",
+      "purpose": "Identify and remediate security vulnerabilities before production",
+
+      "test_types": [
+        {
+          "type": "OWASP Top 10 testing",
+          "description": "Test for common web application vulnerabilities",
+          "scope": "All external-facing APIs",
+          "tools": ["OWASP ZAP", "Burp Suite", "Nikto"],
+          "vulnerabilities": [
+            {"id": "A01", "name": "Broken Access Control", "test": "Horizontal/vertical privilege escalation attempts"},
+            {"id": "A02", "name": "Cryptographic Failures", "test": "Sensitive data exposure, weak encryption"},
+            {"id": "A03", "name": "Injection", "test": "SQL injection, NoSQL injection, command injection, LDAP injection"},
+            {"id": "A04", "name": "Insecure Design", "test": "Missing security controls, threat modeling gaps"},
+            {"id": "A05", "name": "Security Misconfiguration", "test": "Default credentials, unnecessary features enabled, verbose errors"},
+            {"id": "A06", "name": "Vulnerable Components", "test": "Outdated libraries with known CVEs"},
+            {"id": "A07", "name": "Authentication Failures", "test": "Weak passwords, session fixation, credential stuffing"},
+            {"id": "A08", "name": "Software/Data Integrity", "test": "Unsigned packages, CI/CD pipeline security"},
+            {"id": "A09", "name": "Logging/Monitoring Failures", "test": "Missing audit logs, insufficient monitoring"},
+            {"id": "A10", "name": "Server-Side Request Forgery", "test": "SSRF attacks via user-supplied URLs"}
+          ],
+          "frequency": "Before each production release + quarterly thereafter",
+          "success_criteria": "Zero high/critical vulnerabilities, all medium vulnerabilities have mitigation plans"
+        },
+        {
+          "type": "Dependency scanning",
+          "description": "Scan third-party libraries for known vulnerabilities (CVEs)",
+          "scope": "All third-party dependencies (npm packages, pip packages, Maven dependencies)",
+          "tools": {
+            "python": "pip-audit, Safety, Snyk",
+            "javascript": "npm audit, Snyk, Dependabot",
+            "java": "OWASP Dependency-Check, Snyk",
+            "go": "govulncheck, Snyk"
+          },
+          "frequency": "On every commit (CI/CD pipeline)",
+          "failure_handling": "Block merge if critical vulnerabilities detected",
+          "remediation": "Update dependencies to patched versions, or document mitigation if update not possible",
+          "success_criteria": "No critical vulnerabilities, all high vulnerabilities patched or mitigated within 7 days"
+        },
+        {
+          "type": "Container scanning",
+          "description": "Scan Docker images for vulnerabilities",
+          "scope": "All Docker images used in production",
+          "tools": ["Trivy", "Aqua Security", "Clair", "Docker Scout", "Snyk Container"],
+          "scans": [
+            "Base image vulnerabilities (outdated OS packages)",
+            "Application dependencies (libraries packaged in container)",
+            "Misconfigurations (root user, unnecessary capabilities)"
+          ],
+          "frequency": "On image build (part of CI/CD)",
+          "success_criteria": "No critical vulnerabilities in production images",
+          "remediation": "Use minimal base images (alpine, distroless), keep base images updated"
+        },
+        {
+          "type": "Penetration testing",
+          "description": "Manual security assessment by security professionals",
+          "scope": "Complete system (black-box and white-box testing)",
+          "performed_by": "External security firm (preferred) or internal red team",
+          "methodology": [
+            "Black-box testing (no source code access, simulates external attacker)",
+            "White-box testing (full source code access, comprehensive review)",
+            "Gray-box testing (partial knowledge, simulates insider threat)"
+          ],
+          "frequency": "Before production release, then quarterly",
+          "deliverable": "Penetration test report with findings categorized by severity, remediation recommendations, and target dates",
+          "success_criteria": "No critical findings, all high findings remediated before production"
+        },
+        {
+          "type": "Static Application Security Testing (SAST)",
+          "description": "Automated source code analysis for security vulnerabilities",
+          "scope": "All source code",
+          "tools": ["SonarQube", "Semgrep", "Bandit (Python)", "ESLint security plugins (JavaScript)", "SpotBugs (Java)"],
+          "checks": [
+            "Hard-coded secrets (API keys, passwords)",
+            "SQL injection vulnerabilities",
+            "XSS vulnerabilities",
+            "Insecure cryptography usage",
+            "Path traversal vulnerabilities"
+          ],
+          "frequency": "On every commit (CI/CD pipeline)",
+          "success_criteria": "Zero critical issues, high issues reviewed and fixed or false-positive confirmed"
+        },
+        {
+          "type": "Dynamic Application Security Testing (DAST)",
+          "description": "Automated runtime security testing",
+          "scope": "Running application (test environment)",
+          "tools": ["OWASP ZAP", "Burp Suite", "Acunetix"],
+          "approach": "Crawl application, identify attack surface, attempt exploits",
+          "frequency": "Nightly in test environment",
+          "success_criteria": "Zero critical vulnerabilities detected"
+        }
+      ],
+
+      "risk_based_security_testing": {
+        "high_risk_services": "Full suite (OWASP, dependency scan, container scan, pentesting, SAST, DAST)",
+        "medium_risk_services": "Standard suite (OWASP, dependency scan, container scan, SAST)",
+        "low_risk_services": "Basic suite (dependency scan, container scan)"
+      },
+
+      "success_criteria": [
+        "All security tests pass (or findings remediated)",
+        "Zero critical vulnerabilities in production",
+        "All medium/high vulnerabilities have documented mitigation plans with target dates",
+        "Penetration test report shows no exploitable critical vulnerabilities"
+      ]
+    },
+
+    "operational_test_strategy": {
+      "description": "Operational acceptance testing - validates system survives real operational conditions",
+      "purpose": "Prevent 'toss it over the fence' problem - validate deployment readiness BEFORE operational testing",
+      "note": "This is the FOCUS of Reflow v3.6.0 Early Testing Integration feature",
+
+      "pre_operational_validation": {
+        "workflow_step": "D-06.5 Pre-Deployment Integration Validation",
+        "purpose": "Catch 80-90% of deployment blockers BEFORE operational testing",
+        "validation_categories": [
+          "Dependency consistency (imports match requirements)",
+          "Module structure (no circular imports, no missing __init__.py)",
+          "Configuration consistency (code config matches docker-compose.yml)",
+          "Database permissions (migrations run as service user)",
+          "Docker build validation (all services build successfully)",
+          "Smoke tests (basic functionality after deployment)",
+          "Contract validation (implementation matches architecture)"
+        ],
+        "blocking": "MUST pass all D-06.5 checks before operational testing begins",
+        "tool": "validate_dependencies.py, validate_module_structure.py, validate_configuration_consistency.py"
+      },
+
+      "test_types": [
+        {
+          "type": "Deployment test",
+          "purpose": "Validate deployment automation works correctly",
+          "scenarios": [
+            {
+              "scenario": "Cold start deployment",
+              "description": "Deploy system from scratch (empty database, no existing state)",
+              "steps": [
+                "1. Start fresh environment (docker-compose down -v to remove volumes)",
+                "2. Run deployment: docker-compose up -d",
+                "3. Wait for all services to report healthy (/health returns 200)",
+                "4. Run smoke tests (< 30 seconds total)",
+                "5. Verify logs show no errors"
+              ],
+              "success_criteria": "All services start healthy within 2 minutes, smoke tests pass, no ERROR logs"
+            },
+            {
+              "scenario": "Upgrade deployment",
+              "description": "Deploy new version over existing system (schema migration, existing data)",
+              "steps": [
+                "1. Start with previous version running and data in database",
+                "2. Deploy new version: docker-compose pull && docker-compose up -d",
+                "3. Migrations run automatically",
+                "4. Services restart with new code",
+                "5. Run smoke tests",
+                "6. Verify existing data still accessible"
+              ],
+              "success_criteria": "Migrations complete successfully, services restart healthy, existing data not corrupted, smoke tests pass"
+            },
+            {
+              "scenario": "Rollback deployment",
+              "description": "Revert to previous version if deployment fails",
+              "steps": [
+                "1. Deploy new version that fails (simulate failure)",
+                "2. Detect failure (health checks fail, smoke tests fail)",
+                "3. Execute rollback: docker-compose down && git checkout <previous-tag> && docker-compose up -d",
+                "4. Verify system returns to healthy state",
+                "5. Run smoke tests"
+              ],
+              "success_criteria": "Rollback completes in < 5 minutes, system returns to healthy state, no data loss"
+            }
+          ],
+          "automation": "Automated via D-06.5 pre-deployment validation",
+          "success_criteria": "All deployment scenarios pass, no manual intervention required"
+        },
+        {
+          "type": "Failover test",
+          "purpose": "Validate high availability and automatic recovery",
+          "applicability": "Required for high-availability systems",
+          "scenarios": [
+            {
+              "scenario": "Database failover",
+              "description": "Primary database fails, system fails over to standby replica",
+              "steps": [
+                "1. System running with primary database",
+                "2. Kill primary database (docker stop postgres-primary)",
+                "3. Connection pool detects failure",
+                "4. System switches to standby replica (automatic or manual trigger)",
+                "5. Verify services recover and continue operating"
+              ],
+              "success_criteria": "Failover completes within RTO (Recovery Time Objective, e.g., 30 seconds), no data loss within RPO (Recovery Point Objective, e.g., 5 minutes)"
+            },
+            {
+              "scenario": "Service instance failure",
+              "description": "Service instance crashes, orchestrator restarts it",
+              "steps": [
+                "1. System running with 3 instances of service",
+                "2. Kill 1 instance: docker kill <container-id>",
+                "3. Orchestrator detects failure (health check fails)",
+                "4. Orchestrator restarts instance automatically",
+                "5. New instance reports healthy"
+              ],
+              "success_criteria": "Instance restarted within 30 seconds, no user-visible errors (load balancer routes to healthy instances)"
+            },
+            {
+              "scenario": "Network partition",
+              "description": "Network split causes services to lose connectivity (split-brain scenario)",
+              "steps": [
+                "1. System running across 2 availability zones",
+                "2. Simulate network partition (iptables rules blocking traffic between AZs)",
+                "3. Observe split-brain handling (does system elect new leader? does it halt writes?)",
+                "4. Restore network connectivity",
+                "5. Verify system reconciles state"
+              ],
+              "success_criteria": "No data corruption, system handles split-brain correctly (e.g., uses quorum to prevent divergence), automatic reconciliation when network restored"
+            },
+            {
+              "scenario": "Multi-AZ failover",
+              "description": "Entire availability zone fails",
+              "steps": [
+                "1. System running across 3 AZs (e.g., us-east-1a, us-east-1b, us-east-1c)",
+                "2. Simulate AZ failure (all instances in us-east-1a down)",
+                "3. Traffic automatically routed to remaining AZs",
+                "4. System continues operating (degraded capacity acceptable)",
+                "5. When AZ recovers, instances rejoin cluster"
+              ],
+              "success_criteria": "System continues operating (degraded mode acceptable), no user data loss, automatic recovery when AZ returns"
+            }
+          ],
+          "success_criteria": "All failover scenarios complete within RTO, no data loss within RPO, automatic recovery (no manual intervention)"
+        },
+        {
+          "type": "Chaos test",
+          "purpose": "Inject failures to validate resilience and graceful degradation",
+          "applicability": "Required ONLY for high-risk services (score >= 2.6 from SE-02-A10)",
+          "rationale": "Chaos testing is expensive and time-consuming - focus on high-risk services only",
+          "tools": ["Chaos Monkey", "Litmus Chaos", "Gremlin", "Chaos Mesh", "Pumba"],
+          "scenarios": [
+            {
+              "scenario": "Random pod/container kills",
+              "description": "Randomly kill service instances (Chaos Monkey pattern)",
+              "frequency": "Kill 1 random instance every 5 minutes for 30 minutes",
+              "expected_behavior": "System continues operating, orchestrator restarts killed instances, no user-visible errors"
+            },
+            {
+              "scenario": "Network latency injection",
+              "description": "Add artificial network latency between services",
+              "latency": "Add 500ms or 1000ms latency to service-to-service calls",
+              "expected_behavior": "Timeouts trigger circuit breakers, fallback mechanisms activate, system returns degraded responses (not errors)"
+            },
+            {
+              "scenario": "CPU/memory exhaustion",
+              "description": "Stress individual services with high CPU or memory usage",
+              "stress": "Consume 100% CPU for 5 minutes, or fill memory to limit",
+              "expected_behavior": "Orchestrator kills overloaded instance (OOMKilled), restarts it, system recovers automatically"
+            },
+            {
+              "scenario": "Disk full",
+              "description": "Fill disk to capacity",
+              "expected_behavior": "Service detects disk full, stops accepting writes, logs error, returns 503 (not crashes), recovers when disk space freed"
+            },
+            {
+              "scenario": "Dependency failure cascade",
+              "description": "Kill downstream dependency to test circuit breaker and fallback",
+              "steps": [
+                "1. Service A depends on Service B",
+                "2. Kill Service B",
+                "3. Service A detects B is down (health check fails or requests timeout)",
+                "4. Circuit breaker trips in Service A",
+                "5. Service A returns fallback response (cached data, default value, or 503)",
+                "6. Restart Service B",
+                "7. Circuit breaker closes (requests to B succeed)",
+                "8. Service A resumes normal operation"
+              ],
+              "expected_behavior": "Circuit breaker trips, no cascading failure, fallback mechanism works, automatic recovery"
+            }
+          ],
+          "success_criteria": [
+            "System continues operating under chaos (degraded mode acceptable)",
+            "No cascading failures (one failure doesn't bring down entire system)",
+            "Automatic recovery when chaos stops",
+            "Circuit breakers trip and recover correctly",
+            "Fallback mechanisms provide degraded responses (not errors)"
+          ]
+        },
+        {
+          "type": "Backup and restore test",
+          "purpose": "Validate disaster recovery capabilities",
+          "scenarios": [
+            {
+              "scenario": "Scheduled backup",
+              "description": "Verify automated backup runs successfully",
+              "steps": [
+                "1. Trigger scheduled backup (e.g., pg_dump for PostgreSQL)",
+                "2. Verify backup file created",
+                "3. Verify backup file size reasonable (not empty, not suspiciously small)",
+                "4. Verify backup stored in backup location (S3, backup server)"
+              ],
+              "success_criteria": "Backup completes within expected time, backup file valid"
+            },
+            {
+              "scenario": "Point-in-time restore",
+              "description": "Restore database to specific timestamp",
+              "steps": [
+                "1. Note current timestamp and database state",
+                "2. Make changes to database (insert, update, delete)",
+                "3. Trigger point-in-time restore to timestamp before changes",
+                "4. Verify database state matches expected state at that timestamp",
+                "5. Verify no data corruption"
+              ],
+              "success_criteria": "Restore completes within RTO, data matches expected state, integrity validated (checksums match)"
+            },
+            {
+              "scenario": "Disaster recovery (full system restore)",
+              "description": "Complete system restore from backup (simulates catastrophic failure)",
+              "steps": [
+                "1. Destroy all system state (docker-compose down -v, delete databases)",
+                "2. Restore from latest backup",
+                "3. Restore database from backup",
+                "4. Restore configuration from backup",
+                "5. Start services",
+                "6. Run smoke tests",
+                "7. Verify data integrity"
+              ],
+              "success_criteria": "System fully operational after restore, data integrity validated, restore completes within RTO (e.g., 2 hours)"
+            }
+          ],
+          "frequency": {
+            "backup_testing": "Monthly (verify backups work)",
+            "restore_testing": "Quarterly (practice point-in-time restore)",
+            "dr_testing": "Annually (full disaster recovery drill)"
+          },
+          "success_criteria": "Backups complete successfully, restores work correctly, system functional after restore, data integrity maintained"
+        }
+      ],
+
+      "operational_acceptance_criteria": {
+        "description": "System ready for production when these criteria met",
+        "criteria": [
+          {
+            "criterion": "D-06.5 pre-deployment validation passes",
+            "validation": "All 7 D-06.5 validation checks pass (dependencies, module structure, config, DB permissions, Docker build, smoke tests, contracts)"
+          },
+          {
+            "criterion": "All deployment tests pass",
+            "validation": "Cold start, upgrade, and rollback scenarios complete successfully"
+          },
+          {
+            "criterion": "Failover tests demonstrate automatic recovery",
+            "validation": "Database failover, service instance failure, network partition, multi-AZ failover all recover within RTO",
+            "applicability": "Required only if HA is architectural requirement"
+          },
+          {
+            "criterion": "Chaos tests show resilience",
+            "validation": "System survives random failures, degrades gracefully, recovers automatically",
+            "applicability": "Required ONLY for high-risk services (score >= 2.6)"
+          },
+          {
+            "criterion": "Backup/restore validated",
+            "validation": "Backups complete successfully, restore tested and verified"
+          }
+        ]
+      },
+
+      "success_criteria": [
+        "D-06.5 pre-deployment validation passes (BLOCKING)",
+        "All deployment scenarios pass (cold start, upgrade, rollback)",
+        "Failover tests pass (if HA required)",
+        "Chaos tests pass (if high-risk services present)",
+        "Backup/restore validated"
+      ]
+    }
+  },
+
+  "risk_based_testing_matrix": {
+    "description": "Testing requirements based on service risk level (from SE-02-A10 risk_assessment.json)",
+    "high_risk_services": {
+      "score_range": "2.6 - 3.0",
+      "testing_requirements": {
+        "unit_tests": "85% coverage, comprehensive edge cases",
+        "integration_tests": "All service pairs, failure scenarios",
+        "contract_tests": "Full contract validation, backward compatibility",
+        "performance_tests": "Load at 5x traffic, stress testing, 48-hour soak test",
+        "security_tests": "Full suite (OWASP, dependency scan, container scan, pentesting, SAST, DAST)",
+        "operational_tests": "Deployment tests, failover tests, chaos tests (REQUIRED), backup/restore"
+      },
+      "rationale": "High-risk services (payment, auth, data storage) justify comprehensive testing - failures have severe impact",
+      "example_services": ["payment_service", "authentication_service", "api_gateway", "user_data_service"]
+    },
+    "medium_risk_services": {
+      "score_range": "1.6 - 2.5",
+      "testing_requirements": {
+        "unit_tests": "80% coverage, solid test coverage",
+        "integration_tests": "Key service pairs, common scenarios",
+        "contract_tests": "Contract validation for external APIs",
+        "performance_tests": "Load at 2x traffic, stress testing, 24-hour soak test (optional)",
+        "security_tests": "Standard suite (OWASP, dependency scan, container scan, SAST)",
+        "operational_tests": "Deployment tests, failover tests (optional)"
+      },
+      "rationale": "Important services require solid testing but not comprehensive (focus effort on high-risk)",
+      "example_services": ["notification_service", "search_service", "user_profile_service"]
+    },
+    "low_risk_services": {
+      "score_range": "1.0 - 1.5",
+      "testing_requirements": {
+        "unit_tests": "60% coverage, basic coverage",
+        "integration_tests": "Smoke tests only",
+        "contract_tests": "Not required (unless external API)",
+        "performance_tests": "Light load testing (2x traffic, optional)",
+        "security_tests": "Basic suite (dependency scan, container scan)",
+        "operational_tests": "Deployment tests only"
+      },
+      "rationale": "Low-risk services (logging, metrics) don't justify comprehensive testing - avoid over-testing",
+      "example_services": ["logging_service", "metrics_collector", "static_content_api"]
+    }
+  },
+
+  "handoff_to_workflows": {
+    "development_workflow": {
+      "workflow": "03-development.json",
+      "steps": "D-02 (Domain Model), D-03 (Persistence), D-04 (Integration & Security), D-05 (Observability)",
+      "responsibility": "Implements unit, integration, contract, performance tests per this strategy",
+      "prove_it_works_gates": "D-02-A99 through D-05-A99 validate incremental progress",
+      "d_06_5_validation": "D-06.5 pre-deployment validation runs before operational testing"
+    },
+    "testing_workflow": {
+      "workflow": "04-testing_operations.json",
+      "steps": "TO-01 (CI/CD), TO-02 (Environment), TO-03 (Security), TO-04 (Performance), TO-05 (Operational)",
+      "responsibility": "Executes operational tests per this strategy (deployment, failover, chaos, backup/restore)"
+    },
+    "critical_note": "Testing strategy defined HERE (SE phase), implemented in Development, executed in Testing/Operations. Testing phase does NOT invent new tests - it executes the plan defined here."
+  },
+
+  "integration_targets_from_graph": {
+    "description": "Integration test targets derived from system_of_systems_graph.json edges",
+    "source": "specs/machine/graphs/system_of_systems_graph.json",
+    "rule": "Every edge in system graph requires at least one integration test",
+    "example": [
+      {
+        "edge": "character_service → session_service",
+        "integration_test": "Create character via character_service, use character_id in session_service, verify session fetches character details"
+      },
+      {
+        "edge": "api_gateway → authentication_service",
+        "integration_test": "POST /login to api_gateway, verify api_gateway calls authentication_service, returns JWT token"
+      }
+    ],
+    "llm_agent_note": "LLM agent MUST read system_of_systems_graph.json and create integration test targets for EVERY edge"
+  },
+
+  "integration_with_other_artifacts": {
+    "system_of_systems_graph": {
+      "file": "specs/machine/graphs/system_of_systems_graph.json",
+      "relationship": "System graph provides edges → integration test targets (every edge = one integration test)"
+    },
+    "service_risk_assessments": {
+      "files": "specs/machine/service_arch/{service_name}/risk_assessment.json (per service)",
+      "relationship": "Risk levels determine testing thoroughness (high-risk = comprehensive, low-risk = basic)"
+    },
+    "operational_testing_objectives": {
+      "files": "specs/machine/service_arch/{service_name}/operational_testing_objectives.json (per service)",
+      "relationship": "Per-service testability requirements feed into system-wide operational test strategy"
+    },
+    "interface_registry": {
+      "file": "specs/machine/interface_registry.json",
+      "relationship": "All external_api interfaces require contract tests"
+    },
+    "d_06_5_validation": {
+      "workflow_step": "D-06.5",
+      "relationship": "Pre-deployment validation MUST pass before operational tests execute"
+    },
+    "development_workflow": {
+      "workflow": "03-development.json",
+      "relationship": "Development implements tests per this strategy (D-02 through D-05)"
+    },
+    "testing_workflow": {
+      "workflow": "04-testing_operations.json",
+      "relationship": "Testing executes operational tests per this strategy (TO-01 through TO-05)"
+    }
+  },
+
+  "llm_agent_guidance": {
+    "read_these_first": [
+      "system_of_systems_graph.json (provides complete architecture, edges → integration targets)",
+      "All risk_assessment.json files (risk levels → testing thoroughness)",
+      "operational_testing_objectives.json (per-service testability requirements)"
+    ],
+    "risk_based_testing": "High-risk services (>= 2.6) MUST have chaos, load (5x), failover, pentesting. Medium-risk (1.6-2.5) get load (2x) + contract tests. Low-risk (< 1.6) get basic tests only.",
+    "integration_targets": "EVERY edge in system_of_systems_graph.json requires at least one integration test - iterate through edges, create test scenarios",
+    "contract_targets": "EVERY interface with external_api: true in interface_registry.json requires contract test",
+    "measurable_criteria": "Use numbers (latency < 500ms, coverage >= 80%), not adjectives ('fast', 'good', 'reliable')",
+    "operational_testing_focus": "D-06.5 pre-deployment validation catches 80-90% of blockers BEFORE operational testing - reference D-06.5 in operational test strategy",
+    "handoff_clarity": "Make it clear: Testing strategy defined HERE, implemented in Development (D-02 to D-05), executed in Testing (TO-01 to TO-05). Testing phase does NOT invent tests.",
+    "avoid_over_testing": "Don't require comprehensive testing for low-risk services - it wastes effort. Focus on high-risk (payment, auth, data storage).",
+    "critical_note": "This strategy prevents 'toss it over the fence' problem - developers know testing requirements upfront, operators execute pre-defined plan."
+  },
+
+  "metadata": {
+    "template_created_by": "Reflow v3.6.0",
+    "feature": "early-testing-integration",
+    "usage": "Used by SE-06-A05 during graph generation to define system-wide test strategy",
+    "output_location": "specs/machine/system_test_strategy.json"
+  }
+}

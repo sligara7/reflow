@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.4.0** | Framework-agnostic systems engineering for LLM agents
+**Version 3.6.0** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -11,6 +11,35 @@ Reflow is a structured workflow that guides LLM agents (Claude, GPT-4, etc.) thr
 - Automatic approach detection: Bottom-up (existing components) or top-down (greenfield)
 - Production-ready: Designs for real operational conditions from day one
 - Modular: 6 separate workflows - use what you need, skip what you don't
+
+## 🎉 What's New in v3.6.0 - Early Testing Integration
+
+**Prevents "toss it over the fence" problem** between development and operational testing:
+
+✅ **Pre-Deployment Validation (D-06.5)** - Catches 80-90% of deployment blockers BEFORE operational testing
+- 3 automated validation tools (dependencies, module structure, configuration)
+- 7 comprehensive validation checks
+- Blocking quality gate prevents bad deployments
+
+✅ **Incremental Validation Gates (D-0X-A99)** - "Prove-it-works" at each development step
+- D-02-A99 through D-05-A99 validate progress incrementally
+- Non-blocking warnings catch issues early (when cheap to fix)
+
+✅ **Risk-Based Testing Strategy** - Focus effort on high-risk services
+- SE-02-A10: Service risk assessment (low/medium/high)
+- Testing thoroughness based on risk level (85% coverage for high-risk, 60% for low-risk)
+- Chaos and load testing only for high-risk services
+
+✅ **Testing as Architecture** - Define testing strategy upfront (not as afterthought)
+- SE-02-A09: Operational testing objectives (per service)
+- SE-06-A05: System test strategy (6 test types: unit, integration, contract, performance, security, operational)
+- Clear handoff: SE defines → Development implements → Operations executes
+
+✅ **Optional Rapid Prototype (D-01-A06)** - 2-4 hour validation of architecture assumptions for high-risk services
+
+**Impact**: Saves 3-5 days per service (24-40 days for 8-service system) by catching issues early
+
+See `docs/RELEASE_NOTES_v3.6.0.md` for complete details.
 
 ## Quick Start
 

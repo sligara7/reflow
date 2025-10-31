@@ -1,0 +1,316 @@
+{
+  "template_version": "1.0.0",
+  "template_id": "operational_testing_objectives",
+  "description": "Operational testing objectives and testability requirements for a service (SE-02-A09)",
+  "created_date": "{timestamp}",
+  "service_name": "{service_name}",
+  "service_version": "{service_version}",
+  "workflow_step": "SE-02-A09",
+  "workflow_step_name": "Define Operational Testing Objectives",
+  "new_in_version": "Reflow v3.6.0 - Early Testing Integration",
+
+  "testability_requirements": {
+    "description": "Architectural features that enable operational testing",
+    "health_endpoints": {
+      "health_check": {
+        "path": "/health",
+        "purpose": "Basic service health check",
+        "response": "200 OK if service is running",
+        "timeout": "< 100ms",
+        "checks": ["Service started", "Dependencies optional (don't check DB, message queue)"]
+      },
+      "readiness_check": {
+        "path": "/ready",
+        "purpose": "Service ready to accept traffic",
+        "response": "200 OK if service is ready (dependencies healthy)",
+        "timeout": "< 500ms",
+        "checks": ["Service started", "Database connection established", "Critical dependencies responding"]
+      }
+    },
+    "observability_hooks": {
+      "metrics": {
+        "endpoint": "/metrics",
+        "format": "Prometheus format",
+        "includes": ["Request count", "Request latency", "Error rate", "Active connections", "Database pool usage"]
+      },
+      "structured_logging": {
+        "format": "JSON",
+        "required_fields": ["timestamp", "level", "message", "service", "correlation_id"],
+        "levels": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+      },
+      "distributed_tracing": {
+        "enabled": true,
+        "framework": "OpenTelemetry recommended",
+        "propagation": "Trace context propagated via HTTP headers"
+      }
+    },
+    "configuration_validation": {
+      "startup_validation": true,
+      "fail_fast": "Service exits with non-zero code if invalid configuration",
+      "validation_endpoint": "/config/validate",
+      "example_checks": [
+        "Required environment variables present",
+        "Database connection string valid",
+        "External API endpoints reachable",
+        "Port not already in use"
+      ]
+    },
+    "test_interfaces": {
+      "test_mode": {
+        "environment_variable": "TEST_MODE=true",
+        "behavior": "Use in-memory database, stub external APIs, disable background jobs",
+        "purpose": "Enable fast, isolated testing"
+      },
+      "mock_dependencies": {
+        "enabled": true,
+        "approach": "Dependency injection allows replacing real clients with mocks"
+      }
+    },
+    "deterministic_behavior": {
+      "random_seed": "Accept RANDOM_SEED environment variable for reproducible tests",
+      "timestamps": "Accept FIXED_TIME environment variable for time-dependent tests",
+      "external_ids": "Use predictable IDs in test mode (sequential, not UUIDs)"
+    },
+    "graceful_degradation": {
+      "database_unavailable": "Return 503 Service Unavailable with Retry-After header",
+      "external_api_down": "Use circuit breaker, return cached data or default values",
+      "rate_limited": "Return 429 Too Many Requests with rate limit info in headers"
+    }
+  },
+
+  "deployment_test_scenarios": {
+    "description": "Tests to validate deployment configuration, not business logic",
+    "scenarios": [
+      {
+        "scenario_id": "DTS-01",
+        "scenario": "Startup validation",
+        "test": "Service starts successfully with production-like configuration",
+        "steps": [
+          "Start container with production environment variables",
+          "Wait up to 30 seconds for service to initialize",
+          "Check /health endpoint returns 200 OK",
+          "Check logs for startup completion message"
+        ],
+        "success_criteria": "Container starts, health endpoint responds 200 OK within 30s, no ERROR logs",
+        "failure_modes": [
+          "Port already in use",
+          "Missing required environment variables",
+          "Invalid configuration",
+          "Dependency not available (if fail-fast enabled)"
+        ]
+      },
+      {
+        "scenario_id": "DTS-02",
+        "scenario": "Database connection",
+        "test": "Service connects to database with correct permissions",
+        "steps": [
+          "Start database container with service user credentials (not postgres superuser)",
+          "Start service container with DATABASE_URL pointing to service database",
+          "Check service connects to database",
+          "Run migrations as service user",
+          "Verify migrations create tables successfully",
+          "Check service can SELECT, INSERT, UPDATE, DELETE"
+        ],
+        "success_criteria": "Connection established, migrations run successfully as service user, CRUD operations work",
+        "failure_modes": [
+          "Permission denied (service user lacks CREATE TABLE, ALTER TABLE)",
+          "Connection refused (wrong host, port, or credentials)",
+          "Migration fails (invalid SQL, missing permissions)",
+          "CRUD operations fail (missing SELECT, INSERT, UPDATE, DELETE permissions)"
+        ]
+      },
+      {
+        "scenario_id": "DTS-03",
+        "scenario": "Dependency handling",
+        "test": "Service handles missing/failed dependencies gracefully",
+        "steps": [
+          "Start service without database",
+          "Check service starts but /ready returns 503",
+          "Check /health still returns 200 (service running, dependencies not required for health)",
+          "Check logs show clear error about missing database",
+          "Start database",
+          "Wait for service to detect database (circuit breaker retry)",
+          "Check /ready now returns 200"
+        ],
+        "success_criteria": "Circuit breaker trips, service returns 503 with clear error message, recovers when dependency available",
+        "failure_modes": [
+          "Service crashes instead of handling missing dependency",
+          "No clear error message (generic 'Internal Server Error')",
+          "Circuit breaker never recovers when dependency returns"
+        ]
+      },
+      {
+        "scenario_id": "DTS-04",
+        "scenario": "Configuration validation",
+        "test": "Service validates configuration at startup and fails fast with actionable error",
+        "steps": [
+          "Start service with invalid DATABASE_URL (wrong format)",
+          "Check service exits immediately with non-zero code",
+          "Check logs show specific validation error (not generic crash)",
+          "Fix configuration",
+          "Start service again",
+          "Check service starts successfully"
+        ],
+        "success_criteria": "Invalid config detected, service fails fast with actionable error message",
+        "failure_modes": [
+          "Service starts with invalid config, crashes later",
+          "Generic error message (not specific to configuration problem)",
+          "Service hangs instead of exiting"
+        ]
+      },
+      {
+        "scenario_id": "DTS-05",
+        "scenario": "Resource limits",
+        "test": "Service operates within memory/CPU constraints",
+        "steps": [
+          "Start service with resource limits (e.g., --memory=512m --cpus=1.0)",
+          "Send load to service (e.g., 100 req/sec for 1 minute)",
+          "Monitor memory usage",
+          "Check memory stays within limit (no OOMKilled)",
+          "Check service continues responding"
+        ],
+        "success_criteria": "Container stays within limits (< 512MB RAM, < 100% CPU), service responsive under load",
+        "failure_modes": [
+          "Memory leak causes OOMKilled",
+          "CPU usage spikes beyond limit",
+          "Service becomes unresponsive under load"
+        ]
+      }
+    ]
+  },
+
+  "operational_acceptance_criteria": {
+    "description": "Criteria for service to be considered deployment-ready",
+    "criteria": [
+      {
+        "criterion_id": "OAC-01",
+        "criterion": "Startup time",
+        "target": "< 30 seconds from container start to health check passing",
+        "rationale": "Fast startup enables rapid scaling and recovery",
+        "measurement": "Time from docker run to first successful /health 200 OK"
+      },
+      {
+        "criterion_id": "OAC-02",
+        "criterion": "Health check response time",
+        "target": "< 100ms for /health endpoint",
+        "rationale": "Orchestrators need fast health checks for rapid failure detection",
+        "measurement": "p95 latency of /health endpoint under no load"
+      },
+      {
+        "criterion_id": "OAC-03",
+        "criterion": "Readiness check response time",
+        "target": "< 500ms for /ready endpoint",
+        "rationale": "Readiness checks can be slower (check dependencies) but must be responsive",
+        "measurement": "p95 latency of /ready endpoint under no load"
+      },
+      {
+        "criterion_id": "OAC-04",
+        "criterion": "Graceful shutdown",
+        "target": "Completes in-flight requests within 30s on SIGTERM",
+        "rationale": "Zero-downtime deployments require graceful draining",
+        "measurement": "Send SIGTERM, verify no requests fail, all complete within 30s"
+      },
+      {
+        "criterion_id": "OAC-05",
+        "criterion": "Crash recovery",
+        "target": "Automatic restart and recovery without manual intervention",
+        "rationale": "Production resilience requires self-healing",
+        "measurement": "Kill service process, verify orchestrator restarts it, service recovers automatically"
+      },
+      {
+        "criterion_id": "OAC-06",
+        "criterion": "Clean startup logs",
+        "target": "No ERROR or WARNING logs during normal startup",
+        "rationale": "Clean logs indicate proper configuration and dependencies",
+        "measurement": "Review logs from container start to /ready 200 OK, count ERROR/WARNING"
+      }
+    ]
+  },
+
+  "smoke_test_requirements": {
+    "description": "Fast tests (< 30s total) to validate basic functionality after deployment",
+    "total_time_budget": "< 30 seconds for all smoke tests combined",
+    "tests": [
+      {
+        "test_id": "SMK-01",
+        "test": "CRUD operations",
+        "what": "Create, read, update, delete primary entities",
+        "time_budget": "< 5 seconds",
+        "purpose": "Verify core business logic works and database is operational",
+        "example": "POST /api/entities (create), GET /api/entities/{id} (read), PUT /api/entities/{id} (update), DELETE /api/entities/{id} (delete)",
+        "success_criteria": "All CRUD operations return expected status codes (201, 200, 200, 204)"
+      },
+      {
+        "test_id": "SMK-02",
+        "test": "Authentication",
+        "what": "Valid token accepted, invalid token rejected",
+        "time_budget": "< 2 seconds",
+        "purpose": "Verify security controls work",
+        "example": "GET /api/protected with valid JWT → 200 OK, GET /api/protected without token → 401 Unauthorized",
+        "success_criteria": "Valid token accepted, invalid token rejected with 401"
+      },
+      {
+        "test_id": "SMK-03",
+        "test": "Database migrations",
+        "what": "Schema matches expected version",
+        "time_budget": "< 1 second (query)",
+        "purpose": "Verify database setup correct and migrations ran",
+        "example": "SELECT version FROM schema_migrations → verify latest migration applied",
+        "success_criteria": "Latest migration version present in database"
+      },
+      {
+        "test_id": "SMK-04",
+        "test": "Inter-service communication",
+        "what": "Service can call dependencies and handle responses",
+        "time_budget": "< 5 seconds",
+        "purpose": "Verify integration points work",
+        "example": "Call API endpoint that triggers call to another service, verify response includes data from dependency",
+        "success_criteria": "Service successfully calls dependency, receives response, returns expected result"
+      },
+      {
+        "test_id": "SMK-05",
+        "test": "Error handling",
+        "what": "Service returns appropriate error for invalid input",
+        "time_budget": "< 2 seconds",
+        "purpose": "Verify validation and error handling work",
+        "example": "POST /api/entities with invalid payload → 400 Bad Request with validation errors",
+        "success_criteria": "Invalid input rejected with 400 and descriptive error message"
+      }
+    ]
+  },
+
+  "integration_with_other_artifacts": {
+    "service_architecture": {
+      "file": "specs/machine/service_arch/{service_name}/service_architecture.json",
+      "relationship": "Testability requirements from this document become implementation requirements in service architecture"
+    },
+    "risk_assessment": {
+      "file": "specs/machine/service_arch/{service_name}/risk_assessment.json",
+      "relationship": "High-risk services (score >= 2.6) require more comprehensive operational testing objectives"
+    },
+    "d_06_5_validation": {
+      "file": "workflow_steps/development/D-06_5-PreDeploymentValidation.json",
+      "relationship": "D-06.5 pre-deployment validation uses these objectives to validate service before operational testing"
+    },
+    "system_test_strategy": {
+      "file": "specs/machine/system_test_strategy.json",
+      "relationship": "System test strategy aggregates operational testing objectives from all services"
+    }
+  },
+
+  "llm_agent_guidance": {
+    "customization": "Customize testability requirements, deployment scenarios, and acceptance criteria based on service complexity and risk level",
+    "high_risk_services": "High-risk services (score >= 2.6 from risk_assessment.json) need more comprehensive deployment scenarios and stricter acceptance criteria",
+    "framework_specific": "Health endpoints (/health, /ready) apply to UAF services; other frameworks may use different testability mechanisms (e.g., observable state variables for biological systems)",
+    "smoke_tests": "Smoke tests must be fast (< 30s total) - they run after every deployment in D-06.5 and operational testing",
+    "fail_fast": "Configuration validation should fail fast at startup, not crash later at runtime",
+    "production_ready": "Operational acceptance criteria define 'production ready' - all must be met before operational testing"
+  },
+
+  "metadata": {
+    "template_created_by": "Reflow v3.6.0",
+    "feature": "early-testing-integration",
+    "usage": "Used by SE-02-A09 during service architecture specification",
+    "output_location": "specs/machine/service_arch/{service_name}/operational_testing_objectives.json"
+  }
+}

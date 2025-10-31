@@ -1,9 +1,9 @@
 # Reflow Tools - Usage Summary
 
-**Last Updated**: 2025-10-26
-**Total Tools**: 19 (up from 16 - added 3 as-fielded architecture tools)
+**Last Updated**: 2025-10-27
+**Total Tools**: 22 (up from 19 - added 3 pre-deployment validation tools)
 **Security Version**: v3.4.0 (Path Traversal Protection Added)
-**Latest Feature**: v3.5.0 (As-Fielded Architecture Tracking)
+**Latest Feature**: v3.6.0 (Early Testing Integration - Pre-Deployment Validation)
 
 ---
 
@@ -435,9 +435,134 @@ python3 compare_architectures.py \
 
 ---
 
+### 13. `validate_dependencies.py` 🆕 **v3.6.0**
+**Purpose**: Validate Python dependencies consistency (D-06.5-A01 - Pre-Deployment Validation)
+**Used In**: D-06.5 (Pre-Deployment Integration Validation)
+**Created**: 2025-10-27 (Early Testing Integration feature)
+**File Size**: 380 lines
+**Validates**:
+- Code imports match `requirements.txt` (AST-based analysis)
+- No missing dependencies (prevents `ModuleNotFoundError`, `ImportError`)
+- No unused dependencies (cleanup opportunity)
+- Version conflicts detected
+- Missing `__init__.py` files
+- Import-to-package mapping (e.g., `PIL` → `Pillow`, `cv2` → `opencv-python`)
+
+**Usage**:
+```bash
+python3 validate_dependencies.py /path/to/system_root
+```
+
+**Output**: `reports/validation_dependencies.json` with:
+- `missing_dependencies`: Imported but not declared
+- `unused_dependencies`: Declared but not imported
+- `version_conflicts`: Multiple versions required
+- `issues_by_service`: Per-service breakdown
+
+**Prevents**:
+- Category 1 blockers (5 types): Missing dependencies, unused dependencies, version conflicts, import resolution failures, package name mismatches
+
+**Example Issue Detected**:
+```json
+{
+  "service": "character_service",
+  "missing_dependencies": ["pydantic", "fastapi"],
+  "recommendation": "Add to requirements.txt: pydantic==1.10.2, fastapi==0.95.0"
+}
+```
+
+---
+
+### 14. `validate_module_structure.py` 🆕 **v3.6.0**
+**Purpose**: Validate Python module structure (D-06.5-A02 - Pre-Deployment Validation)
+**Used In**: D-06.5 (Pre-Deployment Integration Validation)
+**Created**: 2025-10-27 (Early Testing Integration feature)
+**File Size**: 380 lines
+**Validates**:
+- No missing `__init__.py` files in Python packages
+- No circular imports (A imports B, B imports A)
+- No module shadowing (local module shadows stdlib module)
+- Module imports work programmatically (actual import test)
+
+**Usage**:
+```bash
+python3 validate_module_structure.py /path/to/system_root
+```
+
+**Output**: `reports/validation_module_structure.json` with:
+- `missing_init_files`: Directories without `__init__.py`
+- `circular_imports`: Circular dependency chains
+- `shadowed_modules`: Local modules shadowing stdlib
+- `import_errors`: Modules that fail to import
+- `issues_by_service`: Per-service breakdown
+
+**Prevents**:
+- Category 2 blockers (3 types): Circular imports, missing `__init__.py`, module shadowing
+
+**Example Issue Detected**:
+```json
+{
+  "service": "character_service",
+  "circular_imports": [
+    "src.models.character → src.services.character_service → src.models.character"
+  ],
+  "recommendation": "Refactor to break circular dependency - move shared types to src.types"
+}
+```
+
+---
+
+### 15. `validate_configuration_consistency.py` 🆕 **v3.6.0**
+**Purpose**: Validate configuration consistency between code and docker-compose.yml (D-06.5-A03)
+**Used In**: D-06.5 (Pre-Deployment Integration Validation)
+**Created**: 2025-10-27 (Early Testing Integration feature)
+**File Size**: 490 lines
+**Validates**:
+- Code `DATABASE_URL` matches docker-compose.yml service definitions
+- Database host/port/user/database name consistency
+- Redis URL consistency (code vs docker-compose)
+- Message queue configuration consistency
+- Port consistency (service listens on port in docker-compose)
+
+**Usage**:
+```bash
+python3 validate_configuration_consistency.py /path/to/system_root
+```
+
+**Output**: `reports/validation_configuration_consistency.json` with:
+- `database_mismatches`: DATABASE_URL inconsistencies
+- `redis_mismatches`: Redis URL inconsistencies
+- `port_mismatches`: Port binding inconsistencies
+- `missing_env_vars`: Required env vars not in docker-compose
+- `issues_by_service`: Per-service breakdown
+
+**Prevents**:
+- Category 5 blockers (2 types): Configuration drift, "can't connect to localhost" errors
+
+**Common Issue Detected**:
+```json
+{
+  "service": "character_service",
+  "database_mismatch": {
+    "code_host": "localhost",
+    "docker_host": "character_db",
+    "recommendation": "Code uses localhost but docker-compose uses service name 'character_db'. Update code DATABASE_URL or use docker-compose variable substitution."
+  }
+}
+```
+
+**Key Checks**:
+- `postgresql://` vs `postgresql+psycopg2://` (async vs sync driver)
+- Host: `localhost` (wrong in Docker) vs service name (correct)
+- Port: Code port matches docker-compose `ports` mapping
+- User: Code user matches docker-compose `POSTGRES_USER`
+- Database: Code database matches docker-compose `POSTGRES_DB`
+
+---
+
 ## Analysis & Planning Tools
 
-### 13. `analyze_features.py`
+### 16. `analyze_features.py`
 **Purpose**: Analyze feature requirements and identify required services
 **Used In**: SE-01 (System Analysis)
 **References**: 2 references
@@ -446,7 +571,7 @@ python3 compare_architectures.py \
 
 ---
 
-### 14. `select_development_languages.py`
+### 17. `select_development_languages.py`
 **Purpose**: Select appropriate development languages for services
 **Used In**: D-01 (Development Initialization)
 **References**: 2 references
@@ -454,7 +579,7 @@ python3 compare_architectures.py \
 
 ---
 
-### 15. `identify_integration_points.py`
+### 18. `identify_integration_points.py`
 **Purpose**: Identify integration points for system-of-systems projects
 **Used In**: S-04 (System-of-Systems Decomposition - OPTIONAL), SE-04 (Architecture Reconciliation)
 **References**: 2 references
@@ -464,7 +589,7 @@ python3 compare_architectures.py \
 
 ## Optional/Advanced Tools
 
-### 16. `generate_rag_embeddings.py` (OPTIONAL)
+### 19. `generate_rag_embeddings.py` (OPTIONAL)
 **Purpose**: Generate RAG embeddings for context management  
 **Used In**: S-03-A05 (Setup - optional RAG setup)  
 **References**: 1 reference  
@@ -473,7 +598,7 @@ python3 compare_architectures.py \
 
 ---
 
-### 17. `rag_agent_wrapper.py` (OPTIONAL)
+### 20. `rag_agent_wrapper.py` (OPTIONAL)
 **Purpose**: Wrap LLM queries with RAG-enhanced context
 **Used In**: Throughout workflows if RAG enabled
 **References**: Mentioned in workflows but used dynamically
@@ -481,7 +606,7 @@ python3 compare_architectures.py \
 
 ---
 
-### 18. `export_system_to_github.py` (OPTIONAL)
+### 21. `export_system_to_github.py` (OPTIONAL)
 **Purpose**: Export architecture-only handoff package to GitHub
 **Used In**: AV-04 (Architecture-Only Handoff)
 **References**: 1 reference
@@ -491,7 +616,7 @@ python3 compare_architectures.py \
 
 ## Standalone Tools (Not in Workflows)
 
-### 19. `reflow_mcp_server.py`
+### 22. `reflow_mcp_server.py`
 **Purpose**: Model Context Protocol server for Claude integration  
 **Used In**: Standalone - enables Claude to interact with Reflow via MCP  
 **References**: 0 workflow references (intentional - standalone utility)  
