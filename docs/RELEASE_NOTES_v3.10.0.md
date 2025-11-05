@@ -281,7 +281,7 @@ impl UserServiceInterface for UserService {
 
 ### Modified Files
 - `workflow_steps/development/D-01-InitBootstrap.json` - Added D-01-A04.5 action
-- `CLAUDE.md` - Updated with v3.10.0 features, tool count (19→20)
+- `docs/CLAUDE.md` - Updated with v3.10.0 features, tool count (19→20)
 - `docs/TOOL_USAGE_SUMMARY.md` - Added tool documentation
 
 ## 🐛 Known Issues & Limitations
@@ -322,7 +322,7 @@ Extended to support 6 languages for maximum developer benefit.
 ## 📚 Documentation
 
 - **Change Proposal**: `docs/changes/CHANGE_PROPOSAL_20251104_ABC_INTERFACE_CONTRACTS.md`
-- **CLAUDE.md**: Updated with comprehensive v3.10.0 section
+- **docs/CLAUDE.md**: Updated with comprehensive v3.10.0 section
 - **Tool Source**: `tools/generate_interface_abc.py`
 - **Workflow Integration**: `workflow_steps/development/D-01-InitBootstrap.json`
 
@@ -336,7 +336,7 @@ Extended to support 6 languages for maximum developer benefit.
 
 For questions, issues, or feature requests:
 - GitHub Issues: https://github.com/sligara7/reflow/issues
-- Documentation: `CLAUDE.md` section "New Features (v3.10.0)"
+- Documentation: `docs/CLAUDE.md` section "New Features (v3.10.0)"
 
 ---
 
