@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.9.1
-**Last Updated**: 2025-10-28
+**Version**: 3.11.0
+**Last Updated**: 2025-11-05
 
 ## What is Reflow?
 
@@ -117,6 +117,47 @@ Continue workflow from context/working_memory.json in github.com/yourname/my_sys
 ```
 Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
 ```
+
+### Pixi Setup (v3.11.0 - Recommended)
+
+**NEW in v3.11.0**: Pixi package manager for fast, reproducible Python environments
+
+**Why Pixi?**
+- ⚡ **2-5x faster** than pip (Rust-based, parallel installs)
+- 🔒 **Reproducible** via lockfile (pixi.lock)
+- 🌍 **Cross-platform** (Linux, macOS, Windows)
+- 🎯 **Simple** (single pixi.toml, no virtual env confusion)
+
+**Install Pixi** (optional but recommended):
+```bash
+# Install Pixi
+curl -fsSL https://pixi.sh/install.sh | bash
+
+# Install Reflow dependencies
+cd /path/to/reflow
+pixi install
+
+# Run tools
+pixi run python tools/<tool>.py <args>
+# Or use shortcuts: pixi run validate-arch <system_path>
+```
+
+**Pixi tasks** (shortcuts for common commands):
+```bash
+pixi run help                  # Show all available commands
+pixi run validate-arch <path>  # Validate architecture
+pixi run generate-graph <path> # Generate system graph
+pixi run generate-icds <path>  # Generate ICDs
+pixi run generate-abc <path>   # Generate ABC interfaces
+```
+
+**Fallback** (if Pixi not installed):
+```bash
+pip install networkx>=3.0
+python3 tools/<tool>.py <args>
+```
+
+**Workflow Integration**: S-03-A07 in `00-setup.json` offers optional Pixi installation during setup
 
 ### The Workflows (v3.7.0 - Modular)
 

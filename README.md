@@ -1,6 +1,6 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.9.1** | Framework-agnostic systems engineering for LLM agents
+**Version 3.11.0** | Framework-agnostic systems engineering for LLM agents
 
 ## What is Reflow?
 
@@ -313,9 +313,35 @@ reflow/
 | Requirement | Version | Purpose |
 |-------------|---------|---------|
 | Python | 3.8+ | Core runtime |
-| networkx | latest | Graph operations |
+| networkx | 3.0+ | Graph operations |
 | LLM Agent | Claude/GPT-4 | Workflow execution |
 | Docker | optional | Deployment validation |
+| Pixi | latest | **Recommended** - Fast dependency management |
+
+### Installation
+
+**Recommended: Using Pixi (fast, reproducible):**
+```bash
+# Install Pixi
+curl -fsSL https://pixi.sh/install.sh | bash
+
+# Install Reflow dependencies
+cd reflow
+pixi install
+
+# Run tools
+pixi run python tools/<tool_name>.py <args>
+# Or use shortcuts: pixi run validate-arch <system_path>
+```
+
+**Alternative: Using pip:**
+```bash
+# Install dependencies
+pip install networkx>=3.0
+
+# Run tools
+python3 tools/<tool_name>.py <args>
+```
 
 ## Documentation
 
@@ -333,7 +359,27 @@ reflow/
 
 ## Version History
 
-**v3.9.1 (2025-10-28)** - Current
+**v3.11.0 (2025-11-05)** - Current
+- **Pixi Package Manager Integration** - Fast, reproducible Python environments
+  - New `pixi.toml` for Reflow dependency management
+  - Added S-03-A07 workflow step for optional Pixi installation
+  - 2-5x faster than pip, with lockfile for reproducibility
+  - Cross-platform (Linux, macOS, Windows)
+  - Convenient task shortcuts (pixi run validate-arch, etc.)
+  - Fallback to pip if user declines Pixi
+  - Foundation for future dev tools (pytest, ruff, mypy)
+- Updated .gitignore to exclude .pixi/ directory
+- Updated README with Pixi installation instructions
+
+**v3.10.0 (2025-11-04)**
+- **Language-Native Interface Contracts** - Python ABC, TypeScript, Rust, C++, Java, Go
+  - New tool: `generate_interface_abc.py` - Generate strongly-typed interfaces
+  - Added D-01-A04.5 workflow step for ABC generation
+  - Compile-time/runtime validation of service interfaces
+  - IDE autocomplete and type safety
+  - 3-5 days saved per service
+
+**v3.9.1 (2025-10-28)**
 - **Automatic LLM Context Detection** - Self-reporting for optimal thresholds
   - New tool: `detect_llm_capabilities.py` - LLMs self-report context window
   - Auto-detects model-specific thresholds (Claude 200k → 160k, GPT-4 128k → 102k)

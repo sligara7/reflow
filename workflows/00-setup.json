@@ -975,6 +975,104 @@
             "If yes: Git repo initialized/configured, initial commit made, working_memory.json updated",
             "If no: Git automation disabled in working_memory.json"
           ]
+        },
+        {
+          "action_id": "S-03-A07",
+          "description": "Install Pixi package manager (OPTIONAL but RECOMMENDED)",
+          "purpose": "Set up fast, reproducible Python environment for Reflow tools",
+          "optional": true,
+          "recommended": "Strongly recommended for reproducible environment and faster setup",
+          "user_prompt": {
+            "ask": "Would you like to install Pixi for dependency management?",
+            "options": [
+              "Yes - Install Pixi (recommended for reproducible environment)",
+              "No - I'll use pip manually"
+            ],
+            "default": "Yes",
+            "benefits": [
+              "Fast, reproducible Python environment (Rust-based, 2-5x faster than pip)",
+              "Guaranteed compatibility with Reflow tools via lockfile",
+              "Easy updates via 'pixi update'",
+              "Cross-platform (Linux, macOS, Windows)",
+              "Foundation for future dev tools (pytest, ruff, mypy)"
+            ]
+          },
+          "if_yes": {
+            "setup_steps": [
+              {
+                "step": 1,
+                "action": "Check if Pixi already installed",
+                "command": "pixi --version",
+                "outcomes": {
+                  "success": "Pixi already installed, skip to step 3",
+                  "failure": "Pixi not installed, continue to step 2"
+                }
+              },
+              {
+                "step": 2,
+                "action": "Install Pixi",
+                "platform_commands": {
+                  "linux_macos": "curl -fsSL https://pixi.sh/install.sh | bash",
+                  "windows": "iwr -useb https://pixi.sh/install.ps1 | iex"
+                },
+                "note": "May require shell restart to update PATH. If 'pixi' command not found after install, restart shell or run: source ~/.bashrc (Linux) or source ~/.zshrc (macOS)",
+                "verification": "pixi --version should print version number"
+              },
+              {
+                "step": 3,
+                "action": "Install Reflow dependencies via Pixi",
+                "command": "cd {reflow_root} && pixi install",
+                "creates": [".pixi/ directory with isolated Python environment", "pixi.lock file with exact dependency versions"],
+                "duration": "30-90 seconds (first install downloads Python and NetworkX)"
+              },
+              {
+                "step": 4,
+                "action": "Verify Pixi installation",
+                "command": "cd {reflow_root} && pixi run python -c 'import networkx; print(f\"NetworkX {networkx.__version__} installed successfully\")'",
+                "success_criteria": "NetworkX version printed (>= 3.0.0)",
+                "on_failure": "Fall back to pip: pip install networkx>=3.0"
+              }
+            ],
+            "usage_examples": [
+              "Run any Reflow tool: pixi run python tools/<tool>.py <args>",
+              "Use convenient shortcuts: pixi run validate-arch <system_path>",
+              "Update dependencies: pixi update",
+              "See all available commands: pixi run help",
+              "List available tasks: pixi task list"
+            ],
+            "pixi_tasks": {
+              "description": "Pixi provides shortcuts for common Reflow commands",
+              "examples": [
+                "pixi run validate-arch <system_path> - Validate architecture",
+                "pixi run generate-graph <system_path> - Generate system graph",
+                "pixi run generate-icds <system_path> - Generate ICDs",
+                "pixi run generate-abc <system_path> - Generate ABC interfaces",
+                "pixi run help - Show all available commands"
+              ]
+            }
+          },
+          "if_no": {
+            "action": "Skip Pixi installation, use system Python and pip",
+            "fallback_install": "pip install networkx>=3.0",
+            "verification": "python3 -c 'import networkx; print(networkx.__version__)'",
+            "note": "User will need to manually manage Python environment and dependencies"
+          },
+          "llm_agent_instructions": [
+            "ASK the user via AskUserQuestion tool if they want Pixi installed",
+            "If YES: Check if pixi is already installed (pixi --version)",
+            "If not installed: Run platform-appropriate install script",
+            "After install: May need to remind user to restart shell if PATH not updated",
+            "Run 'pixi install' in reflow_root to setup environment",
+            "Verify with test import of NetworkX",
+            "If ANY step fails: Fall back to pip install networkx>=3.0",
+            "If NO: Skip Pixi, use system Python, verify NetworkX is available"
+          ],
+          "success_criteria": [
+            "User question asked and answered",
+            "If yes: Pixi installed OR already present, 'pixi install' succeeded, NetworkX verified",
+            "If no: System Python verified, NetworkX available via pip"
+          ],
+          "reference": "See https://pixi.sh for complete Pixi documentation"
         }
       ],
       "tools_used": ["bootstrap_development_context.py", "generate_rag_embeddings.py (optional)"],

@@ -1,0 +1,85 @@
+[project]
+name = "reflow"
+version = "3.11.0"
+description = "Systems engineering and development workflow framework"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[dependencies]
+python = ">=3.8"
+networkx = ">=3.0"
+
+[feature.dev.dependencies]
+# Future: Add when implementing testing/linting (v3.12.0+)
+# pytest = "*"
+# pytest-cov = "*"
+# ruff = "*"
+# mypy = "*"
+
+[tasks]
+# Validation
+validate-arch = "python tools/validate_architecture.py"
+validate-deps = "python tools/validate_dependencies.py"
+validate-modules = "python tools/validate_module_structure.py"
+validate-config = "python tools/validate_configuration_consistency.py"
+validate-foundational = "python tools/validate_foundational_alignment.py"
+
+# Graph Generation
+generate-graph = "python tools/system_of_systems_graph_v2.py"
+
+# Interface Generation
+generate-icds = "python tools/generate_interface_contracts.py"
+generate-abc = "python tools/generate_interface_abc.py"
+
+# Documentation
+generate-human-docs = "python tools/generate_human_documentation.py"
+parse-human-docs = "python tools/parse_human_documentation.py"
+
+# Development
+bootstrap-dev = "python tools/bootstrap_development_context.py"
+select-languages = "python tools/select_development_languages.py"
+
+# Component Management
+component-swap = "python tools/component_swap.py"
+verify-contract = "python tools/verify_component_contract.py"
+
+# Context Management
+context-refresh = "python tools/context_refresh.py"
+detect-drift = "python tools/detect_context_drift.py"
+
+[tasks.help]
+cmd = """
+echo 'Reflow v3.11.0 - Systems Engineering Framework'
+echo ''
+echo 'Setup:'
+echo '  pixi install                              - Install dependencies'
+echo '  pixi update                               - Update dependencies'
+echo ''
+echo 'Validation Commands:'
+echo '  pixi run validate-arch <system_path>      - Validate architecture'
+echo '  pixi run validate-deps <system_path>      - Validate dependencies'
+echo '  pixi run validate-modules <system_path>   - Validate module structure'
+echo '  pixi run validate-config <system_path>    - Validate configuration'
+echo '  pixi run validate-foundational <system_path> --change-proposal <file>'
+echo ''
+echo 'Generation Commands:'
+echo '  pixi run generate-graph <system_path>     - Generate system graph'
+echo '  pixi run generate-icds <system_path>      - Generate ICDs'
+echo '  pixi run generate-abc <system_path>       - Generate ABC interfaces'
+echo '  pixi run generate-human-docs <system_path> - Generate human docs'
+echo ''
+echo 'Development Commands:'
+echo '  pixi run bootstrap-dev <system_path>      - Bootstrap dev context'
+echo '  pixi run select-languages <system_path>   - Select dev languages'
+echo ''
+echo 'Run any tool directly:'
+echo '  pixi run python tools/<tool_name>.py <args>'
+echo ''
+echo 'For more help, see: docs/CLAUDE.md'
+"""
+
+[tasks.version]
+cmd = "echo 'Reflow v3.11.0'"
+
+[tasks.list-tools]
+cmd = "ls -1 tools/*.py | sed 's/tools\\///;s/\\.py//'"

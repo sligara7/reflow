@@ -18,6 +18,10 @@ env/
 ENV/
 .venv/
 
+# Pixi package manager
+.pixi/
+pixi.lock
+
 # IDE
 .vscode/
 .idea/
