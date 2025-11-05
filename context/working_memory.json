@@ -1,11 +1,11 @@
 {
-  "template_version": "2.0",
+  "template_version": "2.1",
   "system_name": "Reflow Workflow System",
   "current_workflow": "01-systems_engineering",
-  "current_step": "BU-01",
-  "current_substep": "BU-01-A01",
-  "detected_approach": "bottom_up",
-  "analysis_purpose": "Full systems analysis to validate cohesion of workflows, tools, templates, and schemas after v3.4-v3.6 updates",
+  "current_step": "SE-00B",
+  "current_substep": "SE-00B-A01",
+  "detected_approach": "meta_analysis",
+  "analysis_purpose": "Functional Architecture Analysis of Reflow itself using v2.1.0 workflows - analyzing Reflow's functional flows with context consumption tracking to identify gaps, inefficiencies, and context bottlenecks for AI agents",
   "path_configuration": {
     "reflow_root": "/home/user/reflow",
     "system_root": "/home/user/reflow",
@@ -16,15 +16,48 @@
     "note": "Meta-analysis: Reflow is both the tooling AND the system being analyzed"
   },
   "framework_configuration": {
-    "framework_id": "decision_flow",
-    "framework_name": "Decision Flow Framework",
-    "component_term": "workflow_step",
-    "connection_term": "transition",
-    "architecture_file_type": "workflow_step_architecture.json",
-    "selected_framework_rationale": "Decision Flow Framework is the correct choice for Reflow meta-analysis. Workflows are fundamentally STATE MACHINES with CONDITIONAL TRANSITIONS, not service architectures. Decision Flow models: (1) Steps as states with node types (process_step, decision_node), (2) Transitions with conditions and probabilities for flow analysis, (3) Rework loops as semantic cycles, (4) Quality gates as decision nodes. This enables flow analysis to find common paths, cycle detection to measure rework probability, and path analysis to identify bottlenecks - insights UAF completely missed.",
-    "note": "Treating workflow steps as states in decision flow graph with conditional transitions",
-    "previous_framework": "uaf",
-    "switch_reason": "UAF treated steps as services which missed decision logic, rework loops, and path probabilities. Decision Flow Framework reveals workflow dynamics."
+    "framework_id": "functional_flow",
+    "framework_name": "Functional Flow Framework (based on Decision Flow)",
+    "component_term": "function",
+    "connection_term": "function_call_or_data_flow",
+    "architecture_file_type": "functional_architecture.json",
+    "base_framework": "decision_flow",
+    "selected_framework_rationale": "Functional Flow Framework extends Decision Flow for functional architecture analysis. Models: (1) Functions as nodes (what the system does), (2) Function calls and data flows as edges, (3) Context consumption as edge weights (critical for AI agent analysis), (4) Function dependencies and execution sequences. This enables analysis of functional completeness, context bottlenecks, and AI agent workflow feasibility.",
+    "context_aware_analysis": {
+      "enabled": true,
+      "rationale": "AI agents have limited context windows (e.g., 200k tokens). Each function in Reflow consumes context (reading files, generating outputs). Context consumption accumulates along paths. If cumulative context exceeds available window, the workflow fails or requires context refresh (expensive). This is a CRITICAL architectural constraint that must be modeled.",
+      "flow_parameters": {
+        "available_context": {
+          "type": "resource_constraint",
+          "unit": "tokens",
+          "initial_value": 200000,
+          "consumed_by": "file reads, tool outputs, generated content, conversation history",
+          "replenished_by": "context refresh operations (expensive, breaks continuity)",
+          "critical_thresholds": {
+            "healthy": "> 160000 tokens (80%)",
+            "warning": "120000-160000 tokens (60-80%)",
+            "critical": "< 120000 tokens (60%)",
+            "failure": "< 40000 tokens (20%)"
+          }
+        },
+        "context_consumption_per_function": {
+          "read_large_file": "~10000-50000 tokens",
+          "read_workflow_file": "~5000-20000 tokens",
+          "generate_architecture": "~3000-10000 tokens",
+          "run_validation_tool": "~2000-5000 tokens",
+          "create_visualization": "~5000-15000 tokens",
+          "stakeholder_review_iteration": "~1000-3000 tokens per iteration"
+        }
+      }
+    },
+    "edge_weight_semantics": {
+      "primary": "context_consumption (tokens) - how much context this function call consumes",
+      "secondary": "execution_probability (0.0-1.0) - likelihood of taking this path",
+      "tertiary": "execution_time (seconds) - how long this function takes"
+    },
+    "note": "Functional Flow Framework enables analysis of WHAT Reflow does and whether AI agents have sufficient context to complete workflows",
+    "previous_framework": "decision_flow",
+    "enhancement_reason": "Decision Flow models workflows well but didn't track context consumption, which is critical for AI agent workflow analysis. Functional Flow adds context as a first-class resource constraint."
   },
   "analysis_configuration": {
     "selected_analyses": {
@@ -37,21 +70,40 @@
       "dag": true,
       "connectivity": true,
       "clustering": false,
-      "properties": false
+      "properties": false,
+      "context_path_analysis": true,
+      "context_bottleneck_detection": true
     },
-    "analysis_rationale": "Decision Flow Framework analysis priorities: (1) FLOW = find most-traveled paths and bottlenecks using transition probabilities, (2) CYCLES = identify rework loops (validation failures), (3) PATHS = find critical path (architecture-only) vs full development path, (4) CENTRALITY = identify critical decision nodes (quality gates), (5) COMMUNITY = detect workflow phases (Setup, Architecture, Development, Operations)",
+    "analysis_rationale": "Functional Flow Framework analysis priorities: (1) FLOW = identify most-traveled functional paths and bottlenecks, (2) CYCLES = detect circular function dependencies, (3) PATHS = find critical paths and context-constrained paths, (4) CONTEXT_PATH_ANALYSIS = calculate cumulative context consumption along paths to find context bottlenecks, (5) CONTEXT_BOTTLENECK_DETECTION = identify functions or paths that consume excessive context, risking workflow failure for AI agents, (6) CENTRALITY = identify critical functions, (7) COMMUNITY = detect functional modules/groups",
     "edge_weights_included": true,
-    "edge_weight_semantic": "transition_probability (0.0-1.0) - likelihood of taking this path",
+    "edge_weight_semantic": "context_consumption (tokens) - how much context this function/flow edge consumes",
     "edge_weight_examples": {
-      "sequential_step": 1.0,
-      "validation_pass": 0.6,
-      "validation_fail_rework": 0.4,
-      "skip_optional_step": 0.7,
-      "use_optional_step": 0.3
+      "read_small_config": 1000,
+      "read_workflow_json": 5000,
+      "read_large_architecture": 20000,
+      "generate_small_output": 2000,
+      "generate_architecture_file": 8000,
+      "generate_large_visualization": 15000,
+      "run_validation_with_output": 3000,
+      "iterative_refinement_cycle": 5000
+    },
+    "context_analysis_enabled": true,
+    "context_analysis_parameters": {
+      "max_context_window": 200000,
+      "context_refresh_cost": 50000,
+      "safety_margin": 0.2,
+      "usable_context": 160000,
+      "analysis_goals": [
+        "Identify paths that exceed usable context (>160k tokens)",
+        "Find functions with disproportionately high context consumption",
+        "Detect workflows requiring multiple context refreshes (expensive)",
+        "Recommend function refactoring to reduce context consumption",
+        "Identify opportunities for lazy loading or streaming"
+      ]
     },
     "knowledge_gap_detection_enabled": true,
     "architectural_issues_detection_enabled": true,
-    "note": "Edge weights enable flow analysis to reveal workflow dynamics UAF missed: common vs rare paths, rework probability, bottlenecks"
+    "note": "Context-aware analysis is critical for AI agent workflows - context exhaustion causes workflow failures or expensive refreshes"
   },
   "context_management": {
     "operations_since_refresh": 3,
@@ -72,10 +124,10 @@
   "external_systems": [],
   "global_constraints": {},
   "progress_summary": {
-    "completed_steps": ["S-01", "S-01A", "S-02", "S-03", "SE-01-partial", "meta-analysis", "fixes-implemented", "tool-cleanup", "FU-01", "FU-02", "FU-03", "FU-04", "FU-05", "FU-06", "BOTTOM-UP-IMPLEMENTATION", "BOTTOM-UP-VALIDATION", "AS-FIELDED-ARCHITECTURE-TRACKING", "FUNCTIONAL-ARCHITECTURE-WORKFLOW-UPDATE", "FUNCTIONAL-ARCHITECTURE-VISUALIZATION-REQUIREMENTS"],
-    "current_focus": "Functional Architecture First with Mandatory Visualization (v2.1.0): Enhanced workflows to require human-readable visualizations (BPMN/UML) and stakeholder validation BEFORE system allocation",
-    "next_action": "Workflows now enforce dual validation: (1) Stakeholder validation via visual diagrams AND (2) Technical validation via graph analysis. Machine-readable JSON alone is insufficient.",
-    "validation_status": "PASSED",
+    "completed_steps": ["S-01", "S-01A", "S-02", "S-03", "SE-01-partial", "meta-analysis", "fixes-implemented", "tool-cleanup", "FU-01", "FU-02", "FU-03", "FU-04", "FU-05", "FU-06", "BOTTOM-UP-IMPLEMENTATION", "BOTTOM-UP-VALIDATION", "AS-FIELDED-ARCHITECTURE-TRACKING", "FUNCTIONAL-ARCHITECTURE-WORKFLOW-UPDATE", "FUNCTIONAL-ARCHITECTURE-VISUALIZATION-REQUIREMENTS", "FUNCTIONAL-FLOW-FRAMEWORK-CREATED"],
+    "current_focus": "META-ANALYSIS: Running v2.1.0 functional architecture workflows on Reflow itself. Using new Functional Flow Framework with context consumption tracking to analyze Reflow's functional architecture for gaps, inefficiencies, and AI agent context bottlenecks. Step SE-00B-A01: Documenting Reflow's functional flows.",
+    "next_action": "Define Reflow's functional architecture: (1) Document functional requirements (what Reflow must do), (2) Create functional flows showing processes, decisions, and data flows, (3) Add context consumption weights to each function, (4) Use system_of_systems_graph_v2.py with --functional-mode to analyze for gaps and context bottlenecks.",
+    "validation_status": "IN_PROGRESS",
     "validation_details": {
       "workflow_step_references": "PASS - All 6 files exist",
       "template_references": "PASS - All 7 templates exist",
@@ -248,6 +300,67 @@
         "location": "docs/diagrams/functional/",
         "note": "These visualizations are the PRIMARY artifacts for stakeholder validation - not optional documentation"
       }
+    }
+  },
+  "functional_flow_framework": {
+    "version": "1.0.0",
+    "created": "2025-11-04",
+    "purpose": "Extend Decision Flow Framework to support functional architecture analysis with AI agent context awareness",
+    "base_framework": "decision_flow",
+    "key_differences": {
+      "nodes": "Functions (capabilities) instead of workflow steps (states)",
+      "edges": "Function calls, data flows, control flows instead of state transitions",
+      "primary_weight": "Context consumption (tokens) instead of transition probability",
+      "analysis_focus": "Functional completeness, context bottlenecks, AI feasibility instead of workflow dynamics"
+    },
+    "graph_schema": {
+      "nodes": {
+        "id": "function_id (e.g., F-001)",
+        "label": "function_name",
+        "type": "function_type (read, process, generate, validate, decide, iterate)",
+        "description": "What this function does",
+        "inputs": ["list of inputs"],
+        "outputs": ["list of outputs"],
+        "context_consumption": "estimated tokens consumed",
+        "execution_time": "estimated seconds",
+        "error_handling": "How errors are handled"
+      },
+      "edges": {
+        "source": "source_function_id",
+        "target": "target_function_id",
+        "type": "edge_type (function_call, data_flow, control_flow, error_flow)",
+        "weight": "context_consumption (primary)",
+        "probability": "execution_probability (secondary)",
+        "condition": "when this edge is taken (optional)"
+      }
+    },
+    "context_tracking": {
+      "initial_context": 200000,
+      "cumulative_tracking": "Track context consumption along all paths",
+      "bottleneck_detection": "Identify paths where cumulative context > usable_context (160k)",
+      "refresh_points": "Identify where context refresh is needed (expensive)",
+      "optimization_opportunities": "Functions to refactor for lower context consumption"
+    },
+    "analysis_capabilities": {
+      "functional_completeness": "Ensure all user scenarios covered by functional paths",
+      "gap_detection": "Find missing functions needed to complete flows",
+      "redundancy_detection": "Find duplicate or overlapping functions",
+      "context_bottleneck_detection": "Find functions or paths that exhaust context",
+      "critical_path_analysis": "Find longest paths by context or time",
+      "dependency_analysis": "Find circular dependencies or orphaned functions",
+      "ai_feasibility_analysis": "Determine if AI agents can complete workflows with available context"
+    },
+    "usage_with_system_of_systems_graph_v2": {
+      "command": "python3 tools/system_of_systems_graph_v2.py /home/user/reflow --functional-mode --analyze-context",
+      "input": "specs/functional/functional_architecture.json",
+      "output": "specs/functional/graphs/functional_architecture_graph.json",
+      "analysis_output": "specs/functional/functional_architecture_issues.json with context bottleneck analysis",
+      "note": "The --analyze-context flag triggers context-aware path analysis"
+    },
+    "integration_with_reflow_workflows": {
+      "SE-00B": "Functional Architecture Definition & Visualization - uses Functional Flow Framework",
+      "FU-01A": "Feature Update Functional Architecture - uses Functional Flow Framework for change analysis",
+      "meta_analysis": "Can analyze Reflow itself to find architectural issues and context bottlenecks"
     }
   }
 }

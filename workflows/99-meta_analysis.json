@@ -1,0 +1,702 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "99-meta_analysis",
+    "name": "Reflow Meta-Analysis Workflow (Self-Sharpening Knife)",
+    "version": "2.0.0",
+    "description": "Use Reflow's own functional architecture workflows to analyze Reflow itself - detecting gaps, context bottlenecks, inefficiencies, and architectural issues, then FIXING the implementation to create a self-improving system",
+    "created": "2025-11-04",
+    "last_updated": "2025-11-04",
+    "purpose": "Formalize the repeatable process of having Reflow analyze itself using functional architecture methodology with context consumption tracking, then apply implementation fixes to continuously improve",
+    "key_innovation": "META-05B: Implementation Refinement step makes Reflow a 'self-sharpening knife' by fixing workflows, tools, and schemas based on analysis results",
+    "when_to_use": "Run this workflow after any significant updates to Reflow workflows, tools, or templates to ensure no new issues introduced AND to continuously improve existing implementation",
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow"
+  },
+  "prerequisites": {
+    "required_conditions": [
+      "Reflow repository exists and is accessible",
+      "Python 3.x installed with NetworkX library",
+      "All Reflow workflows, tools, and templates present"
+    ],
+    "not_required": [
+      "Foundational documents (Reflow itself is the system being analyzed)",
+      "System root separate from reflow root (same directory)"
+    ]
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Standard meta-analysis - full functional architecture analysis with context tracking",
+      "first_step": "META-01"
+    },
+    "quick": {
+      "id": "quick",
+      "description": "Quick check - run only functional architecture analysis on existing functional_architecture.json",
+      "first_step": "META-04"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "META-01",
+      "name": "Setup Meta-Analysis Configuration",
+      "description": "Configure working_memory.json for meta-analysis where Reflow analyzes itself",
+      "phase": "setup",
+      "actions": [
+        {
+          "action_id": "META-01-A01",
+          "description": "Update working_memory.json for meta-analysis",
+          "updates": {
+            "system_name": "Reflow Workflow System",
+            "current_workflow": "01-systems_engineering",
+            "current_step": "SE-00B",
+            "detected_approach": "meta_analysis",
+            "framework_configuration": {
+              "framework_id": "functional_flow",
+              "framework_name": "Functional Flow Framework (based on Decision Flow)",
+              "component_term": "function",
+              "connection_term": "function_call_or_data_flow",
+              "context_aware_analysis": {
+                "enabled": true,
+                "rationale": "AI agents have limited context windows - must track consumption"
+              }
+            }
+          },
+          "note": "This tells Reflow it's analyzing itself using the Functional Flow Framework"
+        },
+        {
+          "action_id": "META-01-A02",
+          "description": "Ensure functional specs directory exists",
+          "command": "mkdir -p /path/to/reflow/specs/functional /path/to/reflow/specs/functional/graphs",
+          "note": "Create directories for functional requirements and architecture"
+        }
+      ],
+      "outputs": [
+        "context/working_memory.json updated for meta-analysis",
+        "specs/functional/ directory created"
+      ],
+      "next_step": "META-02"
+    },
+    {
+      "step_id": "META-02",
+      "name": "Define Functional Requirements (SE-00A)",
+      "description": "Document WHAT Reflow must do (functional requirements) by analyzing mission statement, user scenarios, and workflows",
+      "phase": "functional_requirements",
+      "maps_to": "SE-00A (Functional Requirements Definition)",
+      "actions": [
+        {
+          "action_id": "META-02-A01",
+          "description": "Read Reflow's foundational documents",
+          "inputs": [
+            "docs/SYSTEM_MISSION_STATEMENT.md",
+            "docs/USER_SCENARIOS.md",
+            "docs/SUCCESS_CRITERIA.md"
+          ],
+          "purpose": "Understand what Reflow is supposed to do"
+        },
+        {
+          "action_id": "META-02-A02",
+          "description": "Extract functional requirements",
+          "method": "Analyze each user scenario and workflow to identify required capabilities",
+          "outputs": [
+            "List of functional requirements (FR-001, FR-002, etc.)",
+            "Traceability matrix: User Scenarios → Functional Requirements",
+            "Acceptance criteria for each requirement"
+          ]
+        },
+        {
+          "action_id": "META-02-A03",
+          "description": "Create specs/functional/functional_requirements.json",
+          "template": "Use template structure shown in example specs/functional/functional_requirements.json",
+          "required_fields": [
+            "functional_requirements (array of FR objects)",
+            "requirement_traceability",
+            "estimated_context_consumption",
+            "user_scenario_coverage"
+          ]
+        }
+      ],
+      "outputs": ["specs/functional/functional_requirements.json"],
+      "typical_time": "30-60 minutes",
+      "gates": [
+        {
+          "gate_id": "G-META-02",
+          "name": "Functional Requirements Completeness",
+          "checks": [
+            "All user scenarios covered by requirements",
+            "Requirements clearly stated and testable",
+            "Traceability matrix complete"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "META-03"
+    },
+    {
+      "step_id": "META-03",
+      "name": "Define Functional Architecture with Context Tracking (SE-00B)",
+      "description": "Document HOW Reflow achieves functional requirements through process flows with AI agent context consumption tracking",
+      "phase": "functional_architecture",
+      "maps_to": "SE-00B (Functional Architecture Definition & Visualization)",
+      "actions": [
+        {
+          "action_id": "META-03-A01",
+          "description": "Identify major functional flows in Reflow",
+          "examples": [
+            "Workflow Execution Flow",
+            "Context Management Flow",
+            "Architecture Generation Flow",
+            "Graph Analysis Flow",
+            "Validation Flow",
+            "Functional Architecture Flow (new in v2.1.0)",
+            "Documentation Generation Flow",
+            "Context Bottleneck Analysis Flow"
+          ],
+          "note": "Each flow represents a major capability"
+        },
+        {
+          "action_id": "META-03-A02",
+          "description": "Decompose each flow into atomic functions",
+          "method": "Break down flows into discrete functions (read, process, generate, validate, decide, iterate)",
+          "function_attributes": [
+            "function_id (F-001, F-002, etc.)",
+            "function_name",
+            "function_type",
+            "inputs/outputs",
+            "context_consumption (CRITICAL for AI agent analysis)",
+            "execution_time",
+            "error_handling"
+          ]
+        },
+        {
+          "action_id": "META-03-A03",
+          "description": "Define function dependencies",
+          "edge_attributes": [
+            "source → target",
+            "type (function_call, data_flow, control_flow, error_flow)",
+            "weight (context_consumption as primary weight)",
+            "probability (execution likelihood)",
+            "condition (when edge is taken)"
+          ],
+          "note": "Context consumption as edge weight enables bottleneck analysis"
+        },
+        {
+          "action_id": "META-03-A04",
+          "description": "Estimate context consumption for each function",
+          "estimation_guidelines": {
+            "read_small_config": "1000-2000 tokens",
+            "read_workflow_file": "5000-15000 tokens",
+            "read_large_architecture": "15000-30000 tokens",
+            "generate_small_file": "2000-5000 tokens",
+            "generate_architecture": "5000-15000 tokens",
+            "generate_large_visualization": "10000-20000 tokens",
+            "run_analysis": "5000-10000 tokens"
+          },
+          "note": "Estimates based on typical file sizes and output lengths"
+        },
+        {
+          "action_id": "META-03-A05",
+          "description": "Create specs/functional/functional_architecture.json",
+          "template": "Use template structure shown in example specs/functional/functional_architecture.json",
+          "required_sections": [
+            "functional_flows (array of FLOW objects)",
+            "functions (array of function objects with context_consumption)",
+            "function_dependencies (edges with context weights)",
+            "context_analysis (summary of context consumption)",
+            "operational_testing_linkage"
+          ]
+        }
+      ],
+      "outputs": ["specs/functional/functional_architecture.json"],
+      "typical_time": "2-3 hours",
+      "gates": [
+        {
+          "gate_id": "G-META-03",
+          "name": "Functional Architecture Completeness",
+          "checks": [
+            "All functional requirements implemented by functions",
+            "All functions have context consumption estimates",
+            "Function dependencies complete (no dangling references)",
+            "Major flows documented with entry/exit points"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "META-04"
+    },
+    {
+      "step_id": "META-04",
+      "name": "Analyze Functional Architecture for Context Bottlenecks",
+      "description": "Run automated analysis to detect gaps, context bottlenecks, circular dependencies, and inefficiencies",
+      "phase": "analysis",
+      "actions": [
+        {
+          "action_id": "META-04-A01",
+          "description": "Run functional architecture analysis tool",
+          "tool": "analyze_functional_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_functional_architecture.py {reflow_root}/specs/functional/functional_architecture.json",
+          "purpose": "Analyze functional graph for issues",
+          "analyses_performed": [
+            "Context path analysis (cumulative context along all paths)",
+            "Context bottleneck detection (paths exceeding 160k tokens)",
+            "Gap detection (orphaned, unreachable, dead-end functions)",
+            "Cycle detection (circular dependencies)",
+            "Flow efficiency analysis (fan-out, fan-in, complexity)",
+            "Redundancy detection"
+          ]
+        },
+        {
+          "action_id": "META-04-A02",
+          "description": "Review analysis output",
+          "console_output": "Analysis prints to console with summary statistics",
+          "file_output": "specs/functional/functional_architecture_analysis.json",
+          "key_metrics": [
+            "Bottleneck paths (CRITICAL if > 160k tokens)",
+            "Warning paths (approaching limits)",
+            "Top context-consuming functions",
+            "Orphaned/unreachable functions",
+            "Cycles detected",
+            "Recommendations"
+          ]
+        },
+        {
+          "action_id": "META-04-A03",
+          "description": "Categorize issues by severity",
+          "severity_levels": {
+            "CRITICAL": "Context bottlenecks (>160k tokens), missing required functions, unreachable critical flows",
+            "WARNING": "Context approaching limits (>140k), dead-end functions, high complexity",
+            "INFO": "Optimization opportunities, redundancy candidates"
+          }
+        }
+      ],
+      "outputs": [
+        "specs/functional/functional_architecture_analysis.json",
+        "Console output with summary and recommendations"
+      ],
+      "typical_time": "5-10 minutes",
+      "gates": [
+        {
+          "gate_id": "G-META-04",
+          "name": "Analysis Completion",
+          "checks": [
+            "Analysis completed without errors",
+            "functional_architecture_analysis.json generated",
+            "All issues categorized by severity"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "META-05"
+    },
+    {
+      "step_id": "META-05",
+      "name": "Address Critical Issues (Iterative Refinement)",
+      "description": "Fix critical issues found in analysis before proceeding",
+      "phase": "refinement",
+      "actions": [
+        {
+          "action_id": "META-05-A01",
+          "description": "Review critical and warning issues",
+          "inputs": ["specs/functional/functional_architecture_analysis.json"],
+          "focus_on": [
+            "Bottleneck paths (if any)",
+            "Unreachable critical functions (if any)",
+            "Orphaned functions (may indicate incomplete architecture)",
+            "Unintentional circular dependencies"
+          ]
+        },
+        {
+          "action_id": "META-05-A02",
+          "description": "Refine functional architecture to address issues",
+          "common_fixes": {
+            "context_bottlenecks": [
+              "Break long paths into separate sessions with context refresh points",
+              "Implement lazy loading for high-context functions (e.g., F-030 Load All Architecture Files)",
+              "Summarize outputs instead of returning full details",
+              "Stream large file reads instead of loading entirely"
+            ],
+            "unreachable_functions": [
+              "Add missing dependencies to make functions reachable",
+              "Remove functions if truly unnecessary",
+              "Document separate execution contexts (some functions may be standalone)"
+            ],
+            "orphaned_functions": [
+              "Add connections to integrate into flows",
+              "Remove if incomplete or unnecessary"
+            ],
+            "unintentional_cycles": [
+              "Redesign flow to break circular dependency",
+              "Add termination conditions to iterative loops"
+            ]
+          }
+        },
+        {
+          "action_id": "META-05-A03",
+          "description": "Re-run analysis after refinement",
+          "command": "python3 tools/analyze_functional_architecture.py specs/functional/functional_architecture.json",
+          "loop_condition": "If critical issues remain, return to META-05-A02",
+          "termination": "No critical issues, warnings acceptable"
+        }
+      ],
+      "outputs": ["Refined functional_architecture.json", "Updated analysis results"],
+      "typical_time": "30-60 minutes per iteration",
+      "iteration_expected": true,
+      "max_iterations": 3,
+      "gates": [
+        {
+          "gate_id": "G-META-05",
+          "name": "Critical Issues Resolved",
+          "checks": [
+            "No context bottlenecks (all paths < 160k tokens)",
+            "No orphaned critical functions",
+            "No unreachable critical flows",
+            "Unintentional circular dependencies eliminated"
+          ],
+          "blocking": true,
+          "note": "Warnings are acceptable, but CRITICAL issues must be resolved"
+        }
+      ],
+      "next_step": "META-05B"
+    },
+    {
+      "step_id": "META-05B",
+      "name": "Implementation Refinement (Fix Workflows, Tools, Schemas)",
+      "description": "Apply architectural insights by fixing actual implementation files (workflows, tools, schemas) based on analysis results to create a 'self-sharpening knife' that continuously improves itself",
+      "phase": "implementation_refinement",
+      "rationale": "Functional architecture analysis identifies issues in the spec. This step fixes the actual implementation to resolve root causes, closing the improvement loop.",
+      "critical_insight": "Without this step, meta-analysis only updates the architectural description (functional_architecture.json) but doesn't fix the actual implementation (workflows/*.json, tools/*.py, schemas/*.json). This step makes Reflow self-improving.",
+      "actions": [
+        {
+          "action_id": "META-05B-A01",
+          "description": "Map functional architecture issues to implementation files",
+          "purpose": "Identify which files need to be edited to fix root causes",
+          "issue_mapping": {
+            "context_bottlenecks_in_workflow_execution": [
+              "workflows/*.json - Add context refresh points between phases",
+              "workflows/*.json - Break long workflows into sub-workflows",
+              "tools/*.py - Implement lazy loading instead of loading all files at once"
+            ],
+            "missing_error_handling": [
+              "workflows/*.json - Add error handlers to quality gates",
+              "tools/*.py - Add try/except blocks with proper error flows",
+              "workflows/*.json - Add error_handling actions to workflow steps"
+            ],
+            "orphaned_functions": [
+              "workflows/*.json - Add missing workflow steps that implement orphaned functions",
+              "tools/*.py - Remove unused utility functions",
+              "Document as standalone if intentionally separate"
+            ],
+            "high_context_functions": [
+              "tools/*.py - Refactor F-030 (Load All Architecture Files) to load on-demand",
+              "tools/*.py - Summarize outputs instead of returning full details",
+              "tools/*.py - Stream large files instead of loading entirely",
+              "workflows/*.json - Split high-context steps into smaller steps"
+            ],
+            "unreachable_functions": [
+              "workflows/*.json - Add missing workflow steps to create execution path",
+              "Remove from functional_architecture.json if truly unused"
+            ],
+            "unintentional_cycles": [
+              "workflows/*.json - Redesign workflow routing to break circular dependency",
+              "tools/*.py - Add termination conditions to iterative loops"
+            ]
+          },
+          "output": "List of files to edit with specific changes needed"
+        },
+        {
+          "action_id": "META-05B-A02",
+          "description": "Fix workflows/*.json files",
+          "for_each_issue": "Edit workflow definitions to address architectural issues",
+          "examples": [
+            "Add context refresh point: Insert step with action 'context_refresh' between META-03 and META-07",
+            "Break meta-analysis workflow: Split into 99a-meta_analysis_part1.json and 99b-meta_analysis_part2.json if paths exceed 160k",
+            "Add missing error handlers: Add 'error_handling' object to quality gates",
+            "Reduce step context: Split large actions into multiple smaller actions"
+          ],
+          "validation": "Validate workflow JSON schema after edits",
+          "files_to_check": [
+            "workflows/99-meta_analysis.json",
+            "workflows/01-systems_engineering.json",
+            "workflows/feature_update.json",
+            "workflows/*.json (any workflow identified in analysis)"
+          ]
+        },
+        {
+          "action_id": "META-05B-A03",
+          "description": "Fix tools/*.py files",
+          "for_each_issue": "Refactor tools to reduce context consumption or improve efficiency",
+          "examples": [
+            "Lazy loading: Refactor analyze_functional_architecture.py to load architecture files on-demand instead of all at once",
+            "Streaming: Refactor system_of_systems_graph_v2.py to stream large files instead of loading into memory",
+            "Summarization: Refactor tools to return summaries (e.g., 'Found 10 issues' instead of listing all 10)",
+            "Error handling: Add try/except blocks with proper error flows to all analysis tools",
+            "Modularization: Break large functions (>50 lines) into smaller helper functions"
+          ],
+          "validation": "python3 -m py_compile tools/*.py",
+          "files_to_check": [
+            "tools/analyze_functional_architecture.py",
+            "tools/system_of_systems_graph_v2.py",
+            "tools/generate_architecture.py",
+            "tools/*.py (any tool identified in analysis)"
+          ]
+        },
+        {
+          "action_id": "META-05B-A04",
+          "description": "Fix schemas/*.json and templates/*.json",
+          "for_each_issue": "Update data schemas and templates based on architectural changes",
+          "examples": [
+            "Add 'context_refresh' field to workflow step schema if adding context refresh points",
+            "Update architecture template to include error_handling sections",
+            "Add new fields required by updated workflows or tools"
+          ],
+          "validation": "Validate JSON schema compliance"
+        },
+        {
+          "action_id": "META-05B-A05",
+          "description": "Test implementation changes",
+          "purpose": "Verify that implementation fixes work correctly and don't introduce regressions",
+          "tests": [
+            "Dry-run updated workflows on test data to verify executability",
+            "Run tools with updated parameters to verify outputs match expected format",
+            "Integration test: Run full workflow end-to-end to verify all pieces work together",
+            "Regression test: Verify existing functionality still works (e.g., SE workflow still completes)"
+          ],
+          "success_criteria": [
+            "All workflows execute without errors",
+            "All tools produce valid outputs",
+            "Integration tests pass",
+            "No regressions in existing functionality"
+          ]
+        },
+        {
+          "action_id": "META-05B-A06",
+          "description": "Update functional_architecture.json to reflect implementation changes",
+          "rationale": "Implementation fixes may change functions, context estimates, dependencies, or flows",
+          "updates_needed": [
+            "Update context_consumption estimates based on actual refactored code",
+            "Add/remove functions if workflow steps were added/removed",
+            "Update function_dependencies if execution flow changed",
+            "Update functional_flows if new flows created or flows split"
+          ],
+          "purpose": "Keep functional architecture synchronized with actual implementation"
+        },
+        {
+          "action_id": "META-05B-A07",
+          "description": "Re-run functional architecture analysis",
+          "command": "python3 tools/analyze_functional_architecture.py specs/functional/functional_architecture.json",
+          "purpose": "Verify that implementation fixes resolved the architectural issues",
+          "expected_results": [
+            "Context bottlenecks reduced or eliminated",
+            "Unreachable functions now reachable (or removed)",
+            "Orphaned functions integrated (or removed)",
+            "High-context functions optimized (lower context consumption)",
+            "Overall max_context_path reduced compared to previous iteration"
+          ],
+          "loop_condition": "If critical issues remain in implementation, return to META-05B-A01",
+          "termination": "Analysis shows no critical issues, implementation validated"
+        }
+      ],
+      "outputs": [
+        "Updated workflows/*.json files",
+        "Updated tools/*.py files",
+        "Updated schemas/*.json and templates/*.json files (if needed)",
+        "Updated specs/functional/functional_architecture.json (reflecting implementation)",
+        "Updated specs/functional/functional_architecture_analysis.json (showing resolved issues)",
+        "Test results confirming implementation fixes work"
+      ],
+      "typical_time": "1-2 hours per iteration",
+      "iteration_expected": true,
+      "max_iterations": 3,
+      "gates": [
+        {
+          "gate_id": "G-META-05B",
+          "name": "Implementation Validated (Self-Sharpening Complete)",
+          "checks": [
+            "All workflows/*.json files valid and executable",
+            "All tools/*.py files pass syntax check (python3 -m py_compile)",
+            "Integration tests pass (workflows can execute tools successfully)",
+            "Functional architecture analysis shows critical issues resolved",
+            "No regressions introduced (existing functionality still works)",
+            "Context consumption reduced for high-context paths",
+            "Functional_architecture.json synchronized with actual implementation"
+          ],
+          "blocking": true,
+          "success_message": "Reflow has successfully sharpened itself - implementation fixes applied and validated"
+        }
+      ],
+      "self_sharpening_note": "This step is the 'sharpening' mechanism that makes Reflow self-improving. It closes the loop: analyze → detect → FIX IMPLEMENTATION → re-analyze → validate.",
+      "next_step": "META-06"
+    },
+    {
+      "step_id": "META-06",
+      "name": "Generate Visualizations (Optional but Recommended)",
+      "description": "Create human-readable BPMN/UML diagrams of Reflow's functional flows",
+      "phase": "visualization",
+      "maps_to": "SE-00B-A03 (Generate Human Visualizations)",
+      "optional": true,
+      "rationale": "Visualizations help communicate Reflow's architecture to stakeholders and developers",
+      "actions": [
+        {
+          "action_id": "META-06-A01",
+          "description": "Generate BPMN process flow diagrams",
+          "for_each_flow": [
+            "Workflow Execution Flow",
+            "Context Management Flow",
+            "Functional Architecture Flow"
+          ],
+          "output_format": "SVG or PNG using BPMN 2.0 notation",
+          "location": "docs/diagrams/functional/"
+        },
+        {
+          "action_id": "META-06-A02",
+          "description": "Generate UML data flow diagrams",
+          "shows": "Data movement between functions",
+          "output_format": "SVG or PNG using UML 2.5 notation",
+          "location": "docs/diagrams/functional/"
+        },
+        {
+          "action_id": "META-06-A03",
+          "description": "Generate context consumption heatmap",
+          "shows": "Functions colored by context consumption (green=low, yellow=medium, red=high)",
+          "purpose": "Quickly identify high-context functions",
+          "location": "docs/diagrams/functional/context_heatmap.svg"
+        }
+      ],
+      "outputs": ["docs/diagrams/functional/*.svg"],
+      "typical_time": "1-2 hours (if done manually), or use diagramming tools",
+      "next_step": "META-07"
+    },
+    {
+      "step_id": "META-07",
+      "name": "Document Meta-Analysis Results",
+      "description": "Create summary report of meta-analysis findings and recommendations",
+      "phase": "documentation",
+      "actions": [
+        {
+          "action_id": "META-07-A01",
+          "description": "Create meta-analysis report",
+          "template": "docs/reports/META_ANALYSIS_REPORT_{date}.md",
+          "sections": [
+            "Executive Summary",
+            "Functional Architecture Overview",
+            "Context Consumption Analysis",
+            "Issues Found and Resolved",
+            "Remaining Warnings/Optimizations",
+            "Recommendations for Future Updates",
+            "Comparison with Previous Meta-Analysis (if available)"
+          ]
+        },
+        {
+          "action_id": "META-07-A02",
+          "description": "Update CHANGELOG.md with meta-analysis findings",
+          "note": "Document any architectural issues discovered or improvements made"
+        },
+        {
+          "action_id": "META-07-A03",
+          "description": "Create GitHub issue for optimization opportunities",
+          "if": "Optimization opportunities identified but not yet addressed",
+          "label": "meta-analysis, optimization, technical-debt"
+        }
+      ],
+      "outputs": [
+        "docs/reports/META_ANALYSIS_REPORT_{date}.md",
+        "Updated CHANGELOG.md",
+        "GitHub issues (if needed)"
+      ],
+      "typical_time": "30-45 minutes",
+      "next_step": "META-08"
+    },
+    {
+      "step_id": "META-08",
+      "name": "Optional: Operational Test Generation",
+      "description": "Generate operational tests based on functional architecture to validate Reflow capabilities",
+      "phase": "testing",
+      "optional": true,
+      "implements": "FR-018 (Generate operational tests based on functional architecture)",
+      "actions": [
+        {
+          "action_id": "META-08-A01",
+          "description": "Map functional requirements to test scenarios",
+          "for_each_requirement": "Create operational test validating capability",
+          "example": {
+            "FR-001": "Test workflow execution by loading and executing a simple workflow",
+            "FR-006": "Test graph analysis by creating test architecture and running system_of_systems_graph_v2.py",
+            "FR-013": "Test context bottleneck detection by creating high-context functional architecture"
+          }
+        },
+        {
+          "action_id": "META-08-A02",
+          "description": "Create test suite in tests/operational/",
+          "test_framework": "pytest or similar",
+          "coverage_metric": "Functional coverage = (tested requirements / total requirements) * 100%",
+          "target": "80%+ functional coverage"
+        }
+      ],
+      "outputs": ["tests/operational/test_reflow_functional_*.py"],
+      "typical_time": "2-4 hours",
+      "next_step": "COMPLETE"
+    }
+  ],
+  "completion_criteria": {
+    "required": [
+      "Functional requirements document created (specs/functional/functional_requirements.json)",
+      "Functional architecture document created (specs/functional/functional_architecture.json)",
+      "Analysis run and results reviewed (specs/functional/functional_architecture_analysis.json)",
+      "Critical issues resolved in functional architecture spec (no context bottlenecks, no orphaned critical functions)",
+      "IMPLEMENTATION FIXES APPLIED (META-05B): workflows/*.json, tools/*.py, schemas/*.json updated based on analysis",
+      "Implementation validated: All workflows executable, tools pass syntax check, integration tests pass",
+      "Re-analysis confirms fixes: Updated functional_architecture_analysis.json shows resolved issues",
+      "Meta-analysis report created (docs/reports/META_ANALYSIS_REPORT_{date}.md)"
+    ],
+    "optional": [
+      "Visualizations created (docs/diagrams/functional/)",
+      "Operational tests generated (tests/operational/)"
+    ]
+  },
+  "success_criteria": {
+    "context_health": "All functional paths consume < 160k tokens (< 80% of 200k context window)",
+    "functional_completeness": "All functional requirements implemented by functions with no gaps",
+    "flow_efficiency": "No unintentional circular dependencies, reasonable complexity",
+    "ai_agent_feasibility": "AI agents can execute all Reflow workflows within context limits",
+    "self_improvement": "Implementation fixes applied to workflows, tools, and schemas - Reflow has successfully sharpened itself"
+  },
+  "recommended_frequency": {
+    "trigger_events": [
+      "After adding new workflows",
+      "After significant workflow updates",
+      "After adding new tools that consume context",
+      "Before major version releases",
+      "Quarterly as part of technical health check"
+    ],
+    "minimum_frequency": "After every major feature addition"
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "This is Reflow analyzing ITSELF - system_root = reflow_root",
+      "Context consumption is the PRIMARY metric - track it for all functions",
+      "Context bottlenecks (>160k tokens) are CRITICAL issues that block AI agents",
+      "Not all unreachable functions are problems - some operate in separate contexts",
+      "Cycles may be intentional (iterative refinement loops) or problematic (circular dependencies) - review each",
+      "Focus on functional CAPABILITIES, not implementation details"
+    ],
+    "common_mistakes": [
+      "Treating Reflow as a normal system instead of meta-analysis",
+      "Not tracking context consumption for functions",
+      "Missing high-context functions (file reads, large generations)",
+      "Not iterating when critical issues found",
+      "Creating visualizations without reviewing analysis first"
+    ],
+    "workflow_philosophy": "Meta-analysis uses Reflow's own methodology (functional architecture first) to ensure Reflow itself is well-architected for AI agent execution. Context consumption is the critical constraint that must be monitored."
+  },
+  "example_invocation": {
+    "trigger": "Run meta-analysis on Reflow to check for context bottlenecks after v2.1.0 updates",
+    "command": "Implement workflow in /home/user/reflow/workflows/99-meta_analysis.json on system /home/user/reflow",
+    "expected_duration": "4-6 hours for full meta-analysis with refinement",
+    "quick_check_command": "python3 /home/user/reflow/tools/analyze_functional_architecture.py /home/user/reflow/specs/functional/functional_architecture.json"
+  },
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-04",
+      "changes": "Initial formalization of meta-analysis workflow based on v2.1.0 functional architecture methodology with context consumption tracking"
+    }
+  ]
+}

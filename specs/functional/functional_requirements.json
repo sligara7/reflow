@@ -1,0 +1,383 @@
+{
+  "document_metadata": {
+    "document_type": "functional_requirements",
+    "system_name": "Reflow Workflow System",
+    "version": "1.0.0",
+    "created": "2025-11-04",
+    "last_updated": "2025-11-04",
+    "purpose": "Define WHAT Reflow must do (functional capabilities) before defining HOW it does it (system architecture)",
+    "source_documents": [
+      "docs/SYSTEM_MISSION_STATEMENT.md",
+      "docs/USER_SCENARIOS.md",
+      "docs/SUCCESS_CRITERIA.md"
+    ],
+    "workflow_step": "SE-00A (Functional Requirements Definition)",
+    "next_step": "SE-00B (Functional Architecture Definition & Visualization)"
+  },
+  "functional_requirements": [
+    {
+      "id": "FR-001",
+      "category": "Workflow Execution",
+      "requirement": "Guide AI agents through structured workflows",
+      "description": "Provide step-by-step workflow guidance to AI agents, ensuring they execute all required steps in correct sequence without skipping critical actions",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "AI agents can load and interpret workflow JSON files",
+        "Each step clearly defines actions, inputs, outputs, and next steps",
+        "Workflow steps contain sufficient context for AI agents to execute independently",
+        "Steps include validation checkpoints and quality gates"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 2", "Scenario 5"],
+      "context_consumption": "Medium (5000-15000 tokens per workflow load)"
+    },
+    {
+      "id": "FR-002",
+      "category": "Context Management",
+      "requirement": "Preserve workflow state across multiple sessions",
+      "description": "Maintain workflow progress, current step, and system context in working_memory.json to enable multi-day projects without context drift",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "working_memory.json tracks current_workflow, current_step, current_substep",
+        "AI agents can resume from exact point in workflow after days/weeks",
+        "Context refresh mechanism prevents token exhaustion",
+        "Workflow state includes system name, paths, and progress summary"
+      ],
+      "user_scenarios": ["Scenario 2"],
+      "context_consumption": "Low (2000-5000 tokens per context save/restore)"
+    },
+    {
+      "id": "FR-003",
+      "category": "Framework Flexibility",
+      "requirement": "Support multiple architectural frameworks",
+      "description": "Enable framework-agnostic workflow execution across IT systems, biological networks, social systems, etc. by using pluggable framework definitions",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Framework configuration selectable during setup (UAF, Systems Biology, Decision Flow, Custom)",
+        "Framework definitions specify component_term, connection_term, and schema mappings",
+        "Same workflow steps work across all frameworks with different terminology",
+        "Framework-specific analysis enabled (e.g., cycles expected in biological networks)"
+      ],
+      "user_scenarios": ["Scenario 3"],
+      "context_consumption": "Low (1000-3000 tokens for framework loading)"
+    },
+    {
+      "id": "FR-004",
+      "category": "Architecture Generation",
+      "requirement": "Generate machine-readable architecture artifacts",
+      "description": "Create structured architecture files (service_architecture.json, component_architecture.json, etc.) for each system component following framework-specific schemas",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Architecture files follow framework-specific JSON schemas",
+        "Files include complete component/service definitions",
+        "Interface/connection definitions specified with contracts",
+        "Version tracking enabled for architecture evolution"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 3", "Scenario 5"],
+      "context_consumption": "Medium (3000-10000 tokens per architecture file generation)"
+    },
+    {
+      "id": "FR-005",
+      "category": "Validation & Quality Gates",
+      "requirement": "Validate architectural artifacts for completeness and correctness",
+      "description": "Run automated validation tools to check architectures for missing elements, inconsistencies, and violations of framework rules",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "validate_architecture.py checks architecture file completeness",
+        "validate_foundational_alignment.py ensures alignment with mission/scenarios",
+        "Validation reports list critical, warning, and info issues",
+        "Quality gates block workflow progression until critical issues resolved"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 4"],
+      "context_consumption": "Medium (2000-5000 tokens per validation run with output)"
+    },
+    {
+      "id": "FR-006",
+      "category": "Graph Analysis",
+      "requirement": "Analyze system-of-systems graphs for architectural issues",
+      "description": "Generate directed graphs of system components/connections and analyze for orphaned nodes, missing edges, cycles, disconnected components, and other architectural problems",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "system_of_systems_graph_v2.py generates NetworkX graph from architecture files",
+        "Graph analysis includes: orphan detection, connectivity analysis, cycle detection, path analysis",
+        "Framework-specific analysis (e.g., cycles may be expected in some domains)",
+        "Analysis output highlights critical architectural issues"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 3", "Scenario 5"],
+      "context_consumption": "High (10000-30000 tokens for large system graphs)"
+    },
+    {
+      "id": "FR-007",
+      "category": "Human Documentation",
+      "requirement": "Generate human-readable documentation from machine-readable architectures",
+      "description": "Create Interface Contract Documents (ICDs), Mermaid diagrams, architecture handoff documents, and other human-readable artifacts from structured architecture files",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "ICDs generated for each service/component interface",
+        "Mermaid diagrams visualize system connections",
+        "Architecture handoff documents provide human overview",
+        "Documentation stays synchronized with architecture files"
+      ],
+      "user_scenarios": ["Scenario 1"],
+      "context_consumption": "Medium (5000-15000 tokens per documentation generation)"
+    },
+    {
+      "id": "FR-008",
+      "category": "Functional Architecture",
+      "requirement": "Define and visualize functional architecture before system allocation",
+      "description": "Create functional requirements, process flows, and decision flows showing WHAT the system must do before allocating functions to services/components",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Functional requirements extracted from foundational documents",
+        "Functional architecture defines process flows, decision flows, data flows",
+        "Human-readable visualizations (BPMN, UML) generated for stakeholder review",
+        "Functional architecture validated for completeness before system decomposition"
+      ],
+      "user_scenarios": ["New in v2.1.0"],
+      "context_consumption": "High (10000-25000 tokens for functional architecture + visualizations)"
+    },
+    {
+      "id": "FR-009",
+      "category": "Functional Architecture",
+      "requirement": "Analyze functional architecture for gaps and inefficiencies",
+      "description": "Use graph analysis on functional architecture to detect missing functions, redundant functions, circular dependencies, and incomplete flows before system allocation",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Functional architecture graph generated showing functions and flows",
+        "Gap detection identifies missing functions needed to complete user scenarios",
+        "Redundancy detection finds duplicate or overlapping functions",
+        "Flow efficiency analysis detects circular dependencies and bottlenecks"
+      ],
+      "user_scenarios": ["New in v2.1.0"],
+      "context_consumption": "Medium (5000-15000 tokens for functional graph analysis)"
+    },
+    {
+      "id": "FR-010",
+      "category": "Stakeholder Validation",
+      "requirement": "Enable stakeholder review and validation of functional architecture",
+      "description": "Generate human-readable visualizations (BPMN process flows, UML diagrams, decision trees) for stakeholder review and collect feedback before proceeding to implementation",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "BPMN 2.0 process flow diagrams generated",
+        "UML 2.5 data flow diagrams generated",
+        "Decision tree visualizations generated",
+        "Stakeholder feedback captured and incorporated through iterative refinement",
+        "Stakeholder sign-off obtained before functional allocation"
+      ],
+      "user_scenarios": ["New in v2.1.0"],
+      "context_consumption": "Medium (5000-15000 tokens per visualization set + iteration)"
+    },
+    {
+      "id": "FR-011",
+      "category": "Functional Allocation",
+      "requirement": "Allocate functions to services/components with high cohesion and low coupling",
+      "description": "Create functional allocation matrix mapping each function from functional architecture to specific services, ensuring well-designed service boundaries",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Functional allocation matrix created mapping functions to services",
+        "100% functional coverage (all functions allocated)",
+        "High cohesion (related functions grouped together)",
+        "Low coupling (minimal cross-service dependencies)",
+        "Service responsibility statements derived from allocated functions"
+      ],
+      "user_scenarios": ["New in v2.1.0"],
+      "context_consumption": "Medium (3000-8000 tokens for allocation matrix)"
+    },
+    {
+      "id": "FR-012",
+      "category": "Context Awareness",
+      "requirement": "Track and manage AI agent context consumption",
+      "description": "Monitor context window usage throughout workflows, detect context exhaustion risks, and trigger context refresh operations when necessary to prevent workflow failures",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "operations_since_refresh counter tracks context accumulation",
+        "Context refresh triggered at configurable threshold (default: 5 operations)",
+        "Context health status tracked (healthy, warning, critical)",
+        "Context refresh procedure documented and executable"
+      ],
+      "user_scenarios": ["Scenario 2"],
+      "context_consumption": "Low (500-1000 tokens for context management overhead)"
+    },
+    {
+      "id": "FR-013",
+      "category": "Context Awareness",
+      "requirement": "Analyze workflows for context bottlenecks",
+      "description": "Identify workflow paths that consume excessive context (>160k tokens), risking context exhaustion and workflow failure for AI agents",
+      "priority": "SHOULD_HAVE",
+      "acceptance_criteria": [
+        "Context consumption tracked for each function/step",
+        "Cumulative context calculated along all workflow paths",
+        "Paths exceeding usable context (160k) flagged as bottlenecks",
+        "Recommendations provided for refactoring high-context functions"
+      ],
+      "user_scenarios": ["Meta-analysis scenarios"],
+      "context_consumption": "Medium (3000-8000 tokens for context analysis)"
+    },
+    {
+      "id": "FR-014",
+      "category": "Approach Detection",
+      "requirement": "Auto-detect project approach (top-down vs bottom-up)",
+      "description": "Automatically determine if project is greenfield (top-down) or integration of existing components (bottom-up) based on presence of code and architecture artifacts",
+      "priority": "SHOULD_HAVE",
+      "acceptance_criteria": [
+        "Detect source code, build files, existing architectures in system directory",
+        "Route to top-down workflow (SE-00A → SE-00B → SE-01) if greenfield",
+        "Route to bottom-up workflow (BU-01 → BU-02) if existing components found",
+        "Detection logic documented and configurable"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 5"],
+      "context_consumption": "Low (1000-2000 tokens for approach detection)"
+    },
+    {
+      "id": "FR-015",
+      "category": "Workflow Metrics",
+      "requirement": "Collect workflow execution metrics for retrospectives",
+      "description": "Track workflow execution metrics (operations, validations, failures, rework cycles, time per step) for post-workflow analysis and continuous improvement",
+      "priority": "SHOULD_HAVE",
+      "acceptance_criteria": [
+        "Metrics tracked in working_memory.json",
+        "Retrospective document generated at workflow completion",
+        "Metrics include: total_operations, total_validations, validation_failures, rework_cycles",
+        "Time per step tracked for bottleneck identification"
+      ],
+      "user_scenarios": ["Scenario 4"],
+      "context_consumption": "Low (500-1500 tokens for metrics collection)"
+    },
+    {
+      "id": "FR-016",
+      "category": "Feature Updates",
+      "requirement": "Support safe updates to existing systems with versioning",
+      "description": "Enable feature updates and enhancements to existing architectures using versioned architecture files and impact analysis",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Change proposals validated against foundational alignment",
+        "Functional architecture updated with change deltas visualized",
+        "Service architectures versioned (v1.0.0 → v1.1.0 or v2.0.0)",
+        "Breaking changes identified and documented",
+        "Delta reports show current vs. proposed architectures"
+      ],
+      "user_scenarios": ["Real-world feature updates"],
+      "context_consumption": "Medium (5000-12000 tokens for change analysis)"
+    },
+    {
+      "id": "FR-017",
+      "category": "Knowledge Gap Detection",
+      "requirement": "Detect missing information and architectural issues",
+      "description": "Identify knowledge gaps, undefined interfaces, missing components, and architectural inconsistencies through automated analysis",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "Missing interfaces detected between connected components",
+        "Orphaned components identified (no connections)",
+        "Undefined interface contracts flagged",
+        "Architectural inconsistencies reported with severity levels"
+      ],
+      "user_scenarios": ["Scenario 1", "Scenario 5"],
+      "context_consumption": "Medium (2000-5000 tokens for gap analysis)"
+    },
+    {
+      "id": "FR-018",
+      "category": "Operational Testing",
+      "requirement": "Generate operational tests based on functional architecture",
+      "description": "Create operational test scenarios derived from functional architecture that validate system capabilities (WHAT the system does) rather than just implementation details (HOW it's built)",
+      "priority": "SHOULD_HAVE",
+      "acceptance_criteria": [
+        "Operational tests map to functional requirements",
+        "Each user scenario has corresponding operational test",
+        "Tests validate functional flows from functional architecture",
+        "Test coverage measurable against functional architecture completeness"
+      ],
+      "user_scenarios": ["New requirement - testing workflows"],
+      "context_consumption": "Medium (5000-10000 tokens for test generation)"
+    },
+    {
+      "id": "FR-019",
+      "category": "Meta-Analysis",
+      "requirement": "Enable Reflow to analyze itself using its own workflows",
+      "description": "Support meta-analysis where Reflow workflows analyze Reflow's own architecture to find issues, inefficiencies, and improvement opportunities",
+      "priority": "SHOULD_HAVE",
+      "acceptance_criteria": [
+        "Reflow can treat its own workflows as system components",
+        "Workflow dependencies analyzed as system-of-systems graph",
+        "Context consumption analyzed across all workflow paths",
+        "Architectural issues in Reflow itself detected and reported"
+      ],
+      "user_scenarios": ["Scenario 5"],
+      "context_consumption": "Very High (30000-60000 tokens for full meta-analysis)"
+    },
+    {
+      "id": "FR-020",
+      "category": "AI Agent Feasibility",
+      "requirement": "Ensure workflows completable within AI agent context limits",
+      "description": "Design workflows to be executable by AI agents within typical context windows (200k tokens), identifying and addressing context bottlenecks",
+      "priority": "MUST_HAVE",
+      "acceptance_criteria": [
+        "No workflow path consumes > 160k tokens (80% of 200k window)",
+        "Context refresh points identified where paths exceed limits",
+        "Alternative lower-context paths documented",
+        "Context consumption estimates provided for all workflows"
+      ],
+      "user_scenarios": ["All scenarios"],
+      "context_consumption": "Critical constraint for all operations"
+    }
+  ],
+  "requirement_traceability": {
+    "total_requirements": 20,
+    "must_have": 15,
+    "should_have": 5,
+    "categories": {
+      "workflow_execution": 1,
+      "context_management": 3,
+      "framework_flexibility": 1,
+      "architecture_generation": 1,
+      "validation_quality_gates": 1,
+      "graph_analysis": 1,
+      "human_documentation": 1,
+      "functional_architecture": 3,
+      "stakeholder_validation": 1,
+      "functional_allocation": 1,
+      "approach_detection": 1,
+      "workflow_metrics": 1,
+      "feature_updates": 1,
+      "knowledge_gap_detection": 1,
+      "operational_testing": 1,
+      "meta_analysis": 1,
+      "ai_agent_feasibility": 1
+    },
+    "user_scenario_coverage": {
+      "scenario_1_greenfield": ["FR-001", "FR-004", "FR-005", "FR-006", "FR-007", "FR-014", "FR-017"],
+      "scenario_2_multi_day": ["FR-001", "FR-002", "FR-012"],
+      "scenario_3_framework_agnostic": ["FR-003", "FR-004", "FR-006"],
+      "scenario_4_retrospective": ["FR-005", "FR-015"],
+      "scenario_5_meta_analysis": ["FR-001", "FR-004", "FR-006", "FR-013", "FR-014", "FR-017", "FR-019"],
+      "v2_1_0_functional_architecture": ["FR-008", "FR-009", "FR-010", "FR-011", "FR-016"],
+      "operational_testing_linkage": ["FR-018"],
+      "ai_agent_constraints": ["FR-012", "FR-013", "FR-020"]
+    }
+  },
+  "estimated_context_consumption": {
+    "note": "Context consumption estimates critical for FR-020 (AI Agent Feasibility)",
+    "typical_workflow_path": {
+      "setup_workflow": "10000-15000 tokens",
+      "systems_engineering_workflow": "40000-80000 tokens (depending on system complexity)",
+      "artifacts_visualization": "15000-25000 tokens",
+      "development_workflow": "50000-100000 tokens (highly variable)",
+      "operations_workflow": "20000-40000 tokens"
+    },
+    "context_bottleneck_risks": [
+      "Large system graphs (>20 components) can consume 30000-50000 tokens",
+      "Multiple validation iterations accumulate context rapidly",
+      "Complex functional architectures with many visualizations consume 20000-40000 tokens",
+      "Meta-analysis of Reflow itself approaches context limits"
+    ],
+    "mitigation_strategies": [
+      "Context refresh operations at regular intervals",
+      "Lazy loading of architecture files (read only when needed)",
+      "Summarization of validation results rather than full output",
+      "Streaming large file reads rather than loading entirely"
+    ]
+  },
+  "next_phase": {
+    "step": "SE-00B-A01",
+    "task": "Create functional_architecture.json defining HOW these requirements are achieved through functional flows",
+    "note": "Functional architecture will model process flows, decision flows, and data flows showing how Reflow achieves these 20 functional requirements. Context consumption will be tracked as edge weights."
+  }
+}
