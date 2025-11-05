@@ -7,6 +7,10 @@
 **When**: After workflow updates, before major releases, or quarterly health checks
 **Key Feature**: META-05B step fixes actual implementation files (workflows, tools, schemas), not just specs
 
+**Two Ways to Run Meta-Analysis**:
+1. **Automatic** (Recommended): Use `98-reflow_feature_update.json` when updating Reflow features - meta-analysis runs automatically after implementation
+2. **Manual**: Use `99-meta_analysis.json` for comprehensive quarterly health checks or before major releases
+
 ## 🚀 Quick Check (5 minutes)
 
 If functional_architecture.json already exists, run quick analysis:
@@ -27,7 +31,31 @@ python3 tools/analyze_functional_architecture.py specs/functional/functional_arc
 
 ---
 
-## 📋 Full Meta-Analysis with Self-Sharpening (6-10 hours)
+## ⚡ Automatic Meta-Analysis (Recommended for Feature Updates)
+
+**Workflow**: `98-reflow_feature_update.json`
+**When**: Adding/updating a specific Reflow feature (workflow, tool, schema, template)
+**Time**: 2-8 hours (feature implementation + targeted meta-analysis)
+**Advantage**: Automatically runs meta-analysis after feature implementation - no need to remember
+
+**Trigger Command**:
+```
+"Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>"
+```
+
+**Steps**:
+1. RFU-01: Setup Reflow feature update mode
+2. RFU-02: Execute standard feature_update workflow (FU-01 through FU-05)
+3. **RFU-03: AUTO-TRIGGER meta-analysis** - Run functional architecture analysis
+4. **RFU-04: AUTO-TRIGGER refinement** - Fix functional architecture spec if issues found
+5. **RFU-05: AUTO-TRIGGER self-sharpening** - Optimize implementation (META-05B)
+6. RFU-06: Commit & document (feature + optimizations)
+
+**Key Benefit**: Every Reflow feature update automatically triggers self-sharpening - creates continuous improvement loop without manual intervention.
+
+---
+
+## 📋 Manual Full Meta-Analysis with Self-Sharpening (6-10 hours)
 
 ### Trigger Command
 
@@ -287,11 +315,13 @@ Run analysis:           5,000-10,000 tokens
 
 ## 🔗 Related Documents
 
-- **Workflow**: `workflows/99-meta_analysis.json` - Full workflow definition
+- **Workflow (Automatic)**: `workflows/98-reflow_feature_update.json` - Feature update with auto meta-analysis
+- **Workflow (Manual)**: `workflows/99-meta_analysis.json` - Full comprehensive meta-analysis
 - **Functional Architecture Methodology**: `docs/CLAUDE.md` - v2.1.0 methodology
 - **Functional Requirements**: `specs/functional/functional_requirements.json`
 - **Functional Architecture**: `specs/functional/functional_architecture.json`
 - **Analysis Results**: `specs/functional/functional_architecture_analysis.json`
+- **Analysis Tool**: `tools/analyze_functional_architecture.py`
 
 ---
 
@@ -326,6 +356,14 @@ A: AI agents have limited context windows (e.g., 200k tokens). If a workflow pat
 
 **Q: How is this different from the SE workflow's fix loop?**
 A: Very similar! SE workflow fixes service_architecture.json files. Meta-analysis (META-05B) fixes Reflow's own workflows/*.json and tools/*.py files. Same principle, applied to Reflow itself.
+
+**Q: When should I use 98-reflow_feature_update vs 99-meta_analysis?**
+A:
+- **98-reflow_feature_update**: When adding/updating a SPECIFIC Reflow feature. Automatically runs targeted meta-analysis on the new feature impact. Faster (2-8 hours).
+- **99-meta_analysis**: For COMPREHENSIVE health checks of ALL of Reflow. Manual trigger. Use quarterly, before major releases, or after multiple feature updates. Longer (6-10 hours).
+
+**Q: Does 98-reflow_feature_update replace 99-meta_analysis?**
+A: No, they're complementary. Use 98 for every feature update (automatic self-sharpening). Use 99 periodically for comprehensive health checks. Think: 98 = incremental maintenance, 99 = comprehensive inspection.
 
 ---
 

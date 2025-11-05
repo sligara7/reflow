@@ -1,0 +1,425 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "98-reflow_feature_update",
+    "name": "Reflow Feature Update Workflow (Self-Sharpening Auto-Trigger)",
+    "version": "1.0.0",
+    "description": "Feature update workflow specifically for Reflow itself - automatically triggers meta-analysis after feature implementation to ensure continuous self-improvement",
+    "created": "2025-11-04",
+    "last_updated": "2025-11-04",
+    "purpose": "Update Reflow's own workflows, tools, or templates, then automatically validate changes through meta-analysis",
+    "key_innovation": "Automatically triggers meta-analysis (steps META-04, META-05, META-05B) after feature update completes, creating a continuous self-sharpening loop",
+    "when_to_use": "When updating Reflow's own implementation (workflows/*.json, tools/*.py, schemas/*.json, templates/*.json)",
+    "do_not_use_for": "Updating OTHER systems - use standard feature_update.json workflow instead",
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>"
+  },
+  "prerequisites": {
+    "required_conditions": [
+      "Reflow repository exists and is accessible",
+      "Python 3.x installed with NetworkX library",
+      "Functional architecture exists: specs/functional/functional_architecture.json",
+      "All Reflow workflows, tools, and templates present"
+    ],
+    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root)"
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Standard Reflow feature update with auto meta-analysis",
+      "first_step": "RFU-01"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "RFU-01",
+      "name": "Setup Reflow Feature Update",
+      "description": "Configure working_memory.json for Reflow self-update mode",
+      "phase": "setup",
+      "actions": [
+        {
+          "action_id": "RFU-01-A01",
+          "description": "Update working_memory.json",
+          "file": "context/working_memory.json",
+          "updates": {
+            "current_phase": "reflow_feature_update",
+            "system_name": "Reflow Workflow System",
+            "system_root": "{same as reflow_root}",
+            "operations_since_refresh": 0,
+            "reflow_self_update_mode": true,
+            "auto_meta_analysis": true
+          }
+        },
+        {
+          "action_id": "RFU-01-A02",
+          "description": "Record feature being added/updated",
+          "purpose": "Track what's being changed for meta-analysis impact assessment",
+          "record_in": "context/working_memory.json (reflow_feature_description field)"
+        }
+      ],
+      "outputs": ["Updated context/working_memory.json"],
+      "typical_time": "5 minutes",
+      "next_step": "RFU-02"
+    },
+    {
+      "step_id": "RFU-02",
+      "name": "Execute Standard Feature Update Workflow",
+      "description": "Run standard feature_update.json workflow steps (FU-01 through FU-05)",
+      "phase": "feature_implementation",
+      "delegates_to": "feature_update.json",
+      "actions": [
+        {
+          "action_id": "RFU-02-A01",
+          "description": "Execute FU-01: Change Proposal & Impact Analysis",
+          "delegates_to": "feature_update.json step FU-01"
+        },
+        {
+          "action_id": "RFU-02-A02",
+          "description": "Execute FU-01A: Functional Architecture Analysis, Visualization & Stakeholder Validation",
+          "delegates_to": "feature_update.json step FU-01A",
+          "note": "Updates specs/functional/functional_architecture.json with new feature functions"
+        },
+        {
+          "action_id": "RFU-02-A03",
+          "description": "Execute FU-02: Functional Allocation & System Architecture Re-Engineering",
+          "delegates_to": "feature_update.json step FU-02",
+          "note": "Allocates new functions to Reflow components (workflows, tools, etc.)"
+        },
+        {
+          "action_id": "RFU-02-A04",
+          "description": "Execute FU-03: Delta Highlighting & Approval",
+          "delegates_to": "feature_update.json step FU-03"
+        },
+        {
+          "action_id": "RFU-02-A05",
+          "description": "Execute FU-04: Development Bootstrap & Implementation",
+          "delegates_to": "feature_update.json step FU-04",
+          "note": "This step actually edits workflows/*.json, tools/*.py, schemas/*.json"
+        },
+        {
+          "action_id": "RFU-02-A06",
+          "description": "Execute FU-05: Integration, Validation & Release Preparation",
+          "delegates_to": "feature_update.json step FU-05"
+        }
+      ],
+      "outputs": [
+        "Updated Reflow implementation files (workflows, tools, schemas)",
+        "Updated specs/functional/functional_architecture.json (if feature adds new functions)"
+      ],
+      "typical_time": "2-6 hours depending on feature complexity",
+      "gates": [
+        {
+          "gate_id": "G-RFU-02",
+          "name": "Feature Implementation Complete",
+          "checks": [
+            "All feature_update.json steps (FU-01 through FU-05) completed successfully",
+            "Implementation files updated and validated",
+            "All tests pass",
+            "Changes ready for meta-analysis validation"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RFU-03"
+    },
+    {
+      "step_id": "RFU-03",
+      "name": "Auto-Trigger Meta-Analysis: Run Functional Architecture Analysis",
+      "description": "Automatically run meta-analysis to validate that the feature update didn't introduce context bottlenecks, gaps, or architectural issues",
+      "phase": "meta_analysis",
+      "rationale": "CRITICAL: Every Reflow feature update must be validated through meta-analysis to ensure self-sharpening discipline",
+      "delegates_to": "99-meta_analysis.json step META-04",
+      "actions": [
+        {
+          "action_id": "RFU-03-A01",
+          "description": "Run functional architecture analysis tool",
+          "tool": "analyze_functional_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_functional_architecture.py {reflow_root}/specs/functional/functional_architecture.json",
+          "purpose": "Detect if feature update introduced issues",
+          "analyses_performed": [
+            "Context path analysis (did feature add context bottlenecks?)",
+            "Gap detection (are new functions reachable?)",
+            "Cycle detection (did feature introduce unintentional circular dependencies?)",
+            "Flow efficiency analysis (is new feature well-integrated?)"
+          ]
+        },
+        {
+          "action_id": "RFU-03-A02",
+          "description": "Review analysis output",
+          "file_output": "specs/functional/functional_architecture_analysis.json",
+          "focus_on": [
+            "NEW bottleneck paths introduced by feature",
+            "NEW unreachable functions introduced by feature",
+            "Context consumption delta (before vs after feature)"
+          ]
+        },
+        {
+          "action_id": "RFU-03-A03",
+          "description": "Categorize issues by severity",
+          "severity_levels": {
+            "CRITICAL": "Feature introduced context bottlenecks or broke existing flows - MUST FIX",
+            "WARNING": "Feature approaching limits or has inefficiencies - SHOULD FIX",
+            "INFO": "Minor optimization opportunities"
+          }
+        }
+      ],
+      "outputs": [
+        "specs/functional/functional_architecture_analysis.json",
+        "Console output with feature impact summary"
+      ],
+      "typical_time": "5-10 minutes",
+      "gates": [
+        {
+          "gate_id": "G-RFU-03",
+          "name": "Analysis Completion",
+          "checks": [
+            "Analysis completed without errors",
+            "functional_architecture_analysis.json generated",
+            "All issues categorized"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RFU-04"
+    },
+    {
+      "step_id": "RFU-04",
+      "name": "Auto-Trigger Meta-Analysis: Refine Functional Architecture (if needed)",
+      "description": "If analysis found critical issues with the feature, refine the functional architecture spec",
+      "phase": "meta_analysis_refinement",
+      "delegates_to": "99-meta_analysis.json step META-05",
+      "conditional": "Only if CRITICAL or WARNING issues found in RFU-03",
+      "actions": [
+        {
+          "action_id": "RFU-04-A01",
+          "description": "Review critical and warning issues introduced by feature",
+          "inputs": ["specs/functional/functional_architecture_analysis.json"],
+          "focus_on": [
+            "Context bottlenecks introduced by new feature",
+            "Unreachable functions in new feature",
+            "Unintentional cycles created by feature integration"
+          ]
+        },
+        {
+          "action_id": "RFU-04-A02",
+          "description": "Refine functional architecture to address issues",
+          "file": "specs/functional/functional_architecture.json",
+          "common_fixes": {
+            "context_bottlenecks": "Note need for lazy loading or context refresh in feature implementation",
+            "unreachable_functions": "Add missing dependencies to connect new feature functions",
+            "unintentional_cycles": "Redesign feature integration flow"
+          }
+        },
+        {
+          "action_id": "RFU-04-A03",
+          "description": "Re-run analysis after refinement",
+          "command": "python3 tools/analyze_functional_architecture.py specs/functional/functional_architecture.json",
+          "loop_condition": "If critical issues remain, return to RFU-04-A02",
+          "termination": "No critical issues, warnings acceptable"
+        }
+      ],
+      "outputs": ["Refined specs/functional/functional_architecture.json"],
+      "typical_time": "30-60 minutes if issues found, 0 minutes if no issues",
+      "gates": [
+        {
+          "gate_id": "G-RFU-04",
+          "name": "Critical Issues Resolved in Spec",
+          "checks": [
+            "No critical architectural issues in functional architecture spec",
+            "Warnings documented for implementation fix in RFU-05"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RFU-05"
+    },
+    {
+      "step_id": "RFU-05",
+      "name": "Auto-Trigger Meta-Analysis: Implementation Refinement (Self-Sharpening)",
+      "description": "CRITICAL STEP: Fix actual implementation (workflows, tools, schemas) based on analysis results - this is the self-sharpening mechanism",
+      "phase": "meta_analysis_implementation_fix",
+      "delegates_to": "99-meta_analysis.json step META-05B",
+      "rationale": "Feature may have introduced context bottlenecks or inefficiencies. Fix the actual code to optimize the feature.",
+      "actions": [
+        {
+          "action_id": "RFU-05-A01",
+          "description": "Map feature-introduced issues to implementation files",
+          "purpose": "Identify which files need to be edited to optimize the new feature",
+          "issue_mapping": {
+            "context_bottlenecks_in_new_feature": [
+              "workflows/*.json - Add context refresh points in new feature workflow steps",
+              "tools/*.py - Refactor new tool functions to use lazy loading or streaming"
+            ],
+            "high_context_new_functions": [
+              "tools/*.py - Optimize new functions to reduce context consumption",
+              "workflows/*.json - Split high-context new workflow steps into smaller steps"
+            ],
+            "unreachable_new_functions": [
+              "workflows/*.json - Add missing workflow steps to create execution path for new feature"
+            ]
+          },
+          "output": "List of files to edit with specific optimizations needed"
+        },
+        {
+          "action_id": "RFU-05-A02",
+          "description": "Fix workflows/*.json files",
+          "for_each_issue": "Edit workflow definitions to optimize new feature",
+          "examples": [
+            "Add context refresh point in new feature workflow",
+            "Split high-context new steps into multiple smaller steps",
+            "Add missing steps for unreachable new functions"
+          ],
+          "validation": "Validate workflow JSON schema after edits"
+        },
+        {
+          "action_id": "RFU-05-A03",
+          "description": "Refactor tools/*.py files",
+          "for_each_issue": "Optimize new tool functions",
+          "examples": [
+            "Refactor new tool to use lazy loading instead of loading all data",
+            "Stream large outputs instead of loading into memory",
+            "Summarize new tool outputs"
+          ],
+          "validation": "python3 -m py_compile tools/*.py"
+        },
+        {
+          "action_id": "RFU-05-A04",
+          "description": "Test implementation optimizations",
+          "tests": [
+            "Run updated workflows with new feature to verify functionality",
+            "Run optimized tools to verify outputs",
+            "Integration test: Verify new feature works end-to-end",
+            "Regression test: Verify existing functionality still works"
+          ],
+          "success_criteria": "All tests pass, new feature optimized"
+        },
+        {
+          "action_id": "RFU-05-A05",
+          "description": "Update functional_architecture.json with optimized estimates",
+          "update": "Context consumption estimates for new feature functions based on actual optimized code"
+        },
+        {
+          "action_id": "RFU-05-A06",
+          "description": "Re-run functional architecture analysis",
+          "command": "python3 tools/analyze_functional_architecture.py specs/functional/functional_architecture.json",
+          "purpose": "Verify that implementation optimizations resolved issues",
+          "loop_condition": "If critical issues remain, return to RFU-05-A02",
+          "termination": "Analysis shows no critical issues, feature optimized"
+        }
+      ],
+      "outputs": [
+        "Optimized workflows/*.json files (new feature)",
+        "Optimized tools/*.py files (new feature)",
+        "Updated specs/functional/functional_architecture.json",
+        "Updated specs/functional/functional_architecture_analysis.json showing resolved issues"
+      ],
+      "typical_time": "1-2 hours if optimizations needed, 0 minutes if feature already optimal",
+      "iteration_expected": true,
+      "max_iterations": 3,
+      "gates": [
+        {
+          "gate_id": "G-RFU-05",
+          "name": "Implementation Validated (Self-Sharpening Complete)",
+          "checks": [
+            "All workflows/*.json files valid and executable",
+            "All tools/*.py files pass syntax check",
+            "Integration tests pass (new feature works)",
+            "Regression tests pass (existing functionality works)",
+            "Functional architecture analysis shows no critical issues from new feature",
+            "Context consumption optimized for new feature"
+          ],
+          "blocking": true,
+          "success_message": "New feature implemented AND optimized - Reflow has sharpened itself"
+        }
+      ],
+      "next_step": "RFU-06"
+    },
+    {
+      "step_id": "RFU-06",
+      "name": "Commit & Document Reflow Feature Update",
+      "description": "Commit all changes (feature implementation + meta-analysis optimizations) and document in meta-analysis report",
+      "phase": "finalization",
+      "actions": [
+        {
+          "action_id": "RFU-06-A01",
+          "description": "Create git commit for feature update",
+          "commit_message_template": "feat(vX.Y.Z): <feature description>\n\nImplementation:\n- <implementation changes>\n\nSelf-Sharpening Optimizations (META-05B):\n- <optimizations applied>\n\nMeta-Analysis Results:\n- <analysis summary>\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "files_to_commit": [
+            "workflows/*.json (feature implementation + optimizations)",
+            "tools/*.py (feature implementation + optimizations)",
+            "schemas/*.json (if updated)",
+            "specs/functional/functional_architecture.json (updated with feature)",
+            "specs/functional/functional_architecture_analysis.json (latest analysis)",
+            "context/working_memory.json"
+          ]
+        },
+        {
+          "action_id": "RFU-06-A02",
+          "description": "Update CHANGELOG.md",
+          "add_entry": "Document new feature and any self-sharpening optimizations applied"
+        },
+        {
+          "action_id": "RFU-06-A03",
+          "description": "Create meta-analysis report (optional but recommended)",
+          "file": "docs/reports/META_ANALYSIS_REPORT_<feature>_<date>.md",
+          "include": [
+            "Feature description",
+            "Implementation summary",
+            "Meta-analysis results (before and after optimization)",
+            "Self-sharpening optimizations applied",
+            "Context consumption impact"
+          ]
+        },
+        {
+          "action_id": "RFU-06-A04",
+          "description": "Push to GitHub",
+          "command": "git push"
+        }
+      ],
+      "outputs": [
+        "Git commit with feature + optimizations",
+        "Updated CHANGELOG.md",
+        "Meta-analysis report (optional)",
+        "Changes pushed to GitHub"
+      ],
+      "typical_time": "15-30 minutes",
+      "next_step": "COMPLETE"
+    }
+  ],
+  "completion_criteria": {
+    "required": [
+      "Feature implementation complete (RFU-02)",
+      "Meta-analysis run on updated Reflow (RFU-03)",
+      "Critical issues resolved in spec (RFU-04)",
+      "IMPLEMENTATION OPTIMIZATIONS APPLIED (RFU-05): Feature code optimized based on analysis",
+      "All tests pass (unit, integration, regression)",
+      "Changes committed and pushed to GitHub (RFU-06)"
+    ],
+    "optional": [
+      "Meta-analysis report created documenting feature impact and optimizations"
+    ]
+  },
+  "success_criteria": {
+    "feature_complete": "New feature implemented and working correctly",
+    "self_sharpening_complete": "Feature optimized through meta-analysis - no new context bottlenecks or architectural issues",
+    "reflow_improved": "Reflow is better than before - feature adds value AND implementation is optimized",
+    "continuous_loop": "Automatic meta-analysis ensures every Reflow update triggers self-sharpening"
+  },
+  "comparison_to_standard_workflows": {
+    "feature_update.json": "Standard feature update for OTHER systems - no meta-analysis",
+    "99-meta_analysis.json": "Full meta-analysis of Reflow - manual trigger, comprehensive (6-10 hours)",
+    "98-reflow_feature_update.json": "Feature update for REFLOW ITSELF - auto-triggers targeted meta-analysis (just the new feature impact), faster (2-8 hours total)"
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "This workflow operates on Reflow itself - system_root = reflow_root",
+      "ALWAYS run steps RFU-03 through RFU-05 - meta-analysis is NOT optional for Reflow updates",
+      "RFU-05 (Implementation Refinement) is the self-sharpening step - do NOT skip",
+      "Focus meta-analysis on NEW feature impact (context delta, new functions, integration)",
+      "If feature introduces NO issues in analysis, RFU-04 and RFU-05 complete quickly (no work needed)",
+      "Commit message should document BOTH feature implementation AND self-sharpening optimizations"
+    ],
+    "when_to_use_this_vs_99_meta_analysis": {
+      "use_98_reflow_feature_update": "When adding/updating a specific feature to Reflow (targeted analysis)",
+      "use_99_meta_analysis": "When doing comprehensive health check of ALL of Reflow (quarterly, before releases)"
+    }
+  }
+}
