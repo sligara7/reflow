@@ -2,12 +2,13 @@
   "workflow_metadata": {
     "workflow_id": "01-systems_engineering",
     "name": "Systems Engineering & Architecture Workflow",
-    "version": "1.0.0",
-    "description": "Design and validate complete system architecture, create machine-readable architecture products",
+    "version": "2.0.0",
+    "description": "Design and validate complete system architecture, create machine-readable architecture products using functional architecture first approach",
     "created_from": "decision_flow.json v2.5.0 - extracted Arch-02 through Arch-05",
-    "last_updated": "2025-10-24",
-    "purpose": "Create UAF-based service_architecture.json for each service and generate system_of_systems_graph.json",
-    "based_on": "UAF 1.2 architecture framework"
+    "last_updated": "2025-11-04",
+    "purpose": "Create complete functional architecture, allocate functions to systems, then create framework-based service_architecture.json for each service",
+    "based_on": "Functional Architecture → Functional Allocation → UAF 1.2 or other framework",
+    "v2_improvements": "Added functional architecture phase BEFORE system decomposition to prevent rework and ensure complete functional definition"
   },
   "prerequisites": {
     "required_workflows": ["00-setup"],
@@ -40,15 +41,16 @@
         ],
         "routing": {
           "if_components_found": "Route to BU-01 (bottom-up integration)",
-          "if_empty_or_docs_only": "Route to SE-01 (top-down greenfield)"
+          "if_empty_or_docs_only": "Route to SE-00A (top-down greenfield - functional architecture first)"
         }
       }
     },
     "from_setup": {
       "id": "from_setup",
       "description": "LEGACY - Explicitly start top-down (greenfield). Use 'auto' instead for automatic detection.",
-      "first_step": "SE-01",
-      "approach": "top_down"
+      "first_step": "SE-00A",
+      "approach": "top_down",
+      "note": "v2.0.0: Now starts with SE-00A (Functional Architecture) before SE-01 (System Decomposition)"
     },
     "from_existing_components": {
       "id": "from_existing_components",
@@ -167,7 +169,7 @@
         "context/working_memory.json (updated with detected_approach)"
       ],
       "next_step": "BU-01",
-      "next_step_note": "Dynamic routing: BU-01 if bottom_up detected, SE-01 if top_down detected"
+      "next_step_note": "Dynamic routing: BU-01 if bottom_up detected, SE-00A if top_down detected (v2.0.0: top-down now starts with functional architecture)"
     },
     {
       "step_id": "BU-01",
@@ -442,40 +444,352 @@
       "transition_note": "Bottom-up workflow merges with top-down workflow at SE-02. Architecture files created, can proceed to further refinement or development."
     },
     {
-      "step_id": "SE-01",
-      "name": "System Analysis & Service Decomposition",
-      "description": "Analyze system requirements and decompose into services",
-      "phase": "analysis",
-      "step_file": "workflow_steps/systems_engineering/SE-01-AnalysisAndDecomposition.json",
-      "maps_from": "Arch-02: Analysis and Decomposition",
+      "step_id": "SE-00A",
+      "name": "Functional Requirements Definition",
+      "description": "Define complete functional requirements from foundational documents and user scenarios",
+      "phase": "functional_requirements",
+      "step_file": "workflow_steps/systems_engineering/SE-00A-FunctionalRequirements.json",
+      "rationale": "Functional requirements are the bridge between high-level mission/scenarios and detailed functional architecture",
+      "when_to_use": "For all top-down (greenfield) projects after SE-00 auto-detection OR before SE-01 if starting from from_setup entry point",
       "actions": [
         {
+          "action_id": "SE-00A-A01",
+          "description": "Extract and document functional requirements from foundational documents",
+          "inputs": [
+            "docs/SYSTEM_MISSION_STATEMENT.md",
+            "docs/USER_SCENARIOS.md",
+            "docs/SUCCESS_CRITERIA.md"
+          ],
+          "method": "Analyze each user scenario and extract required system capabilities",
+          "outputs": [
+            "List of functional requirements (numbered FR-001, FR-002, etc.)",
+            "Traceability matrix: User Scenarios → Functional Requirements",
+            "Acceptance criteria for each functional requirement"
+          ],
+          "location": "specs/functional/functional_requirements.json",
+          "template": "functional_requirements_template.json"
+        },
+        {
+          "action_id": "SE-00A-A02",
+          "description": "Categorize and prioritize functional requirements",
+          "categories": [
+            "Core capabilities (must-have)",
+            "Enhanced capabilities (should-have)",
+            "Optional capabilities (nice-to-have)",
+            "Non-functional requirements (performance, security, scalability)"
+          ],
+          "outputs": ["Prioritized functional requirements list"]
+        },
+        {
+          "action_id": "SE-00A-A03",
+          "description": "Validate requirements completeness against user scenarios",
+          "validation": "Every user scenario must be achievable with defined functional requirements",
+          "tool": "validate_foundational_alignment.py --requirements-mode",
+          "blocking": true
+        }
+      ],
+      "tools_used": ["validate_foundational_alignment.py"],
+      "outputs": ["specs/functional/functional_requirements.json"],
+      "gates": [
+        {
+          "gate_id": "G-SE-00A",
+          "name": "Functional Requirements Completeness Gate",
+          "checks": [
+            "All user scenarios covered by functional requirements",
+            "Requirements clear and testable",
+            "Acceptance criteria defined",
+            "Stakeholder review complete"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "SE-00B"
+    },
+    {
+      "step_id": "SE-00B",
+      "name": "Functional Architecture Definition & Visualization",
+      "description": "Define functional architecture with process flows, create human-readable visualizations, and iterate with stakeholder feedback",
+      "phase": "functional_architecture",
+      "step_file": "workflow_steps/systems_engineering/SE-00B-FunctionalArchitecture.json",
+      "rationale": "Functional architecture defines HOW functional requirements are achieved through processes and flows. Human visualizations are essential for stakeholder communication and validation.",
+      "prerequisite": "SE-00A (Functional Requirements) must be complete",
+      "actions": [
+        {
+          "action_id": "SE-00B-A01",
+          "description": "Document functional flows implementing functional requirements",
+          "location": "specs/functional/functional_architecture.json",
+          "inputs": [
+            "specs/functional/functional_requirements.json (from SE-00A)",
+            "docs/USER_SCENARIOS.md"
+          ],
+          "includes": [
+            "Process flows showing sequence of operations for each user scenario",
+            "Decision flows showing branching logic and conditions",
+            "Data flows showing information movement through system",
+            "User interaction flows",
+            "Integration flows with external systems"
+          ],
+          "template": "functional_architecture_template.json",
+          "traceability": "Each flow must trace back to functional requirements from SE-00A",
+          "note": "Focus on FUNCTIONS (capabilities), not services (implementation)"
+        },
+        {
+          "action_id": "SE-00B-A02",
+          "description": "Complete functional decomposition - identify ALL required functions",
+          "method": "Break down each flow into discrete, atomic functions",
+          "outputs": [
+            "Comprehensive list of all functions the system must perform",
+            "Function inputs and outputs (data contracts)",
+            "Function dependencies and sequencing",
+            "Decision points and branching logic",
+            "Error handling and recovery functions",
+            "Non-functional requirements per function (performance, security, etc.)"
+          ],
+          "validation": "Every user scenario maps to complete functional flow with no gaps",
+          "note": "Functions are WHAT the system does, not WHICH service does it"
+        },
+        {
+          "action_id": "SE-00B-A03",
+          "description": "Generate human-readable functional architecture visualizations",
+          "purpose": "CRITICAL: Create visual diagrams to communicate functional architecture with stakeholders for review and validation",
+          "rationale": "Visual diagrams are essential for stakeholder understanding, validation, and buy-in. Machine-readable JSON is not sufficient for human review.",
+          "priority": "HIGH - Must complete before technical analysis to enable stakeholder feedback",
+          "outputs": [
+            "docs/diagrams/functional/process_flows.svg - Process flow diagrams showing step-by-step operations",
+            "docs/diagrams/functional/decision_trees.svg - Decision tree diagrams showing branching logic",
+            "docs/diagrams/functional/data_flow_diagrams.svg - Data flow diagrams showing information movement",
+            "docs/diagrams/functional/user_scenario_flows.svg - User scenarios mapped to functional flows",
+            "docs/diagrams/functional/functional_dependency_graph.svg - Function dependency visualization"
+          ],
+          "location": "docs/diagrams/functional/",
+          "diagram_standards": [
+            "Use standard notation (BPMN for process flows, UML for data flows)",
+            "Include legends and annotations",
+            "Color-code by functional requirement traceability",
+            "Show decision points clearly",
+            "Indicate error handling paths"
+          ],
+          "note": "These visualizations will be reviewed with stakeholders in SE-00B-A04"
+        },
+        {
+          "action_id": "SE-00B-A04",
+          "description": "Stakeholder review of functional architecture visualizations",
+          "purpose": "Validate functional architecture with stakeholders using human-readable diagrams",
+          "participants": ["Product owners", "Domain experts", "Technical leads", "End users (if available)"],
+          "review_artifacts": [
+            "All visualization diagrams from SE-00B-A03",
+            "specs/functional/functional_architecture.json (for reference)",
+            "Traceability to functional requirements"
+          ],
+          "review_questions": [
+            "Do the process flows accurately represent how the system should work?",
+            "Are all decision points and branches complete and correct?",
+            "Are there missing steps or functions?",
+            "Are there unnecessary or redundant steps?",
+            "Do the flows match stakeholder mental models and expectations?",
+            "Are error handling and recovery paths complete?"
+          ],
+          "outputs": [
+            "Stakeholder feedback document",
+            "List of required changes to functional architecture",
+            "Validation sign-off (if approved)"
+          ],
+          "blocking": "If major issues found, loop back to SE-00B-A01 to refine functional architecture",
+          "success_criteria": "Stakeholders validate that functional architecture meets requirements and expectations"
+        },
+        {
+          "action_id": "SE-00B-A05",
+          "description": "Create machine-readable functional architecture graph for analysis",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode",
+          "purpose": "Generate graph data structure for automated analysis and gap detection",
+          "output": "specs/functional/graphs/functional_architecture_graph.json",
+          "graph_characteristics": {
+            "nodes": "Functions (not services)",
+            "edges": "Function dependencies, data flows, control flows",
+            "analysis_enabled": "Gap detection, redundancy detection, efficiency analysis, completeness validation"
+          },
+          "note": "This is the machine-readable complement to human visualizations from SE-00B-A03"
+        },
+        {
+          "action_id": "SE-00B-A06",
+          "description": "Analyze functional architecture for technical issues using graph analytics",
+          "tool": "system_of_systems_graph_v2.py with --analyze-issues flag",
+          "purpose": "Detect architectural problems BEFORE system allocation",
+          "analysis_types": [
+            "Gap detection: Missing functions needed to complete flows (unreachable nodes, incomplete paths)",
+            "Redundancy detection: Duplicate or overlapping functions (semantic analysis)",
+            "Inefficiency detection: Circular dependencies, excessive handoffs, convoluted flows",
+            "Completeness check: All user scenarios covered by functional paths",
+            "Coherence check: Functions logically connected, no orphaned functions",
+            "Decision completeness: All decision points have complete logic branches"
+          ],
+          "outputs": [
+            "specs/functional/functional_architecture_issues.json",
+            "Gap analysis report with specific missing functions",
+            "Redundancy report with consolidation recommendations",
+            "Flow efficiency analysis with optimization suggestions",
+            "Completeness validation against user scenarios"
+          ],
+          "critical": "This step prevents costly rework by finding issues in functional design before implementing systems"
+        },
+        {
+          "action_id": "SE-00B-A07",
+          "description": "Iterative functional architecture refinement loop",
+          "pattern": "MANDATORY LOOP - Combines stakeholder feedback AND technical analysis",
+          "loop_structure": {
+            "step_1": "Review stakeholder feedback (SE-00B-A04) AND technical analysis issues (SE-00B-A06)",
+            "step_2": "Categorize issues by severity and source",
+            "step_2a": "Stakeholder issues: Missing functions, incorrect flows, unclear logic",
+            "step_2b": "Technical issues: Gaps, redundancies, inefficiencies, circular dependencies",
+            "step_3": "Refine functional architecture to address critical and high-priority issues from both sources",
+            "step_4": "Regenerate BOTH human visualizations (SE-00B-A03) AND machine graph (SE-00B-A05)",
+            "step_5": "Re-run stakeholder review (SE-00B-A04) AND technical analysis (SE-00B-A06)",
+            "step_6": "If critical issues remain from EITHER source, LOOP back to step_1",
+            "termination": "Loop until BOTH stakeholder validation passes AND technical analysis passes"
+          },
+          "success_criteria": [
+            "STAKEHOLDER VALIDATION: Stakeholders approve functional architecture visualizations",
+            "TECHNICAL VALIDATION:",
+            "  - ZERO missing functions (all flows complete from start to finish)",
+            "  - ZERO redundant functions (each function serves unique purpose)",
+            "  - ZERO inefficient circular dependencies",
+            "  - 100% user scenario coverage (every scenario has complete functional path)",
+            "  - All decision points have complete logic branches (no undefined paths)",
+            "  - No orphaned functions (all functions reachable and contribute to user scenarios)"
+          ],
+          "iteration_limit": "Maximum 5 iterations - if exceeding, escalate to user for guidance",
+          "blocking": "Cannot proceed until BOTH stakeholder AND technical validation pass"
+        },
+        {
+          "action_id": "SE-00B-A08",
+          "description": "Final validation of functional architecture against foundational documents",
+          "tool": "validate_foundational_alignment.py --functional-mode",
+          "command_pattern": "python3 {reflow_root}/tools/validate_foundational_alignment.py {system_root} --functional-architecture specs/functional/functional_architecture.json",
+          "checks": [
+            "All user scenarios from USER_SCENARIOS.md covered by functional flows",
+            "All functional requirements from SE-00A satisfied",
+            "Functional architecture supports mission statement from SYSTEM_MISSION_STATEMENT.md",
+            "Success criteria from SUCCESS_CRITERIA.md achievable with defined functions",
+            "No functional gaps that would prevent achieving success criteria"
+          ],
+          "blocking": true
+        }
+      ],
+      "tools_used": ["system_of_systems_graph_v2.py", "validate_foundational_alignment.py", "Diagram generation tools"],
+      "outputs": [
+        "specs/functional/functional_architecture.json (machine-readable)",
+        "specs/functional/graphs/functional_architecture_graph.json (for analysis)",
+        "specs/functional/functional_architecture_issues.json (technical analysis results)",
+        "docs/diagrams/functional/ (HUMAN-READABLE VISUALIZATIONS)",
+        "Stakeholder sign-off document",
+        "Complete, validated, and visualized functional architecture"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-SE-00B",
+          "name": "Functional Architecture Completeness & Stakeholder Validation Gate",
+          "checks": [
+            "STAKEHOLDER VALIDATION (CRITICAL):",
+            "  - Stakeholders reviewed and approved functional architecture visualizations",
+            "  - All stakeholder feedback addressed",
+            "  - Functional architecture matches stakeholder mental models and expectations",
+            "TECHNICAL VALIDATION:",
+            "  - Functional architecture complete (no gaps in flows)",
+            "  - All user scenarios covered by functional paths",
+            "  - All functional requirements from SE-00A implemented in flows",
+            "  - No redundant or duplicate functions",
+            "  - Flows are efficient (no unnecessary circular dependencies)",
+            "  - All decision points have complete logic branches",
+            "  - Functional architecture graph analysis passes all checks",
+            "  - Foundational alignment validated",
+            "VISUALIZATION DELIVERABLES:",
+            "  - Complete set of human-readable diagrams created",
+            "  - Diagrams use standard notation (BPMN, UML)",
+            "  - Traceability to functional requirements visible in diagrams"
+          ],
+          "blocking": true,
+          "rationale": "Cannot proceed to functional allocation (SE-01) until BOTH stakeholders validate the functional architecture AND technical analysis confirms completeness. Human visualizations are MANDATORY for stakeholder communication.",
+          "lessons_learned": "Real-world projects that skipped stakeholder visualization and validation experienced costly rework when stakeholders saw the implemented system and realized it didn't match their expectations."
+        }
+      ],
+      "next_step": "SE-01",
+      "transition_note": "Functional architecture (WHAT) is complete and validated by both stakeholders and technical analysis. Human visualizations created and approved. Now proceed to functional allocation (HOW) in SE-01."
+    },
+    {
+      "step_id": "SE-01",
+      "name": "Functional Allocation & Service Decomposition",
+      "description": "Allocate functions to services and decompose system architecture",
+      "phase": "functional_allocation_and_decomposition",
+      "step_file": "workflow_steps/systems_engineering/SE-01-AnalysisAndDecomposition.json",
+      "maps_from": "Arch-02: Analysis and Decomposition (enhanced with functional allocation)",
+      "prerequisite": "SE-00A (Functional Architecture Definition) must be complete",
+      "actions": [
+        {
+          "action_id": "SE-01-A00",
+          "description": "Functional Allocation - Assign functions to services",
+          "purpose": "Map each function from functional architecture (SE-00A) to specific services",
+          "prerequisite": "Functional architecture complete (specs/functional/functional_architecture.json exists)",
+          "method": "Create functional allocation matrix",
+          "allocation_criteria": [
+            "Group related functions into services (high cohesion)",
+            "Minimize cross-service dependencies (low coupling)",
+            "Consider scalability and performance requirements from functional architecture",
+            "Respect domain boundaries (bounded contexts from domain-driven design)",
+            "Balance service size (not too large, not too granular)",
+            "Consider deployment and operational independence"
+          ],
+          "outputs": [
+            "specs/functional/functional_allocation_matrix.json - Maps functions → services",
+            "Initial service list with allocated functions",
+            "Service responsibility statements based on allocated functions",
+            "Cross-service dependency map",
+            "Identification of new services needed"
+          ],
+          "validation": "Ensure ALL functions from functional architecture are allocated to services (100% coverage)",
+          "note": "This is the critical link between WHAT (functional architecture) and HOW (service architecture)"
+        },
+        {
           "action_id": "SE-01-A01",
-          "description": "Run feature analysis",
-          "tool": "analyze_features.py",
-          "command_pattern": "python3 {reflow_root}/tools/analyze_features.py {system_root}",
-          "purpose": "Parse feature requirements and identify required systems/services",
-          "inputs": ["docs/SYSTEM_MISSION_STATEMENT.md", "docs/USER_SCENARIOS.md"],
-          "outputs": ["Initial service breakdown"]
+          "description": "Validate functional allocation for architectural quality",
+          "tool": "analyze_features.py (enhanced to validate functional allocation)",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_features.py {system_root} --validate-allocation specs/functional/functional_allocation_matrix.json",
+          "purpose": "Validate allocation creates well-designed service architecture",
+          "validation_checks": [
+            "High cohesion: Related functions grouped together",
+            "Low coupling: Minimal dependencies between services",
+            "No service too large (monolith anti-pattern)",
+            "No service too small (nano-service anti-pattern)",
+            "Clear service boundaries and responsibilities",
+            "Balanced service complexity"
+          ],
+          "inputs": [
+            "specs/functional/functional_allocation_matrix.json",
+            "docs/SYSTEM_MISSION_STATEMENT.md",
+            "docs/USER_SCENARIOS.md"
+          ],
+          "outputs": ["Functional allocation validation report"]
         },
         {
           "action_id": "SE-01-A02",
           "description": "Classify system hierarchy",
           "purpose": "Determine if this is a single service, multi-service system, or system-of-systems",
           "decision_point": "Single service vs multi-service decomposition",
+          "inputs": ["Functional allocation matrix showing number and types of services"],
           "outputs": ["System hierarchy classification"]
         },
         {
           "action_id": "SE-01-A03",
-          "description": "Decompose into services",
-          "purpose": "Break down system into logical services based on business capabilities",
+          "description": "Finalize service decomposition based on functional allocation",
+          "purpose": "Create final service list with clear responsibilities derived from allocated functions",
           "guidance": [
-            "Follow domain-driven design principles",
-            "Identify bounded contexts",
-            "Define service responsibilities",
-            "Ensure services are cohesive and loosely coupled"
+            "Use functional allocation matrix as primary input",
+            "Follow domain-driven design principles for service boundaries",
+            "Ensure each service has cohesive set of functions",
+            "Define service responsibilities based on allocated functions",
+            "Ensure services are loosely coupled based on function dependencies"
           ],
-          "outputs": ["List of services with responsibilities"]
+          "outputs": ["Final list of services with function-derived responsibilities"]
         },
         {
           "action_id": "SE-01-A04",
@@ -1481,12 +1795,30 @@
   },
   "llm_agent_guidance": {
     "critical_reminders": [
+      "ALWAYS complete SE-00A (Functional Requirements) then SE-00B (Functional Architecture) BEFORE SE-01 (System Decomposition) for top-down projects",
+      "Define WHAT the system does (functions) before HOW it does it (system allocation)",
+      "HUMAN-READABLE VISUALIZATIONS ARE MANDATORY (SE-00B-A03): Create process flows, decision trees, data flow diagrams using standard notation (BPMN, UML)",
+      "STAKEHOLDER REVIEW IS MANDATORY (SE-00B-A04): Validate functional architecture visualizations with stakeholders BEFORE proceeding to technical analysis",
+      "Use system_of_systems_graph_v2.py to analyze functional architecture for gaps, redundancies, inefficiencies",
+      "Iterate on functional architecture with BOTH stakeholder feedback AND technical analysis (SE-00B-A07 loop is MANDATORY)",
+      "Gates G-SE-00A (requirements) and G-SE-00B (architecture+visualization+stakeholder validation) are both BLOCKING",
+      "Create functional allocation matrix in SE-01-A00 mapping ALL functions to services",
       "ALWAYS use absolute paths from working_memory.json for tool invocations",
       "Run validate_architecture.py after creating each service_architecture.json",
-      "Ensure UAF 1.2 compliance for all architecture artifacts",
+      "Ensure framework compliance (UAF 1.2 or selected framework) for all architecture artifacts",
       "system_of_systems_graph_v2.py requires index.json to be created first",
       "Do not skip validation gates - they prevent downstream issues"
     ],
+    "workflow_philosophy": {
+      "four_phase_approach": "Functional Requirements → Functional Architecture with Visualization → Functional Allocation → System Architecture",
+      "phase_0_functional_requirements": "SE-00A - Extract and document functional requirements from foundational documents. Prioritize and validate completeness.",
+      "phase_1_functional_architecture": "SE-00B - Define complete functional architecture. CRITICAL: Create human-readable visualizations (process flows, decision trees, data flows) for stakeholder review. Iterate with stakeholder feedback AND technical analysis until both validate.",
+      "phase_2_functional_allocation": "SE-01-A00 - Allocate functions to services with high cohesion, low coupling. Create allocation matrix ensuring 100% functional coverage.",
+      "phase_3_system_architecture": "SE-02 onwards - Create service_architecture.json for each service using selected framework (UAF, etc.). Services implement allocated functions.",
+      "visualization_critical": "Human-readable visualizations (BPMN process flows, UML diagrams, decision trees) are MANDATORY, not optional. Machine-readable JSON is insufficient for stakeholder communication and validation.",
+      "benefits": "Prevents rework from incomplete requirements, finds architectural issues early through stakeholder AND technical validation, ensures complete functional coverage, reduces redundancy and inefficiency, creates well-designed service boundaries, validates design before implementation",
+      "lesson_learned": "Jumping directly to system decomposition without functional architecture causes issues later requiring revisiting service definitions (discovered in real-world content creation services project). Visual stakeholder validation prevents costly misalignment between expectations and implementation."
+    },
     "validation_loop_critical": [
       "VALIDATION TOOLS ARE NOT OPTIONAL - They are the centerpiece of workflow quality",
       "DO NOT just run validation tools and move on - FIX ALL ISSUES they discover",
@@ -1514,6 +1846,19 @@
       }
     },
     "common_mistakes": [
+      "Skipping SE-00A (Functional Requirements) for top-down projects",
+      "Skipping SE-00B (Functional Architecture with visualization) for top-down projects (causes rework)",
+      "Jumping directly to system decomposition without functional requirements and architecture",
+      "Creating only machine-readable JSON without human visualizations (stakeholders cannot validate)",
+      "Skipping stakeholder review of functional architecture visualizations",
+      "Not creating BPMN/UML diagrams - only creating ad-hoc or informal diagrams",
+      "Proceeding to SE-01 without stakeholder sign-off on functional architecture",
+      "Not iterating visualization based on stakeholder feedback",
+      "Incomplete functional architecture (missing functions, gaps in flows)",
+      "Not using system_of_systems_graph_v2.py to analyze functional architecture",
+      "Proceeding to SE-01 with functional architecture issues unresolved (either stakeholder OR technical)",
+      "Forgetting to create functional allocation matrix in SE-01-A00",
+      "Not ensuring 100% functional coverage in allocation matrix",
       "Creating incomplete service_architecture.json (missing required sections)",
       "Not running validation tools",
       "Running validation tools but not fixing issues they find",
@@ -1526,6 +1871,8 @@
       "Not updating version_manifest.json"
     ],
     "quality_gates_mandatory": [
+      "G-SE-00A: Functional Requirements Completeness Gate (BLOCKING - validates requirements complete and stakeholder-reviewed)",
+      "G-SE-00B: Functional Architecture Completeness & Stakeholder Validation Gate (BLOCKING - validates functional architecture complete, visualized, and stakeholder-approved before system allocation)",
       "G-SE-03: Architecture Validation Gate (BLOCKING - validates all architectures pass)",
       "G-SE-05: Specification Completeness Gate (BLOCKING - validates consistency)",
       "G-SE-06: Architecture Completion Gate (BLOCKING - validates system coherence)"

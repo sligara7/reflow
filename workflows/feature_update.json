@@ -2,11 +2,12 @@
   "workflow_metadata": {
     "workflow_id": "feature_update",
     "name": "Feature Update Workflow",
-    "version": "1.0.0",
-    "description": "Handle changes to existing systems with foundational alignment validation",
+    "version": "2.0.0",
+    "description": "Handle changes to existing systems with foundational alignment validation and functional architecture refinement",
     "created_from": "decision_flow.json v2.5.0 - extracted feature_update workflow",
-    "last_updated": "2025-10-24",
-    "purpose": "Safely update existing systems while maintaining architectural integrity"
+    "last_updated": "2025-11-04",
+    "purpose": "Safely update existing systems while maintaining architectural integrity",
+    "v2_improvements": "Added functional architecture phase before system allocation to prevent rework and ensure complete functional definition"
   },
   "prerequisites": {
     "required_conditions": [
@@ -140,19 +141,237 @@
           "note": "MANDATORY gate - cannot proceed without foundational alignment"
         }
       ],
-      "next_step": "FU-02"
+      "next_step": "FU-01A"
+    },
+    {
+      "step_id": "FU-01A",
+      "name": "Functional Architecture Analysis, Visualization & Stakeholder Validation",
+      "description": "Define complete functional architecture with human-readable visualizations and stakeholder validation BEFORE allocating to systems",
+      "phase": "functional_architecture",
+      "step_file": "workflow_steps/feature_update/FU-01A-FunctionalArchitecture.json",
+      "rationale": "Defining WHAT the system must do (functions) with visual stakeholder validation before HOW it does it (system allocation) prevents rework, gaps, inefficiencies, and redundancies",
+      "actions": [
+        {
+          "action_id": "FU-01A-A01",
+          "description": "Document required functional flows for proposed changes",
+          "location": "specs/functional/functional_architecture.json",
+          "inputs": [
+            "docs/changes/CHANGE_PROPOSAL_{timestamp}.md (from FU-01)",
+            "Existing specs/functional/functional_architecture.json (if exists)",
+            "docs/USER_SCENARIOS.md"
+          ],
+          "includes": [
+            "Process flows showing sequence of operations",
+            "Decision flows showing branching logic and conditions",
+            "Data flows showing information movement",
+            "User interaction flows",
+            "Integration flows with external systems",
+            "Changed flows highlighted (showing delta from current architecture)"
+          ],
+          "note": "Focus on functional changes, not system/service changes"
+        },
+        {
+          "action_id": "FU-01A-A02",
+          "description": "Identify all required functions (complete functional decomposition)",
+          "method": "Break down each flow into discrete functions",
+          "outputs": [
+            "List of all functions the system must perform",
+            "Function inputs and outputs",
+            "Function dependencies and sequencing",
+            "Decision points and branching logic",
+            "Error handling and recovery functions"
+          ],
+          "note": "Functions are WHAT the system does, not WHICH service does it"
+        },
+        {
+          "action_id": "FU-01A-A03",
+          "description": "Generate human-readable functional architecture visualizations",
+          "purpose": "CRITICAL: Create visual diagrams to show stakeholders the proposed functional changes",
+          "rationale": "Visual diagrams are essential for stakeholders to understand and validate proposed changes before implementation",
+          "priority": "HIGH - Must complete before technical analysis to enable stakeholder feedback",
+          "outputs": [
+            "docs/diagrams/functional/process_flows_proposed.svg - Proposed process flows with changes highlighted",
+            "docs/diagrams/functional/decision_trees_proposed.svg - Decision trees with new branches highlighted",
+            "docs/diagrams/functional/data_flow_diagrams_proposed.svg - Data flows with changes shown",
+            "docs/diagrams/functional/delta_visualization.svg - Side-by-side current vs. proposed comparison"
+          ],
+          "location": "docs/diagrams/functional/",
+          "diagram_standards": [
+            "Use standard notation (BPMN for process flows, UML for data flows)",
+            "Highlight changes in color (green for additions, orange for modifications, red for removals)",
+            "Show before/after views for modified flows",
+            "Include impact annotations"
+          ],
+          "note": "These visualizations will be reviewed with stakeholders in FU-01A-A04"
+        },
+        {
+          "action_id": "FU-01A-A04",
+          "description": "Stakeholder review of functional architecture visualizations",
+          "purpose": "Validate proposed functional changes with stakeholders before committing to implementation",
+          "participants": ["Product owners", "Domain experts", "Technical leads", "Affected users"],
+          "review_artifacts": [
+            "All visualization diagrams from FU-01A-A03",
+            "docs/changes/CHANGE_PROPOSAL_{timestamp}.md",
+            "Delta visualization showing current vs. proposed"
+          ],
+          "review_questions": [
+            "Do the proposed functional changes solve the stated problem?",
+            "Are there unintended side effects or impacts?",
+            "Are all affected workflows and processes captured?",
+            "Are there missing functional requirements?",
+            "Do the changes align with user expectations?",
+            "Is the scope of change appropriate (not too large, not too small)?"
+          ],
+          "outputs": [
+            "Stakeholder feedback and approval/rejection",
+            "Refined functional requirements based on feedback"
+          ],
+          "blocking": "If major issues found, refine and re-review",
+          "success_criteria": "Stakeholders validate that proposed functional architecture addresses needs and has no major gaps"
+        },
+        {
+          "action_id": "FU-01A-A05",
+          "description": "Create machine-readable functional architecture graph",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode",
+          "purpose": "Generate graph for automated analysis and gap detection",
+          "output": "specs/functional/graphs/functional_architecture_graph.json",
+          "note": "This graph represents FUNCTIONS for technical analysis"
+        },
+        {
+          "action_id": "FU-01A-A06",
+          "description": "Analyze functional architecture for technical issues",
+          "tool": "system_of_systems_graph_v2.py with --analyze-issues flag",
+          "analysis_types": [
+            "Gap detection: Missing functions needed to complete flows",
+            "Redundancy detection: Duplicate or overlapping functions",
+            "Inefficiency detection: Circular flows, excessive handoffs",
+            "Completeness check: All user scenarios covered by functions",
+            "Coherence check: Functions logically connected"
+          ],
+          "outputs": [
+            "specs/functional/functional_architecture_issues.json",
+            "Gap analysis report",
+            "Redundancy report",
+            "Flow efficiency analysis"
+          ]
+        },
+        {
+          "action_id": "FU-01A-A07",
+          "description": "Iterative functional architecture refinement with stakeholder and technical validation",
+          "pattern": "MANDATORY LOOP - Combines stakeholder feedback AND technical analysis",
+          "loop_structure": {
+            "step_1": "Review stakeholder feedback (FU-01A-A04) AND technical analysis issues (FU-01A-A06)",
+            "step_2": "Categorize issues by severity and source",
+            "step_2a": "Stakeholder issues: Scope concerns, missing functions, misalignment with expectations",
+            "step_2b": "Technical issues: Gaps, redundancies, inefficiencies",
+            "step_3": "Refine functional architecture to address critical issues from both sources",
+            "step_4": "Regenerate BOTH human visualizations (FU-01A-A03) AND machine graph (FU-01A-A05)",
+            "step_5": "Re-run stakeholder review (FU-01A-A04) AND technical analysis (FU-01A-A06)",
+            "step_6": "If critical issues remain from EITHER source, LOOP back to step_1",
+            "termination": "Loop until BOTH stakeholder validation passes AND technical analysis passes"
+          },
+          "success_criteria": [
+            "No missing functions (all flows complete)",
+            "No redundant functions (each function serves unique purpose)",
+            "No inefficient flows (minimal handoffs, no circular dependencies)",
+            "All user scenarios covered",
+            "All decision points have complete logic branches"
+          ]
+        },
+        {
+          "action_id": "FU-01A-A06",
+          "description": "Validate functional architecture against change proposal",
+          "checks": [
+            "All proposed changes reflected in functional architecture",
+            "Functional architecture supports user scenarios",
+            "Functional architecture aligns with foundational documents",
+            "No functional gaps that would prevent feature from working"
+          ]
+        },
+        {
+          "action_id": "FU-01A-A07",
+          "description": "Generate functional architecture visualization",
+          "purpose": "Create human-readable diagrams of functional flows",
+          "outputs": [
+            "Process flow diagrams",
+            "Decision tree diagrams",
+            "Functional dependency diagrams"
+          ],
+          "location": "docs/diagrams/functional/"
+        }
+      ],
+      "tools_used": ["system_of_systems_graph_v2.py", "Diagram generation tools"],
+      "outputs": [
+        "specs/functional/functional_architecture.json (machine-readable)",
+        "specs/functional/graphs/functional_architecture_graph.json (for analysis)",
+        "specs/functional/functional_architecture_issues.json (technical analysis)",
+        "docs/diagrams/functional/ (HUMAN-READABLE VISUALIZATIONS with change deltas)",
+        "Stakeholder sign-off on proposed functional changes",
+        "Refined and validated functional architecture"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FU-01A",
+          "name": "Functional Architecture Completeness & Stakeholder Validation Gate",
+          "checks": [
+            "STAKEHOLDER VALIDATION (CRITICAL):",
+            "  - Stakeholders reviewed and approved functional architecture visualizations",
+            "  - Change deltas clearly communicated through visual diagrams",
+            "  - All stakeholder feedback addressed",
+            "  - Proposed changes align with stakeholder expectations",
+            "TECHNICAL VALIDATION:",
+            "  - Functional architecture complete (no gaps)",
+            "  - All user scenarios covered by functions",
+            "  - No redundant or duplicate functions",
+            "  - Flows are efficient (no unnecessary complexity)",
+            "  - All decision points have complete logic",
+            "  - Functional architecture graph analysis shows coherence",
+            "  - Change proposal fully reflected in functional architecture",
+            "VISUALIZATION DELIVERABLES:",
+            "  - Complete set of human-readable diagrams showing proposed changes",
+            "  - Delta visualizations showing current vs. proposed",
+            "  - Change impact clearly highlighted in diagrams"
+          ],
+          "blocking": true,
+          "note": "Cannot proceed to functional allocation until BOTH stakeholder validation passes AND technical analysis confirms completeness. Human visualizations with change deltas are MANDATORY for stakeholder communication."
+        }
+      ],
+      "next_step": "FU-02",
+      "transition_note": "Now that WHAT the system must do is defined (functional architecture), proceed to HOW it does it (functional allocation to systems in FU-02)"
     },
     {
       "step_id": "FU-02",
-      "name": "Architecture Re-Engineering & Decomposition",
-      "description": "Update architecture to accommodate changes",
-      "phase": "architecture",
+      "name": "Functional Allocation & System Architecture Re-Engineering",
+      "description": "Allocate functions to systems and update system architecture to accommodate changes",
+      "phase": "functional_allocation_and_architecture",
       "step_file": "workflow_steps/feature_update/FU-02-ArchReengineering.json",
       "actions": [
         {
+          "action_id": "FU-02-A00",
+          "description": "Functional Allocation - Assign functions to systems/services",
+          "purpose": "Map each function from functional architecture (FU-01A) to specific services",
+          "method": "Create functional allocation matrix",
+          "allocation_criteria": [
+            "Group related functions into services (high cohesion)",
+            "Minimize cross-service dependencies (low coupling)",
+            "Consider scalability and performance requirements",
+            "Respect existing service boundaries where appropriate",
+            "Identify new services if needed for new functions"
+          ],
+          "outputs": [
+            "specs/functional/functional_allocation_matrix.json",
+            "Mapping of functions → services",
+            "Identification of services requiring updates",
+            "Identification of new services needed"
+          ],
+          "validation": "Ensure all functions from functional architecture are allocated to services"
+        },
+        {
           "action_id": "FU-02-A01",
-          "description": "Update affected service_architecture.json files using VERSIONING",
+          "description": "Update affected service_architecture.json files using VERSIONING based on functional allocation",
           "versioning_workflow": "Follow SE-07 (Architecture Evolution) workflow for each affected service",
+          "note": "Service updates driven by functional allocation from FU-02-A00",
           "semantic_versioning_decision": {
             "determine_version_increment": "Based on impact analysis from FU-01-A03",
             "major": "If breaking changes identified → increment major version (v1.x.x → v2.0.0)",
@@ -362,18 +581,47 @@
   "llm_agent_guidance": {
     "critical_reminders": [
       "ALWAYS run validate_foundational_alignment.py before proceeding (gate G-FU-01 is MANDATORY)",
+      "ALWAYS complete functional architecture (FU-01A) with visualization and stakeholder validation BEFORE functional allocation (FU-02)",
+      "Define WHAT the system does (functions) before HOW it does it (system allocation)",
+      "HUMAN-READABLE VISUALIZATIONS WITH CHANGE DELTAS ARE MANDATORY (FU-01A-A03): Show current vs. proposed using BPMN/UML diagrams",
+      "STAKEHOLDER REVIEW IS MANDATORY (FU-01A-A04): Validate change visualizations with stakeholders BEFORE proceeding",
+      "Use system_of_systems_graph_v2.py to analyze functional architecture for gaps, redundancies, inefficiencies",
+      "Iterate on functional architecture with BOTH stakeholder feedback AND technical analysis (FU-01A-A07 loop is MANDATORY)",
+      "Gate G-FU-01A (architecture+visualization+stakeholder validation) is BLOCKING",
       "Version all updated service_architecture.json files (don't overwrite)",
-      "Highlight breaking changes clearly in delta report",
+      "Ensure functional allocation matrix maps ALL functions to services",
+      "Highlight breaking changes clearly in delta report and visualizations",
       "Run regression testing to catch unintended side effects",
       "Update system_of_systems_graph.json after architecture changes"
     ],
     "common_mistakes": [
       "Skipping foundational alignment validation",
+      "Jumping directly to system allocation without functional architecture (causes rework)",
+      "Creating only machine-readable JSON without human visualizations showing change deltas",
+      "Skipping stakeholder review of functional architecture visualizations",
+      "Not creating BPMN/UML diagrams showing current vs. proposed changes",
+      "Proceeding to FU-02 without stakeholder sign-off on proposed changes",
+      "Not iterating visualization based on stakeholder feedback",
+      "Incomplete functional architecture (missing functions, gaps in flows)",
+      "Not using system_of_systems_graph_v2.py to analyze functional architecture",
+      "Proceeding to FU-02 with functional architecture issues unresolved (either stakeholder OR technical)",
+      "Forgetting to create functional allocation matrix",
       "Overwriting old architecture versions instead of creating new versions",
       "Not identifying breaking changes",
       "Skipping regression testing",
       "Not updating documentation"
     ],
-    "mandatory_gate": "G-FU-01 (Foundational Alignment Gate) cannot be bypassed"
+    "workflow_philosophy": {
+      "two_phase_approach": "Functional Architecture with Visualization (WHAT) → Functional Allocation (HOW)",
+      "phase_1_functional_architecture": "Define complete functional architecture for proposed changes. CRITICAL: Create human-readable visualizations showing change deltas (current vs. proposed). Review with stakeholders using diagrams. Iterate with stakeholder feedback AND technical analysis until both validate.",
+      "phase_2_functional_allocation": "Allocate functions to systems/services. Update system architectures with versioning. Use UAF or other frameworks for system definition.",
+      "visualization_critical": "Human-readable visualizations (BPMN, UML) with change deltas are MANDATORY. Stakeholders must see and approve proposed changes visually before implementation begins.",
+      "benefits": "Prevents rework from incomplete requirements, validates changes with stakeholders before implementation, finds architectural issues early through stakeholder AND technical validation, ensures complete functional coverage, reduces redundancy and inefficiency, prevents scope creep and misalignment",
+      "lesson_learned": "Jumping directly to system updates without functional architecture and stakeholder visualization causes issues later requiring revisiting service definitions. Visual stakeholder validation prevents costly misalignment between expectations and implementation."
+    },
+    "mandatory_gates": [
+      "G-FU-01 (Foundational Alignment Gate) - cannot proceed without foundational alignment",
+      "G-FU-01A (Functional Architecture Completeness & Stakeholder Validation Gate) - cannot proceed to functional allocation until functional architecture is complete, visualized with change deltas, stakeholder-approved, and technically validated"
+    ]
   }
 }

@@ -72,9 +72,9 @@
   "external_systems": [],
   "global_constraints": {},
   "progress_summary": {
-    "completed_steps": ["S-01", "S-01A", "S-02", "S-03", "SE-01-partial", "meta-analysis", "fixes-implemented", "tool-cleanup", "FU-01", "FU-02", "FU-03", "FU-04", "FU-05", "FU-06", "BOTTOM-UP-IMPLEMENTATION", "BOTTOM-UP-VALIDATION", "AS-FIELDED-ARCHITECTURE-TRACKING"],
-    "current_focus": "As-Fielded Architecture Tracking Feature (v3.5.0): COMPLETE - 3 new tools, 2 workflow steps (D-06, TO-06), 1 template, documentation updated, GitHub issue #6 closed",
-    "next_action": "Feature complete and deployed. Reflow v3.5.0 released with architecture lifecycle tracking (designed → as-built → as-fielded)",
+    "completed_steps": ["S-01", "S-01A", "S-02", "S-03", "SE-01-partial", "meta-analysis", "fixes-implemented", "tool-cleanup", "FU-01", "FU-02", "FU-03", "FU-04", "FU-05", "FU-06", "BOTTOM-UP-IMPLEMENTATION", "BOTTOM-UP-VALIDATION", "AS-FIELDED-ARCHITECTURE-TRACKING", "FUNCTIONAL-ARCHITECTURE-WORKFLOW-UPDATE", "FUNCTIONAL-ARCHITECTURE-VISUALIZATION-REQUIREMENTS"],
+    "current_focus": "Functional Architecture First with Mandatory Visualization (v2.1.0): Enhanced workflows to require human-readable visualizations (BPMN/UML) and stakeholder validation BEFORE system allocation",
+    "next_action": "Workflows now enforce dual validation: (1) Stakeholder validation via visual diagrams AND (2) Technical validation via graph analysis. Machine-readable JSON alone is insufficient.",
     "validation_status": "PASSED",
     "validation_details": {
       "workflow_step_references": "PASS - All 6 files exist",
@@ -107,5 +107,147 @@
     "last_validation_timestamp": null,
     "pwd_verified_timestamp": "2025-10-25 21:15:00",
     "pwd_verification_count": 1
+  },
+  "systems_engineering_methodology": {
+    "version": "2.1.0",
+    "last_updated": "2025-11-04",
+    "philosophy": "Functional Architecture First with Human Visualization - Define WHAT before HOW, and validate visually with stakeholders",
+    "approach": {
+      "phase_0": {
+        "name": "Functional Requirements Definition",
+        "workflow_step": "SE-00A (systems_engineering only - greenfield projects)",
+        "purpose": "Extract and document functional requirements from foundational documents",
+        "outputs": [
+          "specs/functional/functional_requirements.json"
+        ],
+        "validation": "Validate against user scenarios for completeness",
+        "gate": "G-SE-00A - BLOCKING until requirements complete and stakeholder-reviewed"
+      },
+      "phase_1": {
+        "name": "Functional Architecture Definition & Visualization",
+        "workflow_step": "SE-00B (systems_engineering) or FU-01A (feature_update)",
+        "purpose": "Define complete functional architecture with MANDATORY human-readable visualizations and stakeholder validation",
+        "outputs": [
+          "specs/functional/functional_architecture.json (machine-readable)",
+          "specs/functional/graphs/functional_architecture_graph.json (for technical analysis)",
+          "specs/functional/functional_architecture_issues.json (technical analysis results)",
+          "docs/diagrams/functional/ (HUMAN-READABLE VISUALIZATIONS - MANDATORY)"
+        ],
+        "visualization_requirements": {
+          "mandatory": true,
+          "formats": ["BPMN process flows", "UML data flow diagrams", "Decision tree diagrams", "User scenario flow mappings"],
+          "purpose": "Enable stakeholder understanding and validation - machine-readable JSON is insufficient",
+          "standards": "Use industry-standard notation (BPMN, UML), include legends, color-code traceability",
+          "for_feature_updates": "Show change deltas - current vs. proposed side-by-side comparisons with changes highlighted"
+        },
+        "stakeholder_validation": {
+          "mandatory": true,
+          "participants": ["Product owners", "Domain experts", "Technical leads", "End users (if available)"],
+          "artifacts_reviewed": "Human-readable visualizations from docs/diagrams/functional/",
+          "outcome": "Stakeholder sign-off required before proceeding to functional allocation",
+          "iteration": "Must iterate based on stakeholder feedback until approval obtained"
+        },
+        "technical_validation": "Use system_of_systems_graph_v2.py to detect gaps, redundancies, inefficiencies",
+        "dual_validation_required": "BOTH stakeholder validation (via visualizations) AND technical validation (via graph analysis) must pass",
+        "gate": "G-SE-00B or G-FU-01A - BLOCKING until functional architecture is complete, visualized, stakeholder-approved, and technically validated"
+      },
+      "phase_2": {
+        "name": "Functional Allocation",
+        "workflow_step": "SE-01-A00 (systems_engineering) or FU-02-A00 (feature_update)",
+        "purpose": "Map functions to services/systems with high cohesion, low coupling",
+        "outputs": [
+          "specs/functional/functional_allocation_matrix.json"
+        ],
+        "validation": "Ensure 100% functional coverage - all functions allocated to services"
+      },
+      "phase_3": {
+        "name": "System Architecture Definition",
+        "workflow_step": "SE-02 onwards (systems_engineering) or FU-02-A01 onwards (feature_update)",
+        "purpose": "Create service_architecture.json using selected framework (UAF, etc.)",
+        "outputs": [
+          "specs/machine/service_arch/{service}/service_architecture.json",
+          "specs/machine/interface_registry.json",
+          "specs/machine/graphs/system_of_systems_graph.json"
+        ],
+        "note": "Services implement functions allocated in phase 2"
+      }
+    },
+    "benefits": [
+      "Prevents rework from incomplete or incorrect requirements",
+      "Validates design with stakeholders BEFORE implementation using visual diagrams",
+      "Prevents costly misalignment between stakeholder expectations and implemented system",
+      "Finds architectural issues (gaps, redundancies, inefficiencies) early through dual validation (stakeholder + technical)",
+      "Ensures complete functional coverage of user scenarios",
+      "Creates well-designed service boundaries with high cohesion and low coupling",
+      "Reduces cost and time by avoiding late-stage architectural changes",
+      "Enables non-technical stakeholders to understand and validate system design through BPMN/UML diagrams",
+      "Prevents scope creep by getting stakeholder sign-off on functional architecture before allocation"
+    ],
+    "lesson_learned": {
+      "date": "2025-11-04",
+      "context": "Content creation services development and general systems engineering best practices",
+      "problem_1": "Jumped directly to defining system 'black boxes' using UAF framework without first completing functional architecture. This caused issues later when gaps in functionality were discovered, requiring revisiting how services were initially defined.",
+      "problem_2": "Even when functional architecture was defined, it was often only in machine-readable JSON format, making stakeholder validation difficult or impossible. Stakeholders couldn't understand or validate the design until seeing the implemented system, leading to costly rework.",
+      "root_cause_1": "Skipped functional architecture phase and went straight to system allocation (defining WHICH service does WHAT instead of first defining WHAT needs to be done)",
+      "root_cause_2": "Treated visualization as optional documentation rather than a mandatory validation artifact. Machine-readable JSON alone is insufficient for stakeholder communication.",
+      "solution": "1) Add mandatory SE-00A (Functional Requirements) and SE-00B (Functional Architecture with Visualization) steps BEFORE SE-01 (System Decomposition). 2) Make human-readable visualizations (BPMN, UML) MANDATORY, not optional. 3) Require stakeholder sign-off on visualizations before proceeding. 4) Use system_of_systems_graph_v2.py for technical analysis. 5) Iterate based on BOTH stakeholder feedback AND technical analysis.",
+      "impact": "Significant reduction in architectural rework, better service boundaries, complete functional coverage, stakeholder alignment throughout design process, reduced costly late-stage changes from stakeholder feedback"
+    },
+    "mandatory_workflow_changes": {
+      "systems_engineering_workflow": {
+        "file": "workflows/01-systems_engineering.json",
+        "version": "2.1.0",
+        "changes": [
+          "Added SE-00A: Functional Requirements Definition step",
+          "Added SE-00B: Functional Architecture Definition & Visualization step with mandatory human visualizations",
+          "SE-00B-A03: Generate human-readable BPMN/UML visualizations (MANDATORY)",
+          "SE-00B-A04: Stakeholder review of visualizations (MANDATORY)",
+          "SE-00B-A07: Iterative refinement loop combining stakeholder feedback AND technical analysis",
+          "Updated SE-01 to include functional allocation (SE-01-A00) before decomposition",
+          "Updated SE-00 routing to send top-down projects to SE-00A (requirements) → SE-00B (architecture) → SE-01 (allocation)",
+          "Added G-SE-00A quality gate for requirements completeness",
+          "Added G-SE-00B quality gate requiring BOTH stakeholder validation AND technical validation"
+        ]
+      },
+      "feature_update_workflow": {
+        "file": "workflows/feature_update.json",
+        "version": "2.1.0",
+        "changes": [
+          "Updated FU-01A: Functional Architecture Analysis, Visualization & Stakeholder Validation",
+          "FU-01A-A03: Generate human-readable visualizations with change deltas (current vs. proposed) - MANDATORY",
+          "FU-01A-A04: Stakeholder review of change visualizations (MANDATORY)",
+          "FU-01A-A07: Iterative refinement loop combining stakeholder feedback AND technical analysis",
+          "Updated FU-02 to include functional allocation (FU-02-A00) before architecture updates",
+          "Updated G-FU-01A quality gate to require BOTH stakeholder validation of visualizations AND technical validation"
+        ]
+      }
+    },
+    "tools_enhanced": {
+      "system_of_systems_graph_v2.py": {
+        "new_capability": "Functional architecture analysis with --functional-mode flag",
+        "purpose": "Analyze functional architecture graphs to detect gaps, redundancies, inefficiencies BEFORE system allocation",
+        "note": "Provides technical validation - complements stakeholder validation via visualizations"
+      },
+      "validate_foundational_alignment.py": {
+        "new_capability_1": "Functional requirements validation with --requirements-mode flag",
+        "new_capability_2": "Functional architecture validation with --functional-mode flag",
+        "purpose": "Validate functional requirements and architecture cover all user scenarios and align with foundational documents"
+      }
+    },
+    "tools_required_new": {
+      "diagram_generation_tools": {
+        "purpose": "Generate human-readable BPMN/UML visualizations of functional architecture",
+        "required_outputs": [
+          "BPMN process flow diagrams (.svg)",
+          "UML data flow diagrams (.svg)",
+          "Decision tree diagrams (.svg)",
+          "User scenario flow mappings (.svg)",
+          "For feature updates: Delta visualizations showing current vs. proposed (.svg)"
+        ],
+        "standards": "Must use industry-standard notation (BPMN 2.0, UML 2.5)",
+        "location": "docs/diagrams/functional/",
+        "note": "These visualizations are the PRIMARY artifacts for stakeholder validation - not optional documentation"
+      }
+    }
   }
 }
