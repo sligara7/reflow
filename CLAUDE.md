@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.11.0
-**Last Updated**: 2025-11-05
+**Version**: 3.12.0
+**Last Updated**: 2025-11-04
 
 ## What is Reflow?
 
@@ -13,11 +13,12 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 
 ### ⚠️ Version 3.0 Structure
 
-**Active (v3.7.0)**:
-- ✅ `workflows/*.json` - 15 workflow files (9 modular + 4 deprecated + 2 special)
+**Active (v3.12.0)**:
+- ✅ `workflows/*.json` - 17 workflow files (9 modular + 4 deprecated + 4 special)
 - ✅ `workflow_steps/*/` - Step definitions by workflow
 - ✅ `workflows_master_index.json` - Workflow routing with branching
 - ✅ **Context Reduction**: 60-95% reduction via workflow splitting
+- ✅ **Self-Sharpening**: Meta-analysis workflows for Reflow continuous improvement
 
 **Archived (DO NOT USE)**:
 - ❌ `docs/archive/decision_flow.json.old` - Old monolithic workflow
@@ -159,10 +160,12 @@ python3 tools/<tool>.py <args>
 
 **Workflow Integration**: S-03-A07 in `00-setup.json` offers optional Pixi installation during setup
 
-### The Workflows (v3.7.0 - Modular)
+### The Workflows (v3.12.0 - Modular + Self-Sharpening)
 
+**NEW in v3.12.0**: Self-sharpening meta-analysis workflows for Reflow continuous improvement
 **NEW in v3.7.0**: Split workflows for **60-95% LLM context reduction**
 
+**Core Workflows**:
 ```
 00a-basic_setup.json             → Basic setup (5-10 min)
 00b-framework_selection.json     → Framework selection [OPTIONAL] (5-10 min)
@@ -175,6 +178,12 @@ python3 tools/<tool>.py <args>
 04a-testing.json                 → Testing workflows (1 week)
 04b-operations.json              → Operations workflows (1 week)
 feature_update.json              → Update existing systems
+```
+
+**Meta-Analysis Workflows (For Reflow Itself)**:
+```
+98-reflow_feature_update.json    → Reflow feature update with AUTO meta-analysis (2-8 hours)
+99-meta_analysis.json            → Comprehensive Reflow meta-analysis (6-10 hours)
 ```
 
 **Deprecated (backwards compatibility)**:
@@ -236,6 +245,47 @@ feature_update.json              → Update existing systems
 00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
 → 01b or 01c → 02-artifacts_visualization (minimal) → DONE
 ```
+
+### Reflow Meta-Analysis Flow (Self-Sharpening)
+
+**CRITICAL**: When updating REFLOW ITSELF (not other systems), use meta-analysis workflows!
+
+**Automatic (Recommended for feature updates)**:
+```
+"Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>"
+
+Flow:
+RFU-01: Setup → RFU-02: Implement feature (standard feature_update steps)
+→ RFU-03: AUTO-TRIGGER meta-analysis (analyze feature impact)
+→ RFU-04: AUTO-TRIGGER refinement (fix functional architecture spec if issues)
+→ RFU-05: AUTO-TRIGGER self-sharpening (optimize implementation - META-05B)
+→ RFU-06: Commit & document (feature + optimizations)
+```
+
+**Manual (Comprehensive health check)**:
+```
+"Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow"
+
+Flow:
+META-01: Setup → META-02: Functional requirements → META-03: Functional architecture
+→ META-04: Analysis → META-05: Refinement → META-05B: Implementation fixes (SELF-SHARPENING)
+→ META-06: Visualizations [optional] → META-07: Documentation → META-08: Operational tests [optional]
+```
+
+**What is Meta-Analysis?**
+- Reflow analyzes ITSELF using its own functional architecture methodology
+- Detects context bottlenecks, gaps, unreachable functions, inefficiencies in Reflow's workflows/tools
+- **META-05B (Self-Sharpening)**: Fixes actual implementation (workflows/*.json, tools/*.py, schemas/*.json) based on analysis
+- Result: Reflow continuously improves itself with each update
+
+**When to Use**:
+- **98-reflow_feature_update**: Every time you add/update a Reflow feature (automatic meta-analysis)
+- **99-meta_analysis**: Quarterly health checks, before major releases, after multiple feature updates
+
+**Key Tool**:
+- `tools/analyze_functional_architecture.py` - Analyzes functional flows, context consumption, detects bottlenecks
+
+**Documentation**: See `docs/META_ANALYSIS_GUIDE.md` for complete guide
 
 ## Supported Frameworks
 
