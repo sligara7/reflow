@@ -2,12 +2,12 @@
   "workflow_metadata": {
     "workflow_id": "99-meta_analysis",
     "name": "Reflow Meta-Analysis Workflow (Self-Sharpening Knife)",
-    "version": "2.0.0",
-    "description": "Use Reflow's own functional architecture workflows to analyze Reflow itself - detecting gaps, context bottlenecks, inefficiencies, and architectural issues, then FIXING the implementation to create a self-improving system",
+    "version": "3.0.0",
+    "description": "Run Reflow's own workflows (01d-functional_analysis.json) ON Reflow itself to detect gaps, context bottlenecks, and architectural issues, then use gap closure tools to propose and apply fixes - creating a truly self-improving system",
     "created": "2025-11-04",
-    "last_updated": "2025-11-04",
+    "last_updated": "2025-11-06",
     "purpose": "Formalize the repeatable process of having Reflow analyze itself using functional architecture methodology with context consumption tracking, then apply implementation fixes to continuously improve",
-    "key_innovation": "META-05B: Implementation Refinement step makes Reflow a 'self-sharpening knife' by fixing workflows, tools, and schemas based on analysis results",
+    "key_innovation": "v3.0.0: Truly self-referential - Reflow runs its own workflows (01d-functional_analysis.json) ON ITSELF, uses system_of_systems_graph_v2.py for graph analysis, and applies gap closure tools (reflow_gap_closure.py) to propose and implement fixes - making Reflow a fully self-improving 'self-sharpening knife'",
     "when_to_use": "Run this workflow after any significant updates to Reflow workflows, tools, or templates to ensure no new issues introduced AND to continuously improve existing implementation",
     "trigger_command": "Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow"
   },
@@ -203,10 +203,31 @@
             "context_analysis (summary of context consumption)",
             "operational_testing_linkage"
           ]
+        },
+        {
+          "action_id": "META-03-A06",
+          "description": "SELF-REFERENTIAL: Invoke 01d-functional_analysis.json workflow on Reflow itself (RECOMMENDED)",
+          "purpose": "Use Reflow's own functional analysis workflow to analyze Reflow - truly self-referential meta-analysis",
+          "workflow": "01d-functional_analysis.json",
+          "system_root": "{reflow_root}",
+          "note": "This executes FA-01 through FA-07 on Reflow itself, using Reflow to analyze Reflow",
+          "alternative": "Manual execution (META-03-A01 through META-03-A05) if workflow invocation not desired",
+          "benefits": [
+            "Truly self-referential - Reflow analyzes itself using its own methodology",
+            "Validates that 01d-functional_analysis.json works correctly",
+            "Ensures consistency between Reflow's workflows and its own architecture",
+            "Automatic stakeholder validation (FA-04), technical analysis (FA-05), and iterative refinement (FA-06)"
+          ],
+          "expected_outputs": [
+            "specs/functional/functional_requirements.json (from FA-01)",
+            "specs/functional/functional_architecture.json (from FA-02)",
+            "docs/diagrams/functional/*.svg (from FA-03 - visualizations)",
+            "specs/functional/functional_architecture_issues.json (from FA-05 - technical analysis)"
+          ]
         }
       ],
-      "outputs": ["specs/functional/functional_architecture.json"],
-      "typical_time": "2-3 hours",
+      "outputs": ["specs/functional/functional_architecture.json", "specs/functional/functional_requirements.json", "specs/functional/functional_architecture_issues.json", "docs/diagrams/functional/*.svg (if visualizations generated)"],
+      "typical_time": "2-4 hours (if using 01d workflow), 2-3 hours (if manual)",
       "gates": [
         {
           "gate_id": "G-META-03",
@@ -265,10 +286,34 @@
             "WARNING": "Context approaching limits (>140k), dead-end functions, high complexity",
             "INFO": "Optimization opportunities, redundancy candidates"
           }
+        },
+        {
+          "action_id": "META-04-A04",
+          "description": "Run system_of_systems_graph_v2.py for graph-theoretic analysis (RECOMMENDED)",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {reflow_root}/specs/functional/functional_architecture.json --functional-mode --detect-gaps --context-flow",
+          "purpose": "Generate NetworkX graph and perform comprehensive graph-theoretic analysis",
+          "analyses_performed": [
+            "Knowledge gap detection (6 types: orphaned interfaces, missing nodes, dark matter, structural holes, circular deps, isolated components)",
+            "Context flow analysis (cumulative context along paths)",
+            "Centrality analysis (identify critical functions)",
+            "Community detection (identify functional modules)",
+            "Cycle detection (feedback loops vs circular dependencies)",
+            "DAG validation (functional architecture should be acyclic)",
+            "Connectivity analysis (strongly connected components)"
+          ],
+          "note": "This complements analyze_functional_architecture.py by providing graph-theoretic insights",
+          "expected_outputs": [
+            "specs/functional/graphs/functional_architecture_graph.json",
+            "specs/functional/graphs/system_of_systems_graph.json",
+            "Console output with NetworkX analysis results"
+          ]
         }
       ],
       "outputs": [
         "specs/functional/functional_architecture_analysis.json",
+        "specs/functional/graphs/functional_architecture_graph.json (from system_of_systems_graph_v2.py)",
+        "specs/functional/graphs/system_of_systems_graph.json (from system_of_systems_graph_v2.py)",
         "Console output with summary and recommendations"
       ],
       "typical_time": "5-10 minutes",
@@ -334,9 +379,46 @@
           "command": "python3 tools/analyze_functional_architecture.py specs/functional/functional_architecture.json",
           "loop_condition": "If critical issues remain, return to META-05-A02",
           "termination": "No critical issues, warnings acceptable"
+        },
+        {
+          "action_id": "META-05-A04",
+          "description": "Automated gap closure proposals using matrix analysis and architecture linking (NEW v3.13.0)",
+          "tool": "reflow_gap_closure.py",
+          "command_pattern": "python3 {reflow_root}/tools/reflow_gap_closure.py {reflow_root} --gap-type functional",
+          "purpose": "Automatically propose solutions for functional gaps using mathematical reasoning (B = C × A⁻¹) and architecture linking",
+          "gap_types_addressed": [
+            "Unreachable functions - propose connector functions",
+            "Dead-end functions - propose output handlers or downstream functions",
+            "Incomplete flows - use matrix analysis to find missing intermediate functions"
+          ],
+          "output_format": {
+            "gap_closure_proposals": [
+              {
+                "gap_id": "FG-001",
+                "gap_type": "unreachable_function",
+                "affected_function": "F-042",
+                "proposed_solution": {
+                  "solution_type": "add_connector_function",
+                  "new_function_id": "F-042-CONNECTOR",
+                  "new_function_name": "Route Request to F-042",
+                  "source_functions": ["F-010", "F-015"],
+                  "rationale": "Matrix analysis indicates F-010 and F-015 should connect to F-042"
+                }
+              }
+            ],
+            "review_required": true,
+            "auto_apply": false
+          },
+          "note": "Proposals are NOT auto-applied - LLM/human must review before accepting",
+          "integration": "Proposals can be applied in META-05-A02 or deferred to META-05B for implementation-level fixes",
+          "benefits": [
+            "Mathematical reasoning (matrix analysis) identifies missing intermediate functions",
+            "Architecture linking discovers missing connections based on patterns",
+            "Reduces manual effort in identifying gap solutions"
+          ]
         }
       ],
-      "outputs": ["Refined functional_architecture.json", "Updated analysis results"],
+      "outputs": ["Refined functional_architecture.json", "Updated analysis results", "Gap closure proposals (from reflow_gap_closure.py)"],
       "typical_time": "30-60 minutes per iteration",
       "iteration_expected": true,
       "max_iterations": 3,
@@ -392,7 +474,18 @@
             ],
             "unreachable_functions": [
               "workflows/*.json - Add missing workflow steps to create execution path",
+              "Use gap closure proposals from META-05-A04 (reflow_gap_closure.py) for connector function recommendations",
               "Remove from functional_architecture.json if truly unused"
+            ],
+            "dead_end_functions": [
+              "workflows/*.json - Add downstream workflow steps that consume dead-end function outputs",
+              "Use gap closure proposals from META-05-A04 for output handler recommendations",
+              "Remove if outputs are intentionally terminal (e.g., final report generation)"
+            ],
+            "incomplete_flows": [
+              "workflows/*.json - Add missing intermediate workflow steps",
+              "Use matrix analysis from META-05-A04 to identify missing intermediate functions (B = C × A⁻¹)",
+              "tools/*.py - Implement missing functions identified by gap closure analysis"
             ],
             "unintentional_cycles": [
               "workflows/*.json - Redesign workflow routing to break circular dependency",
@@ -671,20 +764,35 @@
   "llm_agent_guidance": {
     "critical_reminders": [
       "This is Reflow analyzing ITSELF - system_root = reflow_root",
+      "v3.0.0: INVOKE 01d-functional_analysis.json ON REFLOW - truly self-referential (META-03-A06)",
+      "v3.0.0: RUN system_of_systems_graph_v2.py for graph-theoretic analysis (META-04-A04)",
+      "v3.0.0: USE reflow_gap_closure.py to propose gap solutions with mathematical reasoning (META-05-A04)",
       "Context consumption is the PRIMARY metric - track it for all functions",
       "Context bottlenecks (>160k tokens) are CRITICAL issues that block AI agents",
       "Not all unreachable functions are problems - some operate in separate contexts",
       "Cycles may be intentional (iterative refinement loops) or problematic (circular dependencies) - review each",
-      "Focus on functional CAPABILITIES, not implementation details"
+      "Focus on functional CAPABILITIES, not implementation details",
+      "Gap closure proposals are NOT auto-applied - review before accepting"
     ],
     "common_mistakes": [
       "Treating Reflow as a normal system instead of meta-analysis",
+      "NOT invoking 01d-functional_analysis.json on Reflow (manual decomposition instead of using Reflow's own workflows)",
+      "NOT running system_of_systems_graph_v2.py (missing graph-theoretic insights)",
+      "NOT using gap closure tools (missing automated gap solution proposals)",
       "Not tracking context consumption for functions",
       "Missing high-context functions (file reads, large generations)",
       "Not iterating when critical issues found",
-      "Creating visualizations without reviewing analysis first"
+      "Creating visualizations without reviewing analysis first",
+      "Auto-applying gap closure proposals without review"
     ],
-    "workflow_philosophy": "Meta-analysis uses Reflow's own methodology (functional architecture first) to ensure Reflow itself is well-architected for AI agent execution. Context consumption is the critical constraint that must be monitored."
+    "workflow_philosophy": "v3.0.0: Meta-analysis is TRULY self-referential - Reflow uses its OWN workflows (01d-functional_analysis.json) and tools (system_of_systems_graph_v2.py, reflow_gap_closure.py) to analyze and improve itself. This validates that Reflow's methodology works correctly and creates a self-improving system. Context consumption is the critical constraint that must be monitored.",
+    "self_referential_benefits": [
+      "Validates that 01d-functional_analysis.json works correctly (dogfooding)",
+      "Ensures Reflow follows its own best practices",
+      "Automatic gap detection and closure proposals using mathematical reasoning",
+      "Graph-theoretic insights from NetworkX analysis (centrality, community, cycles, connectivity)",
+      "Truly self-improving - Reflow sharpens itself using its own tools"
+    ]
   },
   "example_invocation": {
     "trigger": "Run meta-analysis on Reflow to check for context bottlenecks after v2.1.0 updates",
@@ -697,6 +805,16 @@
       "version": "1.0.0",
       "date": "2025-11-04",
       "changes": "Initial formalization of meta-analysis workflow based on v2.1.0 functional architecture methodology with context consumption tracking"
+    },
+    {
+      "version": "2.0.0",
+      "date": "2025-11-04",
+      "changes": "Added META-05B (Implementation Refinement) step for self-sharpening capability - fixes actual workflows/tools/schemas based on analysis"
+    },
+    {
+      "version": "3.0.0",
+      "date": "2025-11-06",
+      "changes": "MAJOR: Truly self-referential meta-analysis - Reflow analyzes itself using its own workflows. Added: (1) META-03-A06: Invoke 01d-functional_analysis.json ON Reflow itself, (2) META-04-A04: Run system_of_systems_graph_v2.py for graph-theoretic analysis, (3) META-05-A04: Automated gap closure proposals using reflow_gap_closure.py with matrix analysis (B = C × A⁻¹) and architecture linking, (4) Updated META-05B to apply gap closure proposals to implementation. This makes Reflow a fully self-improving system that uses its own tools on itself."
     }
   ]
 }
