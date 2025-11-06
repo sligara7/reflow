@@ -491,17 +491,43 @@
           ]
         },
         {
+          "action_id": "FA-06-A02B",
+          "description": "Automated gap closure proposals (OPTIONAL but RECOMMENDED)",
+          "tool": "reflow_gap_closure.py",
+          "command": "python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type functional",
+          "purpose": "Automatically propose solutions for functional gaps using chain_reflow matrix analysis and architecture linking",
+          "when_to_use": "When CRITICAL gaps are detected in FA-06-A02",
+          "inputs": [
+            "specs/functional/functional_architecture.json",
+            "specs/functional/functional_architecture_issues.json"
+          ],
+          "outputs": [
+            "specs/functional/gap_closure_report.json (proposed functions and connections to close gaps)"
+          ],
+          "gap_closure_strategies": {
+            "unreachable_functions": "Use matrix_gap_detection.py: Given current functions (State A) and required outputs (State C), solve for connector functions (State B) to bridge gaps",
+            "dead_end_functions": "Propose output handlers or downstream functions",
+            "incomplete_flows": "Use matrix analysis to find missing intermediate functions in user scenario paths",
+            "orphaned_functions": "Use link_architectures.py to discover connections to existing functions"
+          },
+          "review_required": "YES - LLM must review proposed functions before accepting. Gap closure tool proposes solutions but does not automatically modify functional_architecture.json",
+          "optional": true,
+          "time_savings": "5-30 minutes per gap (automated proposals vs manual gap analysis)"
+        },
+        {
           "action_id": "FA-06-A03",
-          "description": "Refine functional architecture to address critical issues",
+          "description": "Refine functional architecture to address critical issues (MANUAL or using gap closure proposals from FA-06-A02B)",
           "refinement_actions": [
-            "Add missing functions identified by stakeholders or gap analysis",
+            "Review gap closure proposals from FA-06-A02B (if generated)",
+            "Add missing functions identified by stakeholders, gap analysis, or automated proposals",
             "Remove redundant functions identified by redundancy analysis",
             "Refactor inefficient flows identified by efficiency analysis",
             "Optimize context-heavy functions (if AI workflow)",
             "Correct flow sequences based on stakeholder feedback",
             "Add missing decision branches or error handlers"
           ],
-          "file_updated": "specs/functional/functional_architecture.json"
+          "file_updated": "specs/functional/functional_architecture.json",
+          "note": "Can use gap_closure_report.json as input for automated proposals"
         },
         {
           "action_id": "FA-06-A04",

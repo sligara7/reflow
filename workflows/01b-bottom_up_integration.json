@@ -364,6 +364,32 @@
           "validation": "Ensure 100% functional coverage - all functions allocated to existing components or identified as gaps",
           "template": "functional_allocation_matrix_template.json",
           "if_functional_architecture_missing": "Skip this step entirely and proceed to SE-02 (service architecture refinement)"
+        },
+        {
+          "action_id": "SE-01-A00B",
+          "description": "Automated allocation gap closure for bottom-up (CONDITIONAL - OPTIONAL but RECOMMENDED)",
+          "condition": "Only if SE-01-A00 executed and functional_allocation_matrix.json exists with unallocated functions",
+          "tool": "reflow_gap_closure.py",
+          "command": "python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type allocation",
+          "purpose": "Automatically propose new components or component enhancements for unallocated functions using chain_reflow matrix analysis",
+          "when_to_use": "When functional_allocation_matrix.json shows unallocated functions (functions marked as 'NEW' or 'gap')",
+          "inputs": [
+            "specs/functional/functional_allocation_matrix.json",
+            "specs/functional/functional_architecture.json",
+            "specs/machine/component_inventory.json"
+          ],
+          "outputs": [
+            "specs/functional/allocation_gap_closure_report.json (proposed new components or enhancements to existing components)"
+          ],
+          "gap_closure_strategies": {
+            "unallocated_functions_bottom_up": "Use matrix_gap_detection.py: Given unallocated functions (State A) and existing components (State C), solve for missing component capabilities or new components (State B)",
+            "new_component_proposals": "For functions that don't fit existing components, propose new component with required capabilities",
+            "component_enhancement_proposals": "For functions that partially match existing components, propose capability enhancements to those components"
+          },
+          "review_required": "YES - LLM must review proposed components/enhancements before updating component_inventory.json or creating new service_architecture.json files",
+          "optional": true,
+          "time_savings": "10-45 minutes per unallocated function (automated proposals vs manual component design)",
+          "bottom_up_specific": "Gap closure for bottom-up considers existing component constraints - proposals must be feasible within existing architecture"
         }
       ],
       "gates": [],

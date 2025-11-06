@@ -283,6 +283,100 @@ User Decision at FA-07:
 - **Functional Architecture** (01d): WHAT functions + HOW they interact
 - **Service Architecture** (01b/01c): WHICH service implements WHICH function
 
+### Automated Gap Closure (NEW v3.13.0)
+
+**Purpose**: Automatically propose solutions for gaps identified in functional and service architectures using matrix analysis and architecture linking.
+
+**Gap Types Addressed**:
+1. **Functional Gaps** (in functional architecture):
+   - **Unreachable functions**: Functions with no incoming dependencies
+   - **Dead-end functions**: Functions with no outgoing dependencies (no consumers)
+   - **Incomplete flows**: Missing intermediate functions in process flows
+
+2. **Allocation Gaps** (in service allocation):
+   - **Unallocated functions**: Functions not assigned to any service
+   - **New component needs**: Functions that don't fit existing components (bottom-up)
+   - **Component enhancement needs**: Functions requiring new capabilities in existing components
+
+3. **Interface Gaps** (in system graph):
+   - **Orphaned services**: Services with no incoming or outgoing edges
+   - **Missing interfaces**: Required connections between services
+
+**Gap Closure Approach**:
+
+Uses tools from **chain_reflow** (matrix analysis + architecture linking):
+
+**1. Matrix Gap Detection** (`tools/matrix_gap_detection.py`):
+- **Mathematical approach**: Given State A (current) and State C (required), solve for State B (missing intermediate): **B = C × A⁻¹**
+- **Functional gaps**: A = unreachable functions, C = required outputs → B = connector functions
+- **Allocation gaps**: A = unallocated functions, C = existing components → B = missing component capabilities
+
+**2. Architecture Linking** (`tools/link_architectures.py`):
+- **Discovery approach**: Find touchpoints between architecture graphs
+- **Matching strategies**: Name similarity, interface matching, dependency tracing, data flow analysis
+- **Interface gaps**: Discover missing connections between services based on architectural patterns
+
+**Workflow Integration**:
+
+```
+FA-06-A02B: Automated functional gap closure (OPTIONAL but RECOMMENDED)
+  Tool: reflow_gap_closure.py --gap-type functional
+  Output: Proposes connector functions, output handlers, intermediate functions
+
+SE-01-A00B: Automated allocation gap closure (OPTIONAL but RECOMMENDED)
+  Tool: reflow_gap_closure.py --gap-type allocation
+  Output: Proposes new services, component enhancements, capability additions
+
+SE-06-A0X: Automated interface gap closure (future enhancement)
+  Tool: reflow_gap_closure.py --gap-type interface
+  Output: Proposes missing service interfaces and connections
+```
+
+**Usage Example**:
+```bash
+# Close functional gaps
+python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type functional
+
+# Close allocation gaps
+python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type allocation
+
+# Close interface gaps
+python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type interface
+```
+
+**Output Format**:
+```json
+{
+  "gap_closure_proposals": [
+    {
+      "gap_id": "FG-001",
+      "gap_type": "unreachable_function",
+      "affected_function": "F-042",
+      "proposed_solution": {
+        "solution_type": "add_connector_function",
+        "new_function_id": "F-042-CONNECTOR",
+        "new_function_name": "Route Request to F-042",
+        "source_functions": ["F-010", "F-015"],
+        "rationale": "Matrix analysis indicates F-010 and F-015 should connect to F-042"
+      }
+    }
+  ],
+  "review_required": true,
+  "auto_apply": false
+}
+```
+
+**Important Notes**:
+- ✅ Gap closure is **OPTIONAL but RECOMMENDED** - proposals require LLM/human review
+- ✅ Solutions are **proposed, not auto-applied** - prevents unintended architecture changes
+- ✅ Uses **mathematical reasoning** (matrix analysis) and **pattern matching** (architecture linking)
+- ✅ Integrated at **FA-06 (functional)** and **SE-01 (allocation)** workflow steps
+
+**Tools**:
+- `tools/reflow_gap_closure.py` - Reflow integration wrapper (400+ lines)
+- `tools/matrix_gap_detection.py` - Matrix-based gap solver (35KB, from chain_reflow)
+- `tools/link_architectures.py` - Architecture linking engine (18KB, from chain_reflow)
+
 ### Architecture-Only Flow
 
 **Option A: Functional-Only** (NEW v3.13.0 - Framework-Agnostic)
