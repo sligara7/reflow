@@ -81,6 +81,28 @@
       "steps_directory": "workflow_steps/systems_engineering",
       "context_benefit": "54% reduction (1,099 lines vs 1,535 lines in original, and avoids loading bottom-up path)"
     },
+    "01d-functional_analysis": {
+      "id": "01d-functional_analysis",
+      "name": "Functional Analysis (WHAT functions, HOW they interact - NOT service allocation)",
+      "file": "workflows/01d-functional_analysis.json",
+      "description": "Standalone functional architecture analysis - focuses on functional decomposition and interaction (WHAT + HOW), separate from service allocation (WHICH service implements WHICH function)",
+      "entry_points": [
+        "functional_analysis_only"
+      ],
+      "prerequisites": [
+        "00-setup"
+      ],
+      "next_workflow": "01b-bottom_up_integration OR 01c-top_down_design (user choice) OR STOP (architecture-only deliverables)",
+      "next_workflow_note": "User decides at FA-07: continue to service allocation (01b/01c) or stop here with functional architecture deliverables",
+      "steps_directory": "workflow_steps/functional_analysis",
+      "context_benefit": "New in v3.13.0 - Enables functional-only analysis without committing to service boundaries",
+      "use_cases": [
+        "Architecture-only deliverables (RFP response, feasibility study)",
+        "Stakeholder validation of functional design before implementation",
+        "Functional completeness analysis before service allocation",
+        "Systems engineering discipline: define WHAT before HOW"
+      ]
+    },
     "02-artifacts_visualization": {
       "id": "02-artifacts_visualization",
       "name": "Artifacts & Visualization",
@@ -238,15 +260,15 @@
   "workflow_order": [
     "00a-basic_setup",
     "00b-framework_selection (optional)",
-    "01a-approach_detection",
-    "01b-bottom_up_integration OR 01c-top_down_design",
+    "PATH A (Functional-Only): 01d-functional_analysis → STOP or continue to 01b/01c",
+    "PATH B (Standard SE): 01a-approach_detection → 01b-bottom_up_integration OR 01c-top_down_design",
     "02-artifacts_visualization",
     "03a-development_implementation",
     "03b-development_validation",
     "04a-testing",
     "04b-operations"
   ],
-  "workflow_order_note": "01a routes to either 01b (bottom-up) or 01c (top-down) based on detection",
+  "workflow_order_note": "Two paths available: PATH A for functional-only analysis (can stop after 01d or continue to service allocation), PATH B for standard SE flow (01a routes to 01b or 01c based on detection)",
   "paths": {
     "reflow_root": "Path to reflow installation (configured in setup workflow)",
     "workflows_directory": "workflows/",

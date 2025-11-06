@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "template_metadata": {
+    "template_name": "Functional Requirements Template",
+    "template_version": "1.0.0",
+    "created": "2025-11-06",
+    "description": "Template for documenting functional requirements extracted from foundational documents",
+    "usage": "Copy this template to specs/functional/functional_requirements.json and populate with your system's functional requirements",
+    "workflow_step": "FA-01"
+  },
+  "system_info": {
+    "system_name": "{Your System Name}",
+    "mission_statement_source": "docs/SYSTEM_MISSION_STATEMENT.md",
+    "user_scenarios_source": "docs/USER_SCENARIOS.md",
+    "success_criteria_source": "docs/SUCCESS_CRITERIA.md"
+  },
+  "functional_requirements": [
+    {
+      "requirement_id": "FR-001",
+      "requirement_name": "{Requirement Name}",
+      "description": "{What the system must do - describe the capability or behavior}",
+      "category": "{authentication | authorization | data_processing | reporting | integration | validation | other}",
+      "priority": "{high | medium | low}",
+      "source": {
+        "mission_statement": "{true if from mission statement}",
+        "user_scenarios": ["{List user scenario IDs that require this capability}"],
+        "success_criteria": ["{List success criteria IDs that this requirement satisfies}"]
+      },
+      "acceptance_criteria": [
+        "{Testable criterion 1}",
+        "{Testable criterion 2}"
+      ],
+      "notes": "{Additional context or constraints}"
+    },
+    {
+      "requirement_id": "FR-002",
+      "requirement_name": "Example: User Authentication",
+      "description": "System shall authenticate users via username and password",
+      "category": "authentication",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["US-001", "US-002"],
+        "success_criteria": ["SC-001"]
+      },
+      "acceptance_criteria": [
+        "User can log in with valid credentials",
+        "User is denied access with invalid credentials",
+        "Passwords are hashed before storage",
+        "Failed login attempts are logged"
+      ],
+      "notes": "Must support MFA for admin users"
+    }
+  ],
+  "traceability_matrix": {
+    "user_scenario_coverage": {
+      "total_scenarios": "{Number of user scenarios}",
+      "covered_scenarios": "{Number covered by functional requirements}",
+      "coverage_percentage": "{Percentage - should be 100%}",
+      "uncovered_scenarios": ["{List any uncovered scenario IDs}"]
+    },
+    "success_criteria_coverage": {
+      "total_criteria": "{Number of success criteria}",
+      "covered_criteria": "{Number covered by functional requirements}",
+      "coverage_percentage": "{Percentage - should be 100%}",
+      "uncovered_criteria": ["{List any uncovered criteria IDs}"]
+    }
+  },
+  "validation_status": {
+    "validated_by_tool": "{validate_foundational_alignment.py}",
+    "validation_result": "{PASS | FAIL}",
+    "validation_timestamp": "{ISO timestamp}",
+    "issues_found": []
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "{ISO date}",
+    "last_updated": "{ISO date}",
+    "created_by": "{LLM agent or human}",
+    "review_status": "{draft | reviewed | approved}"
+  },
+  "llm_agent_guidance": {
+    "extraction_method": "1) Read foundational documents, 2) Extract capabilities and behaviors (WHAT the system does), 3) Assign unique FR IDs, 4) Trace to user scenarios and success criteria, 5) Validate 100% coverage",
+    "what_is_functional_requirement": "Describes WHAT the system must do (capability/behavior), NOT HOW it does it (implementation) or WHICH component does it (allocation)",
+    "good_examples": [
+      "FR-001: System shall authenticate users",
+      "FR-002: System shall validate input for SQL injection",
+      "FR-003: System shall generate monthly reports"
+    ],
+    "bad_examples": [
+      "Use PostgreSQL (implementation detail)",
+      "Auth service validates passwords (allocation detail)",
+      "Use microservices (architectural decision)"
+    ]
+  }
+}

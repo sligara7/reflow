@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "template_metadata": {
+    "template_name": "Functional Architecture Template",
+    "template_version": "1.0.0",
+    "created": "2025-11-06",
+    "description": "Template for documenting functional architecture: flows, functions, and dependencies",
+    "usage": "Copy this template to specs/functional/functional_architecture.json and populate with your system's functional decomposition",
+    "workflow_step": "FA-02",
+    "reference_example": "See /path/to/reflow/specs/functional/functional_architecture.json for comprehensive example"
+  },
+  "system_info": {
+    "system_name": "{Your System Name}",
+    "functional_requirements_source": "specs/functional/functional_requirements.json",
+    "user_scenarios_source": "docs/USER_SCENARIOS.md"
+  },
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "{Flow Name}",
+      "flow_type": "{process_flow | decision_flow | data_flow | user_interaction_flow | integration_flow | error_flow}",
+      "description": "{High-level description of this functional flow}",
+      "user_scenarios": ["{List user scenario IDs this flow supports}"],
+      "entry_functions": ["{List function IDs that start this flow}"],
+      "exit_functions": ["{List function IDs that complete this flow}"],
+      "context_consumption_estimate": "{For AI workflows: estimated tokens consumed by this flow}",
+      "execution_time_estimate": "{Estimated seconds to complete this flow}",
+      "notes": "{Additional context}"
+    },
+    {
+      "flow_id": "FLOW-002",
+      "flow_name": "Example: User Authentication Flow",
+      "flow_type": "process_flow",
+      "description": "Handles user login: receives credentials, validates, creates session",
+      "user_scenarios": ["US-001"],
+      "entry_functions": ["F-001"],
+      "exit_functions": ["F-005", "F-ERR-001"],
+      "context_consumption_estimate": "5000 tokens",
+      "execution_time_estimate": "2 seconds",
+      "notes": "Includes MFA for admin users"
+    }
+  ],
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "{Function Name - use Verb + Object format}",
+      "function_type": "{read | write | process | decide | generate | validate | iterate}",
+      "description": "{What this function does - single responsibility}",
+      "inputs": [
+        {
+          "input_name": "{Input name}",
+          "input_type": "{Data type}",
+          "input_source": "{Where this input comes from}",
+          "required": "{true | false}"
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "{Output name}",
+          "output_type": "{Data type}",
+          "output_destination": "{Where this output goes}"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["{List possible error conditions}"],
+        "error_handler_function": "{Function ID that handles errors from this function}"
+      },
+      "context_consumption": "{For AI workflows: estimated tokens consumed by this function}",
+      "execution_time": "{Estimated seconds}",
+      "requirements_satisfied": ["{List requirement IDs this function helps satisfy}"],
+      "notes": "{Additional context}"
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "Example: Validate User Credentials",
+      "function_type": "validate",
+      "description": "Checks if username and password match stored credentials",
+      "inputs": [
+        {
+          "input_name": "username",
+          "input_type": "string",
+          "input_source": "User input",
+          "required": true
+        },
+        {
+          "input_name": "password",
+          "input_type": "string",
+          "input_source": "User input",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "validation_result",
+          "output_type": "boolean",
+          "output_destination": "F-003 (Create Session)"
+        },
+        {
+          "output_name": "user_record",
+          "output_type": "object",
+          "output_destination": "F-003 (Create Session)"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["InvalidCredentialsError", "UserNotFoundError", "AccountLockedError"],
+        "error_handler_function": "F-ERR-001"
+      },
+      "context_consumption": "1000 tokens",
+      "execution_time": "0.5 seconds",
+      "requirements_satisfied": ["FR-001", "FR-002"],
+      "notes": "Passwords must be hashed before comparison"
+    }
+  ],
+  "dependencies": [
+    {
+      "source_function": "{Function ID}",
+      "target_function": "{Function ID}",
+      "dependency_type": "{function_call | data_flow | control_flow | error_flow}",
+      "description": "{How source and target are related}",
+      "weight": "{For AI workflows: context consumption of this transition}",
+      "probability": "{0.0-1.0: probability this path is taken (optional)}",
+      "condition": "{Condition under which this dependency executes (optional)}",
+      "notes": "{Additional context}"
+    },
+    {
+      "source_function": "F-001",
+      "target_function": "F-002",
+      "dependency_type": "function_call",
+      "description": "F-001 calls F-002 to validate credentials",
+      "weight": "500 tokens",
+      "probability": 1.0,
+      "condition": "Always",
+      "notes": "Synchronous call"
+    },
+    {
+      "source_function": "F-002",
+      "target_function": "F-003",
+      "dependency_type": "control_flow",
+      "description": "If validation succeeds, proceed to create session",
+      "weight": "1000 tokens",
+      "probability": 0.95,
+      "condition": "validation_result == true",
+      "notes": "Success path"
+    },
+    {
+      "source_function": "F-002",
+      "target_function": "F-ERR-001",
+      "dependency_type": "error_flow",
+      "description": "If validation fails, trigger error handler",
+      "weight": "500 tokens",
+      "probability": 0.05,
+      "condition": "validation_result == false",
+      "notes": "Error path"
+    }
+  ],
+  "dag_properties": {
+    "total_functions": "{Number of functions}",
+    "total_dependencies": "{Number of edges}",
+    "entry_points": ["{List of function IDs that are entry points (no incoming edges)}"],
+    "exit_points": ["{List of function IDs that are exit points (no outgoing edges)}"],
+    "is_acyclic": "{true | false - should be true (DAG)}",
+    "longest_path_length": "{Number of hops in longest path}",
+    "average_fan_out": "{Average number of outgoing edges per function}",
+    "average_fan_in": "{Average number of incoming edges per function}"
+  },
+  "context_analysis": {
+    "applicable": "{true if AI workflow with context tracking, false otherwise}",
+    "total_context_budget": "{For AI workflows: total available context (e.g., 200000 tokens)}",
+    "context_consumption_paths": [
+      {
+        "path_id": "PATH-001",
+        "path_description": "{Description of this path through the functions}",
+        "function_sequence": ["{List of function IDs in order}"],
+        "cumulative_context": "{Sum of context consumption along this path}",
+        "exceeds_budget": "{true if cumulative_context > total_context_budget}",
+        "bottleneck": "{true if this path is a context bottleneck}"
+      }
+    ],
+    "context_optimization_opportunities": [
+      "{List functions or paths that could be optimized to reduce context consumption}"
+    ]
+  },
+  "validation_status": {
+    "stakeholder_validated": "{true | false}",
+    "stakeholder_review_date": "{ISO date}",
+    "technical_validated": "{true | false}",
+    "technical_analysis_tool": "{system_of_systems_graph_v2.py --functional-mode}",
+    "technical_analysis_result": "{PASS | FAIL}",
+    "critical_issues_count": "{Number of critical issues found}",
+    "warning_issues_count": "{Number of warning issues found}",
+    "issues_details": "See specs/functional/functional_architecture_issues.json"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "{ISO date}",
+    "last_updated": "{ISO date}",
+    "created_by": "{LLM agent or human}",
+    "review_status": "{draft | reviewed | approved}"
+  },
+  "llm_agent_guidance": {
+    "decomposition_approach": "1) Identify functional flows from user scenarios, 2) Decompose each flow into atomic functions (single responsibility), 3) Define inputs/outputs for each function, 4) Map function dependencies (create DAG), 5) Optionally estimate context consumption (AI workflows)",
+    "function_granularity": "Functions should be ATOMIC - perform ONE specific task. If a function does multiple things, split it into multiple functions.",
+    "dag_requirement": "The dependency graph MUST be acyclic (DAG). No circular dependencies (F-001 → F-002 → F-001). Cycles indicate design flaw.",
+    "context_tracking": "For AI agent workflows, track context consumption to ensure workflows fit within available context window (e.g., 200k tokens for Claude Sonnet 4.5)."
+  }
+}

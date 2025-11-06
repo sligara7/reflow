@@ -172,6 +172,7 @@ python3 tools/<tool>.py <args>
 01a-approach_detection.json      → Auto-detect approach (<5 min)
 01b-bottom_up_integration.json   → Bottom-up integration (2-3 hours)
 01c-top_down_design.json         → Top-down design (2-4 hours)
+01d-functional_analysis.json     → Functional analysis [NEW v3.13.0] (2-6 hours)
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
 03a-development_implementation.json → Implementation (days-weeks)
 03b-development_validation.json  → Validation (1-2 days)
@@ -239,11 +240,62 @@ feature_update.json              → Update existing systems
 
 **Manual Override**: Use legacy entry points `from_existing_components` (force bottom-up) or `from_setup` (force top-down) if automatic detection is unwanted.
 
+### Functional Analysis Flow (NEW v3.13.0)
+
+**Purpose**: Focus on WHAT functions exist and HOW they interact, WITHOUT allocating to services.
+
+**When to use**:
+- Architecture-only deliverables (RFP response, feasibility study)
+- Stakeholder validation of functional design before implementation
+- Functional completeness analysis before committing to service boundaries
+- Systems engineering discipline: define WHAT before HOW
+
+**IMPORTANT: Framework-Agnostic**
+- Functional analysis does NOT require framework selection (00b is NOT needed)
+- Frameworks (UAF, Biology, Social, etc.) are for **system architecture** (which services implement which functions)
+- Functional architecture is always a DAG (directed acyclic graph) - framework doesn't matter
+- If you continue to service allocation later (01b/01c), THEN you'll select a framework
+
+**Flow**:
+```
+00a-basic_setup → 01d-functional_analysis (framework selection NOT needed)
+
+Workflow Steps (FA-01 through FA-07):
+FA-01: Extract functional requirements from foundational documents
+FA-02: Define functional flows and decompose into atomic functions
+FA-03: Generate human-readable visualizations (BPMN, UML, Mermaid)
+FA-04: Stakeholder validation (MANDATORY - obtain sign-off on visualizations)
+FA-05: Technical analysis (gaps, redundancies, inefficiencies, context bottlenecks)
+FA-06: Iterative refinement (dual validation: stakeholder + technical)
+FA-07: Finalization → USER DECISION POINT
+
+User Decision at FA-07:
+  OPTION A: Continue to service allocation (run 01b or 01c)
+  OPTION B: Stop here (deliver functional architecture package - DONE)
+```
+
+**Deliverables** (11+ artifacts):
+- Machine-readable: `functional_requirements.json`, `functional_architecture.json`, `functional_architecture_graph.json`, `functional_architecture_issues.json`
+- Human-readable: 4 diagram types (process flows, decision trees, data flows, dependencies), `FUNCTIONAL_ARCHITECTURE.md`, stakeholder review documentation
+- Reports: Functional architecture summary with metrics
+
+**Key Distinction**:
+- **Functional Architecture** (01d): WHAT functions + HOW they interact
+- **Service Architecture** (01b/01c): WHICH service implements WHICH function
+
 ### Architecture-Only Flow
 
+**Option A: Functional-Only** (NEW v3.13.0 - Framework-Agnostic)
+```
+00a-basic_setup → 01d-functional_analysis → DONE
+(No framework selection needed - functional architecture is always a DAG)
+```
+
+**Option B: Service Architecture** (Framework-Specific)
 ```
 00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
 → 01b or 01c → 02-artifacts_visualization (minimal) → DONE
+(Framework selection determines how services/components are modeled)
 ```
 
 ### Reflow Meta-Analysis Flow (Self-Sharpening)

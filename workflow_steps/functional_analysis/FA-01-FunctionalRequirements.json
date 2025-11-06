@@ -1,0 +1,61 @@
+{
+  "step_metadata": {
+    "step_id": "FA-01",
+    "name": "Functional Requirements Extraction",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Extract and validate functional requirements from foundational documents",
+    "phase": "requirements"
+  },
+  "detailed_guidance": {
+    "purpose": "Convert high-level mission statement and user scenarios into specific, testable functional requirements",
+    "what_is_a_functional_requirement": "A functional requirement describes WHAT the system must do (a capability or behavior), independent of HOW it does it or WHICH component implements it.",
+    "examples": {
+      "good_functional_requirements": [
+        "FR-001: System shall authenticate users via username/password",
+        "FR-002: System shall validate user input for SQL injection attacks",
+        "FR-003: System shall generate monthly usage reports",
+        "FR-004: System shall notify users when tasks are completed"
+      ],
+      "bad_examples_not_functional": [
+        "Use PostgreSQL database (implementation detail, not functional requirement)",
+        "Service A shall call Service B (allocation detail, not functional requirement)",
+        "Use microservices architecture (architectural decision, not functional requirement)"
+      ]
+    },
+    "extraction_method": {
+      "step_1": "Read mission statement - extract top-level business capabilities",
+      "step_2": "Read each user scenario - extract required system behaviors",
+      "step_3": "Read success criteria - extract measurable functional requirements",
+      "step_4": "Deduplicate and organize requirements",
+      "step_5": "Assign unique IDs (FR-001, FR-002, etc.)",
+      "step_6": "Validate 100% user scenario coverage"
+    }
+  },
+  "validation_tool_usage": {
+    "tool": "validate_foundational_alignment.py",
+    "command": "python3 {reflow_root}/tools/validate_foundational_alignment.py {system_root} --requirements-mode",
+    "what_it_checks": [
+      "All user scenarios traceable to at least one functional requirement",
+      "No conflicting requirements (e.g., FR-001 and FR-005 contradict each other)",
+      "All success criteria satisfied by functional requirements",
+      "Requirements align with mission statement"
+    ],
+    "expected_output": "PASS with 100% user scenario coverage"
+  },
+  "common_pitfalls": [
+    "Mixing functional requirements with implementation details (e.g., 'Use Docker' is not a functional requirement)",
+    "Mixing functional requirements with service allocation (e.g., 'Auth service validates passwords' - that's allocation, not requirement)",
+    "Missing requirements because user scenarios not fully analyzed",
+    "Requirements too vague to validate (e.g., 'System shall be user-friendly' - not testable)",
+    "Skipping validation step - proceeding without 100% user scenario coverage"
+  ],
+  "success_criteria": {
+    "functional_requirements_json_created": true,
+    "all_user_scenarios_covered": "100%",
+    "validation_passes": true,
+    "requirements_traceable_to_mission": true
+  },
+  "typical_time": "30-60 minutes for small systems, 2-4 hours for complex systems",
+  "next_step": "FA-02 (define functional flows and decompose into atomic functions)"
+}
