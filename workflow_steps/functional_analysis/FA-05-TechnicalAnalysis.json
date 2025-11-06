@@ -1,0 +1,88 @@
+{
+  "step_metadata": {
+    "step_id": "FA-05",
+    "name": "Technical Analysis & Gap Detection",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Automated analysis for gaps, redundancies, inefficiencies, context bottlenecks",
+    "phase": "validation_technical"
+  },
+  "tool_usage": {
+    "primary_tool": "system_of_systems_graph_v2.py",
+    "mode": "--functional-mode (analyze functional architecture, not service architecture)",
+    "command_sequence": [
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode",
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode --detect-gaps",
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode --analyze-context (optional - AI workflows only)"
+    ],
+    "inputs": "specs/functional/functional_architecture.json",
+    "outputs": [
+      "specs/functional/graphs/functional_architecture_graph.json (graph representation)",
+      "specs/functional/functional_architecture_issues.json (analysis results)"
+    ]
+  },
+  "analysis_types": {
+    "gap_detection": {
+      "orphaned_functions": "Functions with no connections (isolated nodes)",
+      "unreachable_functions": "Functions not reachable from entry points",
+      "dead_end_functions": "Functions with no outgoing edges (no next steps)",
+      "missing_error_handlers": "Functions without error handling paths",
+      "incomplete_flows": "User scenarios not fully covered by function paths"
+    },
+    "redundancy_detection": {
+      "duplicate_functions": "Functions with identical inputs/outputs/logic",
+      "overlapping_functions": "Functions with significant functional overlap",
+      "unnecessary_functions": "Functions not contributing to any user scenario"
+    },
+    "efficiency_analysis": {
+      "circular_dependencies": "Function call cycles (F-001 → F-002 → F-001)",
+      "excessive_handoffs": "Long function call chains (10+ hops)",
+      "high_fan_out": "Functions calling too many others (potential god function)",
+      "high_fan_in": "Functions called by too many others (potential bottleneck)"
+    },
+    "context_bottleneck_analysis": {
+      "when_applicable": "Only for AI agent workflows with context consumption tracking",
+      "analyses": [
+        "Context consumption paths (cumulative token consumption along paths)",
+        "Context bottlenecks (paths exceeding available context window)",
+        "Context-heavy functions (functions consuming excessive tokens)"
+      ],
+      "purpose": "Ensure AI agents can complete workflows within their context windows (e.g., 200k tokens)"
+    }
+  },
+  "issue_categorization": {
+    "CRITICAL": {
+      "examples": [
+        "Gaps: Missing functions required for user scenarios",
+        "Unreachable functions: Functions that can never execute",
+        "Context bottlenecks: Paths exceeding available context (AI workflows)"
+      ],
+      "action": "MUST FIX before proceeding to service allocation"
+    },
+    "WARNING": {
+      "examples": [
+        "Redundancies: Duplicate or overlapping functions",
+        "Inefficiencies: Excessive handoffs, circular dependencies",
+        "High fan-out/fan-in: Potential architectural issues"
+      ],
+      "action": "SHOULD FIX for better architecture"
+    },
+    "INFO": {
+      "examples": [
+        "Minor optimization opportunities",
+        "Enhancement suggestions"
+      ],
+      "action": "OPTIONAL - nice to have"
+    }
+  },
+  "success_criteria": {
+    "functional_graph_generated": true,
+    "gap_analysis_complete": true,
+    "redundancy_analysis_complete": true,
+    "efficiency_analysis_complete": true,
+    "context_analysis_complete": "If applicable (AI workflows)",
+    "all_issues_categorized_by_severity": true
+  },
+  "typical_time": "5-15 minutes (automated analysis)",
+  "next_step": "FA-06 (iterative refinement to address critical issues)"
+}

@@ -1,0 +1,71 @@
+{
+  "step_metadata": {
+    "step_id": "FA-03",
+    "name": "Functional Architecture Visualization",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Generate human-readable visualizations for stakeholder validation",
+    "phase": "visualization"
+  },
+  "rationale": "CRITICAL: Stakeholders cannot validate machine-readable JSON (functional_architecture.json). Must create visual diagrams using industry-standard notation (BPMN, UML) to enable stakeholder understanding and validation.",
+  "visualization_types": {
+    "process_flows_bpmn": {
+      "purpose": "Show sequence of functional operations using BPMN 2.0 notation",
+      "shows": "Start events, tasks, gateways (decisions), end events, sequence flows",
+      "output": "docs/diagrams/functional/process_flows.svg"
+    },
+    "decision_trees": {
+      "purpose": "Show branching logic and conditions using decision tree notation",
+      "shows": "Decision nodes, conditions, branches, outcomes",
+      "output": "docs/diagrams/functional/decision_trees.svg"
+    },
+    "data_flows_uml": {
+      "purpose": "Show data movement and transformation using UML data flow notation",
+      "shows": "Data sources, transformations, data stores, data sinks",
+      "output": "docs/diagrams/functional/data_flows.svg"
+    },
+    "functional_dependencies": {
+      "purpose": "Show which functions call which other functions (dependency graph)",
+      "shows": "Functions as nodes, function calls as directed edges",
+      "output": "docs/diagrams/functional/functional_dependencies.svg"
+    }
+  },
+  "tool_usage": {
+    "tool": "generate_mermaid_functional_flow.py (NEW TOOL - to be created)",
+    "commands": [
+      "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type process",
+      "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type decision",
+      "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type data",
+      "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type dependencies"
+    ],
+    "fallback_if_tool_not_exists": "Manually create Mermaid diagrams from functional_architecture.json, then render with mermaid-cli or online Mermaid editor"
+  },
+  "documentation_generation": {
+    "tool": "generate_functional_documentation.py (NEW TOOL - to be created)",
+    "command": "python3 {reflow_root}/tools/generate_functional_documentation.py {system_root}",
+    "output": "docs/FUNCTIONAL_ARCHITECTURE.md",
+    "includes": [
+      "Functional requirements summary",
+      "Functional flows descriptions",
+      "Function catalog (all atomic functions with inputs/outputs)",
+      "Dependency relationships",
+      "Traceability matrix (requirements → flows → functions)"
+    ],
+    "fallback_if_tool_not_exists": "Manually write docs/FUNCTIONAL_ARCHITECTURE.md describing functional architecture"
+  },
+  "visualization_standards": {
+    "notation": "Use industry-standard notation (BPMN 2.0, UML 2.5)",
+    "colors": "Use colors meaningfully (green = start, red = error, blue = normal flow)",
+    "legends": "Include legend explaining symbols and colors",
+    "layout": "Left-to-right or top-to-bottom flow for readability"
+  },
+  "success_criteria": {
+    "all_4_diagram_types_created": true,
+    "diagrams_use_standard_notation": true,
+    "functional_architecture_md_created": true,
+    "all_visualizations_traceable_to_json": true,
+    "stakeholder_ready": "Visualizations clear enough for non-technical stakeholders"
+  },
+  "typical_time": "1-2 hours (if tools exist), 3-4 hours (if manual creation)",
+  "next_step": "FA-04 (stakeholder review of visualizations - MANDATORY)"
+}

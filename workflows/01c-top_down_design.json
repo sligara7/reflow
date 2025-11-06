@@ -38,8 +38,58 @@
       "maps_from": "Arch-02: Analysis and Decomposition",
       "actions": [
         {
+          "action_id": "SE-01-A00",
+          "description": "Functional Allocation (CONDITIONAL - if functional architecture exists from 01d)",
+          "condition": "Only if specs/functional/functional_architecture.json exists",
+          "purpose": "Map functions to services/systems with high cohesion and low coupling - bridges functional architecture (WHAT functions) to service architecture (WHICH service implements WHICH function)",
+          "inputs": [
+            "specs/functional/functional_requirements.json (from 01d-FA-01)",
+            "specs/functional/functional_architecture.json (from 01d-FA-02)"
+          ],
+          "process": [
+            "Read functional requirements and functional architecture from 01d",
+            "Group related functions into cohesive functional modules (high cohesion)",
+            "Identify function dependencies (from functional_architecture DAG)",
+            "Create service candidates by grouping functions with:",
+            "  - High internal cohesion (functions that work together)",
+            "  - Low external coupling (minimal dependencies on other groups)",
+            "  - Clear bounded contexts (domain-driven design)",
+            "Create functional allocation matrix mapping each function to a service"
+          ],
+          "outputs": [
+            "specs/functional/functional_allocation_matrix.json"
+          ],
+          "validation": "Ensure 100% functional coverage - all functions allocated to at least one service",
+          "template": "functional_allocation_matrix_template.json",
+          "if_functional_architecture_missing": "Skip this action and proceed to SE-01-A01 (traditional service decomposition from mission statement)"
+        },
+        {
+          "action_id": "SE-01-A00B",
+          "description": "Automated allocation gap closure (CONDITIONAL on SE-01-A00 - OPTIONAL but RECOMMENDED)",
+          "condition": "Only if SE-01-A00 executed and functional_allocation_matrix.json exists with unallocated functions",
+          "tool": "reflow_gap_closure.py",
+          "command": "python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type allocation",
+          "purpose": "Automatically propose new services or service enhancements for unallocated functions using chain_reflow matrix analysis",
+          "when_to_use": "When functional_allocation_matrix.json shows unallocated functions (allocation gaps)",
+          "inputs": [
+            "specs/functional/functional_allocation_matrix.json",
+            "specs/functional/functional_architecture.json"
+          ],
+          "outputs": [
+            "specs/functional/allocation_gap_closure_report.json (proposed services or enhancements)"
+          ],
+          "gap_closure_strategies": {
+            "unallocated_functions": "Use matrix_gap_detection.py: Given unallocated functions (State A) and existing services (State C), solve for missing service capabilities (State B)",
+            "new_service_proposals": "For functions that don't fit existing services, propose new service with bounded context",
+            "service_enhancement_proposals": "For functions that partially match existing services, propose capability enhancements"
+          },
+          "review_required": "YES - LLM must review proposed services before creating service_architecture.json files",
+          "optional": true,
+          "time_savings": "10-45 minutes per unallocated function (automated proposals vs manual service design)"
+        },
+        {
           "action_id": "SE-01-A01",
-          "description": "Run feature analysis",
+          "description": "Run feature analysis (or review gap closure proposals from SE-01-A00B)",
           "tool": "analyze_features.py",
           "command_pattern": "python3 {reflow_root}/tools/analyze_features.py {system_root}",
           "purpose": "Parse feature requirements and identify required systems/services",

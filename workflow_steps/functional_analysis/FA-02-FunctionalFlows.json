@@ -1,0 +1,69 @@
+{
+  "step_metadata": {
+    "step_id": "FA-02",
+    "name": "Functional Flow Definition",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Define functional flows and decompose into atomic functions",
+    "phase": "functional_decomposition"
+  },
+  "detailed_guidance": {
+    "purpose": "Map user scenarios to functional flows, then decompose flows into reusable atomic functions",
+    "flow_types": {
+      "process_flows": "Sequence of operations (Step 1 → Step 2 → Step 3)",
+      "decision_flows": "Branching logic with conditions (If X then Y, else Z)",
+      "data_flows": "Movement and transformation of data (Input → Process → Output)",
+      "user_interaction_flows": "User actions and system responses",
+      "integration_flows": "Interactions with external systems",
+      "error_flows": "Error handling and recovery paths"
+    },
+    "function_decomposition": {
+      "what_is_atomic_function": "Smallest reusable unit of functionality that performs ONE specific task",
+      "examples": {
+        "good_atomic_functions": [
+          "F-001: Validate User Credentials (single task)",
+          "F-002: Hash Password (single task)",
+          "F-003: Query User Database (single task)",
+          "F-004: Generate Session Token (single task)"
+        ],
+        "bad_examples_not_atomic": [
+          "F-XXX: Authenticate User and Create Session and Log Event (three tasks - should be 3 functions)"
+        ]
+      },
+      "function_attributes": {
+        "function_id": "Unique identifier (F-001, F-002, etc.)",
+        "function_name": "Descriptive name (Verb + Object: 'Validate Credentials')",
+        "function_type": "read | write | process | decide | generate | validate | iterate",
+        "inputs": "List of required inputs",
+        "outputs": "List of produced outputs",
+        "error_handling": "How errors are handled",
+        "context_consumption": "Estimated tokens consumed (for AI workflows) - optional",
+        "execution_time": "Estimated seconds - optional"
+      }
+    },
+    "creating_dag": {
+      "what_is_dag": "Directed Acyclic Graph - functions as nodes, function calls as directed edges, no circular dependencies",
+      "dependency_types": [
+        "function_call: Function A explicitly calls Function B",
+        "data_flow: Function A output is Function B input",
+        "control_flow: Function A completion triggers Function B",
+        "error_flow: Function A error triggers Function B error handler"
+      ],
+      "example": "F-001 (Validate Credentials) → F-002 (Hash Password) → F-003 (Query Database) → F-004 (Generate Token)"
+    }
+  },
+  "template_usage": {
+    "template": "functional_architecture_template.json",
+    "location": "specs/functional/functional_architecture.json",
+    "note": "If template doesn't exist yet, use specs/functional/functional_architecture.json from Reflow's own meta-analysis as reference"
+  },
+  "success_criteria": {
+    "all_user_scenarios_mapped_to_flows": true,
+    "all_flows_decomposed_to_atomic_functions": true,
+    "function_dependencies_defined": true,
+    "dag_created_no_cycles": true,
+    "functional_architecture_json_created": true
+  },
+  "typical_time": "2-4 hours for small systems, 6-10 hours for complex systems",
+  "next_step": "FA-03 (generate human-readable visualizations for stakeholder review)"
+}

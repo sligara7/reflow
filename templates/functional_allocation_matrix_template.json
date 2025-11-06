@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "template_metadata": {
+    "template_name": "Functional Allocation Matrix Template",
+    "template_version": "1.0.0",
+    "created": "2025-11-06",
+    "description": "Template for mapping functions to services/systems - bridges functional architecture (WHAT functions) to service architecture (WHICH service implements WHICH function)",
+    "usage": "Copy this template to specs/functional/functional_allocation_matrix.json and populate with function-to-service mappings",
+    "workflow_step": "SE-01-A00",
+    "purpose": "Enable traceability from functional requirements through functions to service implementations"
+  },
+  "system_info": {
+    "system_name": "{Your System Name}",
+    "functional_requirements_source": "specs/functional/functional_requirements.json",
+    "functional_architecture_source": "specs/functional/functional_architecture.json",
+    "service_decomposition_source": "specs/machine/system_decomposition.json (top-down) OR specs/machine/component_inventory.json (bottom-up)"
+  },
+  "allocation_summary": {
+    "total_functions": "{Number of functions from functional_architecture.json}",
+    "total_services": "{Number of services/components}",
+    "functions_allocated": "{Number of functions mapped to services}",
+    "functions_unallocated": "{Number of functions not yet allocated - gaps}",
+    "allocation_coverage": "{Percentage - should be 100%}",
+    "allocation_date": "{ISO timestamp}"
+  },
+  "services": [
+    {
+      "service_id": "{Unique service identifier}",
+      "service_name": "{Service Name}",
+      "service_description": "{What this service does}",
+      "allocated_functions": [
+        {
+          "function_id": "F-001",
+          "function_name": "{Function Name from functional_architecture.json}",
+          "allocation_reason": "{Why this function belongs to this service - cohesion, bounded context, etc.}",
+          "implementation_priority": "{high | medium | low}",
+          "implementation_complexity": "{high | medium | low}",
+          "function_dependencies": ["{List of other function IDs this function depends on}"],
+          "cross_service_dependencies": ["{List of services this function needs to call}"]
+        }
+      ],
+      "cohesion_score": "{0.0-1.0: How related are the allocated functions? 1.0 = perfect cohesion}",
+      "coupling_score": "{0.0-1.0: How many cross-service dependencies? 0.0 = no coupling (ideal), 1.0 = high coupling}",
+      "bounded_context": "{Domain or business capability this service represents}"
+    },
+    {
+      "service_id": "auth_service",
+      "service_name": "Authentication Service",
+      "service_description": "Handles user authentication, session management, and access control",
+      "allocated_functions": [
+        {
+          "function_id": "F-001",
+          "function_name": "Receive Login Request",
+          "allocation_reason": "Entry point for authentication flow - naturally part of auth service",
+          "implementation_priority": "high",
+          "implementation_complexity": "low",
+          "function_dependencies": ["F-002"],
+          "cross_service_dependencies": []
+        },
+        {
+          "function_id": "F-002",
+          "function_name": "Validate User Credentials",
+          "allocation_reason": "Core authentication logic - high cohesion with auth service",
+          "implementation_priority": "high",
+          "implementation_complexity": "medium",
+          "function_dependencies": ["F-003"],
+          "cross_service_dependencies": []
+        },
+        {
+          "function_id": "F-003",
+          "function_name": "Generate Session Token",
+          "allocation_reason": "Session management is part of authentication bounded context",
+          "implementation_priority": "high",
+          "implementation_complexity": "medium",
+          "function_dependencies": [],
+          "cross_service_dependencies": []
+        }
+      ],
+      "cohesion_score": 0.95,
+      "coupling_score": 0.1,
+      "bounded_context": "Authentication and Authorization"
+    }
+  ],
+  "unallocated_functions": [
+    {
+      "function_id": "{Function ID}",
+      "function_name": "{Function Name}",
+      "reason_unallocated": "{Why this function hasn't been allocated - gap, deferred decision, etc.}",
+      "proposed_service": "{Suggested service for this function, or 'NEW SERVICE' if none fit}",
+      "allocation_blocker": "{What's preventing allocation - missing service, unclear bounded context, etc.}"
+    }
+  ],
+  "allocation_matrix_table": {
+    "note": "Human-readable table view of allocations",
+    "rows": [
+      {
+        "function_id": "F-001",
+        "function_name": "Receive Login Request",
+        "allocated_to_service": "auth_service",
+        "service_name": "Authentication Service"
+      },
+      {
+        "function_id": "F-002",
+        "function_name": "Validate User Credentials",
+        "allocated_to_service": "auth_service",
+        "service_name": "Authentication Service"
+      }
+    ]
+  },
+  "traceability": {
+    "requirements_to_functions_to_services": [
+      {
+        "requirement_id": "FR-001",
+        "requirement_name": "{Requirement Name}",
+        "satisfied_by_functions": ["F-001", "F-002", "F-003"],
+        "implemented_by_services": ["auth_service"],
+        "traceability_complete": true
+      }
+    ],
+    "coverage_analysis": {
+      "requirements_with_full_traceability": "{Number}",
+      "requirements_with_partial_traceability": "{Number}",
+      "requirements_with_no_traceability": "{Number}",
+      "traceability_percentage": "{Percentage - should be 100%}"
+    }
+  },
+  "allocation_quality_metrics": {
+    "average_cohesion_score": "{0.0-1.0: Average cohesion across all services - higher is better}",
+    "average_coupling_score": "{0.0-1.0: Average coupling across all services - lower is better}",
+    "services_with_high_cohesion": "{Count of services with cohesion >= 0.8}",
+    "services_with_low_coupling": "{Count of services with coupling <= 0.2}",
+    "services_requiring_refactoring": [
+      {
+        "service_id": "{Service ID}",
+        "issue": "{Low cohesion or high coupling}",
+        "recommendation": "{Suggested refactoring - split service, move functions, etc.}"
+      }
+    ]
+  },
+  "allocation_validation": {
+    "functional_coverage": "{100% if all functions allocated}",
+    "service_coverage": "{Percentage of services with at least one allocated function}",
+    "cross_service_dependencies_count": "{Total number of cross-service function calls}",
+    "validation_status": "{PASS | FAIL}",
+    "validation_issues": [
+      "{List any validation issues - unallocated functions, orphaned services, circular dependencies}"
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "{ISO date}",
+    "last_updated": "{ISO date}",
+    "created_by": "{LLM agent or human}",
+    "review_status": "{draft | reviewed | approved}"
+  },
+  "llm_agent_guidance": {
+    "allocation_principles": [
+      "High cohesion: Group functions that work together (same bounded context, same data model)",
+      "Low coupling: Minimize cross-service function calls (reduce inter-service dependencies)",
+      "Domain-driven design: Follow bounded contexts from domain model",
+      "Single responsibility: Each service should have one clear purpose",
+      "Function dependencies: Keep dependent functions in same service when possible"
+    ],
+    "allocation_process": "1) Read functional architecture and identify function groups by domain, 2) Create service candidates for each domain group, 3) Allocate functions to services, 4) Calculate cohesion/coupling scores, 5) Refactor if scores are poor (cohesion < 0.7 or coupling > 0.3), 6) Validate 100% coverage",
+    "when_to_create_new_service": "Create new service when: (1) Functions don't fit existing services, (2) New bounded context identified, (3) Grouping would violate single responsibility principle",
+    "bottom_up_vs_top_down": {
+      "top_down": "Create new services based on functional grouping - greenfield allocation",
+      "bottom_up": "Map functions to existing components from component_inventory.json - constraint-based allocation. Functions that don't fit existing components are marked as gaps requiring new components."
+    }
+  }
+}

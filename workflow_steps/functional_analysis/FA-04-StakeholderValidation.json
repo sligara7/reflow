@@ -1,0 +1,71 @@
+{
+  "step_metadata": {
+    "step_id": "FA-04",
+    "name": "Stakeholder Validation",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Obtain stakeholder validation of functional architecture via visual review",
+    "phase": "validation_stakeholder"
+  },
+  "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework, scope creep, and misalignment between stakeholder expectations and implemented system. Visual diagrams enable non-technical stakeholders to validate design.",
+  "mandatory": "YES - This gate is BLOCKING. Cannot proceed to technical analysis (FA-05) without stakeholder validation.",
+  "review_process": {
+    "participants": {
+      "product_owners": "Validate business requirements and priorities",
+      "domain_experts": "Validate domain logic and functional flows are correct",
+      "technical_leads": "Validate technical feasibility and integration points",
+      "end_users": "Validate usability and user interaction flows (if available)"
+    },
+    "review_artifacts": [
+      "docs/diagrams/functional/process_flows.svg (BPMN diagrams)",
+      "docs/diagrams/functional/decision_trees.svg (decision logic)",
+      "docs/diagrams/functional/data_flows.svg (UML data flows)",
+      "docs/diagrams/functional/functional_dependencies.svg (function graph)",
+      "docs/FUNCTIONAL_ARCHITECTURE.md (written description)"
+    ],
+    "review_questions": [
+      "Do the functional flows accurately represent how the system should work?",
+      "Are there missing functions needed to support user scenarios?",
+      "Are there unnecessary functions that don't add business value?",
+      "Do the decision points cover all necessary conditions and edge cases?",
+      "Are error handling flows appropriate and complete?",
+      "Does the functional architecture align with your expectations?",
+      "Is the scope appropriate (not too large, not too small)?",
+      "Are there integration points with external systems that are missing?"
+    ]
+  },
+  "feedback_collection": {
+    "location": "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md",
+    "feedback_categories": [
+      "Missing functions: Functions needed but not present",
+      "Unnecessary functions: Functions that don't add value",
+      "Incorrect flows: Flow sequences that don't match actual business processes",
+      "Missing decision branches: Decision points missing necessary conditions",
+      "Misalignment: Functional architecture doesn't match stakeholder expectations",
+      "Scope concerns: Scope too large (overengineering) or too small (incomplete)"
+    ],
+    "severity_classification": {
+      "CRITICAL": "Missing functions, incorrect flows, major misalignment - MUST address before proceeding",
+      "WARNING": "Scope concerns, minor inefficiencies - SHOULD address",
+      "INFO": "Enhancement suggestions, optional optimizations"
+    }
+  },
+  "outcomes": {
+    "approved": {
+      "criteria": "No CRITICAL stakeholder issues, stakeholders sign off on functional architecture",
+      "next_action": "Proceed to FA-05 (technical analysis)"
+    },
+    "refinements_needed": {
+      "criteria": "CRITICAL issues identified by stakeholders",
+      "next_action": "Return to FA-02 (refine functional flows/functions) or FA-03 (regenerate visualizations)"
+    }
+  },
+  "success_criteria": {
+    "stakeholder_review_conducted": true,
+    "feedback_documented": true,
+    "critical_issues_addressed": true,
+    "stakeholder_sign_off_obtained": true
+  },
+  "typical_time": "1-2 hours for review session, plus refinement time if issues found",
+  "next_step": "FA-05 (technical analysis) OR return to FA-02/FA-03 if refinements needed"
+}

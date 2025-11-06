@@ -328,8 +328,73 @@
           "blocking": true
         }
       ],
+      "next_step": "SE-01",
+      "transition_note": "Bottom-up workflow transitions to functional allocation (SE-01) before proceeding to service architecture refinement (SE-02)"
+    },
+    {
+      "step_id": "SE-01",
+      "name": "Functional Allocation (BOTTOM-UP)",
+      "description": "Map functions to existing services/components - conditional on functional architecture from 01d",
+      "phase": "functional_allocation",
+      "step_file": "workflow_steps/systems_engineering/SE-01-FunctionalAllocation.json",
+      "conditional": true,
+      "actions": [
+        {
+          "action_id": "SE-01-A00",
+          "description": "Functional Allocation (CONDITIONAL - if functional architecture exists from 01d)",
+          "condition": "Only if specs/functional/functional_architecture.json exists",
+          "purpose": "Map functions to existing services/components identified in BU-01 through BU-06 - bridges functional architecture (WHAT functions) to existing service architecture (WHICH existing service implements WHICH function)",
+          "inputs": [
+            "specs/functional/functional_requirements.json (from 01d-FA-01)",
+            "specs/functional/functional_architecture.json (from 01d-FA-02)",
+            "specs/machine/component_inventory.json (from BU-01)"
+          ],
+          "process": [
+            "Read functional requirements and functional architecture from 01d",
+            "Read existing component inventory from BU-01",
+            "For each function in functional_architecture.json:",
+            "  - Find best-fit existing component based on capability match",
+            "  - If no match found, mark function as 'gap' requiring new component",
+            "Create functional allocation matrix mapping each function to existing component or 'NEW'",
+            "Validate that high-cohesion functions are allocated to same component"
+          ],
+          "outputs": [
+            "specs/functional/functional_allocation_matrix.json"
+          ],
+          "validation": "Ensure 100% functional coverage - all functions allocated to existing components or identified as gaps",
+          "template": "functional_allocation_matrix_template.json",
+          "if_functional_architecture_missing": "Skip this step entirely and proceed to SE-02 (service architecture refinement)"
+        },
+        {
+          "action_id": "SE-01-A00B",
+          "description": "Automated allocation gap closure for bottom-up (CONDITIONAL - OPTIONAL but RECOMMENDED)",
+          "condition": "Only if SE-01-A00 executed and functional_allocation_matrix.json exists with unallocated functions",
+          "tool": "reflow_gap_closure.py",
+          "command": "python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type allocation",
+          "purpose": "Automatically propose new components or component enhancements for unallocated functions using chain_reflow matrix analysis",
+          "when_to_use": "When functional_allocation_matrix.json shows unallocated functions (functions marked as 'NEW' or 'gap')",
+          "inputs": [
+            "specs/functional/functional_allocation_matrix.json",
+            "specs/functional/functional_architecture.json",
+            "specs/machine/component_inventory.json"
+          ],
+          "outputs": [
+            "specs/functional/allocation_gap_closure_report.json (proposed new components or enhancements to existing components)"
+          ],
+          "gap_closure_strategies": {
+            "unallocated_functions_bottom_up": "Use matrix_gap_detection.py: Given unallocated functions (State A) and existing components (State C), solve for missing component capabilities or new components (State B)",
+            "new_component_proposals": "For functions that don't fit existing components, propose new component with required capabilities",
+            "component_enhancement_proposals": "For functions that partially match existing components, propose capability enhancements to those components"
+          },
+          "review_required": "YES - LLM must review proposed components/enhancements before updating component_inventory.json or creating new service_architecture.json files",
+          "optional": true,
+          "time_savings": "10-45 minutes per unallocated function (automated proposals vs manual component design)",
+          "bottom_up_specific": "Gap closure for bottom-up considers existing component constraints - proposals must be feasible within existing architecture"
+        }
+      ],
+      "gates": [],
       "next_step": "SE-02",
-      "transition_note": "Bottom-up workflow merges with top-down workflow at SE-02. Architecture files created, can proceed to further refinement or development."
+      "skip_if_condition_false": "If functional architecture not present, skip SE-01 entirely and go directly to SE-02"
     },
     {
       "step_id": "SE-02",

@@ -1,0 +1,84 @@
+{
+  "step_metadata": {
+    "step_id": "FA-07",
+    "name": "Functional Architecture Finalization",
+    "workflow": "01d-functional_analysis",
+    "version": "1.0.0",
+    "description": "Package functional architecture deliverables and prepare for next phase or final delivery",
+    "phase": "finalization"
+  },
+  "deliverables_package": {
+    "machine_readable": [
+      "specs/functional/functional_requirements.json (requirements specification)",
+      "specs/functional/functional_architecture.json (architecture specification)",
+      "specs/functional/graphs/functional_architecture_graph.json (graph for analysis)",
+      "specs/functional/functional_architecture_issues.json (analysis results with validation status)"
+    ],
+    "human_readable": [
+      "docs/diagrams/functional/process_flows.svg (BPMN process diagrams)",
+      "docs/diagrams/functional/decision_trees.svg (decision logic diagrams)",
+      "docs/diagrams/functional/data_flows.svg (UML data flow diagrams)",
+      "docs/diagrams/functional/functional_dependencies.svg (dependency graph)",
+      "docs/FUNCTIONAL_ARCHITECTURE.md (written description)",
+      "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md (stakeholder sign-off)"
+    ],
+    "reports": [
+      "docs/reports/FUNCTIONAL_ARCHITECTURE_SUMMARY.md (summary report with metrics)"
+    ],
+    "total_artifacts": "11+ files (4 machine-readable, 6 human-readable, 1+ reports)"
+  },
+  "summary_report_contents": {
+    "metrics": [
+      "Number of functional requirements (e.g., 25 requirements)",
+      "Number of functional flows (e.g., 8 flows)",
+      "Number of atomic functions (e.g., 66 functions)",
+      "Function dependency count (e.g., 120 edges)",
+      "Context consumption estimate (if AI workflow) (e.g., 45k tokens average path)",
+      "User scenario coverage (should be 100%)"
+    ],
+    "validation_status": [
+      "Stakeholder validation: APPROVED (FA-04)",
+      "Technical validation: PASSED (FA-05)",
+      "Gap analysis: 0 critical issues",
+      "Redundancy analysis: 0 critical issues",
+      "Efficiency analysis: 0 critical issues",
+      "Context analysis: 0 bottlenecks (if AI workflow)"
+    ],
+    "next_steps": [
+      "OPTION A: Continue to service architecture (allocate functions to services)",
+      "OPTION B: Stop here (deliver functional architecture to stakeholders)"
+    ]
+  },
+  "user_decision_point": {
+    "mandatory": "YES - User MUST decide whether to continue or stop",
+    "question": "Do you want to continue to service architecture (allocate functions to services) or stop here (architecture-only deliverables)?",
+    "option_a": {
+      "choice": "Continue to service architecture",
+      "next_workflow": {
+        "if_bottom_up": "01b-bottom_up_integration (allocate functions to existing services)",
+        "if_top_down": "01c-top_down_design (create new services to implement functions)"
+      },
+      "benefit": "Complete system implementation from functional architecture through to runnable code",
+      "time_estimate": "10-40 hours additional (depends on system complexity)"
+    },
+    "option_b": {
+      "choice": "Stop here (architecture-only deliverables)",
+      "outcome": "Workflow complete - deliver functional architecture package to stakeholders",
+      "benefit": "Focus on functional design and validation without committing to implementation",
+      "use_cases": [
+        "Request for proposal (RFP) response - show functional design",
+        "Feasibility study - validate functional approach before implementation",
+        "Stakeholder alignment - get sign-off on functional architecture before building",
+        "Outsourcing - provide functional specs to implementation team"
+      ]
+    }
+  },
+  "success_criteria": {
+    "all_deliverables_created": "11+ functional architecture artifacts",
+    "summary_report_generated": true,
+    "working_memory_updated": true,
+    "user_decision_made": "Option A (continue) or Option B (stop)"
+  },
+  "typical_time": "30 minutes (packaging and report generation)",
+  "next_step": "COMPLETE (Option B) OR 01b/01c (Option A)"
+}

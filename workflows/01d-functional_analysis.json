@@ -1,0 +1,770 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "01d-functional_analysis",
+    "name": "Functional Analysis Workflow",
+    "version": "1.0.0",
+    "description": "Analyze and decompose functions and their interactions - focuses on WHAT functions exist and HOW they interact (NOT which service implements which function)",
+    "created": "2025-11-06",
+    "last_updated": "2025-11-06",
+    "purpose": "Standalone functional architecture analysis - define and validate functional decomposition before service allocation",
+    "key_distinction": "This workflow focuses on FUNCTIONAL ARCHITECTURE (what functions, how they interact). Service architecture workflows (01b/01c) focus on SERVICE ALLOCATION (which service implements which function).",
+    "when_to_use": "When you want to focus on functional decomposition and analysis without immediately committing to service boundaries. Can stop here for architecture-only deliverables, or continue to service architecture.",
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/01d-functional_analysis.json on system /path/to/your_system"
+  },
+  "prerequisites": {
+    "required_workflows": [
+      "00a-basic_setup (or 00-setup)"
+    ],
+    "required_files": [
+      "context/working_memory.json (with paths configured)",
+      "docs/SYSTEM_MISSION_STATEMENT.md",
+      "docs/USER_SCENARIOS.md",
+      "docs/SUCCESS_CRITERIA.md"
+    ],
+    "required_directories": [
+      "specs/functional/",
+      "specs/functional/graphs/",
+      "docs/diagrams/functional/"
+    ],
+    "optional_prerequisites": [
+      "01a-approach_detection (if coming from standard SE flow)"
+    ],
+    "NOT_required": {
+      "00b-framework_selection": "NOT needed - framework selection is for system architecture (services/components), not functional architecture. Functional architecture is framework-agnostic and always creates a DAG."
+    }
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Standard functional analysis entry - new system functional decomposition",
+      "first_step": "FA-01"
+    },
+    "from_feature_update": {
+      "id": "from_feature_update",
+      "description": "Functional analysis for feature update - analyze delta to existing functional architecture",
+      "first_step": "FA-01",
+      "note": "Reads existing specs/functional/functional_architecture.json and highlights deltas"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "FA-01",
+      "name": "Functional Requirements Extraction",
+      "description": "Extract and document functional requirements from foundational documents",
+      "phase": "requirements",
+      "step_file": "workflow_steps/functional_analysis/FA-01-FunctionalRequirements.json",
+      "actions": [
+        {
+          "action_id": "FA-01-A01",
+          "description": "Read foundational documents",
+          "inputs": [
+            "docs/SYSTEM_MISSION_STATEMENT.md",
+            "docs/USER_SCENARIOS.md",
+            "docs/SUCCESS_CRITERIA.md"
+          ],
+          "purpose": "Understand WHAT the system must do at highest level"
+        },
+        {
+          "action_id": "FA-01-A02",
+          "description": "Extract functional requirements",
+          "method": "Parse mission statement and user scenarios to identify required capabilities",
+          "outputs": [
+            "List of functional requirements (FR-001, FR-002, etc.)"
+          ],
+          "template": "functional_requirements_template.json",
+          "location": "specs/functional/functional_requirements.json"
+        },
+        {
+          "action_id": "FA-01-A03",
+          "description": "Validate functional requirements completeness",
+          "tool": "validate_foundational_alignment.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_foundational_alignment.py {system_root} --requirements-mode",
+          "purpose": "Ensure all user scenarios covered by functional requirements",
+          "validation_criteria": [
+            "100% user scenario coverage",
+            "No conflicting requirements",
+            "All success criteria traceable to requirements"
+          ]
+        }
+      ],
+      "tools_used": [
+        "validate_foundational_alignment.py"
+      ],
+      "templates_used": [
+        "functional_requirements_template.json"
+      ],
+      "outputs": [
+        "specs/functional/functional_requirements.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-01",
+          "name": "Functional Requirements Complete",
+          "checks": [
+            "functional_requirements.json created",
+            "100% user scenario coverage",
+            "Validation passes",
+            "Requirements traceable to mission statement"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "FA-02"
+    },
+    {
+      "step_id": "FA-02",
+      "name": "Functional Flow Definition",
+      "description": "Define functional flows showing process sequences, decisions, and data flows",
+      "phase": "functional_decomposition",
+      "step_file": "workflow_steps/functional_analysis/FA-02-FunctionalFlows.json",
+      "actions": [
+        {
+          "action_id": "FA-02-A01",
+          "description": "Identify functional flows from user scenarios",
+          "method": "Map each user scenario to process flows",
+          "flow_types": [
+            "Process flows (sequence of operations)",
+            "Decision flows (branching logic and conditions)",
+            "Data flows (information movement)",
+            "User interaction flows",
+            "Integration flows with external systems",
+            "Error handling and recovery flows"
+          ]
+        },
+        {
+          "action_id": "FA-02-A02",
+          "description": "Decompose flows into atomic functions",
+          "method": "Break down each flow into discrete, reusable functions",
+          "function_definition": {
+            "function_id": "Unique identifier (F-001, F-002, etc.)",
+            "function_name": "Descriptive name (e.g., 'Validate User Credentials')",
+            "function_type": "read | write | process | decide | generate | validate | iterate",
+            "inputs": "List of inputs required",
+            "outputs": "List of outputs produced",
+            "error_handling": "How errors are handled",
+            "context_consumption": "Estimated tokens consumed (for AI workflows)",
+            "execution_time": "Estimated seconds"
+          },
+          "output": "List of all atomic functions"
+        },
+        {
+          "action_id": "FA-02-A03",
+          "description": "Define function dependencies",
+          "method": "Map which functions call which other functions",
+          "dependency_types": [
+            "function_call (Function A calls Function B)",
+            "data_flow (Function A outputs data that Function B consumes)",
+            "control_flow (Function A completion triggers Function B)",
+            "error_flow (Function A error triggers Function B error handler)"
+          ],
+          "creates_dag": "Yes - function dependency graph is a directed acyclic graph (DAG)"
+        },
+        {
+          "action_id": "FA-02-A04",
+          "description": "Create functional architecture specification",
+          "template": "functional_architecture_template.json",
+          "location": "specs/functional/functional_architecture.json",
+          "contains": [
+            "Functional flows list",
+            "All atomic functions with specifications",
+            "Function dependencies (edges)",
+            "Context consumption estimates (for AI workflows)",
+            "Execution time estimates"
+          ],
+          "note": "This is a MACHINE-READABLE specification for analysis"
+        }
+      ],
+      "templates_used": [
+        "functional_architecture_template.json"
+      ],
+      "outputs": [
+        "specs/functional/functional_architecture.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-02",
+          "name": "Functional Architecture Defined",
+          "checks": [
+            "All user scenarios mapped to functional flows",
+            "All flows decomposed into atomic functions",
+            "Function dependencies defined",
+            "functional_architecture.json created"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "FA-03"
+    },
+    {
+      "step_id": "FA-03",
+      "name": "Functional Architecture Visualization",
+      "description": "Generate human-readable visualizations of functional architecture for stakeholder validation",
+      "phase": "visualization",
+      "step_file": "workflow_steps/functional_analysis/FA-03-Visualization.json",
+      "rationale": "CRITICAL: Stakeholders cannot validate machine-readable JSON - must create visual diagrams using standard notation (BPMN, UML)",
+      "actions": [
+        {
+          "action_id": "FA-03-A01",
+          "description": "Generate BPMN process flow diagrams",
+          "tool": "generate_mermaid_functional_flow.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type process",
+          "purpose": "Show sequence of functional operations using BPMN 2.0 notation",
+          "outputs": [
+            "docs/diagrams/functional/process_flows.mmd (Mermaid source)",
+            "docs/diagrams/functional/process_flows.svg (rendered diagram)"
+          ]
+        },
+        {
+          "action_id": "FA-03-A02",
+          "description": "Generate decision tree diagrams",
+          "tool": "generate_mermaid_functional_flow.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type decision",
+          "purpose": "Show branching logic and conditions using decision tree notation",
+          "outputs": [
+            "docs/diagrams/functional/decision_trees.mmd",
+            "docs/diagrams/functional/decision_trees.svg"
+          ]
+        },
+        {
+          "action_id": "FA-03-A03",
+          "description": "Generate UML data flow diagrams",
+          "tool": "generate_mermaid_functional_flow.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type data",
+          "purpose": "Show data movement and transformation using UML notation",
+          "outputs": [
+            "docs/diagrams/functional/data_flows.mmd",
+            "docs/diagrams/functional/data_flows.svg"
+          ]
+        },
+        {
+          "action_id": "FA-03-A04",
+          "description": "Generate functional dependency graph",
+          "tool": "generate_mermaid_functional_flow.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_mermaid_functional_flow.py {system_root} --flow-type dependencies",
+          "purpose": "Show which functions call which other functions",
+          "outputs": [
+            "docs/diagrams/functional/functional_dependencies.mmd",
+            "docs/diagrams/functional/functional_dependencies.svg"
+          ]
+        },
+        {
+          "action_id": "FA-03-A05",
+          "description": "Create human-readable functional architecture document",
+          "tool": "generate_functional_documentation.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_functional_documentation.py {system_root}",
+          "purpose": "Generate markdown documentation describing functional architecture",
+          "outputs": [
+            "docs/FUNCTIONAL_ARCHITECTURE.md - Complete written description"
+          ]
+        }
+      ],
+      "tools_used": [
+        "generate_mermaid_functional_flow.py",
+        "generate_functional_documentation.py"
+      ],
+      "outputs": [
+        "docs/diagrams/functional/*.svg (4 diagram types)",
+        "docs/FUNCTIONAL_ARCHITECTURE.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-03",
+          "name": "Visualizations Generated",
+          "checks": [
+            "All 4 diagram types created (process, decision, data, dependencies)",
+            "Diagrams use standard notation (BPMN, UML)",
+            "Documentation complete and readable",
+            "All visualizations traceable to functional_architecture.json"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "FA-04"
+    },
+    {
+      "step_id": "FA-04",
+      "name": "Stakeholder Validation",
+      "description": "Review functional architecture visualizations with stakeholders to validate completeness and correctness",
+      "phase": "validation_stakeholder",
+      "step_file": "workflow_steps/functional_analysis/FA-04-StakeholderValidation.json",
+      "mandatory": true,
+      "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework and misalignment",
+      "actions": [
+        {
+          "action_id": "FA-04-A01",
+          "description": "Prepare stakeholder review package",
+          "artifacts": [
+            "docs/diagrams/functional/*.svg (all diagrams)",
+            "docs/FUNCTIONAL_ARCHITECTURE.md (written description)",
+            "docs/USER_SCENARIOS.md (for traceability)",
+            "specs/functional/functional_requirements.json (for reference)"
+          ]
+        },
+        {
+          "action_id": "FA-04-A02",
+          "description": "Conduct stakeholder review session",
+          "participants": [
+            "Product owners (business requirements)",
+            "Domain experts (domain knowledge)",
+            "Technical leads (technical feasibility)",
+            "End users (if available - usability)"
+          ],
+          "review_questions": [
+            "Do the functional flows accurately represent how the system should work?",
+            "Are there missing functions needed to support user scenarios?",
+            "Are there unnecessary functions that don't add value?",
+            "Do the decision points cover all necessary conditions?",
+            "Are error handling flows appropriate?",
+            "Does the functional architecture align with expectations?"
+          ]
+        },
+        {
+          "action_id": "FA-04-A03",
+          "description": "Collect stakeholder feedback",
+          "feedback_categories": [
+            "Missing functions",
+            "Unnecessary functions",
+            "Incorrect flow sequences",
+            "Missing decision branches",
+            "Misalignment with expectations",
+            "Scope concerns (too large/too small)"
+          ],
+          "location": "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md"
+        },
+        {
+          "action_id": "FA-04-A04",
+          "description": "Obtain stakeholder sign-off or identify refinements needed",
+          "outcomes": [
+            "APPROVED: Stakeholders validate functional architecture - proceed to FA-05",
+            "REFINEMENTS NEEDED: Critical issues identified - return to FA-02 or FA-03 to address"
+          ]
+        }
+      ],
+      "outputs": [
+        "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md",
+        "Stakeholder sign-off or refinement requirements"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-04",
+          "name": "Stakeholder Validation",
+          "checks": [
+            "Stakeholder review conducted",
+            "Feedback documented",
+            "Critical issues addressed (if any)",
+            "Stakeholders approve functional architecture"
+          ],
+          "blocking": true,
+          "note": "MANDATORY gate - cannot proceed to technical analysis without stakeholder validation"
+        }
+      ],
+      "next_step": "FA-05"
+    },
+    {
+      "step_id": "FA-05",
+      "name": "Technical Analysis & Gap Detection",
+      "description": "Analyze functional architecture for technical issues: gaps, redundancies, inefficiencies, context bottlenecks",
+      "phase": "validation_technical",
+      "step_file": "workflow_steps/functional_analysis/FA-05-TechnicalAnalysis.json",
+      "actions": [
+        {
+          "action_id": "FA-05-A01",
+          "description": "Generate functional architecture graph",
+          "tool": "system_of_systems_graph_v2.py",
+          "command_pattern": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode",
+          "inputs": [
+            "specs/functional/functional_architecture.json"
+          ],
+          "outputs": [
+            "specs/functional/graphs/functional_architecture_graph.json"
+          ],
+          "purpose": "Convert functional architecture to graph representation for NetworkX analysis"
+        },
+        {
+          "action_id": "FA-05-A02",
+          "description": "Run gap detection analysis",
+          "tool": "system_of_systems_graph_v2.py with --detect-gaps flag",
+          "analyses": [
+            "Orphaned functions (functions with no connections)",
+            "Unreachable functions (functions not reachable from entry points)",
+            "Dead-end functions (functions with no outgoing edges)",
+            "Missing error handlers (functions without error handling paths)",
+            "Incomplete flows (user scenarios not fully covered by functions)"
+          ],
+          "outputs": [
+            "specs/functional/functional_architecture_issues.json (gap analysis results)"
+          ]
+        },
+        {
+          "action_id": "FA-05-A03",
+          "description": "Run redundancy detection analysis",
+          "analyses": [
+            "Duplicate functions (same inputs/outputs/logic)",
+            "Overlapping functions (significant functional overlap)",
+            "Unnecessary functions (functions not contributing to user scenarios)"
+          ]
+        },
+        {
+          "action_id": "FA-05-A04",
+          "description": "Run efficiency analysis",
+          "analyses": [
+            "Circular dependencies (function call cycles)",
+            "Excessive handoffs (long function call chains)",
+            "High fan-out (functions calling too many others)",
+            "High fan-in (functions called by too many others - potential bottleneck)"
+          ]
+        },
+        {
+          "action_id": "FA-05-A05",
+          "description": "Run context bottleneck analysis (AI workflows only)",
+          "tool": "system_of_systems_graph_v2.py with --analyze-context flag",
+          "condition": "Only if system is an AI agent workflow with context consumption tracking",
+          "analyses": [
+            "Context consumption paths (cumulative token consumption along paths)",
+            "Context bottlenecks (paths exceeding available context window)",
+            "Context-heavy functions (functions consuming excessive tokens)"
+          ],
+          "purpose": "Ensure AI agents can complete workflows within their context windows",
+          "output": "Context bottleneck report in functional_architecture_issues.json"
+        },
+        {
+          "action_id": "FA-05-A06",
+          "description": "Categorize issues by severity",
+          "severity_levels": {
+            "CRITICAL": "Gaps, unreachable functions, or context bottlenecks that will prevent system from working - MUST FIX",
+            "WARNING": "Redundancies or inefficiencies that should be addressed - SHOULD FIX",
+            "INFO": "Minor optimization opportunities - OPTIONAL"
+          },
+          "output": "Prioritized issue list in functional_architecture_issues.json"
+        }
+      ],
+      "tools_used": [
+        "system_of_systems_graph_v2.py (with --functional-mode, --detect-gaps, --analyze-context)"
+      ],
+      "outputs": [
+        "specs/functional/graphs/functional_architecture_graph.json",
+        "specs/functional/functional_architecture_issues.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-05",
+          "name": "Technical Analysis Complete",
+          "checks": [
+            "Functional graph generated",
+            "Gap analysis complete",
+            "Redundancy analysis complete",
+            "Efficiency analysis complete",
+            "Context analysis complete (if applicable)",
+            "All issues categorized by severity"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "FA-06"
+    },
+    {
+      "step_id": "FA-06",
+      "name": "Iterative Refinement",
+      "description": "Refine functional architecture to address critical issues from stakeholder feedback AND technical analysis",
+      "phase": "refinement",
+      "step_file": "workflow_steps/functional_analysis/FA-06-IterativeRefinement.json",
+      "mandatory_loop": true,
+      "rationale": "Dual validation (stakeholder + technical) ensures functional architecture is both correct AND complete",
+      "actions": [
+        {
+          "action_id": "FA-06-A01",
+          "description": "Review all issues from stakeholder feedback (FA-04) and technical analysis (FA-05)",
+          "inputs": [
+            "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md (stakeholder issues)",
+            "specs/functional/functional_architecture_issues.json (technical issues)"
+          ]
+        },
+        {
+          "action_id": "FA-06-A02",
+          "description": "Prioritize issues by severity and impact",
+          "priority_order": [
+            "1. CRITICAL technical issues (gaps, unreachable functions, context bottlenecks)",
+            "2. CRITICAL stakeholder issues (missing functions, incorrect flows)",
+            "3. WARNING technical issues (redundancies, inefficiencies)",
+            "4. WARNING stakeholder issues (scope concerns, minor misalignments)",
+            "5. INFO/OPTIONAL (optimizations, enhancements)"
+          ]
+        },
+        {
+          "action_id": "FA-06-A02B",
+          "description": "Automated gap closure proposals (OPTIONAL but RECOMMENDED)",
+          "tool": "reflow_gap_closure.py",
+          "command": "python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type functional",
+          "purpose": "Automatically propose solutions for functional gaps using chain_reflow matrix analysis and architecture linking",
+          "when_to_use": "When CRITICAL gaps are detected in FA-06-A02",
+          "inputs": [
+            "specs/functional/functional_architecture.json",
+            "specs/functional/functional_architecture_issues.json"
+          ],
+          "outputs": [
+            "specs/functional/gap_closure_report.json (proposed functions and connections to close gaps)"
+          ],
+          "gap_closure_strategies": {
+            "unreachable_functions": "Use matrix_gap_detection.py: Given current functions (State A) and required outputs (State C), solve for connector functions (State B) to bridge gaps",
+            "dead_end_functions": "Propose output handlers or downstream functions",
+            "incomplete_flows": "Use matrix analysis to find missing intermediate functions in user scenario paths",
+            "orphaned_functions": "Use link_architectures.py to discover connections to existing functions"
+          },
+          "review_required": "YES - LLM must review proposed functions before accepting. Gap closure tool proposes solutions but does not automatically modify functional_architecture.json",
+          "optional": true,
+          "time_savings": "5-30 minutes per gap (automated proposals vs manual gap analysis)"
+        },
+        {
+          "action_id": "FA-06-A03",
+          "description": "Refine functional architecture to address critical issues (MANUAL or using gap closure proposals from FA-06-A02B)",
+          "refinement_actions": [
+            "Review gap closure proposals from FA-06-A02B (if generated)",
+            "Add missing functions identified by stakeholders, gap analysis, or automated proposals",
+            "Remove redundant functions identified by redundancy analysis",
+            "Refactor inefficient flows identified by efficiency analysis",
+            "Optimize context-heavy functions (if AI workflow)",
+            "Correct flow sequences based on stakeholder feedback",
+            "Add missing decision branches or error handlers"
+          ],
+          "file_updated": "specs/functional/functional_architecture.json",
+          "note": "Can use gap_closure_report.json as input for automated proposals"
+        },
+        {
+          "action_id": "FA-06-A04",
+          "description": "Regenerate visualizations with refinements",
+          "returns_to": "FA-03 actions (generate all diagrams and documentation)",
+          "purpose": "Stakeholders must review refined visualizations"
+        },
+        {
+          "action_id": "FA-06-A05",
+          "description": "Re-run stakeholder validation",
+          "returns_to": "FA-04 actions (stakeholder review of refined visualizations)",
+          "purpose": "Verify refinements address stakeholder concerns"
+        },
+        {
+          "action_id": "FA-06-A06",
+          "description": "Re-run technical analysis",
+          "returns_to": "FA-05 actions (regenerate graph, re-run gap/redundancy/efficiency analysis)",
+          "purpose": "Verify refinements resolve technical issues"
+        },
+        {
+          "action_id": "FA-06-A07",
+          "description": "Check loop termination condition",
+          "condition": "Loop continues if CRITICAL issues remain from EITHER stakeholder validation OR technical analysis",
+          "termination_criteria": [
+            "No CRITICAL stakeholder issues (stakeholder sign-off obtained)",
+            "No CRITICAL technical issues (no gaps, unreachable functions, or context bottlenecks)",
+            "WARNING issues documented and accepted"
+          ],
+          "if_critical_issues_remain": "Return to FA-06-A03 (refine functional architecture)",
+          "if_no_critical_issues": "Proceed to FA-07 (finalization)"
+        }
+      ],
+      "loop_structure": {
+        "entry_point": "FA-06-A01",
+        "loop_back_point": "FA-06-A03 if critical issues found",
+        "exit_condition": "No critical issues from stakeholder OR technical validation",
+        "max_iterations": "No hard limit - iterate until quality achieved"
+      },
+      "outputs": [
+        "Refined specs/functional/functional_architecture.json",
+        "Refined docs/diagrams/functional/*.svg",
+        "Refined docs/FUNCTIONAL_ARCHITECTURE.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-06",
+          "name": "Functional Architecture Validated (Dual Validation)",
+          "checks": [
+            "No CRITICAL stakeholder issues (stakeholder approval obtained)",
+            "No CRITICAL technical issues (gap/redundancy/efficiency analysis passes)",
+            "No missing functions (100% user scenario coverage)",
+            "No unreachable functions",
+            "No context bottlenecks (if AI workflow)",
+            "WARNING issues documented and accepted"
+          ],
+          "blocking": true,
+          "success_message": "Functional architecture validated by BOTH stakeholders AND technical analysis"
+        }
+      ],
+      "next_step": "FA-07"
+    },
+    {
+      "step_id": "FA-07",
+      "name": "Functional Architecture Finalization",
+      "description": "Finalize functional architecture deliverables and prepare for next phase (service allocation or architecture-only deliverables)",
+      "phase": "finalization",
+      "step_file": "workflow_steps/functional_analysis/FA-07-Finalization.json",
+      "actions": [
+        {
+          "action_id": "FA-07-A01",
+          "description": "Create functional architecture package",
+          "package_contents": [
+            "specs/functional/functional_requirements.json (machine-readable requirements)",
+            "specs/functional/functional_architecture.json (machine-readable architecture)",
+            "specs/functional/graphs/functional_architecture_graph.json (graph for analysis)",
+            "specs/functional/functional_architecture_issues.json (analysis results)",
+            "docs/diagrams/functional/*.svg (4 visualization types)",
+            "docs/FUNCTIONAL_ARCHITECTURE.md (human-readable documentation)",
+            "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md (stakeholder sign-off)"
+          ]
+        },
+        {
+          "action_id": "FA-07-A02",
+          "description": "Update working_memory.json with completion status",
+          "updates": {
+            "functional_architecture_complete": true,
+            "functional_architecture_validated": true,
+            "ready_for_service_allocation": true
+          }
+        },
+        {
+          "action_id": "FA-07-A03",
+          "description": "Generate functional architecture summary report",
+          "tool": "generate_functional_summary.py (NEW TOOL)",
+          "outputs": [
+            "docs/reports/FUNCTIONAL_ARCHITECTURE_SUMMARY.md"
+          ],
+          "includes": [
+            "Number of functional requirements",
+            "Number of functional flows",
+            "Number of atomic functions",
+            "Function dependency count",
+            "Validation status (stakeholder + technical)",
+            "Context consumption estimate (if AI workflow)",
+            "Next steps (service allocation or deliverables)"
+          ]
+        },
+        {
+          "action_id": "FA-07-A04",
+          "description": "User decision: Continue to service allocation or stop here?",
+          "decision_point": "MANDATORY USER DECISION",
+          "options": [
+            "OPTION A: Continue to service architecture - run 01b-bottom_up_integration or 01c-top_down_design to allocate functions to services",
+            "OPTION B: Stop here (architecture-only deliverables) - functional architecture is complete and validated"
+          ],
+          "if_option_a": "Proceed to service allocation workflow (01b or 01c) - functional architecture will guide service boundaries",
+          "if_option_b": "Workflow complete - deliver functional architecture package to stakeholders"
+        }
+      ],
+      "tools_used": [
+        "generate_functional_summary.py (NEW TOOL)"
+      ],
+      "outputs": [
+        "Complete functional architecture package (7+ artifacts)",
+        "docs/reports/FUNCTIONAL_ARCHITECTURE_SUMMARY.md",
+        "Updated context/working_memory.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-FA-07",
+          "name": "Functional Architecture Package Complete",
+          "checks": [
+            "All functional architecture artifacts created",
+            "Summary report generated",
+            "working_memory.json updated",
+            "User decision made (continue to service allocation or stop)"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "COMPLETE (or 01b/01c if user chooses to continue to service allocation)"
+    }
+  ],
+  "quality_gates": {
+    "gates": [
+      {
+        "gate_id": "G-FA-01",
+        "name": "Functional Requirements Complete",
+        "blocking": true
+      },
+      {
+        "gate_id": "G-FA-02",
+        "name": "Functional Architecture Defined",
+        "blocking": true
+      },
+      {
+        "gate_id": "G-FA-03",
+        "name": "Visualizations Generated",
+        "blocking": true
+      },
+      {
+        "gate_id": "G-FA-04",
+        "name": "Stakeholder Validation",
+        "blocking": true,
+        "critical": "MANDATORY gate - stakeholder sign-off required"
+      },
+      {
+        "gate_id": "G-FA-05",
+        "name": "Technical Analysis Complete",
+        "blocking": true
+      },
+      {
+        "gate_id": "G-FA-06",
+        "name": "Functional Architecture Validated (Dual Validation)",
+        "blocking": true,
+        "critical": "BOTH stakeholder AND technical validation must pass"
+      },
+      {
+        "gate_id": "G-FA-07",
+        "name": "Functional Architecture Package Complete",
+        "blocking": true
+      }
+    ],
+    "enforcement": "All gates blocking - cannot skip steps"
+  },
+  "next_workflow": {
+    "option_a_service_allocation": {
+      "if_bottom_up": "01b-bottom_up_integration (allocate functions to existing services)",
+      "if_top_down": "01c-top_down_design (create new services to implement functions)"
+    },
+    "option_b_architecture_only": "COMPLETE - deliver functional architecture package",
+    "routing_note": "User decides in FA-07-A04 whether to continue to service allocation or stop here"
+  },
+  "completion_criteria": {
+    "required": [
+      "Functional requirements extracted and validated (FA-01)",
+      "Functional flows defined and functions decomposed (FA-02)",
+      "Visualizations generated using standard notation (FA-03)",
+      "Stakeholder validation obtained (FA-04)",
+      "Technical analysis complete with no critical issues (FA-05)",
+      "Iterative refinement complete (FA-06)",
+      "Functional architecture package finalized (FA-07)"
+    ],
+    "deliverables": [
+      "specs/functional/functional_requirements.json",
+      "specs/functional/functional_architecture.json",
+      "specs/functional/graphs/functional_architecture_graph.json",
+      "specs/functional/functional_architecture_issues.json",
+      "docs/diagrams/functional/*.svg (4 types)",
+      "docs/FUNCTIONAL_ARCHITECTURE.md",
+      "docs/reviews/STAKEHOLDER_FUNCTIONAL_REVIEW_{date}.md",
+      "docs/reports/FUNCTIONAL_ARCHITECTURE_SUMMARY.md"
+    ]
+  },
+  "success_criteria": {
+    "functional_completeness": "100% user scenario coverage by functional flows and functions",
+    "stakeholder_alignment": "Stakeholder sign-off obtained - functional architecture matches expectations",
+    "technical_correctness": "No critical gaps, redundancies, or inefficiencies - architecture is sound",
+    "context_feasibility": "No context bottlenecks (for AI workflows) - workflows completable by AI agents",
+    "deliverables_complete": "All 8 functional architecture artifacts created and validated"
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "This workflow focuses on FUNCTIONAL ARCHITECTURE (what functions, how they interact) - NOT service allocation",
+      "Stakeholder validation (FA-04) is MANDATORY - must obtain sign-off on visualizations before technical analysis",
+      "Dual validation required: BOTH stakeholder (FA-04) AND technical (FA-05) must pass",
+      "Iterative refinement (FA-06) is a LOOP - continue until no critical issues from EITHER source",
+      "User decides at FA-07 whether to continue to service allocation (01b/01c) or stop here",
+      "Use existing tools: system_of_systems_graph_v2.py with --functional-mode flag",
+      "Visualizations use standard notation: BPMN for processes, UML for data flows"
+    ],
+    "key_distinction": "Functional architecture = WHAT + HOW functions interact. Service architecture = WHICH service implements WHICH function. This workflow handles the former, 01b/01c handle the latter.",
+    "when_to_use_this_workflow": [
+      "User wants to focus on functional decomposition before committing to service boundaries",
+      "User wants architecture-only deliverables without implementation",
+      "User wants to validate functional design with stakeholders before technical allocation",
+      "User wants to analyze functional completeness and efficiency before building"
+    ]
+  }
+}
