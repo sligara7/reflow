@@ -328,8 +328,47 @@
           "blocking": true
         }
       ],
+      "next_step": "SE-01",
+      "transition_note": "Bottom-up workflow transitions to functional allocation (SE-01) before proceeding to service architecture refinement (SE-02)"
+    },
+    {
+      "step_id": "SE-01",
+      "name": "Functional Allocation (BOTTOM-UP)",
+      "description": "Map functions to existing services/components - conditional on functional architecture from 01d",
+      "phase": "functional_allocation",
+      "step_file": "workflow_steps/systems_engineering/SE-01-FunctionalAllocation.json",
+      "conditional": true,
+      "actions": [
+        {
+          "action_id": "SE-01-A00",
+          "description": "Functional Allocation (CONDITIONAL - if functional architecture exists from 01d)",
+          "condition": "Only if specs/functional/functional_architecture.json exists",
+          "purpose": "Map functions to existing services/components identified in BU-01 through BU-06 - bridges functional architecture (WHAT functions) to existing service architecture (WHICH existing service implements WHICH function)",
+          "inputs": [
+            "specs/functional/functional_requirements.json (from 01d-FA-01)",
+            "specs/functional/functional_architecture.json (from 01d-FA-02)",
+            "specs/machine/component_inventory.json (from BU-01)"
+          ],
+          "process": [
+            "Read functional requirements and functional architecture from 01d",
+            "Read existing component inventory from BU-01",
+            "For each function in functional_architecture.json:",
+            "  - Find best-fit existing component based on capability match",
+            "  - If no match found, mark function as 'gap' requiring new component",
+            "Create functional allocation matrix mapping each function to existing component or 'NEW'",
+            "Validate that high-cohesion functions are allocated to same component"
+          ],
+          "outputs": [
+            "specs/functional/functional_allocation_matrix.json"
+          ],
+          "validation": "Ensure 100% functional coverage - all functions allocated to existing components or identified as gaps",
+          "template": "functional_allocation_matrix_template.json",
+          "if_functional_architecture_missing": "Skip this step entirely and proceed to SE-02 (service architecture refinement)"
+        }
+      ],
+      "gates": [],
       "next_step": "SE-02",
-      "transition_note": "Bottom-up workflow merges with top-down workflow at SE-02. Architecture files created, can proceed to further refinement or development."
+      "skip_if_condition_false": "If functional architecture not present, skip SE-01 entirely and go directly to SE-02"
     },
     {
       "step_id": "SE-02",
