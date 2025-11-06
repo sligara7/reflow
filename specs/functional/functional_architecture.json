@@ -33,9 +33,10 @@
       "description": "Manages AI agent context window to prevent exhaustion",
       "implements_requirements": ["FR-002", "FR-012"],
       "entry_point": "F-010",
-      "exit_points": ["F-014"],
-      "typical_path": ["F-010", "F-011", "F-012", "F-013", "F-014"],
-      "estimated_context_consumption": "5000-10000 tokens per context refresh cycle"
+      "exit_points": ["F-014A"],
+      "typical_path": ["F-010", "F-011", "F-012", "F-013", "F-014", "F-014A"],
+      "estimated_context_consumption": "5000-10000 tokens per context refresh cycle",
+      "note": "Updated v3.13.0: Added F-014A to enable context-aware workflow routing"
     },
     {
       "flow_id": "FLOW-003",
@@ -246,6 +247,26 @@
       "error_handling": "Conservative (prefer WARNING over HEALTHY if uncertain)"
     },
     {
+      "function_id": "F-014A",
+      "function_name": "Route Based on Context Health",
+      "function_type": "decide",
+      "description": "Route workflow execution based on context health status - enables context-aware workflow execution by acting on context monitoring results",
+      "inputs": ["context_health_status"],
+      "outputs": ["routing_decision"],
+      "routing_logic": {
+        "CRITICAL": "trigger_refresh → F-010 (Context refresh needed before continuing)",
+        "WARNING": "log_warning → F-001 (Proceed cautiously with warning)",
+        "HEALTHY": "continue → F-001 (Proceed with workflow execution)"
+      },
+      "context_consumption": 200,
+      "execution_time_seconds": 0.5,
+      "implements_requirements": ["FR-012"],
+      "error_handling": "Default to refresh if uncertain",
+      "rationale": "Closes gap identified in meta-analysis - context_health_status was calculated (F-014) but never used. This function enables feedback loop: monitor → detect → DECIDE → ACT.",
+      "added_version": "v3.13.0",
+      "gap_closure_proposal": "Matrix analysis (B = C × A⁻¹) identified missing connector between F-014 and workflow execution"
+    },
+    {
       "function_id": "F-020",
       "function_name": "Load Framework Configuration",
       "function_type": "read",
@@ -328,7 +349,15 @@
       "execution_time_seconds": 10,
       "implements_requirements": ["FR-006"],
       "error_handling": "Skip invalid files, report warnings",
-      "note": "HIGH context consumption - loads multiple large files"
+      "note": "HIGH context consumption - loads multiple large files",
+      "optimization_recommended": {
+        "priority": "MEDIUM",
+        "strategy": "Lazy loading - load architecture files on-demand instead of all at once",
+        "expected_reduction": "15000 → 3000-5000 tokens (per-file loading)",
+        "implementation": "Refactor system_of_systems_graph_v2.py to stream files or load incrementally",
+        "benefit": "Reduces memory footprint and enables analysis of larger systems",
+        "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+      }
     },
     {
       "function_id": "F-031",
@@ -521,7 +550,15 @@
       "execution_time_seconds": 30,
       "implements_requirements": ["FR-010"],
       "error_handling": "Use standard notation (BPMN 2.0, UML 2.5)",
-      "note": "HIGH context consumption - generates multiple large diagrams"
+      "note": "HIGH context consumption - generates multiple large diagrams",
+      "optimization_recommended": {
+        "priority": "MEDIUM",
+        "strategy": "Incremental generation - generate diagrams one at a time instead of all together",
+        "expected_reduction": "12000 → 3000-4000 tokens per diagram (4 diagram types)",
+        "implementation": "Refactor generate_mermaid_*.py tools to support single-diagram mode, generate on-demand",
+        "benefit": "Enables visualization generation for complex systems without context overflow",
+        "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+      }
     },
     {
       "function_id": "F-054",
@@ -631,7 +668,15 @@
       "context_consumption": 10000,
       "execution_time_seconds": 8,
       "implements_requirements": ["FR-007"],
-      "error_handling": "Skip invalid files, warn user"
+      "error_handling": "Skip invalid files, warn user",
+      "optimization_recommended": {
+        "priority": "MEDIUM",
+        "strategy": "Selective loading - only load architectures needed for specific documentation outputs",
+        "expected_reduction": "10000 → 2000-3000 tokens (per-architecture loading)",
+        "implementation": "Refactor generate_human_documentation.py to load files selectively based on documentation scope",
+        "benefit": "Enables documentation generation for large systems with many services",
+        "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+      }
     },
     {
       "function_id": "F-071",
@@ -782,6 +827,9 @@
     {"source": "F-011", "target": "F-014", "type": "control_flow", "weight": 100, "condition": "no_refresh_needed", "probability": 0.8},
     {"source": "F-012", "target": "F-013", "type": "function_call", "weight": 5000, "condition": "refresh_complete"},
     {"source": "F-013", "target": "F-014", "type": "function_call", "weight": 200, "condition": "counter_reset"},
+    {"source": "F-014", "target": "F-014A", "type": "function_call", "weight": 200, "condition": "always", "note": "ADDED v3.13.0: Context health status flows to routing decision"},
+    {"source": "F-014A", "target": "F-001", "type": "control_flow", "weight": 5000, "condition": "context_health=HEALTHY|WARNING", "probability": 0.85, "note": "ADDED v3.13.0: Continue workflow execution when context healthy"},
+    {"source": "F-014A", "target": "F-010", "type": "control_flow", "weight": 5000, "condition": "context_health=CRITICAL", "probability": 0.15, "note": "ADDED v3.13.0: Trigger refresh when context critical (closes feedback loop)"},
     {"source": "F-020", "target": "F-021", "type": "function_call", "weight": 1500, "condition": "framework_loaded"},
     {"source": "F-021", "target": "F-022", "type": "function_call", "weight": 2000, "condition": "template_loaded"},
     {"source": "F-022", "target": "F-023", "type": "function_call", "weight": 3000, "condition": "data_populated"},
@@ -824,6 +872,42 @@
     {"source": "F-083", "target": "F-084", "type": "function_call", "weight": 2000, "condition": "bottlenecks_detected"},
     {"source": "F-084", "target": "F-085", "type": "function_call", "weight": 3000, "condition": "recommendations_generated"}
   ],
+  "intentional_cycles": {
+    "note": "Cycles detected in functional architecture - verified as intentional iterative refinement loops",
+    "cycles": [
+      {
+        "cycle_id": "CYCLE-001",
+        "cycle_path": ["F-010", "F-007", "F-001", "F-002", "F-003", "F-004", "F-005", "F-006"],
+        "cycle_type": "Context Management Loop",
+        "intentional": true,
+        "rationale": "Context tracking (F-010) feeds back into workflow execution (F-001). This enables continuous context monitoring throughout workflow execution. Each workflow step triggers F-010 → F-011 to check if refresh needed.",
+        "termination_condition": "Workflow completion (F-007 exits when no more steps) or context refresh (F-011 → F-012 breaks to refresh)",
+        "benefit": "Enables proactive context management - AI agents don't exhaust context unexpectedly",
+        "added_v3.13.0": "Cycle verified and documented during meta-analysis",
+        "warning": "Without F-014A (added v3.13.0), this cycle could cause context exhaustion because context health was calculated but not acted upon. F-014A closes the feedback loop."
+      },
+      {
+        "cycle_id": "CYCLE-002",
+        "cycle_path": ["F-054", "F-057", "F-053", "F-054"],
+        "cycle_type": "Stakeholder Validation Loop",
+        "intentional": true,
+        "rationale": "Stakeholder review (F-054) may require refinement (F-057), which regenerates visualizations (F-053), requiring another review (F-054). This is the dual validation loop (stakeholder + technical).",
+        "termination_condition": "Stakeholder approval (F-054 exits to F-058 when approved)",
+        "benefit": "Ensures stakeholder buy-in before proceeding to technical analysis",
+        "iterations_expected": "1-3 iterations typical, max 5 iterations recommended"
+      },
+      {
+        "cycle_id": "CYCLE-003",
+        "cycle_path": ["F-004", "F-020", "F-021", "F-022", "F-023", "F-024", "F-025", "F-004"],
+        "cycle_type": "Multi-Service Architecture Generation",
+        "intentional": true,
+        "rationale": "F-004 orchestrates workflow actions. When multiple services need architectures, F-004 calls Architecture Generation Flow (F-020-F-025) multiple times, once per service.",
+        "termination_condition": "All services processed (F-004 advances to F-005 when all architecture actions complete)",
+        "benefit": "Enables batch processing of multiple services within single workflow step"
+      }
+    ],
+    "analysis_note": "14 cycles detected in total during meta-analysis. Most are intentional iterative refinement loops. Review any new cycles to confirm intentionality and document termination conditions."
+  },
   "context_analysis": {
     "total_functions_defined": 66,
     "total_flows_defined": 8,

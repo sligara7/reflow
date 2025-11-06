@@ -5,8 +5,8 @@
     "analyzer_version": "1.0.0"
   },
   "graph_summary": {
-    "total_functions": 54,
-    "total_dependencies": 68
+    "total_functions": 55,
+    "total_dependencies": 71
   },
   "context_analysis": {
     "bottleneck_paths": [],
@@ -219,12 +219,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 44300,
-        "length": 11,
+        "context_consumption": 44700,
+        "length": 12,
         "source": "F-001",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -236,12 +237,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 33900,
-        "length": 9,
+        "context_consumption": 34300,
+        "length": 10,
         "source": "F-001",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -456,23 +458,25 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 11300,
-        "length": 5,
+        "context_consumption": 11700,
+        "length": 6,
         "source": "F-010",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 900,
-        "length": 3,
+        "context_consumption": 1300,
+        "length": 4,
         "source": "F-010",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -497,6 +501,52 @@
       {
         "path": [
           "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-020",
+          "F-021",
+          "F-022",
+          "F-023",
+          "F-024",
+          "F-025"
+        ],
+        "context_consumption": 60700,
+        "length": 16,
+        "source": "F-010",
+        "sink": "F-025"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-020",
+          "F-021",
+          "F-022",
+          "F-023",
+          "F-024",
+          "F-025"
+        ],
+        "context_consumption": 50300,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-025"
+      },
+      {
+        "path": [
+          "F-010",
           "F-007",
           "F-001",
           "F-002",
@@ -512,6 +562,29 @@
         ],
         "context_consumption": 110400,
         "length": 13,
+        "source": "F-010",
+        "sink": "F-036"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-030",
+          "F-031",
+          "F-032",
+          "F-033",
+          "F-034",
+          "F-035",
+          "F-036"
+        ],
+        "context_consumption": 114300,
+        "length": 15,
         "source": "F-010",
         "sink": "F-036"
       },
@@ -566,6 +639,132 @@
         ],
         "context_consumption": 43900,
         "length": 10,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-041",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 56200,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-042",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 57200,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-043",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 58200,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-041",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 45800,
+        "length": 12,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-042",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 46800,
+        "length": 12,
+        "source": "F-010",
+        "sink": "F-045"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-040",
+          "F-043",
+          "F-044",
+          "F-045"
+        ],
+        "context_consumption": 47800,
+        "length": 12,
         "source": "F-010",
         "sink": "F-045"
       },
@@ -640,6 +839,52 @@
       {
         "path": [
           "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-005",
+          "F-057",
+          "F-058",
+          "F-059",
+          "F-060",
+          "F-061"
+        ],
+        "context_consumption": 73700,
+        "length": 16,
+        "source": "F-010",
+        "sink": "F-061"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-005",
+          "F-057",
+          "F-058",
+          "F-059",
+          "F-060",
+          "F-061"
+        ],
+        "context_consumption": 63300,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-061"
+      },
+      {
+        "path": [
+          "F-010",
           "F-007",
           "F-001",
           "F-002",
@@ -676,6 +921,90 @@
       {
         "path": [
           "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-070",
+          "F-071",
+          "F-073",
+          "F-074"
+        ],
+        "context_consumption": 92700,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-074"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-070",
+          "F-072",
+          "F-073",
+          "F-074"
+        ],
+        "context_consumption": 86700,
+        "length": 14,
+        "source": "F-010",
+        "sink": "F-074"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-070",
+          "F-071",
+          "F-073",
+          "F-074"
+        ],
+        "context_consumption": 82300,
+        "length": 12,
+        "source": "F-010",
+        "sink": "F-074"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-070",
+          "F-072",
+          "F-073",
+          "F-074"
+        ],
+        "context_consumption": 76300,
+        "length": 12,
+        "source": "F-010",
+        "sink": "F-074"
+      },
+      {
+        "path": [
+          "F-010",
           "F-007",
           "F-001",
           "F-002",
@@ -690,6 +1019,52 @@
         ],
         "context_consumption": 64400,
         "length": 12,
+        "source": "F-010",
+        "sink": "F-085"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-080",
+          "F-081",
+          "F-082",
+          "F-083",
+          "F-084",
+          "F-085"
+        ],
+        "context_consumption": 78700,
+        "length": 16,
+        "source": "F-010",
+        "sink": "F-085"
+      },
+      {
+        "path": [
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-080",
+          "F-081",
+          "F-082",
+          "F-083",
+          "F-084",
+          "F-085"
+        ],
+        "context_consumption": 68300,
+        "length": 14,
         "source": "F-010",
         "sink": "F-085"
       },
@@ -736,12 +1111,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 30800,
-        "length": 9,
+        "context_consumption": 31200,
+        "length": 10,
         "source": "F-020",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -751,12 +1127,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 20400,
-        "length": 7,
+        "context_consumption": 20800,
+        "length": 8,
         "source": "F-020",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -773,12 +1150,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 47300,
-        "length": 14,
+        "context_consumption": 47700,
+        "length": 15,
         "source": "F-020",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -793,12 +1171,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 36900,
-        "length": 12,
+        "context_consumption": 37300,
+        "length": 13,
         "source": "F-020",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1168,12 +1547,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 112300,
-        "length": 15,
+        "context_consumption": 112700,
+        "length": 16,
         "source": "F-030",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1189,12 +1569,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 101900,
-        "length": 13,
+        "context_consumption": 102300,
+        "length": 14,
         "source": "F-030",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1421,12 +1802,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 42300,
-        "length": 12,
+        "context_consumption": 42700,
+        "length": 13,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1439,12 +1821,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 31900,
-        "length": 10,
+        "context_consumption": 32300,
+        "length": 11,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1459,12 +1842,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 43300,
-        "length": 12,
+        "context_consumption": 43700,
+        "length": 13,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1477,12 +1861,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 32900,
-        "length": 10,
+        "context_consumption": 33300,
+        "length": 11,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1497,12 +1882,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 44300,
-        "length": 12,
+        "context_consumption": 44700,
+        "length": 13,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -1515,12 +1901,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 33900,
-        "length": 10,
+        "context_consumption": 34300,
+        "length": 11,
         "source": "F-040",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2088,54 +2475,6 @@
           "F-060",
           "F-061",
           "F-004",
-          "F-005",
-          "F-006",
-          "F-010",
-          "F-011",
-          "F-014"
-        ],
-        "context_consumption": 111900,
-        "length": 16,
-        "source": "F-050",
-        "sink": "F-014"
-      },
-      {
-        "path": [
-          "F-050",
-          "F-051",
-          "F-052",
-          "F-055",
-          "F-056",
-          "F-057",
-          "F-058",
-          "F-059",
-          "F-060",
-          "F-061",
-          "F-004",
-          "F-005",
-          "F-006",
-          "F-010",
-          "F-011",
-          "F-014"
-        ],
-        "context_consumption": 99900,
-        "length": 16,
-        "source": "F-050",
-        "sink": "F-014"
-      },
-      {
-        "path": [
-          "F-050",
-          "F-051",
-          "F-052",
-          "F-053",
-          "F-054",
-          "F-057",
-          "F-058",
-          "F-059",
-          "F-060",
-          "F-061",
-          "F-004",
           "F-040",
           "F-041",
           "F-044",
@@ -2367,12 +2706,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 80300,
-        "length": 12,
+        "context_consumption": 80700,
+        "length": 13,
         "source": "F-070",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2385,12 +2725,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 69900,
-        "length": 10,
+        "context_consumption": 70300,
+        "length": 11,
         "source": "F-070",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2405,12 +2746,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 74300,
-        "length": 12,
+        "context_consumption": 74700,
+        "length": 13,
         "source": "F-070",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2423,12 +2765,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 63900,
-        "length": 10,
+        "context_consumption": 64300,
+        "length": 11,
         "source": "F-070",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2747,12 +3090,13 @@
           "F-011",
           "F-012",
           "F-013",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 66300,
-        "length": 14,
+        "context_consumption": 66700,
+        "length": 15,
         "source": "F-080",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2767,12 +3111,13 @@
           "F-006",
           "F-010",
           "F-011",
-          "F-014"
+          "F-014",
+          "F-014A"
         ],
-        "context_consumption": 55900,
-        "length": 12,
+        "context_consumption": 56300,
+        "length": 13,
         "source": "F-080",
-        "sink": "F-014"
+        "sink": "F-014A"
       },
       {
         "path": [
@@ -2991,12 +3336,12 @@
       ]
     ],
     "summary": {
-      "total_paths_analyzed": 155,
+      "total_paths_analyzed": 170,
       "bottleneck_paths": 0,
       "warning_paths": 8,
-      "safe_paths": 147,
+      "safe_paths": 162,
       "max_context_path": 154000,
-      "avg_context_path": 75474.83870967742,
+      "avg_context_path": 74440.58823529411,
       "context_threshold": 160000,
       "bottleneck_percentage": 0.0
     }
@@ -3004,28 +3349,229 @@
   "gap_analysis": {
     "orphaned_functions": [],
     "unreachable_functions": [],
-    "dead_end_functions": [
-      {
-        "function_id": "F-014",
-        "function_name": "Update Context Health Status"
-      }
-    ],
+    "dead_end_functions": [],
     "missing_error_handlers": []
   },
   "efficiency_analysis": {
     "cycles": [
       {
         "cycle": [
-          "F-010",
-          "F-007",
+          "F-051",
+          "F-052",
+          "F-053",
+          "F-054",
+          "F-057",
+          "F-058",
+          "F-059",
+          "F-060",
+          "F-061",
+          "F-004",
+          "F-050"
+        ],
+        "length": 11,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-051",
+          "F-052",
+          "F-055",
+          "F-056",
+          "F-057",
+          "F-058",
+          "F-059",
+          "F-060",
+          "F-061",
+          "F-004",
+          "F-050"
+        ],
+        "length": 11,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-073",
+          "F-074",
+          "F-004",
+          "F-070",
+          "F-071"
+        ],
+        "length": 5,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-073",
+          "F-074",
+          "F-004",
+          "F-070",
+          "F-072"
+        ],
+        "length": 5,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-041",
+          "F-044",
+          "F-045",
+          "F-004",
+          "F-040"
+        ],
+        "length": 5,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-035",
+          "F-036",
+          "F-004",
+          "F-030",
+          "F-031",
+          "F-032",
+          "F-033",
+          "F-034"
+        ],
+        "length": 8,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-083",
+          "F-084",
+          "F-085",
+          "F-004",
+          "F-080",
+          "F-081",
+          "F-082"
+        ],
+        "length": 7,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-059",
+          "F-060",
+          "F-061",
+          "F-004",
+          "F-005",
+          "F-057",
+          "F-058"
+        ],
+        "length": 7,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
           "F-001",
           "F-002",
           "F-003",
           "F-004",
           "F-005",
-          "F-006"
+          "F-006",
+          "F-010",
+          "F-007"
         ],
         "length": 8,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-005",
+          "F-006",
+          "F-010",
+          "F-011",
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A"
+        ],
+        "length": 12,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-001",
+          "F-002",
+          "F-003",
+          "F-004",
+          "F-005",
+          "F-006",
+          "F-010",
+          "F-011",
+          "F-014",
+          "F-014A"
+        ],
+        "length": 10,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-020",
+          "F-004"
+        ],
+        "length": 2,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-020",
+          "F-021",
+          "F-022",
+          "F-023",
+          "F-024",
+          "F-025",
+          "F-004"
+        ],
+        "length": 7,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-043",
+          "F-044",
+          "F-045",
+          "F-004",
+          "F-040"
+        ],
+        "length": 5,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-042",
+          "F-044",
+          "F-045",
+          "F-004",
+          "F-040"
+        ],
+        "length": 5,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-012",
+          "F-013",
+          "F-014",
+          "F-014A",
+          "F-010",
+          "F-011"
+        ],
+        "length": 6,
+        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
+      },
+      {
+        "cycle": [
+          "F-011",
+          "F-014",
+          "F-014A",
+          "F-010"
+        ],
+        "length": 4,
         "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
       },
       {
@@ -3035,156 +3581,6 @@
           "F-053"
         ],
         "length": 3,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-054",
-          "F-057",
-          "F-058",
-          "F-059",
-          "F-060",
-          "F-061",
-          "F-004",
-          "F-050",
-          "F-051",
-          "F-052",
-          "F-053"
-        ],
-        "length": 11,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-020"
-        ],
-        "length": 2,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-020",
-          "F-021",
-          "F-022",
-          "F-023",
-          "F-024",
-          "F-025"
-        ],
-        "length": 7,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-030",
-          "F-031",
-          "F-032",
-          "F-033",
-          "F-034",
-          "F-035",
-          "F-036"
-        ],
-        "length": 8,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-040",
-          "F-041",
-          "F-044",
-          "F-045"
-        ],
-        "length": 5,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-040",
-          "F-042",
-          "F-044",
-          "F-045"
-        ],
-        "length": 5,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-040",
-          "F-043",
-          "F-044",
-          "F-045"
-        ],
-        "length": 5,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-050",
-          "F-051",
-          "F-052",
-          "F-055",
-          "F-056",
-          "F-057",
-          "F-058",
-          "F-059",
-          "F-060",
-          "F-061"
-        ],
-        "length": 11,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-070",
-          "F-071",
-          "F-073",
-          "F-074"
-        ],
-        "length": 5,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-070",
-          "F-072",
-          "F-073",
-          "F-074"
-        ],
-        "length": 5,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-080",
-          "F-081",
-          "F-082",
-          "F-083",
-          "F-084",
-          "F-085"
-        ],
-        "length": 7,
-        "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
-      },
-      {
-        "cycle": [
-          "F-004",
-          "F-005",
-          "F-057",
-          "F-058",
-          "F-059",
-          "F-060",
-          "F-061"
-        ],
-        "length": 7,
         "note": "Cycles may indicate iterative refinement (expected) or circular dependency (problematic)"
       }
     ],
@@ -3209,7 +3605,7 @@
   "recommendations": [
     "WARNING: 8 paths approaching context limits. Monitor these flows and optimize high-context functions.",
     "Highest context consumer: F-030 (15000 tokens). Consider refactoring to reduce context consumption.",
-    "Found 14 cycles. Review to determine if these are intentional iterative refinement loops or problematic circular dependencies.",
+    "Found 18 cycles. Review to determine if these are intentional iterative refinement loops or problematic circular dependencies.",
     "Function F-004 has high fan-out (7). Consider decomposing into smaller functions."
   ]
 }
