@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-System-of-Systems Graph Generator v2.0 - Framework-Agnostic Edition
+System-of-Systems Graph Generator v3.0 - Framework-Agnostic Edition with Functional Mode
 
 Creates machine-readable JSON representation of system architecture using NetworkX.
 Supports multiple architectural frameworks (UAF, Systems Biology, Social Networks, etc.)
@@ -11,10 +11,13 @@ Key Features:
 - Knowledge gap detection (missing nodes, edges, mediators)
 - Comprehensive NetworkX analysis (centrality, paths, connectivity, clustering)
 - Backward compatible with UAF-based systems
+- **NEW v3.0**: Functional mode for analyzing functional architectures
 
 This tool builds a directed graph where:
-- Nodes represent components (services, agents, genes, species, etc.)
-- Edges represent connections (interfaces, relationships, interactions, etc.)
+- SERVICE MODE (default): Nodes represent components (services, agents, genes, species, etc.)
+  Edges represent connections (interfaces, relationships, interactions, etc.)
+- FUNCTIONAL MODE: Nodes represent functions (capabilities, operations)
+  Edges represent dependencies (function calls, data flows, control flows)
 - Output is NetworkX node_link_data format + analysis results
 """
 
@@ -322,6 +325,213 @@ def match_dependency_to_component(dependency_name: str, components: Dict[str, Di
             return comp_id
 
     return None
+
+
+# =============================================================================
+# FUNCTIONAL MODE - Build graph from functional architecture
+# =============================================================================
+
+def build_functional_graph(functional_arch_path: Path) -> nx.DiGraph:
+    """Build a directed graph from functional architecture (v3.0 NEW).
+
+    Reads specs/functional/functional_architecture.json and creates graph where:
+    - Nodes: Functions (F-001, F-002, etc.) with attributes
+    - Edges: Dependencies (function_call, data_flow, control_flow, error_flow)
+
+    Args:
+        functional_arch_path: Path to functional_architecture.json
+
+    Returns:
+        NetworkX DiGraph with function nodes and dependency edges
+    """
+    print(f"Loading functional architecture from {functional_arch_path}...")
+
+    try:
+        functional_arch = safe_load_json(functional_arch_path, file_type_description="functional architecture")
+    except Exception as e:
+        print(f"ERROR: Failed to load functional architecture: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    G = nx.DiGraph()
+
+    # Get functions list
+    functions = functional_arch.get('functions', [])
+    print(f"Found {len(functions)} functions")
+
+    # Add nodes (functions)
+    for func in functions:
+        func_id = func.get('function_id')
+        if not func_id:
+            print(f"WARNING: Function missing function_id, skipping")
+            continue
+
+        # Add node with attributes
+        G.add_node(
+            func_id,
+            name=func.get('function_name', func_id),
+            type=func.get('function_type', 'unknown'),
+            description=func.get('description', ''),
+            inputs=func.get('inputs', []),
+            outputs=func.get('outputs', []),
+            context_consumption=func.get('context_consumption', 0),
+            execution_time=func.get('execution_time', 0),
+            requirements_satisfied=func.get('requirements_satisfied', []),
+            error_handling=func.get('error_handling', {}),
+            raw=func  # Store full function data
+        )
+
+    print(f"Added {G.number_of_nodes()} function nodes")
+
+    # Add edges (dependencies)
+    dependencies = functional_arch.get('dependencies', [])
+    print(f"Processing {len(dependencies)} dependencies...")
+
+    edges_added = 0
+    for dep in dependencies:
+        source = dep.get('source_function')
+        target = dep.get('target_function')
+
+        if not source or not target:
+            print(f"WARNING: Dependency missing source or target, skipping")
+            continue
+
+        if source not in G.nodes():
+            print(f"WARNING: Source function {source} not found in functions list")
+            continue
+
+        if target not in G.nodes():
+            print(f"WARNING: Target function {target} not found in functions list")
+            continue
+
+        # Add edge with attributes
+        edge_attrs = {
+            'type': dep.get('dependency_type', 'unknown'),
+            'description': dep.get('description', ''),
+            'weight': dep.get('weight', 1),  # Default weight 1 if not specified
+            'probability': dep.get('probability', 1.0),
+            'condition': dep.get('condition', ''),
+            'raw': dep  # Store full dependency data
+        }
+
+        # Try to convert weight to numeric if it's a string with tokens
+        weight_str = str(edge_attrs['weight'])
+        if 'token' in weight_str.lower():
+            try:
+                # Extract numeric part (e.g., "5000 tokens" -> 5000)
+                edge_attrs['weight'] = int(''.join(filter(str.isdigit, weight_str)))
+            except:
+                edge_attrs['weight'] = 1
+
+        G.add_edge(source, target, **edge_attrs)
+        edges_added += 1
+
+    print(f"Added {edges_added} dependency edges")
+    print(f"Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+
+    return G
+
+
+def detect_functional_gaps(G: nx.DiGraph, functional_arch: Dict) -> Dict[str, List[Dict]]:
+    """Detect gaps in functional architecture (v3.0 NEW).
+
+    Detects:
+    1. Orphaned functions: Functions with no incoming or outgoing edges
+    2. Unreachable functions: Functions not reachable from entry points
+    3. Dead-end functions: Functions with no outgoing edges (terminal functions)
+    4. Missing error handlers: Functions without error handling paths
+
+    Args:
+        G: NetworkX DiGraph of functional architecture
+        functional_arch: Functional architecture dictionary
+
+    Returns:
+        Dictionary of gap types with lists of detected issues
+    """
+    gaps = {
+        'orphaned_functions': [],
+        'unreachable_functions': [],
+        'dead_end_functions': [],
+        'missing_error_handlers': []
+    }
+
+    # 1. Orphaned functions (isolated nodes)
+    for node in G.nodes():
+        if G.degree(node) == 0:  # No incoming or outgoing edges
+            gaps['orphaned_functions'].append({
+                'function_id': node,
+                'function_name': G.nodes[node].get('name'),
+                'issue': 'Function has no connections - not part of any flow',
+                'severity': 'CRITICAL'
+            })
+
+    # 2. Find entry points (functions in flows)
+    entry_points = set()
+    flows = functional_arch.get('functional_flows', [])
+    for flow in flows:
+        entry_funcs = flow.get('entry_functions', [])
+        if isinstance(entry_funcs, list):
+            entry_points.update(entry_funcs)
+        else:
+            entry_points.add(entry_funcs)
+
+    # If no flows defined, use functions with no predecessors as entry points
+    if not entry_points:
+        entry_points = {node for node in G.nodes() if G.in_degree(node) == 0}
+
+    # Find reachable nodes from entry points
+    reachable = set()
+    for entry in entry_points:
+        if entry in G.nodes():
+            reachable.update(nx.descendants(G, entry))
+            reachable.add(entry)
+
+    # Unreachable functions
+    for node in G.nodes():
+        if node not in reachable and node not in entry_points:
+            gaps['unreachable_functions'].append({
+                'function_id': node,
+                'function_name': G.nodes[node].get('name'),
+                'issue': 'Function not reachable from any entry point',
+                'severity': 'CRITICAL'
+            })
+
+    # 3. Dead-end functions (no successors, excluding error handlers)
+    for node in G.nodes():
+        if G.out_degree(node) == 0 and G.in_degree(node) > 0:
+            # Check if it's an error handler (might be expected to be terminal)
+            func_type = G.nodes[node].get('type', '')
+            if 'error' not in func_type.lower() and 'handler' not in func_type.lower():
+                gaps['dead_end_functions'].append({
+                    'function_id': node,
+                    'function_name': G.nodes[node].get('name'),
+                    'issue': 'Function has no outgoing edges - dead end',
+                    'severity': 'WARNING'
+                })
+
+    # 4. Missing error handlers
+    for node in G.nodes():
+        error_handling = G.nodes[node].get('error_handling', {})
+        # Handle case where error_handling might be a string or dict
+        if isinstance(error_handling, dict):
+            has_error_handler = bool(error_handling.get('error_handler_function'))
+        else:
+            has_error_handler = bool(error_handling)
+
+        # Check if there are error_flow edges from this node
+        has_error_flow = any(
+            G.edges[node, succ].get('type') == 'error_flow'
+            for succ in G.successors(node)
+        )
+
+        if not has_error_handler and not has_error_flow:
+            gaps['missing_error_handlers'].append({
+                'function_id': node,
+                'function_name': G.nodes[node].get('name'),
+                'issue': 'Function has no error handling defined',
+                'severity': 'WARNING'
+            })
+
+    return gaps
 
 
 # =============================================================================
@@ -1447,16 +1657,63 @@ def generate_output(G: nx.DiGraph, output_path: str, framework_config: Dict,
         print(f"Architectural issues detected: {total_issues}")
 
 
+def generate_functional_output(G: nx.DiGraph, output_path: str, functional_arch: Dict,
+                               functional_gaps: Optional[Dict] = None,
+                               analysis_results: Optional[Dict] = None):
+    """Generate functional architecture graph JSON output (v3.0 NEW)."""
+
+    # Convert graph to node-link format
+    graph_data = nx.node_link_data(G)
+
+    # Build output structure
+    output = {
+        'metadata': {
+            'generated': datetime.now().isoformat(),
+            'mode': 'functional',
+            'system_name': functional_arch.get('document_metadata', {}).get('system_name', 'Unknown'),
+            'num_functions': G.number_of_nodes(),
+            'num_dependencies': G.number_of_edges(),
+            'tool_version': '3.0',
+            'source_file': functional_arch.get('document_metadata', {}).get('source_file', 'functional_architecture.json')
+        },
+        'graph': graph_data
+    }
+
+    if functional_gaps:
+        output['functional_gaps'] = functional_gaps
+        # Summary
+        total_gaps = sum(len(v) for v in functional_gaps.values())
+        output['functional_gaps_summary'] = {
+            'total_gaps': total_gaps,
+            'by_type': {k: len(v) for k, v in functional_gaps.items()}
+        }
+
+    if analysis_results:
+        output['graph_analysis'] = analysis_results
+
+    # Write output
+    with open(output_path, 'w') as f:
+        json.dump(output, f, indent=2)
+
+    print(f"\nOutput written to: {output_path}")
+    print(f"Mode: Functional Architecture Analysis")
+    print(f"Functions: {G.number_of_nodes()}, Dependencies: {G.number_of_edges()}")
+
+    if functional_gaps:
+        total_gaps = sum(len(v) for v in functional_gaps.values())
+        print(f"Functional gaps detected: {total_gaps}")
+
+
 # =============================================================================
 # MAIN ENTRY POINT
 # =============================================================================
 
 def main():
     parser = argparse.ArgumentParser(
-        description='System-of-Systems Graph Generator v2.0 - Framework-Agnostic Edition',
+        description='System-of-Systems Graph Generator v3.0 - Framework-Agnostic Edition with Functional Mode',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
-Examples:
+Examples (Service Mode - Default):
   # Basic usage (UAF framework, auto-detected from working_memory.json)
   python3 system_of_systems_graph_v2.py /path/to/system/specs/machine/index.json
 
@@ -1469,8 +1726,18 @@ Examples:
   # Specific analysis methods
   python3 system_of_systems_graph_v2.py index.json --centrality --paths --clustering
 
-  # Custom output location
-  python3 system_of_systems_graph_v2.py index.json -o custom_graph.json
+Examples (Functional Mode - NEW v3.0):
+  # Analyze functional architecture
+  python3 system_of_systems_graph_v2.py /path/to/system --functional-mode
+
+  # With functional gap detection
+  python3 system_of_systems_graph_v2.py /path/to/system --functional-mode --detect-gaps
+
+  # With context flow analysis (for AI workflows)
+  python3 system_of_systems_graph_v2.py /path/to/system --functional-mode --context-flow
+
+  # Full analysis
+  python3 system_of_systems_graph_v2.py /path/to/system --functional-mode --detect-gaps --analyze-all
 
 Supported Frameworks:
   - UAF 1.2 (Unified Architecture Framework) - default
@@ -1482,13 +1749,17 @@ Supported Frameworks:
         '''
     )
 
-    parser.add_argument('index_file', help='Path to index.json file')
-    parser.add_argument('-o', '--output', help='Output file path (default: system_of_systems_graph.json)')
-    parser.add_argument('--system-root', help='System root directory (if not provided, derived from index.json location or read from working_memory.json)')
+    parser.add_argument('input_file', help='Path to input file (index.json for service mode, functional_architecture.json for functional mode, or system root directory)')
+    parser.add_argument('-o', '--output', help='Output file path (default: auto-determined based on mode)')
+    parser.add_argument('--system-root', help='System root directory (if not provided, derived from input file location or read from working_memory.json)')
+
+    # Mode selection (NEW v3.0)
+    parser.add_argument('--functional-mode', action='store_true',
+                       help='Functional architecture analysis mode (analyzes functions and dependencies instead of services)')
 
     # Analysis flags
     parser.add_argument('--detect-gaps', action='store_true',
-                       help='Enable knowledge gap detection')
+                       help='Enable knowledge gap detection (service mode) or functional gap detection (functional mode)')
     parser.add_argument('--analyze-issues', action='store_true',
                        help='Detect architectural issues (circular deps, orphans, etc.)')
 
@@ -1530,9 +1801,9 @@ Supported Frameworks:
             system_root = validate_system_root(args.system_root)
             print(f"System root: {system_root} (explicitly provided)")
         else:
-            # Try to derive from index file location or working_memory.json
-            # First resolve index_file to find potential system_root
-            index_path_preliminary = Path(args.index_file).resolve()
+            # Try to derive from input file location or working_memory.json
+            # First resolve input_file to find potential system_root
+            index_path_preliminary = Path(args.input_file).resolve()
 
             # Try specs/machine/index.json → go up to system root
             if index_path_preliminary.name == 'index.json' and index_path_preliminary.parent.name == 'machine':
@@ -1564,11 +1835,19 @@ Supported Frameworks:
             else:
                 # Fall back to deriving from index file path
                 system_root = validate_system_root(potential_system_root)
-                print(f"System root: {system_root} (derived from index.json location)")
+                print(f"System root: {system_root} (derived from input file location)")
 
-        # Now validate index_file path relative to system_root
-        index_path = sanitize_path(args.index_file, system_root, must_exist=True)
-        print(f"Index file: {index_path}")
+        # Validate input_file path relative to system_root (or treat as system root in functional mode)
+        input_path_raw = Path(args.input_file)
+        if args.functional_mode and input_path_raw.is_dir():
+            # In functional mode, if input is a directory, treat it as system root
+            system_root = validate_system_root(args.input_file)
+            input_path = system_root / 'specs' / 'functional' / 'functional_architecture.json'
+            print(f"Functional mode: Using system root {system_root}")
+            print(f"Functional architecture file: {input_path}")
+        else:
+            input_path = sanitize_path(args.input_file, system_root, must_exist=True)
+            print(f"Input file: {input_path}")
 
     except PathSecurityError as e:
         print(f"ERROR: Path security violation: {e}", file=sys.stderr)
@@ -1578,27 +1857,69 @@ Supported Frameworks:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Load framework configuration
-    print("\nLoading framework configuration...")
-    framework_config = load_framework_config(system_root)
-    print(f"Framework: {framework_config['framework_name']} ({framework_config['framework_id']})")
-    print(f"Terminology: {framework_config['component_term']} nodes connected by {framework_config['connection_term']} edges")
+    # Branch based on mode (v3.0)
+    if args.functional_mode:
+        # ===== FUNCTIONAL MODE =====
+        print("\n" + "="*70)
+        print("FUNCTIONAL MODE: Analyzing functional architecture")
+        print("="*70)
 
-    # Load framework schema
-    framework_schema = load_framework_registry(framework_config['framework_id'])
+        # Build functional graph
+        print("\nBuilding functional architecture graph...")
+        G = build_functional_graph(input_path)
 
-    # Load index
-    print("\nLoading component index...")
-    index = load_component_index(index_path)
-    print(f"Found {len(index)} components in index")
+        # Store functional architecture data for gap detection
+        try:
+            functional_arch = safe_load_json(input_path, file_type_description="functional architecture")
+        except Exception as e:
+            print(f"ERROR: Failed to reload functional architecture: {e}", file=sys.stderr)
+            sys.exit(1)
 
-    # Build graph
-    print("\nBuilding system-of-systems graph...")
-    G = build_universal_graph(index, framework_schema, system_root)
+        # Optional: Detect functional gaps
+        functional_gaps = None
+        if args.detect_gaps:
+            print("\nDetecting functional gaps...")
+            functional_gaps = detect_functional_gaps(G, functional_arch)
+            total_gaps = sum(len(v) for v in functional_gaps.values())
+            print(f"Detected {total_gaps} functional gaps")
+            for gap_type, gaps in functional_gaps.items():
+                if gaps:
+                    print(f"  - {gap_type}: {len(gaps)}")
 
-    # Optional: Detect knowledge gaps
+            # Suggest using gap closure tools for functional architecture
+            if total_gaps > 0:
+                print("\n💡 TIP: Use gap closure tools to analyze and propose solutions:")
+                print(f"   python3 {REFLOW_ROOT}/tools/reflow_gap_closure.py {system_root} --gap-type functional")
+                print(f"   python3 {REFLOW_ROOT}/tools/matrix_gap_detection.py {system_root}")
+                print(f"   python3 {REFLOW_ROOT}/tools/link_architectures.py {system_root}")
+
+    else:
+        # ===== SERVICE MODE (Default) =====
+        print("\n" + "="*70)
+        print("SERVICE MODE: Analyzing service architecture")
+        print("="*70)
+
+        # Load framework configuration
+        print("\nLoading framework configuration...")
+        framework_config = load_framework_config(system_root)
+        print(f"Framework: {framework_config['framework_name']} ({framework_config['framework_id']})")
+        print(f"Terminology: {framework_config['component_term']} nodes connected by {framework_config['connection_term']} edges")
+
+        # Load framework schema
+        framework_schema = load_framework_registry(framework_config['framework_id'])
+
+        # Load index
+        print("\nLoading component index...")
+        index = load_component_index(input_path)
+        print(f"Found {len(index)} components in index")
+
+        # Build graph
+        print("\nBuilding system-of-systems graph...")
+        G = build_universal_graph(index, framework_schema, system_root)
+
+    # Optional: Detect knowledge gaps (SERVICE MODE ONLY)
     knowledge_gaps = None
-    if args.detect_gaps:
+    if args.detect_gaps and not args.functional_mode:
         print("\nDetecting knowledge gaps...")
         # Need component data for gap detection
         component_data = {}
@@ -1619,6 +1940,11 @@ Supported Frameworks:
         for gap_type, gaps in knowledge_gaps.items():
             if gaps:
                 print(f"  - {gap_type}: {len(gaps)}")
+
+        # Suggest using matrix_gap_detection.py for gap closure
+        if total_gaps > 0:
+            print("\n💡 TIP: Use matrix_gap_detection.py to analyze and propose solutions for closing these gaps")
+            print(f"   python3 {REFLOW_ROOT}/tools/matrix_gap_detection.py {system_root}")
 
     # Optional: Detect architectural issues
     architectural_issues = None
@@ -1714,18 +2040,29 @@ Supported Frameworks:
             # Validate user-provided output path
             output_path = sanitize_path(args.output, system_root, must_exist=False)
         else:
-            # Default output location
-            output_dir = sanitize_path('specs/machine/graphs', system_root, must_exist=False)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            output_path = output_dir / 'system_of_systems_graph.json'
+            # Default output location based on mode
+            if args.functional_mode:
+                output_dir = sanitize_path('specs/functional/graphs', system_root, must_exist=False)
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_path = output_dir / 'functional_architecture_graph.json'
+            else:
+                output_dir = sanitize_path('specs/machine/graphs', system_root, must_exist=False)
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_path = output_dir / 'system_of_systems_graph.json'
 
-        generate_output(G, str(output_path), framework_config, knowledge_gaps,
-                       architectural_issues, analysis_results)
+        if args.functional_mode:
+            # Functional mode output (include functional_gaps)
+            generate_functional_output(G, str(output_path), functional_arch,
+                                     functional_gaps, analysis_results)
+        else:
+            # Service mode output
+            generate_output(G, str(output_path), framework_config, knowledge_gaps,
+                           architectural_issues, analysis_results)
     except PathSecurityError as e:
         print(f"ERROR: Output path security violation: {e}", file=sys.stderr)
         sys.exit(1)
 
-    print("\n✓ Graph generation complete!")
+    print(f"\n✓ Graph generation complete!")
 
 
 if __name__ == '__main__':

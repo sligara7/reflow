@@ -1,0 +1,2368 @@
+{
+  "metadata": {
+    "generated": "2025-11-07T08:30:28.554392",
+    "mode": "functional",
+    "system_name": "Reflow Workflow System",
+    "num_functions": 55,
+    "num_dependencies": 0,
+    "tool_version": "3.0",
+    "source_file": "functional_architecture.json"
+  },
+  "graph": {
+    "directed": true,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+      {
+        "name": "Load Workflow Definition",
+        "type": "read",
+        "description": "Read workflow JSON file from workflows/ directory",
+        "inputs": [
+          "workflow_id",
+          "reflow_root"
+        ],
+        "outputs": [
+          "workflow_definition_object"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Return error if workflow file not found or invalid JSON",
+        "raw": {
+          "function_id": "F-001",
+          "function_name": "Load Workflow Definition",
+          "function_type": "read",
+          "description": "Read workflow JSON file from workflows/ directory",
+          "inputs": [
+            "workflow_id",
+            "reflow_root"
+          ],
+          "outputs": [
+            "workflow_definition_object"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-001"
+          ],
+          "error_handling": "Return error if workflow file not found or invalid JSON"
+        },
+        "id": "F-001"
+      },
+      {
+        "name": "Read Current Step Definition",
+        "type": "read",
+        "description": "Read detailed step definition from workflow",
+        "inputs": [
+          "workflow_definition",
+          "current_step_id"
+        ],
+        "outputs": [
+          "step_definition"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Return error if step not found in workflow",
+        "raw": {
+          "function_id": "F-002",
+          "function_name": "Read Current Step Definition",
+          "function_type": "read",
+          "description": "Read detailed step definition from workflow",
+          "inputs": [
+            "workflow_definition",
+            "current_step_id"
+          ],
+          "outputs": [
+            "step_definition"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-001"
+          ],
+          "error_handling": "Return error if step not found in workflow"
+        },
+        "id": "F-002"
+      },
+      {
+        "name": "Parse Step Actions",
+        "type": "process",
+        "description": "Extract and interpret action list from step definition",
+        "inputs": [
+          "step_definition"
+        ],
+        "outputs": [
+          "action_list"
+        ],
+        "context_consumption": 1000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Validate action structure, return errors for invalid actions",
+        "raw": {
+          "function_id": "F-003",
+          "function_name": "Parse Step Actions",
+          "function_type": "process",
+          "description": "Extract and interpret action list from step definition",
+          "inputs": [
+            "step_definition"
+          ],
+          "outputs": [
+            "action_list"
+          ],
+          "context_consumption": 1000,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-001"
+          ],
+          "error_handling": "Validate action structure, return errors for invalid actions"
+        },
+        "id": "F-003"
+      },
+      {
+        "name": "Execute Step Actions",
+        "type": "process",
+        "description": "Execute each action in step (call tools, generate files, etc.)",
+        "inputs": [
+          "action_list",
+          "system_context"
+        ],
+        "outputs": [
+          "action_results"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Catch execution errors, rollback if needed",
+        "raw": {
+          "function_id": "F-004",
+          "function_name": "Execute Step Actions",
+          "function_type": "process",
+          "description": "Execute each action in step (call tools, generate files, etc.)",
+          "inputs": [
+            "action_list",
+            "system_context"
+          ],
+          "outputs": [
+            "action_results"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 60,
+          "implements_requirements": [
+            "FR-001"
+          ],
+          "error_handling": "Catch execution errors, rollback if needed",
+          "note": "Context consumption varies widely based on action type (tool calls can be high)"
+        },
+        "id": "F-004"
+      },
+      {
+        "name": "Check Quality Gates",
+        "type": "decide",
+        "description": "Evaluate quality gate conditions for step completion",
+        "inputs": [
+          "step_definition",
+          "action_results"
+        ],
+        "outputs": [
+          "gate_status (PASS/FAIL)",
+          "blocking_issues"
+        ],
+        "context_consumption": 1500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Block progression if gates fail",
+        "raw": {
+          "function_id": "F-005",
+          "function_name": "Check Quality Gates",
+          "function_type": "decide",
+          "description": "Evaluate quality gate conditions for step completion",
+          "inputs": [
+            "step_definition",
+            "action_results"
+          ],
+          "outputs": [
+            "gate_status (PASS/FAIL)",
+            "blocking_issues"
+          ],
+          "context_consumption": 1500,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Block progression if gates fail"
+        },
+        "id": "F-005"
+      },
+      {
+        "name": "Update Workflow State",
+        "type": "generate",
+        "description": "Update working_memory.json with new state after step completion",
+        "inputs": [
+          "current_state",
+          "step_results",
+          "next_step_id"
+        ],
+        "outputs": [
+          "updated_working_memory"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Backup old state before updating",
+        "raw": {
+          "function_id": "F-006",
+          "function_name": "Update Workflow State",
+          "function_type": "generate",
+          "description": "Update working_memory.json with new state after step completion",
+          "inputs": [
+            "current_state",
+            "step_results",
+            "next_step_id"
+          ],
+          "outputs": [
+            "updated_working_memory"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-002"
+          ],
+          "error_handling": "Backup old state before updating"
+        },
+        "id": "F-006"
+      },
+      {
+        "name": "Determine Next Step",
+        "type": "decide",
+        "description": "Use workflow routing logic to determine next step",
+        "inputs": [
+          "workflow_definition",
+          "current_step",
+          "step_results"
+        ],
+        "outputs": [
+          "next_step_id or WORKFLOW_COMPLETE"
+        ],
+        "context_consumption": 1000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle conditional routing and dynamic paths",
+        "raw": {
+          "function_id": "F-007",
+          "function_name": "Determine Next Step",
+          "function_type": "decide",
+          "description": "Use workflow routing logic to determine next step",
+          "inputs": [
+            "workflow_definition",
+            "current_step",
+            "step_results"
+          ],
+          "outputs": [
+            "next_step_id or WORKFLOW_COMPLETE"
+          ],
+          "context_consumption": 1000,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-001"
+          ],
+          "error_handling": "Handle conditional routing and dynamic paths"
+        },
+        "id": "F-007"
+      },
+      {
+        "name": "Track Context Operations",
+        "type": "process",
+        "description": "Increment operations_since_refresh counter in working_memory",
+        "inputs": [
+          "working_memory"
+        ],
+        "outputs": [
+          "updated_counter"
+        ],
+        "context_consumption": 200,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Initialize counter if missing",
+        "raw": {
+          "function_id": "F-010",
+          "function_name": "Track Context Operations",
+          "function_type": "process",
+          "description": "Increment operations_since_refresh counter in working_memory",
+          "inputs": [
+            "working_memory"
+          ],
+          "outputs": [
+            "updated_counter"
+          ],
+          "context_consumption": 200,
+          "execution_time_seconds": 0.5,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Initialize counter if missing"
+        },
+        "id": "F-010"
+      },
+      {
+        "name": "Check Context Threshold",
+        "type": "decide",
+        "description": "Compare operations_since_refresh against refresh_threshold",
+        "inputs": [
+          "operations_since_refresh",
+          "refresh_threshold"
+        ],
+        "outputs": [
+          "needs_refresh (boolean)"
+        ],
+        "context_consumption": 100,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Use default threshold if not configured",
+        "raw": {
+          "function_id": "F-011",
+          "function_name": "Check Context Threshold",
+          "function_type": "decide",
+          "description": "Compare operations_since_refresh against refresh_threshold",
+          "inputs": [
+            "operations_since_refresh",
+            "refresh_threshold"
+          ],
+          "outputs": [
+            "needs_refresh (boolean)"
+          ],
+          "context_consumption": 100,
+          "execution_time_seconds": 0.1,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Use default threshold if not configured"
+        },
+        "id": "F-011"
+      },
+      {
+        "name": "Execute Context Refresh",
+        "type": "process",
+        "description": "Reload critical context (workflow, step, current_focus)",
+        "inputs": [
+          "working_memory",
+          "reflow_root",
+          "system_root"
+        ],
+        "outputs": [
+          "refreshed_context"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Graceful degradation if refresh fails",
+        "raw": {
+          "function_id": "F-012",
+          "function_name": "Execute Context Refresh",
+          "function_type": "process",
+          "description": "Reload critical context (workflow, step, current_focus)",
+          "inputs": [
+            "working_memory",
+            "reflow_root",
+            "system_root"
+          ],
+          "outputs": [
+            "refreshed_context"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Graceful degradation if refresh fails",
+          "note": "High context consumption - loads multiple files"
+        },
+        "id": "F-012"
+      },
+      {
+        "name": "Reset Context Counter",
+        "type": "process",
+        "description": "Set operations_since_refresh = 0 after refresh",
+        "inputs": [
+          "working_memory"
+        ],
+        "outputs": [
+          "updated_working_memory"
+        ],
+        "context_consumption": 200,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Always succeed",
+        "raw": {
+          "function_id": "F-013",
+          "function_name": "Reset Context Counter",
+          "function_type": "process",
+          "description": "Set operations_since_refresh = 0 after refresh",
+          "inputs": [
+            "working_memory"
+          ],
+          "outputs": [
+            "updated_working_memory"
+          ],
+          "context_consumption": 200,
+          "execution_time_seconds": 0.5,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Always succeed"
+        },
+        "id": "F-013"
+      },
+      {
+        "name": "Update Context Health Status",
+        "type": "process",
+        "description": "Set context_health (HEALTHY/WARNING/CRITICAL) based on analysis",
+        "inputs": [
+          "current_context_usage",
+          "degradation_signals"
+        ],
+        "outputs": [
+          "context_health_status"
+        ],
+        "context_consumption": 300,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Conservative (prefer WARNING over HEALTHY if uncertain)",
+        "raw": {
+          "function_id": "F-014",
+          "function_name": "Update Context Health Status",
+          "function_type": "process",
+          "description": "Set context_health (HEALTHY/WARNING/CRITICAL) based on analysis",
+          "inputs": [
+            "current_context_usage",
+            "degradation_signals"
+          ],
+          "outputs": [
+            "context_health_status"
+          ],
+          "context_consumption": 300,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Conservative (prefer WARNING over HEALTHY if uncertain)"
+        },
+        "id": "F-014"
+      },
+      {
+        "name": "Route Based on Context Health",
+        "type": "decide",
+        "description": "Route workflow execution based on context health status - enables context-aware workflow execution by acting on context monitoring results",
+        "inputs": [
+          "context_health_status"
+        ],
+        "outputs": [
+          "routing_decision"
+        ],
+        "context_consumption": 200,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Default to refresh if uncertain",
+        "raw": {
+          "function_id": "F-014A",
+          "function_name": "Route Based on Context Health",
+          "function_type": "decide",
+          "description": "Route workflow execution based on context health status - enables context-aware workflow execution by acting on context monitoring results",
+          "inputs": [
+            "context_health_status"
+          ],
+          "outputs": [
+            "routing_decision"
+          ],
+          "routing_logic": {
+            "CRITICAL": "trigger_refresh \u2192 F-010 (Context refresh needed before continuing)",
+            "WARNING": "log_warning \u2192 F-001 (Proceed cautiously with warning)",
+            "HEALTHY": "continue \u2192 F-001 (Proceed with workflow execution)"
+          },
+          "context_consumption": 200,
+          "execution_time_seconds": 0.5,
+          "implements_requirements": [
+            "FR-012"
+          ],
+          "error_handling": "Default to refresh if uncertain",
+          "rationale": "Closes gap identified in meta-analysis - context_health_status was calculated (F-014) but never used. This function enables feedback loop: monitor \u2192 detect \u2192 DECIDE \u2192 ACT.",
+          "added_version": "v3.13.0",
+          "gap_closure_proposal": "Matrix analysis (B = C \u00d7 A\u207b\u00b9) identified missing connector between F-014 and workflow execution"
+        },
+        "id": "F-014A"
+      },
+      {
+        "name": "Load Framework Configuration",
+        "type": "read",
+        "description": "Read framework definition (UAF, Decision Flow, etc.)",
+        "inputs": [
+          "framework_id",
+          "definitions_path"
+        ],
+        "outputs": [
+          "framework_config"
+        ],
+        "context_consumption": 1500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Fallback to UAF if framework not found",
+        "raw": {
+          "function_id": "F-020",
+          "function_name": "Load Framework Configuration",
+          "function_type": "read",
+          "description": "Read framework definition (UAF, Decision Flow, etc.)",
+          "inputs": [
+            "framework_id",
+            "definitions_path"
+          ],
+          "outputs": [
+            "framework_config"
+          ],
+          "context_consumption": 1500,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-003"
+          ],
+          "error_handling": "Fallback to UAF if framework not found"
+        },
+        "id": "F-020"
+      },
+      {
+        "name": "Load Architecture Template",
+        "type": "read",
+        "description": "Load JSON schema template for architecture file",
+        "inputs": [
+          "framework_config",
+          "templates_path"
+        ],
+        "outputs": [
+          "architecture_template"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Return error if template missing",
+        "raw": {
+          "function_id": "F-021",
+          "function_name": "Load Architecture Template",
+          "function_type": "read",
+          "description": "Load JSON schema template for architecture file",
+          "inputs": [
+            "framework_config",
+            "templates_path"
+          ],
+          "outputs": [
+            "architecture_template"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-004"
+          ],
+          "error_handling": "Return error if template missing"
+        },
+        "id": "F-021"
+      },
+      {
+        "name": "Populate Architecture Data",
+        "type": "generate",
+        "description": "Fill template with component/service data from step inputs",
+        "inputs": [
+          "architecture_template",
+          "component_data"
+        ],
+        "outputs": [
+          "populated_architecture"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Validate required fields populated",
+        "raw": {
+          "function_id": "F-022",
+          "function_name": "Populate Architecture Data",
+          "function_type": "generate",
+          "description": "Fill template with component/service data from step inputs",
+          "inputs": [
+            "architecture_template",
+            "component_data"
+          ],
+          "outputs": [
+            "populated_architecture"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-004"
+          ],
+          "error_handling": "Validate required fields populated"
+        },
+        "id": "F-022"
+      },
+      {
+        "name": "Validate Architecture Schema",
+        "type": "validate",
+        "description": "Check architecture against JSON schema",
+        "inputs": [
+          "architecture_object",
+          "schema"
+        ],
+        "outputs": [
+          "validation_result"
+        ],
+        "context_consumption": 1500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Return detailed validation errors",
+        "raw": {
+          "function_id": "F-023",
+          "function_name": "Validate Architecture Schema",
+          "function_type": "validate",
+          "description": "Check architecture against JSON schema",
+          "inputs": [
+            "architecture_object",
+            "schema"
+          ],
+          "outputs": [
+            "validation_result"
+          ],
+          "context_consumption": 1500,
+          "execution_time_seconds": 3,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Return detailed validation errors"
+        },
+        "id": "F-023"
+      },
+      {
+        "name": "Add Version Metadata",
+        "type": "process",
+        "description": "Add version, timestamp, author metadata to architecture",
+        "inputs": [
+          "architecture_object"
+        ],
+        "outputs": [
+          "versioned_architecture"
+        ],
+        "context_consumption": 500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Use current timestamp if not provided",
+        "raw": {
+          "function_id": "F-024",
+          "function_name": "Add Version Metadata",
+          "function_type": "process",
+          "description": "Add version, timestamp, author metadata to architecture",
+          "inputs": [
+            "architecture_object"
+          ],
+          "outputs": [
+            "versioned_architecture"
+          ],
+          "context_consumption": 500,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-016"
+          ],
+          "error_handling": "Use current timestamp if not provided"
+        },
+        "id": "F-024"
+      },
+      {
+        "name": "Write Architecture File",
+        "type": "generate",
+        "description": "Save architecture JSON to file system",
+        "inputs": [
+          "architecture_object",
+          "file_path"
+        ],
+        "outputs": [
+          "file_written_confirmation"
+        ],
+        "context_consumption": 1000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Create parent directories if needed, backup existing file",
+        "raw": {
+          "function_id": "F-025",
+          "function_name": "Write Architecture File",
+          "function_type": "generate",
+          "description": "Save architecture JSON to file system",
+          "inputs": [
+            "architecture_object",
+            "file_path"
+          ],
+          "outputs": [
+            "file_written_confirmation"
+          ],
+          "context_consumption": 1000,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-004"
+          ],
+          "error_handling": "Create parent directories if needed, backup existing file"
+        },
+        "id": "F-025"
+      },
+      {
+        "name": "Load All Architecture Files",
+        "type": "read",
+        "description": "Read all service/component architecture files from system",
+        "inputs": [
+          "system_root",
+          "framework_config"
+        ],
+        "outputs": [
+          "architecture_list"
+        ],
+        "context_consumption": 15000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Skip invalid files, report warnings",
+        "raw": {
+          "function_id": "F-030",
+          "function_name": "Load All Architecture Files",
+          "function_type": "read",
+          "description": "Read all service/component architecture files from system",
+          "inputs": [
+            "system_root",
+            "framework_config"
+          ],
+          "outputs": [
+            "architecture_list"
+          ],
+          "context_consumption": 15000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Skip invalid files, report warnings",
+          "note": "HIGH context consumption - loads multiple large files",
+          "optimization_recommended": {
+            "priority": "MEDIUM",
+            "strategy": "Lazy loading - load architecture files on-demand instead of all at once",
+            "expected_reduction": "15000 \u2192 3000-5000 tokens (per-file loading)",
+            "implementation": "Refactor system_of_systems_graph_v2.py to stream files or load incrementally",
+            "benefit": "Reduces memory footprint and enables analysis of larger systems",
+            "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+          }
+        },
+        "id": "F-030"
+      },
+      {
+        "name": "Build System Graph",
+        "type": "process",
+        "description": "Construct NetworkX directed graph from architecture files",
+        "inputs": [
+          "architecture_list",
+          "framework_config"
+        ],
+        "outputs": [
+          "system_graph (NetworkX)"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle missing interfaces, undefined connections",
+        "raw": {
+          "function_id": "F-031",
+          "function_name": "Build System Graph",
+          "function_type": "process",
+          "description": "Construct NetworkX directed graph from architecture files",
+          "inputs": [
+            "architecture_list",
+            "framework_config"
+          ],
+          "outputs": [
+            "system_graph (NetworkX)"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 15,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Handle missing interfaces, undefined connections"
+        },
+        "id": "F-031"
+      },
+      {
+        "name": "Run Graph Analysis",
+        "type": "process",
+        "description": "Execute NetworkX analysis (centrality, paths, cycles, etc.)",
+        "inputs": [
+          "system_graph",
+          "analysis_config"
+        ],
+        "outputs": [
+          "analysis_results"
+        ],
+        "context_consumption": 8000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle disconnected graphs, empty graphs",
+        "raw": {
+          "function_id": "F-032",
+          "function_name": "Run Graph Analysis",
+          "function_type": "process",
+          "description": "Execute NetworkX analysis (centrality, paths, cycles, etc.)",
+          "inputs": [
+            "system_graph",
+            "analysis_config"
+          ],
+          "outputs": [
+            "analysis_results"
+          ],
+          "context_consumption": 8000,
+          "execution_time_seconds": 20,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Handle disconnected graphs, empty graphs"
+        },
+        "id": "F-032"
+      },
+      {
+        "name": "Detect Architectural Issues",
+        "type": "process",
+        "description": "Identify orphans, missing interfaces, cycles, disconnected components",
+        "inputs": [
+          "system_graph",
+          "analysis_results"
+        ],
+        "outputs": [
+          "issues_list"
+        ],
+        "context_consumption": 4000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Categorize issues by severity (critical, warning, info)",
+        "raw": {
+          "function_id": "F-033",
+          "function_name": "Detect Architectural Issues",
+          "function_type": "process",
+          "description": "Identify orphans, missing interfaces, cycles, disconnected components",
+          "inputs": [
+            "system_graph",
+            "analysis_results"
+          ],
+          "outputs": [
+            "issues_list"
+          ],
+          "context_consumption": 4000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-017"
+          ],
+          "error_handling": "Categorize issues by severity (critical, warning, info)"
+        },
+        "id": "F-033"
+      },
+      {
+        "name": "Format Analysis Report",
+        "type": "generate",
+        "description": "Create human-readable report from analysis results",
+        "inputs": [
+          "analysis_results",
+          "issues_list"
+        ],
+        "outputs": [
+          "report_text"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Always generate report even if no issues found",
+        "raw": {
+          "function_id": "F-034",
+          "function_name": "Format Analysis Report",
+          "function_type": "generate",
+          "description": "Create human-readable report from analysis results",
+          "inputs": [
+            "analysis_results",
+            "issues_list"
+          ],
+          "outputs": [
+            "report_text"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Always generate report even if no issues found"
+        },
+        "id": "F-034"
+      },
+      {
+        "name": "Export Graph Data",
+        "type": "generate",
+        "description": "Export graph as node_link_data JSON",
+        "inputs": [
+          "system_graph"
+        ],
+        "outputs": [
+          "graph_json"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle large graphs (streaming if needed)",
+        "raw": {
+          "function_id": "F-035",
+          "function_name": "Export Graph Data",
+          "function_type": "generate",
+          "description": "Export graph as node_link_data JSON",
+          "inputs": [
+            "system_graph"
+          ],
+          "outputs": [
+            "graph_json"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Handle large graphs (streaming if needed)"
+        },
+        "id": "F-035"
+      },
+      {
+        "name": "Write Graph and Analysis Files",
+        "type": "generate",
+        "description": "Save graph JSON and analysis report to files",
+        "inputs": [
+          "graph_json",
+          "report_text",
+          "output_path"
+        ],
+        "outputs": [
+          "files_written"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Create directories, handle write permissions",
+        "raw": {
+          "function_id": "F-036",
+          "function_name": "Write Graph and Analysis Files",
+          "function_type": "generate",
+          "description": "Save graph JSON and analysis report to files",
+          "inputs": [
+            "graph_json",
+            "report_text",
+            "output_path"
+          ],
+          "outputs": [
+            "files_written"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 3,
+          "implements_requirements": [
+            "FR-006"
+          ],
+          "error_handling": "Create directories, handle write permissions"
+        },
+        "id": "F-036"
+      },
+      {
+        "name": "Load Architecture for Validation",
+        "type": "read",
+        "description": "Read architecture file to validate",
+        "inputs": [
+          "architecture_path"
+        ],
+        "outputs": [
+          "architecture_object"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Return error if file not found or invalid JSON",
+        "raw": {
+          "function_id": "F-040",
+          "function_name": "Load Architecture for Validation",
+          "function_type": "read",
+          "description": "Read architecture file to validate",
+          "inputs": [
+            "architecture_path"
+          ],
+          "outputs": [
+            "architecture_object"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Return error if file not found or invalid JSON"
+        },
+        "id": "F-040"
+      },
+      {
+        "name": "Validate Completeness",
+        "type": "validate",
+        "description": "Check all required fields present in architecture",
+        "inputs": [
+          "architecture_object",
+          "framework_schema"
+        ],
+        "outputs": [
+          "completeness_issues"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "List all missing required fields",
+        "raw": {
+          "function_id": "F-041",
+          "function_name": "Validate Completeness",
+          "function_type": "validate",
+          "description": "Check all required fields present in architecture",
+          "inputs": [
+            "architecture_object",
+            "framework_schema"
+          ],
+          "outputs": [
+            "completeness_issues"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 3,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "List all missing required fields"
+        },
+        "id": "F-041"
+      },
+      {
+        "name": "Validate Interface Consistency",
+        "type": "validate",
+        "description": "Check interfaces match connected components",
+        "inputs": [
+          "architecture_object",
+          "related_architectures"
+        ],
+        "outputs": [
+          "interface_issues"
+        ],
+        "context_consumption": 2500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Report mismatches with specific interface names",
+        "raw": {
+          "function_id": "F-042",
+          "function_name": "Validate Interface Consistency",
+          "function_type": "validate",
+          "description": "Check interfaces match connected components",
+          "inputs": [
+            "architecture_object",
+            "related_architectures"
+          ],
+          "outputs": [
+            "interface_issues"
+          ],
+          "context_consumption": 2500,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Report mismatches with specific interface names"
+        },
+        "id": "F-042"
+      },
+      {
+        "name": "Validate Foundational Alignment",
+        "type": "validate",
+        "description": "Check architecture aligns with mission/scenarios",
+        "inputs": [
+          "architecture_object",
+          "mission_statement",
+          "user_scenarios"
+        ],
+        "outputs": [
+          "alignment_issues"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Report specific alignment violations",
+        "raw": {
+          "function_id": "F-043",
+          "function_name": "Validate Foundational Alignment",
+          "function_type": "validate",
+          "description": "Check architecture aligns with mission/scenarios",
+          "inputs": [
+            "architecture_object",
+            "mission_statement",
+            "user_scenarios"
+          ],
+          "outputs": [
+            "alignment_issues"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 8,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Report specific alignment violations"
+        },
+        "id": "F-043"
+      },
+      {
+        "name": "Aggregate Validation Results",
+        "type": "process",
+        "description": "Combine all validation issues into report",
+        "inputs": [
+          "completeness_issues",
+          "interface_issues",
+          "alignment_issues"
+        ],
+        "outputs": [
+          "validation_report"
+        ],
+        "context_consumption": 1500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Categorize by severity, count critical issues",
+        "raw": {
+          "function_id": "F-044",
+          "function_name": "Aggregate Validation Results",
+          "function_type": "process",
+          "description": "Combine all validation issues into report",
+          "inputs": [
+            "completeness_issues",
+            "interface_issues",
+            "alignment_issues"
+          ],
+          "outputs": [
+            "validation_report"
+          ],
+          "context_consumption": 1500,
+          "execution_time_seconds": 2,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "Categorize by severity, count critical issues"
+        },
+        "id": "F-044"
+      },
+      {
+        "name": "Determine Validation Status",
+        "type": "decide",
+        "description": "Return PASS/FAIL based on critical issues",
+        "inputs": [
+          "validation_report"
+        ],
+        "outputs": [
+          "validation_status (PASS/FAIL)"
+        ],
+        "context_consumption": 500,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "FAIL if any critical issues, PASS otherwise",
+        "raw": {
+          "function_id": "F-045",
+          "function_name": "Determine Validation Status",
+          "function_type": "decide",
+          "description": "Return PASS/FAIL based on critical issues",
+          "inputs": [
+            "validation_report"
+          ],
+          "outputs": [
+            "validation_status (PASS/FAIL)"
+          ],
+          "context_consumption": 500,
+          "execution_time_seconds": 1,
+          "implements_requirements": [
+            "FR-005"
+          ],
+          "error_handling": "FAIL if any critical issues, PASS otherwise"
+        },
+        "id": "F-045"
+      },
+      {
+        "name": "Extract Functional Requirements",
+        "type": "read",
+        "description": "Parse foundational docs to extract functional requirements (NEW v2.1.0)",
+        "inputs": [
+          "mission_statement",
+          "user_scenarios",
+          "success_criteria"
+        ],
+        "outputs": [
+          "functional_requirements_list"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Ensure all user scenarios covered by requirements",
+        "raw": {
+          "function_id": "F-050",
+          "function_name": "Extract Functional Requirements",
+          "function_type": "read",
+          "description": "Parse foundational docs to extract functional requirements (NEW v2.1.0)",
+          "inputs": [
+            "mission_statement",
+            "user_scenarios",
+            "success_criteria"
+          ],
+          "outputs": [
+            "functional_requirements_list"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-008"
+          ],
+          "error_handling": "Ensure all user scenarios covered by requirements"
+        },
+        "id": "F-050"
+      },
+      {
+        "name": "Define Functional Flows",
+        "type": "process",
+        "description": "Create process flows, decision flows, data flows (NEW v2.1.0)",
+        "inputs": [
+          "functional_requirements",
+          "user_scenarios"
+        ],
+        "outputs": [
+          "functional_architecture_object"
+        ],
+        "context_consumption": 8000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Validate flows cover all user scenarios",
+        "raw": {
+          "function_id": "F-051",
+          "function_name": "Define Functional Flows",
+          "function_type": "process",
+          "description": "Create process flows, decision flows, data flows (NEW v2.1.0)",
+          "inputs": [
+            "functional_requirements",
+            "user_scenarios"
+          ],
+          "outputs": [
+            "functional_architecture_object"
+          ],
+          "context_consumption": 8000,
+          "execution_time_seconds": 20,
+          "implements_requirements": [
+            "FR-008"
+          ],
+          "error_handling": "Validate flows cover all user scenarios"
+        },
+        "id": "F-051"
+      },
+      {
+        "name": "Decompose into Functions",
+        "type": "process",
+        "description": "Break down flows into atomic functions (NEW v2.1.0)",
+        "inputs": [
+          "functional_flows"
+        ],
+        "outputs": [
+          "function_list"
+        ],
+        "context_consumption": 4000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Ensure functions are atomic and traceable to flows",
+        "raw": {
+          "function_id": "F-052",
+          "function_name": "Decompose into Functions",
+          "function_type": "process",
+          "description": "Break down flows into atomic functions (NEW v2.1.0)",
+          "inputs": [
+            "functional_flows"
+          ],
+          "outputs": [
+            "function_list"
+          ],
+          "context_consumption": 4000,
+          "execution_time_seconds": 15,
+          "implements_requirements": [
+            "FR-008"
+          ],
+          "error_handling": "Ensure functions are atomic and traceable to flows"
+        },
+        "id": "F-052"
+      },
+      {
+        "name": "Generate Human Visualizations",
+        "type": "generate",
+        "description": "Create BPMN process flows, UML diagrams, decision trees (NEW v2.1.0)",
+        "inputs": [
+          "functional_architecture"
+        ],
+        "outputs": [
+          "visualization_files (SVG)"
+        ],
+        "context_consumption": 12000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Use standard notation (BPMN 2.0, UML 2.5)",
+        "raw": {
+          "function_id": "F-053",
+          "function_name": "Generate Human Visualizations",
+          "function_type": "generate",
+          "description": "Create BPMN process flows, UML diagrams, decision trees (NEW v2.1.0)",
+          "inputs": [
+            "functional_architecture"
+          ],
+          "outputs": [
+            "visualization_files (SVG)"
+          ],
+          "context_consumption": 12000,
+          "execution_time_seconds": 30,
+          "implements_requirements": [
+            "FR-010"
+          ],
+          "error_handling": "Use standard notation (BPMN 2.0, UML 2.5)",
+          "note": "HIGH context consumption - generates multiple large diagrams",
+          "optimization_recommended": {
+            "priority": "MEDIUM",
+            "strategy": "Incremental generation - generate diagrams one at a time instead of all together",
+            "expected_reduction": "12000 \u2192 3000-4000 tokens per diagram (4 diagram types)",
+            "implementation": "Refactor generate_mermaid_*.py tools to support single-diagram mode, generate on-demand",
+            "benefit": "Enables visualization generation for complex systems without context overflow",
+            "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+          }
+        },
+        "id": "F-053"
+      },
+      {
+        "name": "Conduct Stakeholder Review",
+        "type": "iterate",
+        "description": "Present visualizations, collect feedback (NEW v2.1.0)",
+        "inputs": [
+          "visualizations",
+          "stakeholders"
+        ],
+        "outputs": [
+          "stakeholder_feedback"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Multiple iterations expected, track feedback history",
+        "raw": {
+          "function_id": "F-054",
+          "function_name": "Conduct Stakeholder Review",
+          "function_type": "iterate",
+          "description": "Present visualizations, collect feedback (NEW v2.1.0)",
+          "inputs": [
+            "visualizations",
+            "stakeholders"
+          ],
+          "outputs": [
+            "stakeholder_feedback"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 600,
+          "implements_requirements": [
+            "FR-010"
+          ],
+          "error_handling": "Multiple iterations expected, track feedback history",
+          "note": "Context per iteration, may iterate 2-5 times"
+        },
+        "id": "F-054"
+      },
+      {
+        "name": "Build Functional Architecture Graph",
+        "type": "process",
+        "description": "Create NetworkX graph of functions and dependencies (NEW v2.1.0)",
+        "inputs": [
+          "functional_architecture"
+        ],
+        "outputs": [
+          "functional_graph (NetworkX)"
+        ],
+        "context_consumption": 4000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle circular dependencies (may be intentional)",
+        "raw": {
+          "function_id": "F-055",
+          "function_name": "Build Functional Architecture Graph",
+          "function_type": "process",
+          "description": "Create NetworkX graph of functions and dependencies (NEW v2.1.0)",
+          "inputs": [
+            "functional_architecture"
+          ],
+          "outputs": [
+            "functional_graph (NetworkX)"
+          ],
+          "context_consumption": 4000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-009"
+          ],
+          "error_handling": "Handle circular dependencies (may be intentional)"
+        },
+        "id": "F-055"
+      },
+      {
+        "name": "Analyze Functional Architecture",
+        "type": "process",
+        "description": "Detect gaps, redundancies, inefficiencies in functions (NEW v2.1.0)",
+        "inputs": [
+          "functional_graph"
+        ],
+        "outputs": [
+          "functional_issues_report"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Categorize issues (gaps, redundancy, inefficiency)",
+        "raw": {
+          "function_id": "F-056",
+          "function_name": "Analyze Functional Architecture",
+          "function_type": "process",
+          "description": "Detect gaps, redundancies, inefficiencies in functions (NEW v2.1.0)",
+          "inputs": [
+            "functional_graph"
+          ],
+          "outputs": [
+            "functional_issues_report"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 15,
+          "implements_requirements": [
+            "FR-009"
+          ],
+          "error_handling": "Categorize issues (gaps, redundancy, inefficiency)"
+        },
+        "id": "F-056"
+      },
+      {
+        "name": "Refine Functional Architecture",
+        "type": "iterate",
+        "description": "Address issues from stakeholder feedback AND technical analysis (NEW v2.1.0)",
+        "inputs": [
+          "stakeholder_feedback",
+          "functional_issues_report"
+        ],
+        "outputs": [
+          "refined_functional_architecture"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Iterate until both stakeholder and technical validation pass",
+        "raw": {
+          "function_id": "F-057",
+          "function_name": "Refine Functional Architecture",
+          "function_type": "iterate",
+          "description": "Address issues from stakeholder feedback AND technical analysis (NEW v2.1.0)",
+          "inputs": [
+            "stakeholder_feedback",
+            "functional_issues_report"
+          ],
+          "outputs": [
+            "refined_functional_architecture"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 30,
+          "implements_requirements": [
+            "FR-009"
+          ],
+          "error_handling": "Iterate until both stakeholder and technical validation pass",
+          "note": "May iterate multiple times, accumulates context"
+        },
+        "id": "F-057"
+      },
+      {
+        "name": "Validate Functional Completeness",
+        "type": "validate",
+        "description": "Ensure all user scenarios covered, no gaps (NEW v2.1.0)",
+        "inputs": [
+          "functional_architecture",
+          "user_scenarios"
+        ],
+        "outputs": [
+          "completeness_status"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Block progression if gaps found",
+        "raw": {
+          "function_id": "F-058",
+          "function_name": "Validate Functional Completeness",
+          "function_type": "validate",
+          "description": "Ensure all user scenarios covered, no gaps (NEW v2.1.0)",
+          "inputs": [
+            "functional_architecture",
+            "user_scenarios"
+          ],
+          "outputs": [
+            "completeness_status"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 8,
+          "implements_requirements": [
+            "FR-009"
+          ],
+          "error_handling": "Block progression if gaps found"
+        },
+        "id": "F-058"
+      },
+      {
+        "name": "Obtain Stakeholder Sign-off",
+        "type": "decide",
+        "description": "Get formal approval from stakeholders (NEW v2.1.0)",
+        "inputs": [
+          "visualizations",
+          "functional_architecture"
+        ],
+        "outputs": [
+          "sign_off_status"
+        ],
+        "context_consumption": 1000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Block progression without sign-off",
+        "raw": {
+          "function_id": "F-059",
+          "function_name": "Obtain Stakeholder Sign-off",
+          "function_type": "decide",
+          "description": "Get formal approval from stakeholders (NEW v2.1.0)",
+          "inputs": [
+            "visualizations",
+            "functional_architecture"
+          ],
+          "outputs": [
+            "sign_off_status"
+          ],
+          "context_consumption": 1000,
+          "execution_time_seconds": 300,
+          "implements_requirements": [
+            "FR-010"
+          ],
+          "error_handling": "Block progression without sign-off"
+        },
+        "id": "F-059"
+      },
+      {
+        "name": "Create Functional Allocation Matrix",
+        "type": "process",
+        "description": "Map functions to services/components (NEW v2.1.0)",
+        "inputs": [
+          "function_list",
+          "service_candidates"
+        ],
+        "outputs": [
+          "functional_allocation_matrix"
+        ],
+        "context_consumption": 4000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Ensure 100% functional coverage, high cohesion, low coupling",
+        "raw": {
+          "function_id": "F-060",
+          "function_name": "Create Functional Allocation Matrix",
+          "function_type": "process",
+          "description": "Map functions to services/components (NEW v2.1.0)",
+          "inputs": [
+            "function_list",
+            "service_candidates"
+          ],
+          "outputs": [
+            "functional_allocation_matrix"
+          ],
+          "context_consumption": 4000,
+          "execution_time_seconds": 20,
+          "implements_requirements": [
+            "FR-011"
+          ],
+          "error_handling": "Ensure 100% functional coverage, high cohesion, low coupling"
+        },
+        "id": "F-060"
+      },
+      {
+        "name": "Validate Functional Allocation",
+        "type": "validate",
+        "description": "Check allocation quality (cohesion, coupling, balance) (NEW v2.1.0)",
+        "inputs": [
+          "functional_allocation_matrix"
+        ],
+        "outputs": [
+          "allocation_validation_result"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Recommend refactoring if poor allocation quality",
+        "raw": {
+          "function_id": "F-061",
+          "function_name": "Validate Functional Allocation",
+          "function_type": "validate",
+          "description": "Check allocation quality (cohesion, coupling, balance) (NEW v2.1.0)",
+          "inputs": [
+            "functional_allocation_matrix"
+          ],
+          "outputs": [
+            "allocation_validation_result"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-011"
+          ],
+          "error_handling": "Recommend refactoring if poor allocation quality"
+        },
+        "id": "F-061"
+      },
+      {
+        "name": "Load Architectures for Documentation",
+        "type": "read",
+        "description": "Read all architecture files to document",
+        "inputs": [
+          "system_root"
+        ],
+        "outputs": [
+          "architecture_list"
+        ],
+        "context_consumption": 10000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Skip invalid files, warn user",
+        "raw": {
+          "function_id": "F-070",
+          "function_name": "Load Architectures for Documentation",
+          "function_type": "read",
+          "description": "Read all architecture files to document",
+          "inputs": [
+            "system_root"
+          ],
+          "outputs": [
+            "architecture_list"
+          ],
+          "context_consumption": 10000,
+          "execution_time_seconds": 8,
+          "implements_requirements": [
+            "FR-007"
+          ],
+          "error_handling": "Skip invalid files, warn user",
+          "optimization_recommended": {
+            "priority": "MEDIUM",
+            "strategy": "Selective loading - only load architectures needed for specific documentation outputs",
+            "expected_reduction": "10000 \u2192 2000-3000 tokens (per-architecture loading)",
+            "implementation": "Refactor generate_human_documentation.py to load files selectively based on documentation scope",
+            "benefit": "Enables documentation generation for large systems with many services",
+            "identified_in": "Meta-analysis v3.13.0 - high-context function analysis"
+          }
+        },
+        "id": "F-070"
+      },
+      {
+        "name": "Generate Interface Contract Documents",
+        "type": "generate",
+        "description": "Create ICDs for each service/component interface",
+        "inputs": [
+          "architecture_list"
+        ],
+        "outputs": [
+          "icd_documents"
+        ],
+        "context_consumption": 8000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Generate placeholder if interface undefined",
+        "raw": {
+          "function_id": "F-071",
+          "function_name": "Generate Interface Contract Documents",
+          "function_type": "generate",
+          "description": "Create ICDs for each service/component interface",
+          "inputs": [
+            "architecture_list"
+          ],
+          "outputs": [
+            "icd_documents"
+          ],
+          "context_consumption": 8000,
+          "execution_time_seconds": 20,
+          "implements_requirements": [
+            "FR-007"
+          ],
+          "error_handling": "Generate placeholder if interface undefined"
+        },
+        "id": "F-071"
+      },
+      {
+        "name": "Generate Mermaid Diagrams",
+        "type": "generate",
+        "description": "Create Mermaid architecture diagrams",
+        "inputs": [
+          "architecture_list",
+          "system_graph"
+        ],
+        "outputs": [
+          "mermaid_diagrams"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle large graphs (split into multiple diagrams)",
+        "raw": {
+          "function_id": "F-072",
+          "function_name": "Generate Mermaid Diagrams",
+          "function_type": "generate",
+          "description": "Create Mermaid architecture diagrams",
+          "inputs": [
+            "architecture_list",
+            "system_graph"
+          ],
+          "outputs": [
+            "mermaid_diagrams"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 15,
+          "implements_requirements": [
+            "FR-007"
+          ],
+          "error_handling": "Handle large graphs (split into multiple diagrams)"
+        },
+        "id": "F-072"
+      },
+      {
+        "name": "Generate Architecture Handoff Document",
+        "type": "generate",
+        "description": "Create comprehensive handoff doc for humans",
+        "inputs": [
+          "architecture_list",
+          "system_graph",
+          "analysis_report"
+        ],
+        "outputs": [
+          "handoff_document"
+        ],
+        "context_consumption": 6000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Include all critical information",
+        "raw": {
+          "function_id": "F-073",
+          "function_name": "Generate Architecture Handoff Document",
+          "function_type": "generate",
+          "description": "Create comprehensive handoff doc for humans",
+          "inputs": [
+            "architecture_list",
+            "system_graph",
+            "analysis_report"
+          ],
+          "outputs": [
+            "handoff_document"
+          ],
+          "context_consumption": 6000,
+          "execution_time_seconds": 25,
+          "implements_requirements": [
+            "FR-007"
+          ],
+          "error_handling": "Include all critical information"
+        },
+        "id": "F-073"
+      },
+      {
+        "name": "Write Documentation Files",
+        "type": "generate",
+        "description": "Save all documentation to file system",
+        "inputs": [
+          "icd_documents",
+          "diagrams",
+          "handoff_doc"
+        ],
+        "outputs": [
+          "files_written"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Create directory structure, handle permissions",
+        "raw": {
+          "function_id": "F-074",
+          "function_name": "Write Documentation Files",
+          "function_type": "generate",
+          "description": "Save all documentation to file system",
+          "inputs": [
+            "icd_documents",
+            "diagrams",
+            "handoff_doc"
+          ],
+          "outputs": [
+            "files_written"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-007"
+          ],
+          "error_handling": "Create directory structure, handle permissions"
+        },
+        "id": "F-074"
+      },
+      {
+        "name": "Load Functional Architecture for Analysis",
+        "type": "read",
+        "description": "Read functional architecture with context annotations (META)",
+        "inputs": [
+          "functional_architecture_path"
+        ],
+        "outputs": [
+          "functional_architecture_object"
+        ],
+        "context_consumption": 5000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Require context consumption data in architecture",
+        "raw": {
+          "function_id": "F-080",
+          "function_name": "Load Functional Architecture for Analysis",
+          "function_type": "read",
+          "description": "Read functional architecture with context annotations (META)",
+          "inputs": [
+            "functional_architecture_path"
+          ],
+          "outputs": [
+            "functional_architecture_object"
+          ],
+          "context_consumption": 5000,
+          "execution_time_seconds": 3,
+          "implements_requirements": [
+            "FR-013"
+          ],
+          "error_handling": "Require context consumption data in architecture"
+        },
+        "id": "F-080"
+      },
+      {
+        "name": "Build Context-Weighted Graph",
+        "type": "process",
+        "description": "Create graph with context consumption as edge weights (META)",
+        "inputs": [
+          "functional_architecture"
+        ],
+        "outputs": [
+          "context_weighted_graph"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Use estimates if exact values not available",
+        "raw": {
+          "function_id": "F-081",
+          "function_name": "Build Context-Weighted Graph",
+          "function_type": "process",
+          "description": "Create graph with context consumption as edge weights (META)",
+          "inputs": [
+            "functional_architecture"
+          ],
+          "outputs": [
+            "context_weighted_graph"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 8,
+          "implements_requirements": [
+            "FR-013"
+          ],
+          "error_handling": "Use estimates if exact values not available"
+        },
+        "id": "F-081"
+      },
+      {
+        "name": "Calculate Path Context Consumption",
+        "type": "process",
+        "description": "Sum context along all paths to find cumulative consumption (META)",
+        "inputs": [
+          "context_weighted_graph"
+        ],
+        "outputs": [
+          "path_context_report"
+        ],
+        "context_consumption": 4000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Handle cycles (infinite paths)",
+        "raw": {
+          "function_id": "F-082",
+          "function_name": "Calculate Path Context Consumption",
+          "function_type": "process",
+          "description": "Sum context along all paths to find cumulative consumption (META)",
+          "inputs": [
+            "context_weighted_graph"
+          ],
+          "outputs": [
+            "path_context_report"
+          ],
+          "context_consumption": 4000,
+          "execution_time_seconds": 12,
+          "implements_requirements": [
+            "FR-013"
+          ],
+          "error_handling": "Handle cycles (infinite paths)"
+        },
+        "id": "F-082"
+      },
+      {
+        "name": "Detect Context Bottlenecks",
+        "type": "process",
+        "description": "Identify paths exceeding usable context (160k tokens) (META)",
+        "inputs": [
+          "path_context_report",
+          "context_threshold"
+        ],
+        "outputs": [
+          "bottleneck_list"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Flag paths > 160k as CRITICAL, >140k as WARNING",
+        "raw": {
+          "function_id": "F-083",
+          "function_name": "Detect Context Bottlenecks",
+          "function_type": "process",
+          "description": "Identify paths exceeding usable context (160k tokens) (META)",
+          "inputs": [
+            "path_context_report",
+            "context_threshold"
+          ],
+          "outputs": [
+            "bottleneck_list"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 5,
+          "implements_requirements": [
+            "FR-013",
+            "FR-020"
+          ],
+          "error_handling": "Flag paths > 160k as CRITICAL, >140k as WARNING"
+        },
+        "id": "F-083"
+      },
+      {
+        "name": "Generate Optimization Recommendations",
+        "type": "generate",
+        "description": "Suggest refactorings to reduce context consumption (META)",
+        "inputs": [
+          "bottleneck_list",
+          "functional_architecture"
+        ],
+        "outputs": [
+          "optimization_recommendations"
+        ],
+        "context_consumption": 3000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Provide specific, actionable recommendations",
+        "raw": {
+          "function_id": "F-084",
+          "function_name": "Generate Optimization Recommendations",
+          "function_type": "generate",
+          "description": "Suggest refactorings to reduce context consumption (META)",
+          "inputs": [
+            "bottleneck_list",
+            "functional_architecture"
+          ],
+          "outputs": [
+            "optimization_recommendations"
+          ],
+          "context_consumption": 3000,
+          "execution_time_seconds": 10,
+          "implements_requirements": [
+            "FR-013"
+          ],
+          "error_handling": "Provide specific, actionable recommendations"
+        },
+        "id": "F-084"
+      },
+      {
+        "name": "Write Context Analysis Report",
+        "type": "generate",
+        "description": "Save context bottleneck analysis to file (META)",
+        "inputs": [
+          "bottleneck_list",
+          "recommendations"
+        ],
+        "outputs": [
+          "context_analysis_report"
+        ],
+        "context_consumption": 2000,
+        "execution_time": 0,
+        "requirements_satisfied": [],
+        "error_handling": "Always generate report even if no bottlenecks found",
+        "raw": {
+          "function_id": "F-085",
+          "function_name": "Write Context Analysis Report",
+          "function_type": "generate",
+          "description": "Save context bottleneck analysis to file (META)",
+          "inputs": [
+            "bottleneck_list",
+            "recommendations"
+          ],
+          "outputs": [
+            "context_analysis_report"
+          ],
+          "context_consumption": 2000,
+          "execution_time_seconds": 3,
+          "implements_requirements": [
+            "FR-013"
+          ],
+          "error_handling": "Always generate report even if no bottlenecks found"
+        },
+        "id": "F-085"
+      }
+    ],
+    "links": []
+  },
+  "functional_gaps": {
+    "orphaned_functions": [
+      {
+        "function_id": "F-001",
+        "function_name": "Load Workflow Definition",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-002",
+        "function_name": "Read Current Step Definition",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-003",
+        "function_name": "Parse Step Actions",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-004",
+        "function_name": "Execute Step Actions",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-005",
+        "function_name": "Check Quality Gates",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-006",
+        "function_name": "Update Workflow State",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-007",
+        "function_name": "Determine Next Step",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-010",
+        "function_name": "Track Context Operations",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-011",
+        "function_name": "Check Context Threshold",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-012",
+        "function_name": "Execute Context Refresh",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-013",
+        "function_name": "Reset Context Counter",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-014",
+        "function_name": "Update Context Health Status",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-014A",
+        "function_name": "Route Based on Context Health",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-020",
+        "function_name": "Load Framework Configuration",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-021",
+        "function_name": "Load Architecture Template",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-022",
+        "function_name": "Populate Architecture Data",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-023",
+        "function_name": "Validate Architecture Schema",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-024",
+        "function_name": "Add Version Metadata",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-025",
+        "function_name": "Write Architecture File",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-030",
+        "function_name": "Load All Architecture Files",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-031",
+        "function_name": "Build System Graph",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-032",
+        "function_name": "Run Graph Analysis",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-033",
+        "function_name": "Detect Architectural Issues",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-034",
+        "function_name": "Format Analysis Report",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-035",
+        "function_name": "Export Graph Data",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-036",
+        "function_name": "Write Graph and Analysis Files",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-040",
+        "function_name": "Load Architecture for Validation",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-041",
+        "function_name": "Validate Completeness",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-042",
+        "function_name": "Validate Interface Consistency",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-043",
+        "function_name": "Validate Foundational Alignment",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-044",
+        "function_name": "Aggregate Validation Results",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-045",
+        "function_name": "Determine Validation Status",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-050",
+        "function_name": "Extract Functional Requirements",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-051",
+        "function_name": "Define Functional Flows",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-052",
+        "function_name": "Decompose into Functions",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-053",
+        "function_name": "Generate Human Visualizations",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-054",
+        "function_name": "Conduct Stakeholder Review",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-055",
+        "function_name": "Build Functional Architecture Graph",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-056",
+        "function_name": "Analyze Functional Architecture",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-057",
+        "function_name": "Refine Functional Architecture",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-058",
+        "function_name": "Validate Functional Completeness",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-059",
+        "function_name": "Obtain Stakeholder Sign-off",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-060",
+        "function_name": "Create Functional Allocation Matrix",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-061",
+        "function_name": "Validate Functional Allocation",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-070",
+        "function_name": "Load Architectures for Documentation",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-071",
+        "function_name": "Generate Interface Contract Documents",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-072",
+        "function_name": "Generate Mermaid Diagrams",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-073",
+        "function_name": "Generate Architecture Handoff Document",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-074",
+        "function_name": "Write Documentation Files",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-080",
+        "function_name": "Load Functional Architecture for Analysis",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-081",
+        "function_name": "Build Context-Weighted Graph",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-082",
+        "function_name": "Calculate Path Context Consumption",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-083",
+        "function_name": "Detect Context Bottlenecks",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-084",
+        "function_name": "Generate Optimization Recommendations",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      },
+      {
+        "function_id": "F-085",
+        "function_name": "Write Context Analysis Report",
+        "issue": "Function has no connections - not part of any flow",
+        "severity": "CRITICAL"
+      }
+    ],
+    "unreachable_functions": [],
+    "dead_end_functions": [],
+    "missing_error_handlers": []
+  },
+  "functional_gaps_summary": {
+    "total_gaps": 55,
+    "by_type": {
+      "orphaned_functions": 55,
+      "unreachable_functions": 0,
+      "dead_end_functions": 0,
+      "missing_error_handlers": 0
+    }
+  }
+}
