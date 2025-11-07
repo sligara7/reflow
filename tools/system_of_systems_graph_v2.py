@@ -382,14 +382,15 @@ def build_functional_graph(functional_arch_path: Path) -> nx.DiGraph:
 
     print(f"Added {G.number_of_nodes()} function nodes")
 
-    # Add edges (dependencies)
-    dependencies = functional_arch.get('dependencies', [])
+    # Add edges (dependencies) - handle both 'dependencies' and 'function_dependencies' keys
+    dependencies = functional_arch.get('dependencies', functional_arch.get('function_dependencies', []))
     print(f"Processing {len(dependencies)} dependencies...")
 
     edges_added = 0
     for dep in dependencies:
-        source = dep.get('source_function')
-        target = dep.get('target_function')
+        # Handle both naming conventions: 'source_function'/'target_function' (template) and 'source'/'target' (actual)
+        source = dep.get('source_function', dep.get('source'))
+        target = dep.get('target_function', dep.get('target'))
 
         if not source or not target:
             print(f"WARNING: Dependency missing source or target, skipping")
@@ -403,9 +404,9 @@ def build_functional_graph(functional_arch_path: Path) -> nx.DiGraph:
             print(f"WARNING: Target function {target} not found in functions list")
             continue
 
-        # Add edge with attributes
+        # Add edge with attributes (handle both naming conventions)
         edge_attrs = {
-            'type': dep.get('dependency_type', 'unknown'),
+            'type': dep.get('dependency_type', dep.get('type', 'unknown')),
             'description': dep.get('description', ''),
             'weight': dep.get('weight', 1),  # Default weight 1 if not specified
             'probability': dep.get('probability', 1.0),
@@ -464,15 +465,17 @@ def detect_functional_gaps(G: nx.DiGraph, functional_arch: Dict) -> Dict[str, Li
                 'severity': 'CRITICAL'
             })
 
-    # 2. Find entry points (functions in flows)
+    # 2. Find entry points (functions in flows) - handle both 'entry_functions' and 'entry_point' keys
     entry_points = set()
     flows = functional_arch.get('functional_flows', [])
     for flow in flows:
-        entry_funcs = flow.get('entry_functions', [])
-        if isinstance(entry_funcs, list):
-            entry_points.update(entry_funcs)
-        else:
-            entry_points.add(entry_funcs)
+        # Try 'entry_functions' (template) first, then 'entry_point' (actual)
+        entry_funcs = flow.get('entry_functions', flow.get('entry_point'))
+        if entry_funcs:
+            if isinstance(entry_funcs, list):
+                entry_points.update(entry_funcs)
+            else:
+                entry_points.add(entry_funcs)
 
     # If no flows defined, use functions with no predecessors as entry points
     if not entry_points:
