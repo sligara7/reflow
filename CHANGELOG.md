@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.14.0] - 2025-11-07
+
+### Changed
+
+- **Feature Update Workflow** - Now invokes comprehensive 01d-functional_analysis.json workflow
+  - Modified `workflows/feature_update.json` step FU-01A to invoke 01d workflow instead of using condensed inline approach
+  - Feature updates now receive same rigorous functional analysis as new systems (7 workflow steps vs 1 condensed step)
+  - Ensures consistency: Same methodology for feature updates AND greenfield systems
+
+### Added
+
+- **Workflow Invocation in FU-01A** - Comprehensive functional analysis for feature updates
+  - Invokes 01d-functional_analysis.json with entry_point: from_feature_update
+  - Executes FA-01 through FA-07: Requirements extraction, flow definition, visualization, stakeholder validation, technical analysis, iterative refinement, finalization
+  - Enforces 7 quality gates (G-FA-01 through G-FA-07) including mandatory stakeholder validation
+  - Includes automated gap closure (FA-06-A02B) using reflow_gap_closure.py for feature changes
+  - Generates BPMN/UML visualizations showing feature deltas (current vs. proposed)
+
+- **Enhanced LLM Agent Guidance** - Workflow invocation instructions
+  - Added workflow_invocation_details section explaining how to invoke 01d workflow
+  - Updated critical_reminders with 01d workflow steps and benefits
+  - Updated common_mistakes to prevent inline implementation attempts
+  - Documented workflow invocation syntax and integration with FU-02
+
+### Benefits
+
+- **Consistency**: Same rigorous functional analysis for feature updates AND new systems
+- **Automated Gap Closure**: FA-06-A02B catches functional gaps in feature changes
+- **No Code Duplication**: Single source of truth (01d workflow) for functional analysis
+- **Comprehensive Validation**: 7 quality gates vs 1 condensed gate (higher quality assurance)
+- **Stakeholder Alignment**: Mandatory visualization and sign-off (G-FA-04)
+- **Technical Correctness**: Automated gap/redundancy/efficiency analysis (G-FA-05, G-FA-06)
+
+### Meta-Analysis Results
+
+- **Self-Sharpening Analysis** (RFU-03): No critical issues introduced by workflow invocation change
+  - Bottleneck paths: 0 (max context: 154k < 160k threshold) ✓
+  - Orphaned functions: 0 ✓
+  - Unreachable functions: 0 ✓
+  - Dead-end functions: 0 ✓
+  - Warning paths: 8 (pre-existing, not new)
+  - Cycles: 18 (intentional iterative refinement loops)
+  - Conclusion: Change is safe to deploy
+
+### Fixed
+
+- **Architectural Inconsistency** - Feature updates had condensed functional analysis while new systems had comprehensive analysis
+  - Previously: FU-01A had 7 actions in 1 step without automated gap closure
+  - Now: FU-01A invokes dedicated 01d workflow with 7 steps and automated gap closure
+  - Prevents architectural debt accumulation from incomplete feature analysis
+
+---
+
 ## [3.9.1] - 2025-10-28
 
 ### Added
