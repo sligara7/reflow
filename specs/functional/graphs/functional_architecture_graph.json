@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2025-11-07T08:30:28.554392",
+    "generated": "2025-11-07T08:36:42.461712",
     "mode": "functional",
     "system_name": "Reflow Workflow System",
     "num_functions": 55,
-    "num_dependencies": 0,
+    "num_dependencies": 71,
     "tool_version": "3.0",
     "source_file": "functional_architecture.json"
   },
@@ -2017,349 +2017,1192 @@
         "id": "F-085"
       }
     ],
-    "links": []
+    "links": [
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "workflow_loaded",
+        "raw": {
+          "source": "F-001",
+          "target": "F-002",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "workflow_loaded"
+        },
+        "source": "F-001",
+        "target": "F-002"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "step_found",
+        "raw": {
+          "source": "F-002",
+          "target": "F-003",
+          "type": "function_call",
+          "weight": 2000,
+          "condition": "step_found"
+        },
+        "source": "F-002",
+        "target": "F-003"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1000,
+        "probability": 1.0,
+        "condition": "actions_valid",
+        "raw": {
+          "source": "F-003",
+          "target": "F-004",
+          "type": "function_call",
+          "weight": 1000,
+          "condition": "actions_valid"
+        },
+        "source": "F-003",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.3,
+        "condition": "action=generate_architecture",
+        "raw": {
+          "source": "F-004",
+          "target": "F-020",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=generate_architecture",
+          "probability": 0.3,
+          "note": "F-004 orchestrates - calls Architecture Generation Flow"
+        },
+        "source": "F-004",
+        "target": "F-020"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.2,
+        "condition": "action=run_graph_analysis",
+        "raw": {
+          "source": "F-004",
+          "target": "F-030",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=run_graph_analysis",
+          "probability": 0.2,
+          "note": "F-004 orchestrates - calls Graph Analysis Flow"
+        },
+        "source": "F-004",
+        "target": "F-030"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.25,
+        "condition": "action=validate_architecture",
+        "raw": {
+          "source": "F-004",
+          "target": "F-040",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=validate_architecture",
+          "probability": 0.25,
+          "note": "F-004 orchestrates - calls Validation Flow"
+        },
+        "source": "F-004",
+        "target": "F-040"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.15,
+        "condition": "action=define_functional_architecture",
+        "raw": {
+          "source": "F-004",
+          "target": "F-050",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=define_functional_architecture",
+          "probability": 0.15,
+          "note": "F-004 orchestrates - calls Functional Architecture Flow"
+        },
+        "source": "F-004",
+        "target": "F-050"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.15,
+        "condition": "action=generate_documentation",
+        "raw": {
+          "source": "F-004",
+          "target": "F-070",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=generate_documentation",
+          "probability": 0.15,
+          "note": "F-004 orchestrates - calls Documentation Flow"
+        },
+        "source": "F-004",
+        "target": "F-070"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.05,
+        "condition": "action=analyze_context",
+        "raw": {
+          "source": "F-004",
+          "target": "F-080",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "action=analyze_context",
+          "probability": 0.05,
+          "note": "F-004 orchestrates - calls Context Analysis Flow"
+        },
+        "source": "F-004",
+        "target": "F-080"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "actions_executed",
+        "raw": {
+          "source": "F-004",
+          "target": "F-005",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "actions_executed"
+        },
+        "source": "F-004",
+        "target": "F-005"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1500,
+        "probability": 0.8,
+        "condition": "gates_passed",
+        "raw": {
+          "source": "F-005",
+          "target": "F-006",
+          "type": "function_call",
+          "weight": 1500,
+          "condition": "gates_passed",
+          "probability": 0.8
+        },
+        "source": "F-005",
+        "target": "F-006"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 1500,
+        "probability": 0.2,
+        "condition": "gates_failed",
+        "raw": {
+          "source": "F-005",
+          "target": "F-057",
+          "type": "control_flow",
+          "weight": 1500,
+          "condition": "gates_failed",
+          "probability": 0.2,
+          "note": "Rework loop"
+        },
+        "source": "F-005",
+        "target": "F-057"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "state_updated",
+        "raw": {
+          "source": "F-006",
+          "target": "F-010",
+          "type": "function_call",
+          "weight": 2000,
+          "condition": "state_updated",
+          "note": "Track context after each step"
+        },
+        "source": "F-006",
+        "target": "F-010"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 1000,
+        "probability": 0.9,
+        "condition": "more_steps",
+        "raw": {
+          "source": "F-007",
+          "target": "F-001",
+          "type": "control_flow",
+          "weight": 1000,
+          "condition": "more_steps",
+          "probability": 0.9,
+          "note": "Next step loop"
+        },
+        "source": "F-007",
+        "target": "F-001"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 200,
+        "probability": 1.0,
+        "condition": "context_tracked",
+        "raw": {
+          "source": "F-010",
+          "target": "F-007",
+          "type": "function_call",
+          "weight": 200,
+          "condition": "context_tracked"
+        },
+        "source": "F-010",
+        "target": "F-007"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 200,
+        "probability": 1.0,
+        "condition": "always",
+        "raw": {
+          "source": "F-010",
+          "target": "F-011",
+          "type": "function_call",
+          "weight": 200,
+          "condition": "always"
+        },
+        "source": "F-010",
+        "target": "F-011"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 100,
+        "probability": 0.2,
+        "condition": "needs_refresh",
+        "raw": {
+          "source": "F-011",
+          "target": "F-012",
+          "type": "control_flow",
+          "weight": 100,
+          "condition": "needs_refresh",
+          "probability": 0.2
+        },
+        "source": "F-011",
+        "target": "F-012"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 100,
+        "probability": 0.8,
+        "condition": "no_refresh_needed",
+        "raw": {
+          "source": "F-011",
+          "target": "F-014",
+          "type": "control_flow",
+          "weight": 100,
+          "condition": "no_refresh_needed",
+          "probability": 0.8
+        },
+        "source": "F-011",
+        "target": "F-014"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "refresh_complete",
+        "raw": {
+          "source": "F-012",
+          "target": "F-013",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "refresh_complete"
+        },
+        "source": "F-012",
+        "target": "F-013"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 200,
+        "probability": 1.0,
+        "condition": "counter_reset",
+        "raw": {
+          "source": "F-013",
+          "target": "F-014",
+          "type": "function_call",
+          "weight": 200,
+          "condition": "counter_reset"
+        },
+        "source": "F-013",
+        "target": "F-014"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 200,
+        "probability": 1.0,
+        "condition": "always",
+        "raw": {
+          "source": "F-014",
+          "target": "F-014A",
+          "type": "function_call",
+          "weight": 200,
+          "condition": "always",
+          "note": "ADDED v3.13.0: Context health status flows to routing decision"
+        },
+        "source": "F-014",
+        "target": "F-014A"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.85,
+        "condition": "context_health=HEALTHY|WARNING",
+        "raw": {
+          "source": "F-014A",
+          "target": "F-001",
+          "type": "control_flow",
+          "weight": 5000,
+          "condition": "context_health=HEALTHY|WARNING",
+          "probability": 0.85,
+          "note": "ADDED v3.13.0: Continue workflow execution when context healthy"
+        },
+        "source": "F-014A",
+        "target": "F-001"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.15,
+        "condition": "context_health=CRITICAL",
+        "raw": {
+          "source": "F-014A",
+          "target": "F-010",
+          "type": "control_flow",
+          "weight": 5000,
+          "condition": "context_health=CRITICAL",
+          "probability": 0.15,
+          "note": "ADDED v3.13.0: Trigger refresh when context critical (closes feedback loop)"
+        },
+        "source": "F-014A",
+        "target": "F-010"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 1000,
+        "probability": 1.0,
+        "condition": "architecture_generated",
+        "raw": {
+          "source": "F-020",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 1000,
+          "condition": "architecture_generated",
+          "note": "Return to orchestrator after architecture generation"
+        },
+        "source": "F-020",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1500,
+        "probability": 1.0,
+        "condition": "framework_loaded",
+        "raw": {
+          "source": "F-020",
+          "target": "F-021",
+          "type": "function_call",
+          "weight": 1500,
+          "condition": "framework_loaded"
+        },
+        "source": "F-020",
+        "target": "F-021"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "template_loaded",
+        "raw": {
+          "source": "F-021",
+          "target": "F-022",
+          "type": "function_call",
+          "weight": 2000,
+          "condition": "template_loaded"
+        },
+        "source": "F-021",
+        "target": "F-022"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "data_populated",
+        "raw": {
+          "source": "F-022",
+          "target": "F-023",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "data_populated"
+        },
+        "source": "F-022",
+        "target": "F-023"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1500,
+        "probability": 1.0,
+        "condition": "schema_valid",
+        "raw": {
+          "source": "F-023",
+          "target": "F-024",
+          "type": "function_call",
+          "weight": 1500,
+          "condition": "schema_valid"
+        },
+        "source": "F-023",
+        "target": "F-024"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 500,
+        "probability": 1.0,
+        "condition": "metadata_added",
+        "raw": {
+          "source": "F-024",
+          "target": "F-025",
+          "type": "function_call",
+          "weight": 500,
+          "condition": "metadata_added"
+        },
+        "source": "F-024",
+        "target": "F-025"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 1000,
+        "probability": 1.0,
+        "condition": "architecture_written",
+        "raw": {
+          "source": "F-025",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 1000,
+          "condition": "architecture_written",
+          "note": "Return to orchestrator"
+        },
+        "source": "F-025",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 15000,
+        "probability": 1.0,
+        "condition": "architectures_loaded",
+        "raw": {
+          "source": "F-030",
+          "target": "F-031",
+          "type": "function_call",
+          "weight": 15000,
+          "condition": "architectures_loaded",
+          "note": "HIGH context"
+        },
+        "source": "F-030",
+        "target": "F-031"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "graph_built",
+        "raw": {
+          "source": "F-031",
+          "target": "F-032",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "graph_built"
+        },
+        "source": "F-031",
+        "target": "F-032"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 8000,
+        "probability": 1.0,
+        "condition": "analysis_complete",
+        "raw": {
+          "source": "F-032",
+          "target": "F-033",
+          "type": "function_call",
+          "weight": 8000,
+          "condition": "analysis_complete"
+        },
+        "source": "F-032",
+        "target": "F-033"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "issues_detected",
+        "raw": {
+          "source": "F-033",
+          "target": "F-034",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "issues_detected"
+        },
+        "source": "F-033",
+        "target": "F-034"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "report_formatted",
+        "raw": {
+          "source": "F-034",
+          "target": "F-035",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "report_formatted"
+        },
+        "source": "F-034",
+        "target": "F-035"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "graph_exported",
+        "raw": {
+          "source": "F-035",
+          "target": "F-036",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "graph_exported"
+        },
+        "source": "F-035",
+        "target": "F-036"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "graph_analysis_complete",
+        "raw": {
+          "source": "F-036",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 2000,
+          "condition": "graph_analysis_complete",
+          "note": "Return to orchestrator after graph analysis"
+        },
+        "source": "F-036",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "architecture_loaded",
+        "raw": {
+          "source": "F-040",
+          "target": "F-041",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "architecture_loaded"
+        },
+        "source": "F-040",
+        "target": "F-041"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "architecture_loaded",
+        "raw": {
+          "source": "F-040",
+          "target": "F-042",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "architecture_loaded"
+        },
+        "source": "F-040",
+        "target": "F-042"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "architecture_loaded",
+        "raw": {
+          "source": "F-040",
+          "target": "F-043",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "architecture_loaded"
+        },
+        "source": "F-040",
+        "target": "F-043"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "validation_complete",
+        "raw": {
+          "source": "F-041",
+          "target": "F-044",
+          "type": "data_flow",
+          "weight": 2000,
+          "condition": "validation_complete"
+        },
+        "source": "F-041",
+        "target": "F-044"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 2500,
+        "probability": 1.0,
+        "condition": "validation_complete",
+        "raw": {
+          "source": "F-042",
+          "target": "F-044",
+          "type": "data_flow",
+          "weight": 2500,
+          "condition": "validation_complete"
+        },
+        "source": "F-042",
+        "target": "F-044"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "validation_complete",
+        "raw": {
+          "source": "F-043",
+          "target": "F-044",
+          "type": "data_flow",
+          "weight": 3000,
+          "condition": "validation_complete"
+        },
+        "source": "F-043",
+        "target": "F-044"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1500,
+        "probability": 1.0,
+        "condition": "results_aggregated",
+        "raw": {
+          "source": "F-044",
+          "target": "F-045",
+          "type": "function_call",
+          "weight": 1500,
+          "condition": "results_aggregated"
+        },
+        "source": "F-044",
+        "target": "F-045"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 500,
+        "probability": 1.0,
+        "condition": "validation_complete",
+        "raw": {
+          "source": "F-045",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 500,
+          "condition": "validation_complete",
+          "note": "Return to orchestrator after validation"
+        },
+        "source": "F-045",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "requirements_extracted",
+        "raw": {
+          "source": "F-050",
+          "target": "F-051",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "requirements_extracted"
+        },
+        "source": "F-050",
+        "target": "F-051"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 8000,
+        "probability": 1.0,
+        "condition": "flows_defined",
+        "raw": {
+          "source": "F-051",
+          "target": "F-052",
+          "type": "function_call",
+          "weight": 8000,
+          "condition": "flows_defined"
+        },
+        "source": "F-051",
+        "target": "F-052"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "functions_decomposed",
+        "raw": {
+          "source": "F-052",
+          "target": "F-053",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "functions_decomposed"
+        },
+        "source": "F-052",
+        "target": "F-053"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "functions_decomposed",
+        "raw": {
+          "source": "F-052",
+          "target": "F-055",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "functions_decomposed"
+        },
+        "source": "F-052",
+        "target": "F-055"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 12000,
+        "probability": 1.0,
+        "condition": "visualizations_generated",
+        "raw": {
+          "source": "F-053",
+          "target": "F-054",
+          "type": "function_call",
+          "weight": 12000,
+          "condition": "visualizations_generated",
+          "note": "HIGH context"
+        },
+        "source": "F-053",
+        "target": "F-054"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "feedback_received",
+        "raw": {
+          "source": "F-054",
+          "target": "F-057",
+          "type": "data_flow",
+          "weight": 3000,
+          "condition": "feedback_received"
+        },
+        "source": "F-054",
+        "target": "F-057"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "graph_built",
+        "raw": {
+          "source": "F-055",
+          "target": "F-056",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "graph_built"
+        },
+        "source": "F-055",
+        "target": "F-056"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "issues_detected",
+        "raw": {
+          "source": "F-056",
+          "target": "F-057",
+          "type": "data_flow",
+          "weight": 5000,
+          "condition": "issues_detected"
+        },
+        "source": "F-056",
+        "target": "F-057"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.6,
+        "condition": "needs_iteration",
+        "raw": {
+          "source": "F-057",
+          "target": "F-053",
+          "type": "control_flow",
+          "weight": 5000,
+          "condition": "needs_iteration",
+          "probability": 0.6,
+          "note": "Refinement loop"
+        },
+        "source": "F-057",
+        "target": "F-053"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 0.4,
+        "condition": "refinement_complete",
+        "raw": {
+          "source": "F-057",
+          "target": "F-058",
+          "type": "control_flow",
+          "weight": 5000,
+          "condition": "refinement_complete",
+          "probability": 0.4
+        },
+        "source": "F-057",
+        "target": "F-058"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "completeness_validated",
+        "raw": {
+          "source": "F-058",
+          "target": "F-059",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "completeness_validated"
+        },
+        "source": "F-058",
+        "target": "F-059"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 1000,
+        "probability": 1.0,
+        "condition": "sign_off_obtained",
+        "raw": {
+          "source": "F-059",
+          "target": "F-060",
+          "type": "function_call",
+          "weight": 1000,
+          "condition": "sign_off_obtained"
+        },
+        "source": "F-059",
+        "target": "F-060"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "allocation_created",
+        "raw": {
+          "source": "F-060",
+          "target": "F-061",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "allocation_created"
+        },
+        "source": "F-060",
+        "target": "F-061"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "functional_allocation_complete",
+        "raw": {
+          "source": "F-061",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 2000,
+          "condition": "functional_allocation_complete",
+          "note": "Return to orchestrator after functional architecture"
+        },
+        "source": "F-061",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 10000,
+        "probability": 1.0,
+        "condition": "architectures_loaded",
+        "raw": {
+          "source": "F-070",
+          "target": "F-071",
+          "type": "function_call",
+          "weight": 10000,
+          "condition": "architectures_loaded"
+        },
+        "source": "F-070",
+        "target": "F-071"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 10000,
+        "probability": 1.0,
+        "condition": "architectures_loaded",
+        "raw": {
+          "source": "F-070",
+          "target": "F-072",
+          "type": "function_call",
+          "weight": 10000,
+          "condition": "architectures_loaded"
+        },
+        "source": "F-070",
+        "target": "F-072"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 8000,
+        "probability": 1.0,
+        "condition": "icds_generated",
+        "raw": {
+          "source": "F-071",
+          "target": "F-073",
+          "type": "data_flow",
+          "weight": 8000,
+          "condition": "icds_generated"
+        },
+        "source": "F-071",
+        "target": "F-073"
+      },
+      {
+        "type": "data_flow",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "diagrams_generated",
+        "raw": {
+          "source": "F-072",
+          "target": "F-073",
+          "type": "data_flow",
+          "weight": 5000,
+          "condition": "diagrams_generated"
+        },
+        "source": "F-072",
+        "target": "F-073"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 6000,
+        "probability": 1.0,
+        "condition": "handoff_generated",
+        "raw": {
+          "source": "F-073",
+          "target": "F-074",
+          "type": "function_call",
+          "weight": 6000,
+          "condition": "handoff_generated"
+        },
+        "source": "F-073",
+        "target": "F-074"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "documentation_complete",
+        "raw": {
+          "source": "F-074",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 2000,
+          "condition": "documentation_complete",
+          "note": "Return to orchestrator after documentation"
+        },
+        "source": "F-074",
+        "target": "F-004"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 5000,
+        "probability": 1.0,
+        "condition": "architecture_loaded",
+        "raw": {
+          "source": "F-080",
+          "target": "F-081",
+          "type": "function_call",
+          "weight": 5000,
+          "condition": "architecture_loaded"
+        },
+        "source": "F-080",
+        "target": "F-081"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "graph_built",
+        "raw": {
+          "source": "F-081",
+          "target": "F-082",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "graph_built"
+        },
+        "source": "F-081",
+        "target": "F-082"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 4000,
+        "probability": 1.0,
+        "condition": "paths_analyzed",
+        "raw": {
+          "source": "F-082",
+          "target": "F-083",
+          "type": "function_call",
+          "weight": 4000,
+          "condition": "paths_analyzed"
+        },
+        "source": "F-082",
+        "target": "F-083"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "bottlenecks_detected",
+        "raw": {
+          "source": "F-083",
+          "target": "F-084",
+          "type": "function_call",
+          "weight": 2000,
+          "condition": "bottlenecks_detected"
+        },
+        "source": "F-083",
+        "target": "F-084"
+      },
+      {
+        "type": "function_call",
+        "description": "",
+        "weight": 3000,
+        "probability": 1.0,
+        "condition": "recommendations_generated",
+        "raw": {
+          "source": "F-084",
+          "target": "F-085",
+          "type": "function_call",
+          "weight": 3000,
+          "condition": "recommendations_generated"
+        },
+        "source": "F-084",
+        "target": "F-085"
+      },
+      {
+        "type": "control_flow",
+        "description": "",
+        "weight": 2000,
+        "probability": 1.0,
+        "condition": "context_analysis_complete",
+        "raw": {
+          "source": "F-085",
+          "target": "F-004",
+          "type": "control_flow",
+          "weight": 2000,
+          "condition": "context_analysis_complete",
+          "note": "Return to orchestrator after context analysis"
+        },
+        "source": "F-085",
+        "target": "F-004"
+      }
+    ]
   },
   "functional_gaps": {
-    "orphaned_functions": [
-      {
-        "function_id": "F-001",
-        "function_name": "Load Workflow Definition",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-002",
-        "function_name": "Read Current Step Definition",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-003",
-        "function_name": "Parse Step Actions",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-004",
-        "function_name": "Execute Step Actions",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-005",
-        "function_name": "Check Quality Gates",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-006",
-        "function_name": "Update Workflow State",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-007",
-        "function_name": "Determine Next Step",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-010",
-        "function_name": "Track Context Operations",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-011",
-        "function_name": "Check Context Threshold",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-012",
-        "function_name": "Execute Context Refresh",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-013",
-        "function_name": "Reset Context Counter",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-014",
-        "function_name": "Update Context Health Status",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-014A",
-        "function_name": "Route Based on Context Health",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-020",
-        "function_name": "Load Framework Configuration",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-021",
-        "function_name": "Load Architecture Template",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-022",
-        "function_name": "Populate Architecture Data",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-023",
-        "function_name": "Validate Architecture Schema",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-024",
-        "function_name": "Add Version Metadata",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-025",
-        "function_name": "Write Architecture File",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-030",
-        "function_name": "Load All Architecture Files",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-031",
-        "function_name": "Build System Graph",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-032",
-        "function_name": "Run Graph Analysis",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-033",
-        "function_name": "Detect Architectural Issues",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-034",
-        "function_name": "Format Analysis Report",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-035",
-        "function_name": "Export Graph Data",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-036",
-        "function_name": "Write Graph and Analysis Files",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-040",
-        "function_name": "Load Architecture for Validation",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-041",
-        "function_name": "Validate Completeness",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-042",
-        "function_name": "Validate Interface Consistency",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-043",
-        "function_name": "Validate Foundational Alignment",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-044",
-        "function_name": "Aggregate Validation Results",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-045",
-        "function_name": "Determine Validation Status",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-050",
-        "function_name": "Extract Functional Requirements",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-051",
-        "function_name": "Define Functional Flows",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-052",
-        "function_name": "Decompose into Functions",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-053",
-        "function_name": "Generate Human Visualizations",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-054",
-        "function_name": "Conduct Stakeholder Review",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-055",
-        "function_name": "Build Functional Architecture Graph",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-056",
-        "function_name": "Analyze Functional Architecture",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-057",
-        "function_name": "Refine Functional Architecture",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-058",
-        "function_name": "Validate Functional Completeness",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-059",
-        "function_name": "Obtain Stakeholder Sign-off",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-060",
-        "function_name": "Create Functional Allocation Matrix",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-061",
-        "function_name": "Validate Functional Allocation",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-070",
-        "function_name": "Load Architectures for Documentation",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-071",
-        "function_name": "Generate Interface Contract Documents",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-072",
-        "function_name": "Generate Mermaid Diagrams",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-073",
-        "function_name": "Generate Architecture Handoff Document",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-074",
-        "function_name": "Write Documentation Files",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-080",
-        "function_name": "Load Functional Architecture for Analysis",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-081",
-        "function_name": "Build Context-Weighted Graph",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-082",
-        "function_name": "Calculate Path Context Consumption",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-083",
-        "function_name": "Detect Context Bottlenecks",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-084",
-        "function_name": "Generate Optimization Recommendations",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      },
-      {
-        "function_id": "F-085",
-        "function_name": "Write Context Analysis Report",
-        "issue": "Function has no connections - not part of any flow",
-        "severity": "CRITICAL"
-      }
-    ],
+    "orphaned_functions": [],
     "unreachable_functions": [],
     "dead_end_functions": [],
     "missing_error_handlers": []
   },
   "functional_gaps_summary": {
-    "total_gaps": 55,
+    "total_gaps": 0,
     "by_type": {
-      "orphaned_functions": 55,
+      "orphaned_functions": 0,
       "unreachable_functions": 0,
       "dead_end_functions": 0,
       "missing_error_handlers": 0

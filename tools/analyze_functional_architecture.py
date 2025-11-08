@@ -1,20 +1,81 @@
 #!/usr/bin/env python3
 """
-Functional Architecture Analyzer
+Functional Architecture Analyzer v2.0.0
 
-Analyzes functional architecture with context consumption tracking to identify:
-- Functional gaps (missing functions)
-- Context bottlenecks (paths exceeding context limits)
-- Circular dependencies
-- Redundant functions
+Framework-agnostic functional architecture analysis tool.
+
+Analyzes functional architectures to identify:
+- Functional gaps (missing functions, unreachable functions, orphaned functions)
+- Flow efficiency (cycles, high fan-out/fan-in)
+- Context bottlenecks (optional - for architectures with context consumption tracking)
 - Critical path analysis
+- Redundant functions
+
+Version 2.0.0 Changes (2025-11-08):
+- Framework-agnostic: Works with ANY functional architecture (microservices, AI agents, etc.)
+- Flexible field support:
+  - execution_time: Accepts both numeric (execution_time_seconds) and string formats ("0.01 seconds")
+  - context_consumption: Optional field (skipped for traditional systems without resource tracking)
+  - dependencies: Handles both 'function_dependencies' and 'dependencies' keys
+  - Field names: Supports both 'source'/'target' and 'source_function'/'target_function'
+- Context analysis runs ONLY if context consumption data is present
+- No assumptions about system type (AI agent vs traditional)
 """
 
 import json
 import networkx as nx
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Optional
 import sys
+import re
+
+def parse_execution_time(time_value) -> float:
+    """
+    Parse execution time from various formats.
+
+    Handles:
+    - Numeric values (1, 2.5, 60)
+    - String with units ("0.01 seconds", "1-5 seconds", "Continuous")
+
+    Returns execution time in seconds (float), or 0.0 if unparseable.
+    """
+    if isinstance(time_value, (int, float)):
+        return float(time_value)
+
+    if isinstance(time_value, str):
+        # Handle ranges like "1-5 seconds" - take average
+        range_match = re.match(r'(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*seconds?', time_value, re.IGNORECASE)
+        if range_match:
+            low = float(range_match.group(1))
+            high = float(range_match.group(2))
+            return (low + high) / 2.0
+
+        # Handle single value like "0.01 seconds"
+        single_match = re.match(r'(\d+(?:\.\d+)?)\s*seconds?', time_value, re.IGNORECASE)
+        if single_match:
+            return float(single_match.group(1))
+
+        # Handle special cases like "Continuous (event-driven)"
+        if 'continuous' in time_value.lower():
+            return 0.0  # Continuous processes don't have discrete execution time
+
+    # Default to 0 if unparseable
+    return 0.0
+
+def has_context_data(arch: Dict) -> bool:
+    """
+    Check if the functional architecture contains context consumption data.
+
+    Returns True if context_consumption field exists and has non-zero values.
+    This is framework-agnostic - any architecture can optionally track context.
+    """
+    if 'functions' in arch and len(arch['functions']) > 0:
+        # Check if any function has context_consumption field with non-zero value
+        for func in arch['functions']:
+            if func.get('context_consumption', 0) > 0:
+                return True
+
+    return False
 
 def load_functional_architecture(filepath: Path) -> Dict:
     """Load functional architecture JSON."""
@@ -27,30 +88,65 @@ def build_functional_graph(arch: Dict) -> nx.DiGraph:
 
     # Add nodes (functions)
     for func in arch['functions']:
+        # Handle context_consumption (optional for traditional systems)
+        context_consumption = func.get('context_consumption', 0)
+
+        # Handle execution_time (flexible field names and formats)
+        execution_time = 0.0
+        if 'execution_time_seconds' in func:
+            execution_time = parse_execution_time(func['execution_time_seconds'])
+        elif 'execution_time' in func:
+            execution_time = parse_execution_time(func['execution_time'])
+
         G.add_node(
             func['function_id'],
             label=func['function_name'],
             type=func['function_type'],
-            context_consumption=func['context_consumption'],
-            execution_time=func['execution_time_seconds'],
+            context_consumption=context_consumption,
+            execution_time=execution_time,
             description=func['description']
         )
 
-    # Add edges (dependencies)
-    for dep in arch['function_dependencies']:
+    # Add edges (dependencies) - handle both schema variations
+    # Some schemas use 'function_dependencies', others use 'dependencies'
+    dependencies = arch.get('function_dependencies', arch.get('dependencies', []))
+
+    for dep in dependencies:
+        # Normalize field names (handle schema variations)
+        source = dep.get('source', dep.get('source_function', ''))
+        target = dep.get('target', dep.get('target_function', ''))
+        dep_type = dep.get('type', dep.get('dependency_type', 'dependency'))
+
+        # Skip if source or target is missing
+        if not source or not target:
+            continue
+
+        # Weight might be context_consumption (AI workflows) or execution_probability (traditional)
+        weight = dep.get('weight', 0)
+
         G.add_edge(
-            dep['source'],
-            dep['target'],
-            type=dep['type'],
-            weight=dep['weight'],  # context consumption
+            source,
+            target,
+            type=dep_type,
+            weight=weight,
             probability=dep.get('probability', 1.0),
             condition=dep.get('condition', '')
         )
 
     return G
 
-def analyze_context_paths(G: nx.DiGraph, arch: Dict, context_threshold: int = 160000) -> Dict:
-    """Analyze all paths for cumulative context consumption."""
+def analyze_context_paths(G: nx.DiGraph, arch: Dict, context_threshold: int = 160000) -> Optional[Dict]:
+    """
+    Analyze all paths for cumulative context consumption.
+
+    Returns None if system has no context consumption data (traditional systems).
+    """
+    # Check if any function has context consumption > 0
+    has_context_data = any(G.nodes[n].get('context_consumption', 0) > 0 for n in G.nodes())
+
+    if not has_context_data:
+        return None  # Skip context analysis for traditional systems
+
     results = {
         'bottleneck_paths': [],
         'warning_paths': [],
@@ -285,33 +381,34 @@ def analyze_flow_efficiency(G: nx.DiGraph) -> Dict:
 
     return analysis
 
-def generate_recommendations(context_analysis: Dict, gaps: Dict, efficiency: Dict) -> List[str]:
+def generate_recommendations(context_analysis: Optional[Dict], gaps: Dict, efficiency: Dict) -> List[str]:
     """Generate actionable recommendations based on analysis."""
     recommendations = []
 
-    # Context recommendations
-    if context_analysis['summary']['bottleneck_paths'] > 0:
-        recommendations.append(
-            f"CRITICAL: {context_analysis['summary']['bottleneck_paths']} paths exceed context threshold "
-            f"({context_analysis['summary']['context_threshold']} tokens). Consider: "
-            "(1) Breaking long flows into separate sessions with context refresh, "
-            "(2) Implementing lazy loading for high-context functions, "
-            "(3) Summarizing outputs instead of full details."
-        )
+    # Context recommendations (only for AI agent workflows)
+    if context_analysis is not None:
+        if context_analysis['summary']['bottleneck_paths'] > 0:
+            recommendations.append(
+                f"CRITICAL: {context_analysis['summary']['bottleneck_paths']} paths exceed context threshold "
+                f"({context_analysis['summary']['context_threshold']} tokens). Consider: "
+                "(1) Breaking long flows into separate sessions with context refresh, "
+                "(2) Implementing lazy loading for high-context functions, "
+                "(3) Summarizing outputs instead of full details."
+            )
 
-    if context_analysis['summary']['warning_paths'] > 0:
-        recommendations.append(
-            f"WARNING: {context_analysis['summary']['warning_paths']} paths approaching context limits. "
-            "Monitor these flows and optimize high-context functions."
-        )
+        if context_analysis['summary']['warning_paths'] > 0:
+            recommendations.append(
+                f"WARNING: {context_analysis['summary']['warning_paths']} paths approaching context limits. "
+                "Monitor these flows and optimize high-context functions."
+            )
 
-    # Top context consumers
-    if context_analysis['critical_functions']:
-        top_func = context_analysis['critical_functions'][0]
-        recommendations.append(
-            f"Highest context consumer: {top_func[0]} ({top_func[1]} tokens). "
-            f"Consider refactoring to reduce context consumption."
-        )
+        # Top context consumers
+        if context_analysis['critical_functions']:
+            top_func = context_analysis['critical_functions'][0]
+            recommendations.append(
+                f"Highest context consumer: {top_func[0]} ({top_func[1]} tokens). "
+                f"Consider refactoring to reduce context consumption."
+            )
 
     # Gap recommendations
     if gaps['orphaned_functions']:
@@ -355,32 +452,44 @@ def main():
     print(f"Loading functional architecture from: {arch_path}")
     arch = load_functional_architecture(arch_path)
 
-    print("Building functional graph...")
+    print("\nBuilding functional graph...")
     G = build_functional_graph(arch)
     print(f"Graph built: {G.number_of_nodes()} functions, {G.number_of_edges()} dependencies")
+
+    # Context analysis (runs only if context consumption data is present)
+    context_analysis = None
+    has_context = has_context_data(arch)
 
     print("\n" + "="*80)
     print("CONTEXT PATH ANALYSIS")
     print("="*80)
-    context_analysis = analyze_context_paths(G, arch)
-    print(f"\nAnalyzed {context_analysis['summary']['total_paths_analyzed']} paths")
-    print(f"Context threshold: {context_analysis['summary']['context_threshold']} tokens")
-    print(f"Bottleneck paths (CRITICAL): {context_analysis['summary']['bottleneck_paths']}")
-    print(f"Warning paths: {context_analysis['summary']['warning_paths']}")
-    print(f"Safe paths: {context_analysis['summary']['safe_paths']}")
-    print(f"Max context path: {context_analysis['summary']['max_context_path']:.0f} tokens")
-    print(f"Avg context path: {context_analysis['summary']['avg_context_path']:.0f} tokens")
 
-    if context_analysis['bottleneck_paths']:
-        print("\nCRITICAL BOTTLENECK PATHS:")
-        for i, path_info in enumerate(context_analysis['bottleneck_paths'][:5], 1):
-            print(f"  {i}. {' → '.join(path_info['path'])}")
-            print(f"     Context: {path_info['context_consumption']} tokens")
+    if has_context:
+        print("Context consumption data detected - analyzing paths...")
+        context_analysis = analyze_context_paths(G, arch)
 
-    print("\nTOP 5 CONTEXT-CONSUMING FUNCTIONS:")
-    for func_id, context in context_analysis['critical_functions'][:5]:
-        func_name = G.nodes[func_id].get('label', '')
-        print(f"  {func_id} ({func_name}): {context} tokens")
+        if context_analysis is not None:
+            print(f"\nAnalyzed {context_analysis['summary']['total_paths_analyzed']} paths")
+            print(f"Context threshold: {context_analysis['summary']['context_threshold']} tokens")
+            print(f"Bottleneck paths (CRITICAL): {context_analysis['summary']['bottleneck_paths']}")
+            print(f"Warning paths: {context_analysis['summary']['warning_paths']}")
+            print(f"Safe paths: {context_analysis['summary']['safe_paths']}")
+            print(f"Max context path: {context_analysis['summary']['max_context_path']:.0f} tokens")
+            print(f"Avg context path: {context_analysis['summary']['avg_context_path']:.0f} tokens")
+
+            if context_analysis['bottleneck_paths']:
+                print("\nCRITICAL BOTTLENECK PATHS:")
+                for i, path_info in enumerate(context_analysis['bottleneck_paths'][:5], 1):
+                    print(f"  {i}. {' → '.join(path_info['path'])}")
+                    print(f"     Context: {path_info['context_consumption']} tokens")
+
+            print("\nTOP 5 CONTEXT-CONSUMING FUNCTIONS:")
+            for func_id, context in context_analysis['critical_functions'][:5]:
+                func_name = G.nodes[func_id].get('label', '')
+                print(f"  {func_id} ({func_name}): {context} tokens")
+    else:
+        print("No context consumption data found - skipping context analysis.")
+        print("(This is normal for architectures that don't track resource consumption)")
 
     print("\n" + "="*80)
     print("GAP DETECTION")
@@ -426,8 +535,10 @@ def main():
     results = {
         'metadata': {
             'input_file': str(arch_path),
-            'timestamp': '2025-11-04',
-            'analyzer_version': '1.0.0'
+            'timestamp': '2025-11-08',
+            'analyzer_version': '2.0.0',
+            'context_analysis_performed': has_context,
+            'note': 'v2.0.0: Framework-agnostic analysis with flexible field support'
         },
         'graph_summary': {
             'total_functions': G.number_of_nodes(),
