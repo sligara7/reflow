@@ -1,7 +1,16 @@
 {
   "$schema": "../templates/schemas/service_architecture_schema.json",
-  "template_version": "1.0",
+  "template_version": "1.1",
   "template_description": "Standard template for service_architecture.json files based on UAF definitions",
+
+  "⚠️_CRITICAL_TOOL_FORMAT_REQUIREMENTS": "This format is REQUIRED for SE-06 graph tool (system_of_systems_graph_v2.py). Deviating from this structure will cause tool failures and force you to reformat, potentially never completing SE-06.",
+
+  "// CRITICAL_1_interfaces_MUST_be_ARRAY": "The 'interfaces' field MUST be an ARRAY, NOT an object with 'provided'/'consumed' keys. Tool expects: data.get('interfaces', []) and will fail if it's an object.",
+
+  "// CRITICAL_2_components_need_ids": "If you add a 'components' field, each component MUST have 'component_id' and 'component_name'. Tool creates graph nodes from these and crashes if missing.",
+
+  "// CRITICAL_3_validate_immediately": "After creating this file, IMMEDIATELY run: python3 tools/validate_architecture_format.py <this_file> --mode service. Fix any errors BEFORE proceeding to next step.",
+
   "CRITICAL_NOTE": "service_id and service_name MUST be at TOP LEVEL (not nested in metadata). Tools expect flat structure.",
   "service_name": "REPLACE_WITH_SERVICE_NAME",
   "service_id": "REPLACE_WITH_SERVICE_ID",

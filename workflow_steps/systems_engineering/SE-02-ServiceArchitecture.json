@@ -41,6 +41,154 @@
         "service_view (service_specs, resources)",
         "constraints (technical, deployment, security)",
         "deployment_architecture (environment, infrastructure)"
+      ],
+
+      "⚠️_CRITICAL_FORMAT_REQUIREMENTS_FOR_SE-06_GRAPH_TOOL": {
+        "purpose": "These format requirements ensure SE-06 graph tool (system_of_systems_graph_v2.py) can read your architecture WITHOUT needing to go back and reformat",
+        "problem_if_ignored": "You will create architectures in wrong format → Reach SE-06 → Discover format issues → Have to return to SE-02 to reformat → May never complete SE-06 (reformatting loop)",
+        "user_reported_issue": "When LLMs develop architectures, they don't develop them properly - so when they get to tool steps, they say they have to go back and reformat",
+
+        "required_for_se_06_graph_tool": {
+          "tool": "system_of_systems_graph_v2.py",
+          "tool_step": "SE-06-A02",
+          "tool_location": "{reflow_root}/tools/system_of_systems_graph_v2.py",
+
+          "CRITICAL_interfaces_field": {
+            "format": "ARRAY (NOT object with 'provided'/'consumed' keys)",
+            "tool_code_reference": "system_of_systems_graph_v2.py line 572: interfaces = node_data.get('interfaces', [])",
+            "common_mistake": "Creating interfaces as object → {'provided': [...], 'consumed': [...]}",
+            "why_this_fails": "Tool expects array, not object - will fail to parse interfaces correctly",
+
+            "CORRECT_format": {
+              "interfaces": [
+                {
+                  "interface_id": "user_api",
+                  "interface_name": "User Management API",
+                  "type": "provided",
+                  "protocol": "REST",
+                  "description": "External REST API for user management"
+                },
+                {
+                  "interface_id": "database_connection",
+                  "interface_name": "PostgreSQL Database",
+                  "type": "consumed",
+                  "protocol": "database",
+                  "description": "PostgreSQL database connection for persistence"
+                }
+              ]
+            },
+
+            "INCORRECT_format_DO_NOT_USE": {
+              "interfaces": {
+                "provided": ["user_api"],
+                "consumed": ["database_connection"]
+              }
+            }
+          },
+
+          "CRITICAL_components_field": {
+            "format": "ARRAY with specific required fields for graph node creation",
+            "required_fields": ["component_id", "component_name"],
+            "tool_code_reference": "system_of_systems_graph_v2.py line 150-152: Validates node_id and node_name exist",
+            "why_required": "Tool creates graph nodes from components - missing these fields causes crashes",
+
+            "example": [
+              {
+                "component_id": "api_handler",
+                "component_name": "REST API Handler",
+                "component_type": "service",
+                "description": "Handles incoming REST API requests"
+              },
+              {
+                "component_id": "business_logic",
+                "component_name": "Business Logic Engine",
+                "component_type": "service",
+                "description": "Core business logic processing"
+              }
+            ]
+          },
+
+          "RECOMMENDED_dependencies_field": {
+            "format": "ARRAY showing service-to-service dependencies",
+            "purpose": "Tool creates graph edges from dependencies - missing this may cause orphaned service warnings",
+            "when_needed": "If this service consumes interfaces from other services",
+
+            "example": [
+              {
+                "service_id": "database_service",
+                "interface_id": "database_connection",
+                "dependency_type": "required"
+              },
+              {
+                "service_id": "auth_service",
+                "interface_id": "authentication_api",
+                "dependency_type": "required"
+              }
+            ]
+          },
+
+          "CONDITIONAL_edge_weights": {
+            "condition": "REQUIRED if framework uses flow analysis (decision_flow, ecological)",
+            "check": "Read working_memory.json -> framework_analysis.recommended_analyses contains 'flow'",
+            "format": "weight field on each dependency/transition",
+            "tool_error_if_missing": "Flow analysis will fail with 'No capacity attribute' error",
+            "when_to_add": "NOW in SE-02-A01 (NOT later in SE-06 - too late to add)",
+            "see_also": "SE-02-A02B for detailed edge weight planning guidance"
+          }
+        }
+      },
+
+      "immediate_validation_after_creation": {
+        "validation_id": "SE-02-A01-VALIDATE",
+        "when": "IMMEDIATELY after creating each service_architecture_v*.json file",
+        "tool": "{reflow_root}/tools/validate_architecture_format.py",
+        "command": "python3 {reflow_root}/tools/validate_architecture_format.py {system_root}/specs/machine/service_arch/{service}/service_architecture_v1.0.0-{date}.json --mode service",
+        "purpose": "Catch format errors NOW (not 4 steps later at SE-06)",
+
+        "validation_checks": [
+          "✓ interfaces field is ARRAY (not object)",
+          "✓ All components have component_id and component_name",
+          "✓ dependencies array exists if service has consumed interfaces",
+          "✓ Edge weights present if framework requires flow analysis",
+          "✓ Valid JSON syntax"
+        ],
+
+        "on_validation_failure": {
+          "action": "FIX ERRORS NOW before proceeding to next service or creating symlink",
+          "do_not": "Defer fixing to SE-06 (you may never return to complete SE-06)",
+          "common_fixes": {
+            "interfaces_not_array": "Convert object format to array format (see CORRECT_format example above)",
+            "missing_component_id": "Add component_id field to each component",
+            "missing_component_name": "Add component_name field to each component"
+          }
+        },
+
+        "on_validation_success": {
+          "action": "Proceed to create symlink and move to next service or next action"
+        },
+
+        "llm_agent_instructions": [
+          "⚠️ CRITICAL: After creating EACH service_architecture.json, you MUST validate format immediately",
+          "Run: python3 {reflow_root}/tools/validate_architecture_format.py <architecture_file> --mode service",
+          "If validation fails: READ the error messages carefully and FIX the errors NOW",
+          "Most common fix: interfaces must be ARRAY, not object (see CORRECT_format above)",
+          "DO NOT proceed to next service until validation passes",
+          "DO NOT defer fixing to SE-06 - you may get stuck in reformatting loop and never complete workflow"
+        ]
+      },
+
+      "execution_steps_WITH_VALIDATION": [
+        "1. Read {reflow_root}/templates/service_architecture_template.json",
+        "2. For EACH service:",
+        "   a. Create service_architecture_v1.0.0-{YYYYMMDD}.json",
+        "   b. Ensure interfaces field is ARRAY format (see CRITICAL_FORMAT_REQUIREMENTS above)",
+        "   c. Ensure all components have component_id and component_name fields",
+        "   d. ⚠️ IMMEDIATELY validate format:",
+        "      python3 {reflow_root}/tools/validate_architecture_format.py specs/machine/service_arch/{service}/service_architecture_v1.0.0-{date}.json --mode service",
+        "   e. If validation FAILS: FIX errors NOW (see on_validation_failure above)",
+        "   f. If validation PASSES: Create symlink service_architecture.json → service_architecture_v1.0.0-{date}.json",
+        "   g. Repeat for next service",
+        "3. After ALL services created and validated, proceed to SE-02-A02"
       ]
     },
     {
