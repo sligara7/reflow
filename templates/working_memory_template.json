@@ -15,6 +15,11 @@
     "definitions_path": "/absolute/path/to/reflow/definitions",
     "note": "CRITICAL: These paths MUST be read and used for ALL tool/template/workflow references. Set during Setup workflow (00a-basic_setup). LLM agents: ALWAYS extract these paths from working_memory.json before invoking tools."
   },
+  "user_preferences": {
+    "stakeholder_approval_required": null,
+    "stakeholder_approval_rationale": "REASON_WHY_APPROVAL_IS_OR_ISNT_NEEDED (e.g., 'Personal project' or 'Enterprise system requiring formal review')",
+    "note": "Set during Setup workflow - determines if formal stakeholder approval steps are mandatory or can be skipped. null = not yet asked, true = formal approval required, false = skip approval steps (personal/hobby projects)"
+  },
   "framework_configuration": {
     "framework_id": "FRAMEWORK_ID (uaf|decision_flow|systems_biology|social_network|ecological|complex_adaptive|custom)",
     "framework_name": "FRAMEWORK_DISPLAY_NAME",

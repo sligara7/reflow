@@ -210,6 +210,45 @@
           ]
         },
         {
+          "action_id": "S-03-A03A",
+          "description": "Ask user about stakeholder approval requirements",
+          "purpose": "Determine if formal stakeholder approval steps are needed or can be skipped",
+          "user_prompt": {
+            "ask": "Does this project require formal stakeholder approval and reviews?",
+            "context": "Some workflows include formal stakeholder approval steps (e.g., reviewing functional architecture with product owners, domain experts, and technical leads). These are valuable for enterprise/production systems but may be unnecessary for personal projects, experiments, or hobby projects.",
+            "options": [
+              "Yes - This is an enterprise/production system that requires formal stakeholder reviews and approval",
+              "No - This is a personal project, experiment, or hobby project that doesn't need formal approval steps"
+            ],
+            "default": "Ask user (no default)",
+            "benefits_of_yes": [
+              "Stakeholder validation catches misalignment early (cheaper to fix)",
+              "Formal sign-off prevents scope creep and requirement changes",
+              "Non-technical stakeholders can review visual diagrams",
+              "Reduces rework after implementation"
+            ],
+            "benefits_of_no": [
+              "Faster workflow execution (skip review sessions)",
+              "Less ceremony for personal/experimental projects",
+              "Direct progression from technical analysis to implementation",
+              "Suitable for solo developers or small teams"
+            ]
+          },
+          "storage": {
+            "location": "context/working_memory.json",
+            "field": "user_preferences.stakeholder_approval_required",
+            "values": {
+              "true": "User selected Yes - formal approval required",
+              "false": "User selected No - skip approval steps"
+            },
+            "also_store": "user_preferences.stakeholder_approval_rationale with user's reasoning"
+          },
+          "impact": {
+            "if_yes": "Stakeholder approval steps (FA-04, FU-03-P3.4) will be MANDATORY and BLOCKING",
+            "if_no": "Stakeholder approval steps will be SKIPPED, workflows proceed directly to technical validation"
+          }
+        },
+        {
           "action_id": "S-03-A04",
           "description": "Initialize working_memory.json",
           "tool": "bootstrap_development_context.py",
