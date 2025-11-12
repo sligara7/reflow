@@ -9,23 +9,27 @@
   },
   "mandatory_loop": "YES - This step is a LOOP that continues until no critical issues remain from EITHER stakeholder feedback OR technical analysis",
   "rationale": "Dual validation (stakeholder + technical) ensures functional architecture is both CORRECT (matches stakeholder expectations) AND COMPLETE (technically sound with no gaps)",
+  "conditional_execution": {
+    "stakeholder_validation_conditional": "If user_preferences.stakeholder_approval_required == false, skip all stakeholder validation actions (FA-06-A01 review of stakeholder feedback, FA-06-A05 re-run stakeholder validation). Only perform technical validation loop.",
+    "note": "Check working_memory.json at step start to determine if stakeholder validation is required"
+  },
   "loop_structure": {
-    "entry_point": "FA-06-A01 (review all issues from FA-04 stakeholder feedback and FA-05 technical analysis)",
+    "entry_point": "FA-06-A01 (review all issues from FA-04 stakeholder feedback [IF APPLICABLE] and FA-05 technical analysis)",
     "loop_body": [
       "FA-06-A02: Prioritize issues by severity (CRITICAL > WARNING > INFO)",
       "FA-06-A03: Refine functional_architecture.json to address critical issues",
       "FA-06-A04: Regenerate visualizations (return to FA-03 actions)",
-      "FA-06-A05: Re-run stakeholder validation (return to FA-04 actions)",
+      "FA-06-A05: Re-run stakeholder validation (return to FA-04 actions) [CONDITIONAL - only if user_preferences.stakeholder_approval_required == true]",
       "FA-06-A06: Re-run technical analysis (return to FA-05 actions)",
       "FA-06-A07: Check termination condition"
     ],
     "termination_condition": {
-      "condition": "No CRITICAL issues from EITHER stakeholder validation OR technical analysis",
-      "stakeholder_validation": "Stakeholder sign-off obtained (FA-04)",
+      "condition": "No CRITICAL issues from technical analysis (and stakeholder validation if applicable)",
+      "stakeholder_validation": "Stakeholder sign-off obtained (FA-04) [ONLY IF user_preferences.stakeholder_approval_required == true]",
       "technical_validation": "No critical gaps, unreachable functions, or context bottlenecks (FA-05)"
     },
-    "loop_back_condition": "If CRITICAL issues remain from EITHER source, return to FA-06-A03 (refine functional architecture)",
-    "exit_condition": "Both stakeholder AND technical validation pass with no critical issues"
+    "loop_back_condition": "If CRITICAL issues remain from EITHER source (technical always, stakeholder if applicable), return to FA-06-A03 (refine functional architecture)",
+    "exit_condition": "Technical validation passes AND (stakeholder validation passes if required OR stakeholder validation not required)"
   },
   "common_refinements": {
     "for_stakeholder_issues": [
@@ -52,9 +56,9 @@
     "progress_tracking": "Document each iteration in context/working_memory.json"
   },
   "success_criteria": {
-    "no_critical_stakeholder_issues": true,
+    "no_critical_stakeholder_issues": "true (if stakeholder approval required) OR not_applicable (if stakeholder approval not required)",
     "no_critical_technical_issues": true,
-    "stakeholder_sign_off_obtained": true,
+    "stakeholder_sign_off_obtained": "true (if stakeholder approval required) OR not_applicable (if stakeholder approval not required)",
     "100_percent_user_scenario_coverage": true,
     "no_gaps_or_unreachable_functions": true,
     "no_context_bottlenecks": "If AI workflow",

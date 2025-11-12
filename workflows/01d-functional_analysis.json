@@ -284,11 +284,16 @@
     {
       "step_id": "FA-04",
       "name": "Stakeholder Validation",
-      "description": "Review functional architecture visualizations with stakeholders to validate completeness and correctness",
+      "description": "Review functional architecture visualizations with stakeholders to validate completeness and correctness (CONDITIONAL - skipped if user_preferences.stakeholder_approval_required == false)",
       "phase": "validation_stakeholder",
       "step_file": "workflow_steps/functional_analysis/FA-04-StakeholderValidation.json",
-      "mandatory": true,
-      "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework and misalignment",
+      "mandatory": "CONDITIONAL - Check working_memory.json user_preferences.stakeholder_approval_required field",
+      "conditional_execution": {
+        "condition": "user_preferences.stakeholder_approval_required == true",
+        "if_true": "Execute full stakeholder validation (mandatory and blocking)",
+        "if_false": "SKIP this step - proceed directly to FA-05"
+      },
+      "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework and misalignment. However, personal/hobby projects may not need formal approval.",
       "actions": [
         {
           "action_id": "FA-04-A01",
@@ -691,8 +696,8 @@
       {
         "gate_id": "G-FA-04",
         "name": "Stakeholder Validation",
-        "blocking": true,
-        "critical": "MANDATORY gate - stakeholder sign-off required"
+        "blocking": "CONDITIONAL - true if user_preferences.stakeholder_approval_required == true, false (skipped) otherwise",
+        "critical": "CONDITIONAL gate - stakeholder sign-off required ONLY if user_preferences.stakeholder_approval_required == true"
       },
       {
         "gate_id": "G-FA-05",

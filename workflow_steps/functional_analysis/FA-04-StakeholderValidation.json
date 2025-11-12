@@ -3,12 +3,18 @@
     "step_id": "FA-04",
     "name": "Stakeholder Validation",
     "workflow": "01d-functional_analysis",
-    "version": "1.0.0",
-    "description": "Obtain stakeholder validation of functional architecture via visual review",
+    "version": "1.1.0",
+    "description": "Obtain stakeholder validation of functional architecture via visual review (CONDITIONAL based on user preference)",
     "phase": "validation_stakeholder"
   },
-  "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework, scope creep, and misalignment between stakeholder expectations and implemented system. Visual diagrams enable non-technical stakeholders to validate design.",
-  "mandatory": "YES - This gate is BLOCKING. Cannot proceed to technical analysis (FA-05) without stakeholder validation.",
+  "conditional_execution": {
+    "condition": "working_memory.json field user_preferences.stakeholder_approval_required == true",
+    "if_true": "Execute full stakeholder validation process (all actions below)",
+    "if_false": "SKIP this step entirely - proceed directly to FA-05 (technical analysis)",
+    "check_at_step_start": "LLM agent MUST read working_memory.json and check user_preferences.stakeholder_approval_required before executing this step"
+  },
+  "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework, scope creep, and misalignment between stakeholder expectations and implemented system. Visual diagrams enable non-technical stakeholders to validate design. However, for personal/hobby projects, this formal process may be unnecessary overhead.",
+  "mandatory": "CONDITIONAL - If user_preferences.stakeholder_approval_required == true, this gate is BLOCKING. If false, this step is SKIPPED entirely.",
   "review_process": {
     "participants": {
       "product_owners": "Validate business requirements and priorities",

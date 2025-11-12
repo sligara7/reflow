@@ -1,7 +1,7 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.12.0
-**Last Updated**: 2025-11-04
+**Version**: 3.14.1
+**Last Updated**: 2025-11-12
 
 ## What is Reflow?
 
@@ -77,6 +77,25 @@ python3 {paths.tools_path}/detect_llm_capabilities.py \
 - If uncertain: State your model name and I'll look it up
 
 **Result**: Your capabilities are stored in `working_memory.json` and all context flow analysis automatically uses YOUR threshold!
+
+---
+
+### 🎯 User Preferences (NEW in v3.14.1)
+
+**Stakeholder Approval Configuration**: During setup (S-03-A03A), LLM asks if formal stakeholder approval is required:
+
+**Options**:
+- **Yes**: Enterprise/production systems - stakeholder validation steps (FA-04) are MANDATORY and BLOCKING
+- **No**: Personal/hobby projects - stakeholder validation steps SKIPPED, proceed directly to technical validation
+
+**Storage**: `working_memory.json` → `user_preferences.stakeholder_approval_required` (true/false)
+
+**Impact**:
+- FA-04 (Stakeholder Validation): Conditional execution based on preference
+- FA-06 (Iterative Refinement): Skips stakeholder feedback loop if not required
+- Faster workflow for personal projects, formal gates for enterprise systems
+
+**Why This Matters**: Many projects (personal experiments, hobby projects, solo development) don't need formal stakeholder review sessions. This change eliminates unnecessary ceremony while preserving it for enterprise systems that benefit from formal validation gates.
 
 ---
 
@@ -264,9 +283,11 @@ Workflow Steps (FA-01 through FA-07):
 FA-01: Extract functional requirements from foundational documents
 FA-02: Define functional flows and decompose into atomic functions
 FA-03: Generate human-readable visualizations (BPMN, UML, Mermaid)
-FA-04: Stakeholder validation (MANDATORY - obtain sign-off on visualizations)
+FA-04: Stakeholder validation (CONDITIONAL - based on user preference set in setup)
+  - If user_preferences.stakeholder_approval_required == true: MANDATORY, obtain sign-off on visualizations
+  - If user_preferences.stakeholder_approval_required == false: SKIP, proceed directly to FA-05
 FA-05: Technical analysis (gaps, redundancies, inefficiencies, context bottlenecks)
-FA-06: Iterative refinement (dual validation: stakeholder + technical)
+FA-06: Iterative refinement (technical validation always; stakeholder validation if required)
 FA-07: Finalization → USER DECISION POINT
 
 User Decision at FA-07:
