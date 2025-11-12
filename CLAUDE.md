@@ -34,155 +34,78 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 
 **⚠️ CRITICAL FOR ALL LLMs**: Before starting/resuming ANY workflow, you MUST self-report your context capabilities!
 
-**Why**: Enables automatic threshold adjustment for your specific model (Claude 200k vs GPT-4 128k vs GPT-3.5 16k)
-
-**When to Run**:
-- Starting a new workflow (`Implement workflow in...`)
-- Resuming a workflow (`Continue workflow from...`)
-- After context refresh (switching models)
-
-**How to Self-Report** (choose ONE method):
-
-**Method 1: Quick Self-Report (Recommended)**
+**Quick Self-Report (Recommended)**:
 When user says "Implement workflow..." or "Continue workflow...", immediately respond:
 
 ```
 I'm [YOUR MODEL NAME] with a [YOUR CONTEXT WINDOW] token context window.
-
-Let me configure my capabilities:
-- Model: [YOUR MODEL]
-- Context Window: [NUMBER] tokens
-- Recommended Threshold: [80% of window] tokens
-
-[Then proceed with workflow]
+Let me configure my capabilities and proceed with workflow.
 ```
-
-**Method 2: Using Detection Tool**
-```bash
-python3 {paths.tools_path}/detect_llm_capabilities.py \
-  --model "YOUR MODEL NAME" \
-  --context-window YOUR_WINDOW \
-  --update-working-memory {paths.system_root}
-```
-
-**Examples**:
-- Claude Sonnet 4.5: `--model "Claude Sonnet 4.5" --context-window 200000` → threshold 160k
-- GPT-4 Turbo: `--model "GPT-4 Turbo" --context-window 128000` → threshold 102k
-- GPT-3.5: `--model "GPT-3.5" --context-window 16000` → threshold 12k
 
 **Your Context Window**:
-- If you're Claude Sonnet 4.5: **200,000 tokens**
-- If you're GPT-4 Turbo: **128,000 tokens**
-- If you're GPT-3.5: **16,000 tokens**
-- If uncertain: State your model name and I'll look it up
+- Claude Sonnet 4.5: **200,000 tokens** (threshold: 160k)
+- GPT-4 Turbo: **128,000 tokens** (threshold: 102k)
+- GPT-3.5: **16,000 tokens** (threshold: 12k)
 
-**Result**: Your capabilities are stored in `working_memory.json` and all context flow analysis automatically uses YOUR threshold!
+**Result**: Your capabilities stored in `working_memory.json` for automatic context flow analysis.
 
 ---
 
 ### 🎯 User Preferences (NEW in v3.14.1)
 
-**Stakeholder Approval Configuration**: During setup (S-03-A03A), LLM asks if formal stakeholder approval is required:
+**Stakeholder Approval**: During setup (S-03-A03A), LLM asks if formal stakeholder approval is required:
 
-**Options**:
-- **Yes**: Enterprise/production systems - stakeholder validation steps (FA-04) are MANDATORY and BLOCKING
-- **No**: Personal/hobby projects - stakeholder validation steps SKIPPED, proceed directly to technical validation
+- **Yes**: Enterprise/production - stakeholder validation (FA-04) MANDATORY and BLOCKING
+- **No**: Personal/hobby - stakeholder validation SKIPPED, proceed to technical validation
 
 **Storage**: `working_memory.json` → `user_preferences.stakeholder_approval_required` (true/false)
-
-**Impact**:
-- FA-04 (Stakeholder Validation): Conditional execution based on preference
-- FA-06 (Iterative Refinement): Skips stakeholder feedback loop if not required
-- Faster workflow for personal projects, formal gates for enterprise systems
-
-**Why This Matters**: Many projects (personal experiments, hobby projects, solo development) don't need formal stakeholder review sessions. This change eliminates unnecessary ceremony while preserving it for enterprise systems that benefit from formal validation gates.
 
 ---
 
 ### ⭐ Web-Based Usage (PRIMARY)
 
 **Why Web-Based?**
-- Zero local setup
-- Context preservation across sessions
+- Zero local setup, context preservation across sessions
 - Multi-day projects resume seamlessly
 - GitHub integration (push/pull directly)
-- Device agnostic (laptop, tablet, phone)
 
-**Options**:
-- **GitHub Codespaces**: Most accessible, 60 hrs/month free, full Linux environment
-- **Claude Code**: https://claude.ai/code (requires Pro/Max, install GitHub app for private repos)
-- **Other**: Gitpod, Replit, OpenAI Codex, Google Jules
+**Options**: GitHub Codespaces (60 hrs/month free), Claude Code, Gitpod, Replit
 
 **Quick Start**:
 ```
-Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json
+Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json
 on system in github.com/yourname/my_system_repo
 ```
 
-**Resume Work (Critical for Multi-Day Projects)**:
+**Resume Work**:
 ```
 Continue workflow from context/working_memory.json in github.com/yourname/my_system_repo
 ```
 
-**⚠️ CRITICAL**: Always read `context/working_memory.json` FIRST - it's the source of truth showing exact project state (current workflow, current step, paths).
-
-**Context Preservation** - Two mechanisms:
-1. `context/working_memory.json` (PRIMARY) - Exact state, always read this first
-2. Conversation history (SUPPLEMENTAL) - Available in code environments
+**⚠️ CRITICAL**: Always read `context/working_memory.json` FIRST - it's the source of truth.
 
 **⚠️ Don't Use**: Regular chat interfaces (claude.ai chat, chatgpt) - need code execution + GitHub integration
 
 ### Alternative: Local Machine
 
 ```
-Implement workflow in /path/to/reflow/workflows/00-setup.json on system in /path/to/your_system
+Implement workflow in /path/to/reflow/workflows/00a-basic_setup.json on system in /path/to/your_system
 ```
 
 ### Pixi Setup (v3.11.0 - Recommended)
 
-**NEW in v3.11.0**: Pixi package manager for fast, reproducible Python environments
+**Why Pixi?** 2-5x faster than pip, reproducible via lockfile, cross-platform.
 
-**Why Pixi?**
-- ⚡ **2-5x faster** than pip (Rust-based, parallel installs)
-- 🔒 **Reproducible** via lockfile (pixi.lock)
-- 🌍 **Cross-platform** (Linux, macOS, Windows)
-- 🎯 **Simple** (single pixi.toml, no virtual env confusion)
-
-**Install Pixi** (optional but recommended):
+**Install** (optional):
 ```bash
-# Install Pixi
 curl -fsSL https://pixi.sh/install.sh | bash
-
-# Install Reflow dependencies
-cd /path/to/reflow
-pixi install
-
-# Run tools
-pixi run python tools/<tool>.py <args>
-# Or use shortcuts: pixi run validate-arch <system_path>
+cd /path/to/reflow && pixi install
+pixi run validate-arch <system_path>  # Shortcuts available
 ```
 
-**Pixi tasks** (shortcuts for common commands):
-```bash
-pixi run help                  # Show all available commands
-pixi run validate-arch <path>  # Validate architecture
-pixi run generate-graph <path> # Generate system graph
-pixi run generate-icds <path>  # Generate ICDs
-pixi run generate-abc <path>   # Generate ABC interfaces
-```
-
-**Fallback** (if Pixi not installed):
-```bash
-pip install networkx>=3.0
-python3 tools/<tool>.py <args>
-```
-
-**Workflow Integration**: S-03-A07 in `00-setup.json` offers optional Pixi installation during setup
+**Fallback**: `pip install networkx>=3.0`
 
 ### The Workflows (v3.12.0 - Modular + Self-Sharpening)
-
-**NEW in v3.12.0**: Self-sharpening meta-analysis workflows for Reflow continuous improvement
-**NEW in v3.7.0**: Split workflows for **60-95% LLM context reduction**
 
 **Core Workflows**:
 ```
@@ -191,7 +114,7 @@ python3 tools/<tool>.py <args>
 01a-approach_detection.json      → Auto-detect approach (<5 min)
 01b-bottom_up_integration.json   → Bottom-up integration (2-3 hours)
 01c-top_down_design.json         → Top-down design (2-4 hours)
-01d-functional_analysis.json     → Functional analysis [NEW v3.13.0] (2-6 hours)
+01d-functional_analysis.json     → Functional analysis (2-6 hours)
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
 03a-development_implementation.json → Implementation (days-weeks)
 03b-development_validation.json  → Validation (1-2 days)
@@ -200,317 +123,88 @@ python3 tools/<tool>.py <args>
 feature_update.json              → Update existing systems
 ```
 
-**Meta-Analysis Workflows (For Reflow Itself)**:
+**Meta-Analysis** (For Reflow Itself):
 ```
-98-reflow_feature_update.json    → Reflow feature update with AUTO meta-analysis (2-8 hours)
-99-meta_analysis.json            → Comprehensive Reflow meta-analysis (6-10 hours)
+98-reflow_feature_update.json    → Reflow feature update with AUTO meta-analysis
+99-meta_analysis.json            → Comprehensive Reflow meta-analysis
 ```
-
-**Deprecated (backwards compatibility)**:
-- `00-setup.json`, `01-systems_engineering.json`, `03-development.json`, `04-testing_operations.json`
 
 ## Workflow Progression
 
 ### Typical New System Flow
 
-1. **Start**: Run `00a-basic_setup.json`
-   - Configure paths (reflow_root, system_root)
-   - Create directory structure
-   - Initialize `context/working_memory.json`
-   - **Optional**: Run `00b-framework_selection.json` for detailed framework analysis (55% context reduction if skipped)
+1. **Start**: `00a-basic_setup.json` - Paths, structure, `working_memory.json`
+   - Optional: `00b-framework_selection.json` (55% context reduction if skipped)
 
-2. **Architecture**: Run `01a-approach_detection.json` → Routes to 01b OR 01c
-   - **Automatic Approach Detection (SE-00)** - LLM examines system directory (95% context reduction)
-   - **If existing components found** → Routes to `01b-bottom_up_integration.json` (BU-01 through BU-06)
-     - Component inventory, gap analysis, exact code-level deltas
-   - **If empty/greenfield** → Routes to `01c-top_down_design.json` (SE-01 through SE-06)
-     - Service identification, architecture design, validation
-   - **Context Benefit**: LLM loads only relevant path (60% reduction)
+2. **Architecture**: `01a-approach_detection.json` → Routes to 01b OR 01c
+   - **Auto-detects** bottom-up (existing code) vs top-down (greenfield)
+   - Routes based on directory scan (src/, requirements.txt, etc.)
 
-3. **Documentation**: Run `02-artifacts_visualization.json`
-   - Generate ICDs, Mermaid diagrams
-   - Create versioned documentation
+3. **Documentation**: `02-artifacts_visualization.json` - ICDs, Mermaid diagrams
 
-4. **Build** (optional): Run `03a-development_implementation.json` then `03b-development_validation.json`
-   - 03a: Implement services (58% context reduction - coding separated from validation)
-   - 03b: 80% test coverage validation, pre-deployment checks (43% context reduction)
+4. **Build** (optional): `03a-development_implementation.json` then `03b-development_validation.json`
 
-5. **Deploy** (optional): Run `04a-testing.json` then `04b-operations.json`
-   - 04a: CI/CD, testing workflows (55% context reduction - testing separated from ops)
-   - 04b: Docker Compose, operational testing (42% context reduction)
-
-### Automatic Approach Detection (NEW!)
-
-**LLM automatically detects** whether to use bottom-up (existing components) or top-down (greenfield):
-
-**Detection Process (SE-00)**:
-1. LLM scans `system_root` directory (3 levels deep)
-2. Looks for indicators:
-   - **Bottom-up**: Source code dirs (src/, services/), package manifests (requirements.txt, package.json), build files (Dockerfile), existing architecture files
-   - **Top-down**: Empty directory, only docs/context folders
-3. **Decision rule**:
-   - ≥2 bottom-up indicators → Route to BU-01 (bottom-up integration)
-   - 0-1 indicators, system empty → Route to SE-01 (top-down design)
-   - Ambiguous (exactly 1 weak indicator) → Ask user to confirm
-4. Records decision in `context/approach_detection_result.json`
-5. Proceeds to appropriate workflow path
-
-**User sees**: "✓ Auto-detection: BOTTOM-UP approach selected. Found existing components: [services/, requirements.txt]. Proceeding to BU-01."
-
-**Manual Override**: Use legacy entry points `from_existing_components` (force bottom-up) or `from_setup` (force top-down) if automatic detection is unwanted.
+5. **Deploy** (optional): `04a-testing.json` then `04b-operations.json`
 
 ### Functional Analysis Flow (NEW v3.13.0)
 
 **Purpose**: Focus on WHAT functions exist and HOW they interact, WITHOUT allocating to services.
 
-**When to use**:
-- Architecture-only deliverables (RFP response, feasibility study)
-- Stakeholder validation of functional design before implementation
-- Functional completeness analysis before committing to service boundaries
-- Systems engineering discipline: define WHAT before HOW
+**When to use**: Architecture-only deliverables, stakeholder validation, functional completeness analysis
 
-**IMPORTANT: Framework-Agnostic**
-- Functional analysis does NOT require framework selection (00b is NOT needed)
-- Frameworks (UAF, Biology, Social, etc.) are for **system architecture** (which services implement which functions)
-- Functional architecture is always a DAG (directed acyclic graph) - framework doesn't matter
-- If you continue to service allocation later (01b/01c), THEN you'll select a framework
+**IMPORTANT: Framework-Agnostic** - Functional architecture is always a DAG, framework doesn't matter.
 
 **Flow**:
 ```
-00a-basic_setup → 01d-functional_analysis (framework selection NOT needed)
+00a-basic_setup → 01d-functional_analysis → DONE (or continue to 01b/01c)
 
-Workflow Steps (FA-01 through FA-07):
-FA-01: Extract functional requirements from foundational documents
-FA-02: Define functional flows and decompose into atomic functions
-FA-03: Generate human-readable visualizations (BPMN, UML, Mermaid)
-FA-04: Stakeholder validation (CONDITIONAL - based on user preference set in setup)
-  - If user_preferences.stakeholder_approval_required == true: MANDATORY, obtain sign-off on visualizations
-  - If user_preferences.stakeholder_approval_required == false: SKIP, proceed directly to FA-05
-FA-05: Technical analysis (gaps, redundancies, inefficiencies, context bottlenecks)
-FA-06: Iterative refinement (technical validation always; stakeholder validation if required)
-FA-07: Finalization → USER DECISION POINT
-
-User Decision at FA-07:
-  OPTION A: Continue to service allocation (run 01b or 01c)
-  OPTION B: Stop here (deliver functional architecture package - DONE)
+FA-01: Extract functional requirements
+FA-02: Define functional flows
+FA-03: Generate visualizations (BPMN, UML, Mermaid)
+FA-04: Stakeholder validation (CONDITIONAL - based on user preference)
+FA-05: Technical analysis (gaps, redundancies)
+FA-06: Iterative refinement
+FA-07: Finalization → USER DECISION (continue to service allocation OR stop)
 ```
 
-**Deliverables** (11+ artifacts):
-- Machine-readable: `functional_requirements.json`, `functional_architecture.json`, `functional_architecture_graph.json`, `functional_architecture_issues.json`
-- Human-readable: 4 diagram types (process flows, decision trees, data flows, dependencies), `FUNCTIONAL_ARCHITECTURE.md`, stakeholder review documentation
-- Reports: Functional architecture summary with metrics
-
-**Key Distinction**:
-- **Functional Architecture** (01d): WHAT functions + HOW they interact
-- **Service Architecture** (01b/01c): WHICH service implements WHICH function
+**Deliverables**: 11+ artifacts (functional_requirements.json, functional_architecture.json, 4 diagram types, FUNCTIONAL_ARCHITECTURE.md)
 
 ### Automated Gap Closure (NEW v3.13.0)
 
-**Purpose**: Automatically propose solutions for gaps identified in functional and service architectures using matrix analysis and architecture linking.
+**Purpose**: Auto-propose solutions for gaps using matrix analysis and architecture linking.
 
-**Gap Types Addressed**:
-1. **Functional Gaps** (in functional architecture):
-   - **Unreachable functions**: Functions with no incoming dependencies
-   - **Dead-end functions**: Functions with no outgoing dependencies (no consumers)
-   - **Incomplete flows**: Missing intermediate functions in process flows
-
-2. **Allocation Gaps** (in service allocation):
-   - **Unallocated functions**: Functions not assigned to any service
-   - **New component needs**: Functions that don't fit existing components (bottom-up)
-   - **Component enhancement needs**: Functions requiring new capabilities in existing components
-
-3. **Interface Gaps** (in system graph):
-   - **Orphaned services**: Services with no incoming or outgoing edges
-   - **Missing interfaces**: Required connections between services
-
-**Gap Closure Approach**:
-
-Uses tools from **chain_reflow** (matrix analysis + architecture linking):
-
-**1. Matrix Gap Detection** (`tools/matrix_gap_detection.py`):
-- **Mathematical approach**: Given State A (current) and State C (required), solve for State B (missing intermediate): **B = C × A⁻¹**
-- **Functional gaps**: A = unreachable functions, C = required outputs → B = connector functions
-- **Allocation gaps**: A = unallocated functions, C = existing components → B = missing component capabilities
-
-**2. Architecture Linking** (`tools/link_architectures.py`):
-- **Discovery approach**: Find touchpoints between architecture graphs
-- **Matching strategies**: Name similarity, interface matching, dependency tracing, data flow analysis
-- **Interface gaps**: Discover missing connections between services based on architectural patterns
-
-**Workflow Integration**:
-
-```
-FA-06-A02B: Automated functional gap closure (OPTIONAL but RECOMMENDED)
-  Tool: reflow_gap_closure.py --gap-type functional
-  Output: Proposes connector functions, output handlers, intermediate functions
-
-SE-01-A00B: Automated allocation gap closure (OPTIONAL but RECOMMENDED)
-  Tool: reflow_gap_closure.py --gap-type allocation
-  Output: Proposes new services, component enhancements, capability additions
-
-SE-06-A0X: Automated interface gap closure (future enhancement)
-  Tool: reflow_gap_closure.py --gap-type interface
-  Output: Proposes missing service interfaces and connections
-```
-
-**Usage Example**:
-```bash
-# Close functional gaps
-python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type functional
-
-# Close allocation gaps
-python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type allocation
-
-# Close interface gaps
-python3 {reflow_root}/tools/reflow_gap_closure.py {system_root} --gap-type interface
-```
-
-**Output Format**:
-```json
-{
-  "gap_closure_proposals": [
-    {
-      "gap_id": "FG-001",
-      "gap_type": "unreachable_function",
-      "affected_function": "F-042",
-      "proposed_solution": {
-        "solution_type": "add_connector_function",
-        "new_function_id": "F-042-CONNECTOR",
-        "new_function_name": "Route Request to F-042",
-        "source_functions": ["F-010", "F-015"],
-        "rationale": "Matrix analysis indicates F-010 and F-015 should connect to F-042"
-      }
-    }
-  ],
-  "review_required": true,
-  "auto_apply": false
-}
-```
-
-**Important Notes**:
-- ✅ Gap closure is **OPTIONAL but RECOMMENDED** - proposals require LLM/human review
-- ✅ Solutions are **proposed, not auto-applied** - prevents unintended architecture changes
-- ✅ Uses **mathematical reasoning** (matrix analysis) and **pattern matching** (architecture linking)
-- ✅ Integrated at **FA-06 (functional)** and **SE-01 (allocation)** workflow steps
+**Gap Types**: Functional gaps (unreachable/dead-end functions), Allocation gaps (unallocated functions), Interface gaps (orphaned services)
 
 **Tools**:
-- `tools/reflow_gap_closure.py` - Reflow integration wrapper (400+ lines)
-- `tools/matrix_gap_detection.py` - Matrix-based gap solver (35KB, from chain_reflow)
-- `tools/link_architectures.py` - Architecture linking engine (18KB, from chain_reflow)
+- `tools/reflow_gap_closure.py` - Integration wrapper
+- `tools/matrix_gap_detection.py` - Matrix-based gap solver (B = C × A⁻¹)
+- `tools/link_architectures.py` - Architecture linking engine
 
-### Architecture-Only Flow
+**Workflow Integration**:
+- FA-06-A02B: Automated functional gap closure (OPTIONAL but RECOMMENDED)
+- SE-01-A00B: Automated allocation gap closure (OPTIONAL but RECOMMENDED)
 
-**Option A: Functional-Only** (NEW v3.13.0 - Framework-Agnostic)
-```
-00a-basic_setup → 01d-functional_analysis → DONE
-(No framework selection needed - functional architecture is always a DAG)
-```
-
-**Option B: Service Architecture** (Framework-Specific)
-```
-00a-basic_setup → [optional: 00b-framework_selection] → 01a-approach_detection
-→ 01b or 01c → 02-artifacts_visualization (minimal) → DONE
-(Framework selection determines how services/components are modeled)
-```
+**Note**: Proposals require LLM/human review (not auto-applied).
 
 ### Reflow Meta-Analysis Flow (Self-Sharpening)
 
-**CRITICAL**: When updating REFLOW ITSELF (not other systems), use meta-analysis workflows!
+**CRITICAL**: When updating REFLOW ITSELF (not other systems), use `98-reflow_feature_update.json` or `99-meta_analysis.json`
 
-**Automatic (Recommended for feature updates)**:
-```
-"Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>"
-
-Flow:
-RFU-01: Setup → RFU-02: Implement feature (standard feature_update steps)
-→ RFU-03: AUTO-TRIGGER meta-analysis (analyze feature impact)
-→ RFU-04: AUTO-TRIGGER refinement (fix functional architecture spec if issues)
-→ RFU-05: AUTO-TRIGGER self-sharpening (optimize implementation - META-05B)
-→ RFU-06: Commit & document (feature + optimizations)
-```
-
-**Manual (Comprehensive health check)**:
-```
-"Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow"
-
-Flow:
-META-01: Setup → META-02: Functional requirements → META-03: Functional architecture
-→ META-04: Analysis → META-05: Refinement → META-05B: Implementation fixes (SELF-SHARPENING)
-→ META-06: Visualizations [optional] → META-07: Documentation → META-08: Operational tests [optional]
-```
-
-**What is Meta-Analysis?**
-- Reflow analyzes ITSELF using its own functional architecture methodology
-- Detects context bottlenecks, gaps, unreachable functions, inefficiencies in Reflow's workflows/tools
-- **META-05B (Self-Sharpening)**: Fixes actual implementation (workflows/*.json, tools/*.py, schemas/*.json) based on analysis
-- Result: Reflow continuously improves itself with each update
-
-**When to Use**:
-- **98-reflow_feature_update**: Every time you add/update a Reflow feature (automatic meta-analysis)
-- **99-meta_analysis**: Quarterly health checks, before major releases, after multiple feature updates
-
-**Key Tool**:
-- `tools/analyze_functional_architecture.py` - Analyzes functional flows, context consumption, detects bottlenecks
-
-**Documentation**: See `docs/META_ANALYSIS_GUIDE.md` for complete guide
+**Purpose**: Reflow analyzes itself, detects context bottlenecks, fixes implementation via META-05B (Self-Sharpening).
 
 ## Supported Frameworks
 
-### ⚠️ Framework Selection is Architectural
+**⚠️ Framework Selection is Architectural** - DO NOT default to UAF!
 
-**DO NOT default to UAF!** Framework determines:
-- Which NetworkX analyses you can run (flow requires edge weights)
-- What insights you discover (cycles = rework loops OR bugs?)
-- System semantics (state machines vs services vs networks)
+**Selection Process** (S-01A): Semantic matching questionnaire → Score ALL frameworks (5-criteria rubric) → Map analyses → User confirmation (BLOCKING)
 
-**Wrong framework = Wrong insights**
-
-**Selection Process** (enforced in S-01A):
-1. **Semantic Matching** - 6-question questionnaire (nodes? edges? conditions?)
-2. **Score ALL frameworks** - 5-criteria rubric
-   - Domain match (weight 2.0)
-   - Semantic match (weight 2.5) - HIGHEST
-   - Analysis match (weight 2.0)
-   - Edge weight feasibility (weight 1.5)
-   - Complexity (weight 1.0)
-3. **Map analyses** - Show which NetworkX analyses each enables/blocks
-4. **User confirmation** - Present scores, require explicit approval (BLOCKING gate)
-
-**Time investment**: 10-15 min analysis saves hours of rework
-
-**Available Frameworks**:
-
-- **UAF 1.2**: Engineered systems (software, hardware, enterprise)
-  - Nodes: Services, components
-  - Edges: Interfaces, dependencies
-  - Use for: Microservices, IoT, DoDAF/MODAF
-
-- **Systems Biology**: Biological systems (molecular to ecosystem)
-  - Nodes: Genes, proteins, metabolites, species
-  - Edges: Activation, inhibition, catalysis
-  - Use for: Gene networks, metabolic pathways
-
+**Available**:
+- **UAF 1.2**: Engineered systems (microservices, IoT)
+- **Systems Biology**: Biological systems (gene networks, metabolic pathways)
 - **Social Network Analysis**: Social systems, organizations
-  - Nodes: Individuals, groups, roles
-  - Edges: Friendships, collaborations, influence
-  - Use for: Organizational structure, social media
-
 - **Ecological Systems**: Ecosystems, species interactions
-  - Nodes: Species, populations
-  - Edges: Predation, competition, mutualism
-  - Use for: Food webs, conservation planning
-
-- **Complex Adaptive Systems**: Emergent, self-organizing
-  - Nodes: Adaptive agents
-  - Edges: Interactions with feedback
-  - Use for: Economic markets, multi-agent simulations
-
+- **Complex Adaptive Systems**: Emergent, self-organizing systems
 - **Decision Flow**: Workflows, state machines
-  - Nodes: Process steps, decision nodes
-  - Edges: Transitions (conditional, sequential, rework)
-  - Use for: Workflows with quality gates, conditional routing
-  - Enables: Flow analysis (critical paths), cycle detection (rework loops)
-
 - **Custom**: LLM-generated for novel domains
 
 See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
@@ -544,15 +238,8 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
 3. **USE** these paths for ALL tool/template/workflow references:
    - Tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
    - Templates: `{paths.templates_path}/service_architecture_template.json`
-   - Workflows: `{paths.workflow_steps_path}/systems_engineering/SE-06-GraphGeneration.json`
-   - Definitions: `{paths.definitions_path}/framework_registry.json`
 4. **NEVER** hardcode paths or guess locations
 5. **VERIFY** tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
-
-**Context Update Rules**:
-- Read before every step
-- Update after completing actions
-- Refresh context every 4 operations
 
 ### Architecture Versioning
 
@@ -560,146 +247,6 @@ See: `docs/NETWORKX_ANALYSIS_GUIDE.md`, `docs/DECISION_FLOW_FRAMEWORK.md`
 service_architecture_v1.0.0-20251024.json    ← Versioned file
 service_architecture.json                     ← Symlink to current
 ```
-
-**Benefits**: Complete history, rollback support, version manifest tracking
-
-## Human Documentation Workflow (v3.8.0)
-
-**Purpose**: Enable human-in-the-loop architecture editing with bidirectional translation
-
-**Workflow**:
-1. Generate human docs from machine specs:
-   ```bash
-   python3 {paths.tools_path}/generate_human_documentation.py --system-root {paths.system_root}
-   ```
-
-2. Human reviews/edits markdown files:
-   ```bash
-   vim specs/human/documentation/services/my_service.md
-   ```
-
-3. Parse human docs back to machine specs:
-   ```bash
-   python3 {paths.tools_path}/parse_human_documentation.py --system-root {paths.system_root} --validate
-   ```
-
-4. If validation passes: Changes committed
-   If validation fails: Conflict report generated
-
-**Key Files**:
-- **Human Docs**: `specs/human/documentation/services/*.md`
-- **Machine Specs**: `specs/machine/service_arch/*/service_architecture.json`
-- **Visualizations**: `specs/human/visualizations/*.{mmd,png,svg}`
-
-**Tools**:
-- `generate_human_documentation.py` - Machine → Human translation
-- `parse_human_documentation.py` - Human → Machine translation (with validation)
-- `component_swap.py` - Safe component replacement with compatibility checking
-
-**Component Swapping Example**:
-```bash
-# Replace Apache proxy with HAProxy
-python3 {paths.tools_path}/component_swap.py \
-  --index specs/machine/index.json \
-  --remove apache_proxy \
-  --add haproxy_proxy \
-  --validate
-```
-
-**Benefits**:
-- ✅ Non-technical stakeholders can review architecture
-- ✅ Propose changes via markdown edits (not JSON)
-- ✅ Automatic validation prevents broken dependencies
-- ✅ Version control tracks architecture evolution
-- ✅ PNG/SVG diagrams for presentations and wikis
-
-**When to Use**:
-- Step AV-01-A04: Auto-generate human docs after creating service architectures
-- Step AV-02-A05: Render Mermaid diagrams to PNG/SVG for distribution
-- User-initiated: When stakeholders request architecture review
-- User-initiated: When proposing component replacements
-
-## Context Flow Analysis (v3.9.0)
-
-**Purpose**: Predictive context management for LLM agents - prevent context overflow before it happens
-
-**Key Concept**: Model LLM context as a first-class architectural parameter, enabling proactive refresh recommendations
-
-**Usage**:
-```bash
-python3 {paths.tools_path}/system_of_systems_graph_v2.py \
-  {paths.system_root}/specs/machine/index.json \
-  --context-flow --context-threshold 40000
-```
-
-**What It Does**:
-1. **Analyzes workflow paths** - Traces all possible paths through your workflow
-2. **Calculates cumulative context** - Tracks token accumulation step-by-step
-3. **Identifies bottlenecks** - Flags steps exceeding threshold (default 40k tokens)
-4. **Recommends refresh points** - Suggests where to refresh BEFORE overflow
-
-**Output**:
-```json
-{
-  "context_flow": {
-    "paths_analyzed": 5,
-    "bottlenecks": {
-      "total_count": 3,
-      "critical_count": 1,
-      "details": [
-        {
-          "step_id": "SE-06",
-          "cumulative_context": 45000,
-          "severity": "CRITICAL",
-          "overflow_tokens": 5000
-        }
-      ]
-    },
-    "refresh_recommendations": [
-      {
-        "refresh_before_step": "SE-06",
-        "refresh_after_step": "SE-05",
-        "reason": "Predicted overflow (45000 tokens > 40000 threshold)"
-      }
-    ],
-    "optimization_opportunities": {
-      "context_efficiency": "MEDIUM",
-      "suggestions": [
-        "Consider splitting high-context steps or inserting additional refresh points"
-      ]
-    }
-  }
-}
-```
-
-**Benefits**:
-- ✅ **Predictive** (not reactive) - Prevent context loss before it happens
-- ✅ **Workflow optimization** - Identify high-context steps (SE-06, D-02, D-03)
-- ✅ **LLM capability matching** - Recommend minimum LLM for workflow paths
-- ✅ **Context efficiency metric** - Architectural quality parameter
-
-**When to Use**:
-- Step SE-06: Auto-run context flow analysis when generating system graph
-- User-initiated: When experiencing context degradation signals
-- Workflow design: Optimize new workflows for context efficiency
-
-**working_memory.json Integration**:
-```json
-{
-  "context_management": {
-    "cumulative_context_tokens": 38000,
-    "context_flow_analysis": {
-      "enabled": true,
-      "predicted_cumulative": 53000,
-      "threshold": 40000,
-      "refresh_recommended": true,
-      "refresh_reason": "Predicted overflow at SE-06"
-    }
-  }
-}
-```
-
-**LLMs should**: Read `refresh_recommended` field, auto-execute refresh when `true`
 
 ## Quality Gates
 
@@ -717,275 +264,85 @@ python3 {paths.tools_path}/system_of_systems_graph_v2.py \
 
 ## Tools & Templates
 
-**20 Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
+**32+ Python tools** (see `docs/TOOL_USAGE_SUMMARY.md`):
 
-**Architecture** (Framework-Agnostic):
-- `system_of_systems_graph_v2.py` - **FLAGSHIP**: Graph generation with:
-  - Knowledge gap detection (6 types: orphaned interfaces, missing nodes, structural holes)
-  - 25+ NetworkX algorithms (centrality, community, cycles, SCC, DAG, flow)
-  - Supports all frameworks
+**Key Tools**:
+- `system_of_systems_graph_v2.py` - **FLAGSHIP**: Graph generation, gap detection, 25+ NetworkX algorithms
 - `validate_architecture.py` - Framework-agnostic validation
 - `generate_interface_contracts.py` - ICD generation (JSON-based)
-- `generate_interface_abc.py` - **NEW v3.10.0**: Language-native interface contracts (Python ABC, TypeScript, Rust traits, C++, Java, Go)
-
-**Development**:
-- `bootstrap_development_context.py`, `verify_component_contract.py`, `analyze_features.py`
-
-**Visualization**:
-- `generate_mermaid_*.py` - Various diagram generators
-
-**Human Documentation** (v3.8.0):
+- `generate_interface_abc.py` - **NEW v3.10.0**: Language-native contracts (Python ABC, TypeScript, Rust, C++, Java, Go)
 - `generate_human_documentation.py` - Machine → Human translation
-- `parse_human_documentation.py` - Human → Machine translation with validation
-- `component_swap.py` - Safe component replacement with compatibility checking
-
-**Context**:
-- `context_refresh.py`, `detect_context_drift.py`
+- `parse_human_documentation.py` - Human → Machine translation
+- `context_refresh.py`, `detect_context_drift.py` - Context management
 
 **36+ templates** for architecture, contracts, working memory, specs, registries
 
-## Network Analysis Selection
-
-**When**: Step SE-06 (graph generation)
-
-**Process**:
-1. Read `framework_id` from `working_memory.json`
-2. Load `framework_registry.json` → find `recommended_analyses`
-3. Select high+medium priority analyses
-4. Check edge weight requirements (flow analysis NEEDS weights)
-5. Run: `python3 system_of_systems_graph_v2.py index.json --detect-gaps --[FLAGS]`
-
-**Framework-Specific Examples**:
-- **UAF**: `--centrality --dag --scc --community` (find critical services, verify no cycles)
-- **Biology**: `--cycles --centrality --community` (feedback loops are expected, hub genes)
-- **Social**: `--centrality --community --clustering` (influencers, groups, cohesion)
-- **Ecology**: `--flow --centrality --connectivity` (energy flow, keystone species - NEEDS weights!)
-
-**Edge Weights** (if flow analysis selected):
-- UAF: `request_rate` (req/sec), `data_volume` (MB/sec)
-- Biology: `reaction_rate` (molecules/sec)
-- Social: `interaction_frequency` (contacts/week)
-- Ecology: `energy_transfer_rate` (kcal/m²/year)
-
-**Output**: `system_of_systems_graph.json` → `networkx_analysis` section
-
-## IT System Requirements (UAF with Human Users) - CRITICAL!
+## IT System Requirements (UAF with Human Users)
 
 **Applicability**: UAF framework systems with human users or external API access
 
-**⚠️ Design Upfront, Not Retrofit**: IT systems with human users/external APIs **MUST** address these upfront (not afterthoughts):
+**⚠️ Design Upfront, Not Retrofit**: IT systems with human users/APIs MUST address these upfront:
 
-1. **Security** (SE-02-A05) - Authentication, authorization, **API gateway** (MANDATORY), rate limiting, encryption, audit logging
-2. **Deployment** (SE-02-A06) - One-command deploy, health checks, CI/CD, monitoring, RTO/RPO targets
-3. **UX/API** (SE-02-A07) - RESTful design, user-friendly errors, **OpenAPI docs** (MANDATORY), versioning, performance targets
-4. **Operational Environment** (SE-02-A08) - Design for failures, attacks, scale; define testing strategy NOW
-
-**Rationale**: Retrofitting after launch is **10-100x more expensive** than designing correctly upfront.
-
-**When**: Steps SE-02-A05 through SE-02-A08 during architecture design (workflows `01b-bottom_up_integration.json` or `01c-top_down_design.json`)
+1. **Security** (SE-02-A05) - Auth, authorization, API gateway (MANDATORY), rate limiting, encryption
+2. **Deployment** (SE-02-A06) - One-command deploy, health checks, CI/CD, monitoring
+3. **UX/API** (SE-02-A07) - RESTful design, OpenAPI docs (MANDATORY), versioning
+4. **Operational Environment** (SE-02-A08) - Design for failures, attacks, scale
 
 **Validation Gates**: SE-03-A05, SE-03-A06, SE-03-A07, SE-03-A08 (ALL BLOCKING)
 
-**CRITICAL Requirements**:
-- **API Gateway**: MUST be fully implemented (not orphaned scaffolding) - Checked in SE-06 orphaned service detection
-- **Security**: MFA for admins, TLS 1.2+, AES-256 at-rest encryption for sensitive data
-- **Deployment**: `docker-compose up -d` or equivalent, <10 min developer setup, <5 min rollback
-- **UX/API**: OpenAPI spec, Swagger UI, error messages with field names and descriptions
-- **Operations**: 10 IT considerations (service decomposition, containerization, IaC, CI/CD, scalability, security, monitoring, networking, cost, testing)
-
-**Checklist** (Before SE-03):
-- [ ] `security_architecture.json` created (auth, authorization, API gateway, rate limiting, encryption, audit)
-- [ ] `deployment_architecture.json` created (Docker, CI/CD, health checks, monitoring, RTO/RPO)
-- [ ] `ux_api_design.json` created (RESTful, errors, OpenAPI, versioning, performance)
-- [ ] `operational_environment.json` created (availability target, testing strategy, failure scenarios)
-- [ ] API gateway exists in architecture and will be fully implemented (not orphaned)
-- [ ] `port_registry.json` created and validated (for all UAF IT systems)
-
-**📖 Full Documentation**: See [docs/IT_SYSTEM_REQUIREMENTS.md](docs/IT_SYSTEM_REQUIREMENTS.md) for comprehensive guidance (security, deployment, UX, operations, checklist, templates)
-
-## Port Management (UAF/IT Only)
-
-**Applicability**: UAF framework only (not biology/social/ecology)
-
-**Check**: `framework_registry.json` → `deployment_characteristics.port_management_applicable`
-
-**Steps**: SE-02-A04 (assign), SE-03-A04 (validate)
-
-**Process**:
-1. **Categorize**: App (8000-8099), Internal (8100-8199), Data (8200-8299), Infrastructure (8300-8399)
-2. **Assign sequential**: First app → 8000, second app → 8001, etc.
-3. **Update architecture**: `service_architecture.json` → `deployment.ports.primary.port`
-4. **Create**: `specs/machine/port_registry.json`
-5. **Validate**: `python3 validate_port_registry.py <system_root>/specs/machine/port_registry.json`
-
-**Validation Rules**:
-- PC-01: No duplicate primary ports (ERROR - blocking)
-- PC-02: No port overlap (ERROR - blocking)
-- PC-03: Ports within ranges (WARNING)
-- PC-04: Avoid privileged <1024 (WARNING)
-- PC-05: Docker host/container consistency (INFO)
-
-**Troubleshooting**:
-```bash
-# Find what's using port
-docker ps | grep <service>
-netstat -tlnp | grep <port>  # Linux
-lsof -i :<port>              # Mac
-
-# Fix
-docker-compose down
-kill -9 <PID>
-# Update port_registry.json
-```
-
-**Service connectivity**: Use service name in docker-compose: `http://character_service:8000` (NOT localhost)
+**📖 Full Documentation**: See `docs/IT_SYSTEM_REQUIREMENTS.md`
 
 ## Common Patterns
 
 ### Pattern 1: Web-Based Greenfield System (PRIMARY)
 
-**Day 1: Setup and Architecture**
-1. User creates GitHub repo with system description
-2. Opens Codespaces/Claude Code
-3. "Implement workflow in github.com/sligara7/reflow/workflows/00-setup.json on system in github.com/yourname/smart_home_system"
-4. LLM executes setup, framework selection, initial architecture
-5. Context saved in `context/working_memory.json`
+**Day 1**: User creates GitHub repo → Opens Codespaces/Claude Code → "Implement workflow in..." → LLM executes → Context saved
 
-**Day 2+: Continue**
-1. Opens Codespaces/Claude Code (conversation persists!)
-2. "Continue workflow from context/working_memory.json in github.com/yourname/smart_home_system"
-3. LLM reads context, resumes from exact step
-4. Progress: 00-setup → 01-SE → 02-artifacts → 03-dev → 04-test
-
-**Result**: Fully designed, documented, implemented system - never touched local machine
+**Day 2+**: Opens environment → "Continue workflow from context/working_memory.json..." → LLM reads context, resumes
 
 **LLM Best Practices**:
-- ALWAYS read `context/working_memory.json` first when user says "continue"
-- **EXTRACT AND STORE** the `paths` object - you'll need it for EVERY tool invocation
-- Check `current_workflow` and `current_step` to know where to resume
-- **USE** extracted paths for all tool/template/workflow references (NEVER hardcode)
-- Update context after each operation
-- Commit to GitHub after major milestones
+- ALWAYS read `context/working_memory.json` first
+- **EXTRACT AND STORE** the `paths` object
+- **USE** extracted paths for ALL tool/template/workflow references (NEVER hardcode)
 
-### Pattern 2: Architecture-Only
-
-```
-00-setup → 01-systems_engineering → 02-artifacts_visualization (minimal) → STOP
-Result: Complete architecture specs, diagrams, ICDs - no service code
-```
-
-### Pattern 3: Resuming After Break (Critical!)
-
-**Scenario**: User worked 3 days ago, wants to continue
+### Pattern 2: Resuming After Break
 
 **User**: "Continue workflow from context/working_memory.json in github.com/yourname/my_system"
 
 **LLM Process**:
-1. Read `github.com/yourname/my_system/context/working_memory.json`
-2. **EXTRACT** (MANDATORY):
-   - `current_workflow` (e.g., "01-systems_engineering")
-   - `current_step` (e.g., "SE-06")
-   - **`paths` object** (reflow_root, system_root, tools_path, templates_path, etc.) - STORE THIS!
-   - `operations_since_refresh`
-3. Check if refresh needed (>4 operations → refresh)
-4. Load workflow: `{paths.reflow_root}/workflows/{current_workflow}.json`
-5. Load step definition: `{paths.workflow_steps_path}/systems_engineering/{current_step}-*.json`
-6. Resume from exact step
-7. **USE extracted paths** for ALL tool/template references:
-   - Example: `python3 {paths.tools_path}/system_of_systems_graph_v2.py {paths.system_root}/specs/machine/index.json`
-8. Update context after operations
-9. Commit to GitHub at milestones
+1. Read `context/working_memory.json`
+2. **EXTRACT**: `current_workflow`, `current_step`, **`paths` object** (STORE THIS!)
+3. Resume from exact step
+4. **USE extracted paths** for ALL references
+5. Update context after operations
 
-**CRITICAL**:
-- Context folder IS the source of truth. Conversation history is supplemental.
-- **PATHS MUST BE EXTRACTED FROM working_memory.json** - NEVER hardcode or guess locations!
-
-### Pattern 4: Feature Update
-
-```
-"Implement workflow in github.com/sligara7/reflow/workflows/feature_update.json on system in github.com/yourname/my_system"
-
-Process: Read existing architecture → Propose changes → Validate impact → Update with versioning → Generate updated ICDs/diagrams
-Result: Updated system with backward compatibility tracking
-```
+**CRITICAL**: Context folder IS the source of truth. **PATHS MUST BE EXTRACTED FROM working_memory.json** - NEVER hardcode!
 
 ## Troubleshooting
 
 ### "Can't find tool X" or "Tool doesn't exist"
 
-**Symptom**: LLM claims `system_of_systems_graph_v2.py` or other tools don't exist
-
 **Root Cause**: Paths not extracted from `working_memory.json`
 
-**Fix (for LLM agents)**:
+**Fix**:
 1. **READ** `{system_root}/context/working_memory.json`
-2. **EXTRACT** the `paths` object:
-   ```json
-   {
-     "reflow_root": "/actual/path/to/reflow",
-     "tools_path": "/actual/path/to/reflow/tools",
-     ...
-   }
-   ```
+2. **EXTRACT** the `paths` object
 3. **VERIFY** tool exists: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
 4. **USE** extracted path: `python3 {paths.tools_path}/system_of_systems_graph_v2.py ...`
 
 **NEVER**:
 - ❌ Hardcode paths like `/home/user/reflow/tools/`
-- ❌ Guess locations like `./tools/`
-- ❌ Create new tools when existing ones can't be found
-- ❌ Skip reading `working_memory.json` because you "know" the paths
 - ❌ Download templates/tools from GitHub using `curl` - Reflow is ALREADY LOCAL!
 - ❌ Fetch from `https://raw.githubusercontent.com/sligara7/reflow/` URLs
 
 **ALWAYS**:
 - ✅ Read `working_memory.json` FIRST before EVERY workflow step
 - ✅ Extract all paths from the `paths` object
-- ✅ Verify tool exists before invoking: `ls {paths.tools_path}/system_of_systems_graph_v2.py`
 - ✅ Use LOCAL extracted paths in ALL commands
-- ✅ Read LOCAL templates: `cat {paths.templates_path}/service_architecture_template.json`
-- ✅ Run LOCAL tools: `python3 {paths.tools_path}/system_of_systems_graph_v2.py`
-
-### "Downloading templates from GitHub with curl"
-
-**Symptom**: LLM tries to download templates/tools using `curl https://raw.githubusercontent.com/sligara7/reflow/...`
-
-**Root Cause**: LLM doesn't realize Reflow is ALREADY installed locally
-
-**Why This is Wrong**:
-- Reflow tooling is ALREADY on your machine (local installation)
-- Templates, tools, workflows are LOCAL files, not remote
-- `working_memory.json` contains paths to LOCAL installation
-
-**Fix (for LLM agents)**:
-1. **STOP** using `curl` to download from GitHub
-2. **READ** `{system_root}/context/working_memory.json`
-3. **EXTRACT** paths: `paths.templates_path`, `paths.tools_path`, etc.
-4. **USE** local files:
-   - ❌ WRONG: `curl https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template.json`
-   - ✅ CORRECT: `cat {paths.templates_path}/service_architecture_template.json`
-
-**Example from Real Session** (what NOT to do):
-```bash
-# WRONG - Downloading from GitHub
-curl -s https://raw.githubusercontent.com/sligara7/reflow/main/templates/service_architecture_template_uaf.json -o templates/...
-# Result: 0 lines (file doesn't exist remotely)
-
-# CORRECT - Use local installation
-cat /path/extracted/from/working_memory/templates/service_architecture_template.json
-# Result: 400+ lines (file exists locally)
-```
 
 ### "Working memory doesn't exist"
 
-**Symptom**: `context/working_memory.json` file not found
-
-**Root Cause**: Setup workflow (00a-basic_setup.json) not run yet
-
-**Fix**:
-1. Run: `Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json on system in {your_system_path}`
-2. This creates `context/working_memory.json` with all required paths
-3. Then proceed with your intended workflow (01a, 01b, 01c, etc.)
+**Fix**: Run `00a-basic_setup.json` first to create `context/working_memory.json`
 
 ## What to Avoid vs Do
 
@@ -993,17 +350,14 @@ cat /path/extracted/from/working_memory/templates/service_architecture_template.
 - Modify reflow tooling files (workflows, templates, tools)
 - Use archived v2.x files
 - Skip setup workflow
-- Mix reflow and system directories
-- Skip quality gates
 - Hardcode paths or guess tool locations
 - Create new tools when existing ones can't be found
+- Download from GitHub (Reflow is local!)
 
 **✅ Do**:
 - Reference reflow as read-only library
 - Work in your system directory
 - Follow workflow sequence
-- Use versioning (semver, symlinks)
-- Run validation tools before advancing
 - Always read `working_memory.json` FIRST and extract paths
 - Verify tools exist before invoking them
 
@@ -1012,365 +366,86 @@ cat /path/extracted/from/working_memory/templates/service_architecture_template.
 ```
 <your_system>/
 ├── context/                     # LLM workflow tracking
-│   ├── working_memory.json
+│   ├── working_memory.json      # SOURCE OF TRUTH for paths
 │   ├── step_progress_tracker.json
 │   └── current_focus.md
 ├── specs/                       # Architecture specifications
-│   ├── machine/                # Machine-readable
-│   │   ├── service_arch/      # service_architecture.json files
-│   │   ├── interfaces/        # Interface Contract Documents
-│   │   └── graphs/            # system_of_systems_graph.json
-│   └── human/                  # Human-readable
-│       ├── visualizations/    # Mermaid diagrams
-│       └── documentation/     # Architecture docs
+│   ├── machine/                # Machine-readable (JSON)
+│   │   ├── service_arch/
+│   │   ├── interfaces/
+│   │   └── graphs/
+│   └── human/                  # Human-readable (Markdown, diagrams)
+│       ├── visualizations/
+│       └── documentation/
 ├── services/                    # Service implementations (optional)
 └── docs/                        # Foundational documents
 ```
 
-## New Features (v3.0.1)
+## New Features Summary
 
-### Git Automation (Optional)
-- Step S-03-A06 in `00-setup.json`
-- ~36 auto-commits at milestones (after service architecture, system graph validation, docs, implementations)
-- See `docs/GIT_AUTOMATION_GUIDE.md`
+### v3.6.0 - Early Testing Integration
+**Problem Solved**: Prevents "toss it over the fence" between development and operational testing.
 
-### Development Research (Optional)
-- Step D-01-A00 in `03-development.json`
-- 5-10 min industry standards search (dependency mgmt, containers, CI/CD, security, testing)
-- Output: `context/development_tooling_research_{date}.md`
-- Example findings: poetry vs requirements.txt, ruff vs pylint
+**Key Features**:
+- **Pre-Deployment Validation (D-06.5)**: 7 automated checks catch 80-90% of deployment blockers
+- **3 New Tools**: `validate_dependencies.py`, `validate_module_structure.py`, `validate_configuration_consistency.py`
+- **Incremental Gates (D-0X-A99)**: "Prove-it-works" validation at each development step
+- **Risk-Based Testing**: SE-02-A10 assesses risk per service (low/medium/high), tailors testing strategy
+- **Testing as Architecture**: SE-02-A09 defines testability upfront (not operational afterthought)
 
-### Enhanced Validation
-- Step SE-06 in `01-systems_engineering.json`
-- Detects async/sync framework mismatches, circular dependencies, orphaned services
-- Output: `specs/machine/architecture_issues.json`
+**Impact**: 3-5 days saved per service (24-40 days for 8-service system)
 
-## New Features (v3.6.0 - Early Testing Integration)
+**📖 Full Documentation**: See `docs/RELEASE_NOTES_v3.6.0.md`
 
-### 🎯 Problem Solved
-Prevents "toss it over the fence" problem between development and operational testing. Previously, operational testing discovered 15+ critical deployment blockers that should have been caught during development (missing dependencies, circular imports, configuration drift, database permission issues, Docker build failures).
+### v3.10.0 - Language-Native Interface Contracts
+**Problem Solved**: Bridges gap between JSON ICDs and code implementation.
 
-### Pre-Deployment Validation (D-06.5)
-**NEW Workflow Step**: `workflow_steps/development/D-06_5-PreDeploymentValidation.json`
-- **Purpose**: Comprehensive validation step that catches 80-90% of deployment blockers BEFORE operational testing
-- **7 Validation Actions**:
-  - D-06.5-A01: Validate Dependencies (prevents ModuleNotFoundError, ImportError, version conflicts)
-  - D-06.5-A02: Validate Module Structure (prevents circular imports, missing `__init__.py`)
-  - D-06.5-A03: Validate Configuration Consistency (code config matches docker-compose.yml)
-  - D-06.5-A04: Validate Database Permissions (migrations run as service user, not superuser)
-  - D-06.5-A05: Validate Docker Build (all services build successfully)
-  - D-06.5-A06: Run Smoke Tests (basic functionality validation, < 30 seconds)
-  - D-06.5-A07: Validate Contracts (implementation matches architecture)
-- **Quality Gate**: G-D-06.5 (BLOCKING) - Must pass all 7 validations before operational testing
-- **Time**: 30-60 minutes vs days of debugging in operational testing
-- **Impact**: Saves 3-5 days per service (24-40 days for 8-service system)
+**Key Features**:
+- **New Tool**: `generate_interface_abc.py` - Auto-generates strongly-typed interfaces from ICDs
+- **6 Languages**: Python (ABC), TypeScript, Rust (traits), C++, Java, Go
+- **Compile-time validation**: Catch mismatches before runtime
+- **IDE autocomplete**: Full IntelliSense for interface methods
 
-### 3 New Validation Tools
-**`tools/validate_dependencies.py`** (380 lines)
-- AST-based import analysis
-- Compares code imports against requirements.txt
-- Detects: Missing dependencies, unused dependencies, version conflicts, missing `__init__.py`
-- Usage: `python3 validate_dependencies.py /path/to/system_root`
+**Integration**: D-01-A04.5 (automatically invoked after development environment setup)
 
-**`tools/validate_module_structure.py`** (380 lines)
-- Detects missing `__init__.py` files
-- Finds circular imports (A imports B, B imports A)
-- Identifies module shadowing (local module shadows stdlib)
-- Tests module imports programmatically
-- Usage: `python3 validate_module_structure.py /path/to/system_root`
+**Impact**: 3-5 days saved per service (catch interface mismatches at compile time vs integration testing)
 
-**`tools/validate_configuration_consistency.py`** (490 lines)
-- Validates code configuration matches docker-compose.yml
-- Checks: DATABASE_URL format, host/port/user/database consistency, Redis URL, message queue config
-- Prevents: "Can't connect to localhost" errors (code uses localhost but docker-compose uses service names)
-- Usage: `python3 validate_configuration_consistency.py /path/to/system_root`
+**📖 Full Documentation**: See `docs/changes/CHANGE_PROPOSAL_20251104_ABC_INTERFACE_CONTRACTS.md`
 
-### Incremental Validation Gates (D-0X-A99)
-**NEW Actions**: "Prove-it-works" validation gates at each development step
-- **D-02-A99**: Prove It Works - Domain Model (service starts, /health OK, basic smoke test)
-- **D-03-A99**: Prove It Works - Persistence (database connection, migrations run, CRUD works)
-- **D-04-A99**: Prove It Works - Integration & Security (service-to-service calls, auth enforced)
-- **D-05-A99**: Prove It Works - Observability (/metrics endpoint, structured logs, traces)
-- **Philosophy**: Catch issues incrementally during development (when cheap to fix) rather than at the end (when expensive)
-- **Time**: 5-20 minutes per gate
-- **Non-blocking**: Warnings only, doesn't block progression
+### v3.11.0 - Pixi Package Manager
+Fast, reproducible Python environments (2-5x faster than pip).
 
-### Risk-Based Testing Strategy
-**SE-02-A10: Service Risk Assessment** (NEW)
-- Template: `templates/service_risk_assessment_template.json` (520+ lines)
-- Output: `specs/machine/service_arch/{service}/risk_assessment.json` (per service)
-- **3 Risk Categories** (1-3 scale):
-  - Deployment risk (complexity of deploying/configuring)
-  - Integration risk (dependencies on other services)
-  - Operational risk (impact of failure)
-- **Overall Risk Score**: (deployment + integration + operational) / 3
-- **Risk Levels**: low (1.0-1.5), medium (1.6-2.5), high (2.6-3.0)
-- **Testing Strategy by Risk**:
-  - **High risk (2.6-3.0)**: 85% coverage, load at 5x traffic, chaos tests, failover tests, pentesting
-  - **Medium risk (1.6-2.5)**: 80% coverage, load at 2x traffic, contract tests
-  - **Low risk (1.0-1.5)**: 60% coverage, basic integration tests
-- **Impact**: Focuses effort on high-risk services (payment, auth, API gateway), avoids over-testing low-risk (logging, metrics)
-
-### Testing as Architecture
-**SE-02-A09: Operational Testing Objectives** (NEW)
-- Template: `templates/operational_testing_objectives_template.json` (317 lines)
-- Output: `specs/machine/service_arch/{service}/operational_testing_objectives.json` (per service)
-- **Defines per-service**:
-  - Testability requirements (health endpoints `/health`, `/ready`, observability hooks `/metrics`, structured logging)
-  - 5 deployment test scenarios (startup validation, database connection, dependency handling, config validation, resource limits)
-  - 6 operational acceptance criteria with measurable targets (startup < 30s, health check < 100ms, etc.)
-  - Smoke test requirements (< 30 seconds total: CRUD, auth, migrations, inter-service, error handling)
-- **Philosophy**: Testability is an architectural requirement, not an operational concern
-
-**SE-06-A05: System Test Strategy** (NEW)
-- Template: `templates/system_test_strategy_template.json` (800+ lines)
-- Output: `specs/machine/system_test_strategy.json` (system-wide)
-- **6 Test Strategy Sections**:
-  - **Unit Test Strategy**: Coverage targets (risk-based), frameworks (pytest, Jest, JUnit), mocking strategy
-  - **Integration Test Strategy**: Service pairs to test (from system graph edges), test environment (Docker Compose)
-  - **Contract Test Strategy**: Consumer-driven contracts, tools (Pact), versioning (semantic)
-  - **Performance Test Strategy**: Load/stress/soak testing, target metrics (p95 < 500ms, 99.9% availability)
-  - **Security Test Strategy**: OWASP Top 10, dependency scanning, pentesting, SAST/DAST
-  - **Operational Test Strategy**: Deployment tests (cold start, upgrade, rollback), failover tests, chaos tests (high-risk only), backup/restore
-- **Critical Principle**: Testing strategy defined HERE (SE phase), implemented in Development (D-02 to D-05), executed in Testing (TO-01 to TO-05). Testing phase does NOT invent new tests.
-- **Integration Targets**: Every edge in `system_of_systems_graph.json` requires at least one integration test
-- **Contract Targets**: Every interface with `external_api: true` requires contract test
-
-### Optional Rapid Prototype (D-01-A06)
-**NEW Action**: `D-01-A06 - Create Lightweight Service Prototype (OPTIONAL)`
-- **Purpose**: 2-4 hour validation of architecture assumptions for high-risk services
-- **When to use**: High-risk service (score >= 2.6), complex deployment, unfamiliar tech stack, external dependencies
-- **What to build**: Single endpoint, basic database connection, minimal business logic, no tests/observability (barebones only)
-- **Time investment**: 2-4 hours now saves days of rework later if architecture assumptions are wrong
-
-### SE Workflow Refactoring
-**Resolved Token Limit Issue**:
-- **Before**: `workflows/01-systems_engineering.json` had 2,063 lines, 27,556 tokens (exceeded 25,000 limit)
-- **Solution**: Extracted SE-02 and SE-06 to dedicated step files
-  - `workflow_steps/systems_engineering/SE-02-ServiceArchitecture.json` (444 lines)
-  - `workflow_steps/systems_engineering/SE-06-GraphGeneration.json` (261 lines)
-- **After**: Main workflow reduced to 1,507 lines, 18,900 tokens (-27% lines, -31% tokens)
-- **Benefit**: Avoids context exceeded errors, follows established modular pattern
-
-### Documentation
-- **Release Notes**: `docs/RELEASE_NOTES_v3.6.0.md` - Comprehensive release notes with examples, usage, migration guide
-- **Tool Documentation**: `docs/TOOL_USAGE_SUMMARY.md` - Updated with 3 new validation tools
-- **Templates**: 3 new comprehensive templates with inline documentation and LLM agent guidance
-
-### Usage Example
-```
-Systems Engineering Phase:
-1. SE-02-A09: Define operational testing objectives for each service
-2. SE-02-A10: Assess risk for each service (low/medium/high)
-3. SE-06-A05: Define system test strategy (aggregates all service risk assessments)
-
-Development Phase:
-1. D-01-A06: Create rapid prototype (OPTIONAL, for high-risk services)
-2. D-02-A99: Prove It Works - Domain Model (service starts, basic smoke test)
-3. D-03-A99: Prove It Works - Persistence (database connection, CRUD operations)
-4. D-04-A99: Prove It Works - Integration & Security (service calls work, auth enforced)
-5. D-05-A99: Prove It Works - Observability (/metrics endpoint, structured logs)
-6. D-06.5: Pre-Deployment Integration Validation (7 automated checks) - BLOCKING GATE
-
-Operational Testing Phase:
-- Executes tests defined in SE-06-A05 system test strategy
-- 80-90% fewer blockers discovered (caught by D-06.5)
-- Focus on real operational concerns (not deployment issues)
-```
-
-### Impact Summary
-✅ Prevents "toss it over the fence" between development and operations
-✅ Catches 80-90% of deployment blockers before operational testing (D-06.5)
-✅ Incremental validation gates catch issues during development (D-0X-A99)
-✅ Risk-based testing focuses effort on high-risk services
-✅ Testing as architecture - testability requirements defined upfront (SE-02-A09)
-✅ Comprehensive test strategy - defined in SE phase, not ad-hoc (SE-06-A05)
-✅ 3 automated validation tools (dependencies, module structure, configuration)
-✅ 3 comprehensive templates (operational objectives, risk assessment, test strategy)
-✅ **Estimated impact**: 3-5 days saved per service (24-40 days for 8-service system)
-
-## New Features (v3.10.0 - Language-Native Interface Contracts)
-
-### 🎯 Problem Solved
-Bridges the gap between **JSON-based ICDs** (documentation) and **code implementation**. Previously, developers had to:
-1. Read JSON ICD specifications
-2. Manually implement interfaces in their language
-3. Hope they got type signatures correct
-4. Discover mismatches at integration testing (expensive to fix)
-
-Now: **Automatic generation of strongly-typed interface contracts** using language-native constructs provides compile-time/runtime validation.
-
-### New Tool: `generate_interface_abc.py`
-**Purpose**: Generate language-native interface contracts from `system_of_systems_graph.json` and ICD files
-
-**Supported Languages**:
-- **Python**: ABC (Abstract Base Classes) with `@abstractmethod`
-- **TypeScript**: Interface declarations
-- **Rust**: Trait definitions with `async_trait`
-- **C++**: Abstract base classes with pure virtual functions
-- **Java**: Interface declarations
-- **Go**: Interface types
-
-**Usage**: Automatically invoked at step D-01-A03 (after development environment setup)
-```bash
-python3 {reflow_root}/tools/generate_interface_abc.py {system_root}
-```
-
-**Input**:
-- `specs/machine/graphs/system_of_systems_graph.json` (edges = interfaces)
-- `specs/machine/development_language_configuration.json` (language per service)
-- `specs/machine/interfaces/*_icd.json` (detailed interface specifications)
-
-**Output** (per service dependency):
-```
-services/{consumer_service}/interfaces/
-  ├── {provider_service}_interface.py         (Python ABC)
-  ├── {provider_service}_interface.ts         (TypeScript interface)
-  ├── {provider_service}_interface.rs         (Rust trait)
-  ├── {provider_service}_interface.hpp        (C++ abstract class)
-  ├── {provider_service}_interface.java       (Java interface)
-  └── {provider_service}_interface.go         (Go interface)
-```
-
-**Example Output (Python ABC)**:
-```python
-# services/recommendation_service/interfaces/user_service_interface.py
-from abc import ABC, abstractmethod
-from typing import Dict, List, Any
-
-class UserServiceInterface(ABC):
-    """
-    Interface contract for User Service
-    Provider: user_service
-    Consumer: recommendation_service
-    """
-
-    @abstractmethod
-    def get_user_profile(self, user_id: str) -> Dict[str, Any]:
-        """
-        Get user profile by ID
-
-        Args:
-            user_id: Unique user identifier
-
-        Returns:
-            Dict with keys: user_id, name, email, preferences
-
-        Raises:
-            UserNotFoundException: If user_id not found
-        """
-        pass
-```
-
-**Example Usage (Python)**:
-```python
-# Provider implements the interface
-from interfaces.user_service_interface import UserServiceInterface
-
-class UserService(UserServiceInterface):
-    def get_user_profile(self, user_id: str) -> Dict[str, Any]:
-        # Implementation
-        return {"user_id": user_id, "name": "Alice", "email": "alice@example.com"}
-```
-
-### Benefits
-
-✅ **Compile-time validation** (TypeScript, Rust, C++, Java) - Catch interface mismatches before runtime
-✅ **Runtime validation** (Python ABC) - Enforce `@abstractmethod` implementation at import time
-✅ **IDE autocomplete** - Full IntelliSense/autocomplete for all interface methods
-✅ **Type safety** - Prevents interface drift between services
-✅ **Early error detection** - Catch mismatches at development time (minutes), not integration time (days)
-
-### Integration into Workflow
-
-**New Action**: D-01-A04.5 in `workflow_steps/development/D-01-InitBootstrap.json`
-
-**Workflow Sequence**:
-```
-D-01-A01: Select development languages ✅ (existing)
-D-01-A02: Bootstrap development context ✅ (existing)
-D-01-A03: Setup dependency management ✅ (existing)
-D-01-A04: Validate runtimes and toolchains ✅ (existing)
-D-01-A04.5: Generate interface ABC contracts ⭐ (NEW v3.10.0)
-D-01-A05: Confirm mission artifacts aligned ✅ (existing)
-```
-
-### Type Mapping
-
-JSON Schema types automatically mapped to language-native types:
-
-| JSON Schema | Python | TypeScript | Rust | C++ | Java | Go |
-|------------|--------|------------|------|-----|------|-----|
-| string | str | string | String | std::string | String | string |
-| integer | int | number | i64 | int64_t | Long | int64 |
-| number | float | number | f64 | double | Double | float64 |
-| boolean | bool | boolean | bool | bool | Boolean | bool |
-| array | List[T] | T[] | Vec<T> | std::vector<T> | List<T> | []T |
-| object | Dict[str, Any] | Record<string, any> | HashMap<String, Value> | std::map<string, json> | Map<String, Object> | map[string]interface{} |
-
-### Time Savings
-
-**Impact**: 3-5 days saved per service
-- Catch interface mismatches at compile/import time (minutes) vs integration testing (days)
-- Reduce integration debugging from days to hours
-- Eliminate "works on my machine" interface drift bugs
-- Prevent entire class of integration failures
-
-### Usage Pattern
-
-1. **Systems Engineering Phase**: Generate ICDs as usual (SE-06)
-2. **Development Phase D-01**: Tool auto-generates language-native interfaces from ICDs
-3. **Development Phase D-02+**: Developers implement services using generated interfaces
-   - Python: `class MyService(ProviderInterface):`
-   - TypeScript: `class MyService implements ProviderInterface {}`
-   - Rust: `impl ProviderInterface for MyService {}`
-   - C++: `class MyService : public ProviderInterface {}`
-4. **Compile/Runtime**: Language enforces interface compliance
-5. **Integration Testing**: Services guaranteed to have compatible interfaces
-
-### Documentation
-
-- **Change Proposal**: `docs/changes/CHANGE_PROPOSAL_20251104_ABC_INTERFACE_CONTRACTS.md`
-- **Tool Source**: `tools/generate_interface_abc.py` (600+ lines)
-- **Workflow Integration**: `workflow_steps/development/D-01-InitBootstrap.json`
-
-### Compatibility
-
-**Backward Compatible**: ✅ Existing systems continue to work without ABC interfaces (opt-in feature)
-
-**Prerequisite**: Requires `system_of_systems_graph.json` and ICD files from Systems Engineering phase
+### v3.13.0 - Functional Analysis + Automated Gap Closure
+Framework-agnostic functional architecture workflow with mathematical gap detection.
 
 ## Multi-Language Support
 
-Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, language-specific development steps in workflow 03
+Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, language-specific development steps.
 
 ## Getting Help
 
-- `docs/TOOL_USAGE_SUMMARY.md` - Comprehensive guide to all 32 tools
-- `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements (security, deployment, UX, operations)
-- `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis guide (400+ lines)
-- `docs/DECISION_FLOW_FRAMEWORK.md` - Decision Flow example (500+ lines)
-- `docs/GIT_AUTOMATION_GUIDE.md` - Git automation setup
-- `docs/HUMAN_DOCUMENTATION_WORKFLOW_ANALYSIS.md` - Human documentation analysis (973 lines)
+**Documentation**:
+- `docs/TOOL_USAGE_SUMMARY.md` - All 32 tools
+- `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements
+- `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis (400+ lines)
+- `docs/DECISION_FLOW_FRAMEWORK.md` - Decision Flow example
+- `docs/GIT_AUTOMATION_GUIDE.md` - Git automation
+- `docs/META_ANALYSIS_GUIDE.md` - Meta-analysis guide
+- `docs/RELEASE_NOTES_v3.6.0.md` - v3.6.0 release notes
 - `README.md` - Overview and quick start
 
 ## Summary for LLM Agents
 
 ### Primary Approach: Web-Based Usage
 
-1. **Web-based is PRIMARY**: Users create GitHub repo, you read from `github.com/sligara7/reflow`, write to their repo
-2. **Context is SOURCE OF TRUTH**: ALWAYS read `context/working_memory.json` FIRST when user says "continue"
-3. **⚠️ EXTRACT PATHS**: Read `working_memory.json` → Extract `paths` object → Use for ALL tool/template/workflow references - NEVER hardcode or guess
-4. **Multi-day projects normal**: User may work 10 min today, resume 3 days later - context preserves state
-5. **Two context mechanisms**:
-   - `context/working_memory.json` (PRIMARY - read this first!)
-   - Conversation history (SUPPLEMENTAL - reference if user mentions)
-6. **Reflow is read-only**: Read workflows/templates from GitHub, never modify them
-7. **Your system is separate**: All work in user's repo (`github.com/username/system_name`)
-8. **Start with 00a-basic_setup**: Configures paths, framework, structure
-9. **Modular workflows with branching**: 00a → [00b?] → 01a → (01b OR 01c) → 02 → 03a → 03b → 04a → 04b (+ feature_update)
-10. **Quality gates enforced**: 10 gates (7 blocking) ensure quality before advancing
-11. **v3.9.0 current**: 32 tools (context flow analysis integrated), 15 workflows, 60-95% context reduction, predictive context management
+1. **Web-based is PRIMARY**: Users create GitHub repo, read from `github.com/sligara7/reflow`, write to their repo
+2. **Context is SOURCE OF TRUTH**: ALWAYS read `context/working_memory.json` FIRST
+3. **⚠️ EXTRACT PATHS**: Read `working_memory.json` → Extract `paths` → Use for ALL references - NEVER hardcode
+4. **Multi-day projects normal**: Context preserves state across sessions
+5. **Reflow is read-only**: Never modify workflows/templates/tools
+6. **Start with 00a-basic_setup**: Configures paths, framework, structure
+7. **Modular workflows**: 00a → [00b?] → 01a → (01b OR 01c OR 01d) → 02 → 03a → 03b → 04a → 04b
+8. **Quality gates enforced**: 10 gates (7 blocking)
 
 **CRITICAL PATH EXTRACTION FLOW**:
 ```
@@ -1378,50 +453,29 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 2. LLM reads: {system_root}/context/working_memory.json
 3. LLM extracts: paths.tools_path, paths.templates_path, paths.reflow_root, etc.
 4. LLM uses: python3 {paths.tools_path}/system_of_systems_graph_v2.py
-5. LLM NEVER: Hardcodes paths or creates new tools
+5. LLM NEVER: Hardcodes paths or creates new tools or downloads from GitHub
 ```
-
-### Secondary Approach: Local Machine
-
-Use if user explicitly requests or web not available.
 
 ---
 
-**Ready to Start (Web-Based)?**
+**Ready to Start?**
 
+**Web-Based**:
 ```
-User creates GitHub repo, then in code environment (Codespaces, Claude Code, etc.) says:
 "Implement workflow in github.com/sligara7/reflow/workflows/00a-basic_setup.json
  on system in github.com/yourname/your_system_repo"
-
-(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
-**Environment Options**:
-- **GitHub Codespaces** (most accessible - free tier 60 hrs/month)
-- **Claude Code** (https://claude.ai/code - requires Pro/Max)
-- **OpenAI Codex, Google Jules, Gitpod, Replit**
+**Environment Options**: GitHub Codespaces (60 hrs/month free), Claude Code, Gitpod, Replit
 
-**⚠️ Don't Use**: Regular chat (claude.ai chat, chatgpt, gemini) - they lack code execution and GitHub integration
-
-**Resuming Work (Multi-Day Projects)?**
-
+**Resuming**:
 ```
-User: "Continue workflow from context/working_memory.json in github.com/yourname/your_system_repo"
-
-Your process:
-1. Read context/working_memory.json from their repo
-2. Check current_workflow and current_step
-3. Resume from exact step
-4. Update context after operations
+"Continue workflow from context/working_memory.json in github.com/yourname/your_system_repo"
 ```
 
-**Local Machine (Alternative)?**
-
+**Local Machine (Alternative)**:
 ```
 "Implement workflow in /path/to/reflow/workflows/00a-basic_setup.json on system in /path/to/your_system"
-
-(Note: Use 00a-basic_setup for v3.7.0. Legacy 00-setup.json still works but deprecated)
 ```
 
 Good luck building complex systems! 🚀
