@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "description": "Working memory for Scientific Reflow - NiPS3 RIXS Validation Test",
+    "version": "1.0.0",
+    "created_date": "2025-11-14",
+    "last_updated": "2025-11-14 15:50:00",
+    "validation_test": true,
+    "reference_paper": "He et al., Nature Communications 15, 3496 (2024)"
+  },
+  "current_workflow": "01-experimental_modeling",
+  "current_step": "EM-01",
+  "workflow_status": "in_progress",
+  "paths": {
+    "scientific_reflow_root": "/home/user/reflow/scientific-reflow",
+    "reflow_root": "/home/user/reflow",
+    "system_root": "/home/user/reflow/test_systems/nips3_rixs_validation",
+    "tools_path": "/home/user/reflow/tools",
+    "templates_path": "/home/user/reflow/scientific-reflow/templates",
+    "workflows_path": "/home/user/reflow/scientific-reflow/workflows",
+    "workflow_steps_path": "/home/user/reflow/scientific-reflow/workflow_steps",
+    "definitions_path": "/home/user/reflow/scientific-reflow/definitions"
+  },
+  "framework": {
+    "framework_id": "experimental_scientific_systems",
+    "framework_name": "Experimental Scientific Systems (ESS)",
+    "definitions_file": "experimental_scientific_systems_framework.json"
+  },
+  "experimental_system": {
+    "system_name": "NiPS3 RIXS Validation Test",
+    "facility": "NSLS2",
+    "beamline": "SIX (2-ID)",
+    "technique": "Resonant Inelastic X-ray Scattering (RIXS)",
+    "architecture_file": "specs/machine/experimental_systems/experimental_system_architecture.json",
+    "graph_file": "specs/machine/graphs/experimental_system_graph.json",
+    "knowledge_gaps": [
+      {
+        "component_id": "sample_nips3",
+        "system_category": "system_d_sample",
+        "gap_type": "UNKNOWN electronic excitations",
+        "target_properties": ["exciton_energy", "hund_exchange_strength", "exciton_dispersion"]
+      }
+    ]
+  },
+  "gap_closure": {
+    "gap_closure_proposals_file": "specs/machine/gap_closure/gap_closure_proposals.json",
+    "matrix_transformation_doc": "docs/matrix_transformation.md",
+    "hypotheses_file": "docs/scientific_hypotheses.md",
+    "svd_analysis": {
+      "condition_number": null,
+      "confidence_level": null
+    }
+  },
+  "validation": {
+    "is_validation_test": true,
+    "ground_truth": {
+      "exciton_energy": "1.47 eV",
+      "hund_exchange": "1.4 eV",
+      "measurement_temperature": "40 K",
+      "resonance_energy": "853.4 eV"
+    },
+    "success_criteria": {
+      "exciton_energy_tolerance": "±10%",
+      "exciton_energy_range": "1.32-1.62 eV",
+      "verdict": "PENDING"
+    }
+  },
+  "workflow_history": [
+    {
+      "workflow_id": "00-scientific_setup",
+      "started": "2025-11-14 15:50:00",
+      "completed_date": null,
+      "duration_minutes": null
+    }
+  ],
+  "operations_since_refresh": 0,
+  "context_refresh_threshold": 10,
+  "user_preferences": {
+    "auto_validation": true,
+    "export_formats": ["JSON", "CSV", "markdown"],
+    "visualization_tools": ["Mermaid", "matplotlib"]
+  },
+  "llm_capabilities": {
+    "model_name": "Claude Sonnet 4.5",
+    "context_window": 200000,
+    "context_threshold": 160000
+  }
+}
