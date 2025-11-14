@@ -1,0 +1,200 @@
+{
+  "metadata": {
+    "system_name": "<your_experimental_system_name>",
+    "facility": "<facility_name (e.g., NSLS2, ALS, APS)>",
+    "beamline": "<beamline_name_or_lab_identifier>",
+    "framework": "experimental_scientific_systems",
+    "version": "1.0.0",
+    "created_date": "<YYYY-MM-DD>",
+    "created_by": "<researcher_name>",
+    "description": "<brief description of experiment>",
+    "scientific_goal": "<what are you trying to discover?>",
+    "knowledge_gaps": ["<list of unknown properties to infer>"]
+  },
+  "experimental_components": [
+    {
+      "component_id": "source_001",
+      "component_name": "<name of energy/particle source>",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "<description of source (e.g., undulator, laser, X-ray tube)>",
+      "physical_properties": {
+        "energy_range": "<energy range with units (e.g., 5-30 keV)>",
+        "flux": "<flux with units (e.g., 1e13 photons/sec)>",
+        "beam_size": "<beam size with units (e.g., 100 μm × 50 μm)>",
+        "polarization": "<polarization state (if applicable)>",
+        "temporal_structure": "<pulsed/continuous, pulse duration if pulsed>"
+      },
+      "experimental_functions": [
+        "<list of functions this component performs>"
+      ],
+      "physical_interactions": [
+        "<list of interaction IDs this component participates in>"
+      ],
+      "notes": "<any additional notes>"
+    },
+    {
+      "component_id": "optics_001",
+      "component_name": "<name of optical/mechanical element>",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "<description (e.g., double crystal monochromator, focusing mirrors)>",
+      "physical_properties": {
+        "reflectivity": "<reflectivity value or curve>",
+        "transmission": "<transmission value>",
+        "energy_resolution": "<resolution (ΔE/E)>",
+        "focal_length": "<focal length with units>",
+        "positioning_accuracy": "<accuracy with units>"
+      },
+      "experimental_functions": [
+        "<e.g., energy selection, beam focusing, beam steering>"
+      ],
+      "physical_interactions": [
+        "<interaction IDs>"
+      ]
+    },
+    {
+      "component_id": "environment_001",
+      "component_name": "<name of environmental control>",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "<description (e.g., cryostat, furnace, vacuum chamber)>",
+      "physical_properties": {
+        "temperature_range": "<range with units (e.g., 10-300 K)>",
+        "pressure_range": "<range with units (e.g., 1e-6 to 1 atm)>",
+        "atmosphere": "<gas type or vacuum level>",
+        "stability": "<stability specs (e.g., ±0.1 K)>",
+        "field_strength": "<if magnetic/electric field, strength with units>"
+      },
+      "experimental_functions": [
+        "<e.g., temperature control, pressure regulation, atmosphere control>"
+      ],
+      "physical_interactions": [
+        "<interaction IDs>"
+      ]
+    },
+    {
+      "component_id": "sample_001",
+      "component_name": "<sample identifier>",
+      "system_category": "system_d_sample",
+      "knowledge_state": "UNKNOWN",
+      "description": "<brief sample description (e.g., unknown crystalline oxide)>",
+      "physical_properties": {
+        "crystal_structure": "UNKNOWN <this is what you want to discover>",
+        "lattice_parameters": "UNKNOWN",
+        "space_group": "PARTIALLY_KNOWN <if you have some constraints>",
+        "chemical_composition": "PARTIALLY_KNOWN <if elemental analysis is known>",
+        "electronic_properties": "UNKNOWN",
+        "optical_properties": "UNKNOWN",
+        "<add_more_properties>": "UNKNOWN or PARTIALLY_KNOWN"
+      },
+      "gap_closure_goal": "<describe what you want to infer from measurements>",
+      "constraints": {
+        "<property_name>": "<any known constraints (e.g., 'must be centrosymmetric')>"
+      },
+      "experimental_functions": [
+        "<e.g., scattering, absorption, fluorescence>"
+      ],
+      "physical_interactions": [
+        "<interaction IDs - incoming from B/C, outgoing to E>"
+      ]
+    },
+    {
+      "component_id": "detector_001",
+      "component_name": "<detector name>",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "<description (e.g., Pilatus 2D X-ray detector, photodiode)>",
+      "physical_properties": {
+        "quantum_efficiency": "<QE value or curve>",
+        "energy_resolution": "<resolution with units (e.g., 150 eV FWHM)>",
+        "spatial_resolution": "<resolution with units (e.g., 172 μm pixel)>",
+        "temporal_resolution": "<time resolution (e.g., 100 ms frame rate)>",
+        "dynamic_range": "<range (e.g., 20-bit)>",
+        "noise_characteristics": "<noise level (e.g., 2 counts RMS)>"
+      },
+      "experimental_functions": [
+        "<e.g., X-ray detection, intensity measurement, spatial mapping>"
+      ],
+      "physical_interactions": [
+        "<interaction IDs - incoming from D>"
+      ]
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001",
+      "interaction_name": "<descriptive name (e.g., source to monochromator)>",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "source_001",
+      "to_component": "optics_001",
+      "causal_direction": "forward",
+      "physical_mechanism": "<mechanism (e.g., X-ray transmission, reflection)>",
+      "interaction_strength": "<quantitative if known (e.g., transmission=0.7)>",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "<description of interaction>"
+    },
+    {
+      "interaction_id": "int_002",
+      "interaction_name": "optics to sample",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "optics_001",
+      "to_component": "sample_001",
+      "causal_direction": "forward",
+      "physical_mechanism": "<e.g., focused X-ray irradiation>",
+      "interaction_strength": "<flux at sample>",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "<description>"
+    },
+    {
+      "interaction_id": "int_003",
+      "interaction_name": "environment to sample",
+      "interaction_type": "environment_to_sample",
+      "from_component": "environment_001",
+      "to_component": "sample_001",
+      "causal_direction": "forward",
+      "physical_mechanism": "<e.g., thermal coupling, pressure effect>",
+      "interaction_strength": "<coupling strength if known>",
+      "observability": "MEDIUM",
+      "measured": true,
+      "description": "<description>"
+    },
+    {
+      "interaction_id": "int_004",
+      "interaction_name": "sample to detector",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_001",
+      "to_component": "detector_001",
+      "causal_direction": "forward",
+      "physical_mechanism": "<e.g., X-ray diffraction, fluorescence, scattering>",
+      "interaction_strength": "<scattering cross-section if known>",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "description": "<THIS IS YOUR MEASURED DATA - this interaction encodes System D properties>"
+    }
+  ],
+  "measurement_data": {
+    "description": "Optional: link to actual experimental data files",
+    "data_files": [
+      "<path_to_data_file_1.hdf5>",
+      "<path_to_data_file_2.tiff>"
+    ],
+    "data_format": "<HDF5, NeXus, TIFF, etc.>",
+    "preprocessing": "<any preprocessing applied (dark subtraction, flat field, etc.)>"
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_001"],
+    "matrix_formulation": "B = C × A⁻¹ (solve for C elements corresponding to System D)",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "max_iterations": 100
+  },
+  "validation": {
+    "graph_connectivity": "System D must be reachable from A and reach E",
+    "observability": "At least one D→E interaction with observability=HIGH",
+    "physical_plausibility": "All inferred properties must obey physical laws"
+  }
+}

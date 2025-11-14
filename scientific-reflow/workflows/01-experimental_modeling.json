@@ -1,0 +1,296 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "01-experimental_modeling",
+    "workflow_name": "Experimental System Modeling",
+    "version": "1.0.0",
+    "framework": "experimental_scientific_systems",
+    "description": "Model experimental apparatus as system-of-systems graph with knowledge gap (System D)",
+    "purpose": "Create machine-readable experimental_system_architecture.json defining Systems A, B, C, D (UNKNOWN), E and their physical interactions",
+    "estimated_duration": "30-60 minutes",
+    "prerequisites": ["00-scientific_setup"],
+    "next_workflow": "02-knowledge_gap_discovery"
+  },
+  "workflow_steps": [
+    {
+      "step_id": "EM-01",
+      "step_name": "Model System A - Source",
+      "description": "Define the energy/particle source (X-rays, photons, electrons, etc.)",
+      "actions": [
+        {
+          "action_id": "EM-01-A01",
+          "description": "Define source component(s)",
+          "details": "For each source: component_id, component_name, system_category='system_a_source', knowledge_state='KNOWN'",
+          "prompt": "What is your source? Examples: synchrotron undulator, laser, X-ray tube, neutron source",
+          "output": "Source definition(s) in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-01-A02",
+          "description": "Define source properties",
+          "details": "Define KNOWN properties: energy range, flux/intensity, beam profile, polarization, temporal structure, etc.",
+          "output": "Source properties in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-01-A03",
+          "description": "Document source specifications",
+          "details": "If user doesn't know exact specs, use typical values for facility (e.g., NSLS2 undulator: 5-30 keV, 1e13 ph/s)",
+          "output": "Source documented"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "At least one System A component defined",
+          "Knowledge state = KNOWN",
+          "Key properties documented"
+        ]
+      },
+      "next_step": "EM-02"
+    },
+    {
+      "step_id": "EM-02",
+      "step_name": "Model System B - Manipulation",
+      "description": "Define optical/mechanical components that manipulate, focus, or condition the source",
+      "actions": [
+        {
+          "action_id": "EM-02-A01",
+          "description": "Define manipulation components",
+          "details": "For each component: component_id, component_name, system_category='system_b_manipulation', knowledge_state='KNOWN'",
+          "prompt": "What optics/mechanics are in the beam path? Examples: monochromators, mirrors, lenses, slits, attenuators, focusing optics",
+          "output": "System B components in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-02-A02",
+          "description": "Define manipulation properties",
+          "details": "Properties: reflectivity, transmission, energy resolution, focal length, positioning accuracy, etc.",
+          "output": "System B properties"
+        },
+        {
+          "action_id": "EM-02-A03",
+          "description": "Define source → manipulation interactions",
+          "details": "Create edges from System A to System B: interaction_type='source_to_manipulation', mechanism (transmission/reflection), observability='HIGH'",
+          "output": "Interactions in experimental_system_architecture.json"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "System B components defined (can be empty if direct source→sample)",
+          "All components have knowledge_state=KNOWN",
+          "Interactions from A to B defined"
+        ]
+      },
+      "next_step": "EM-03"
+    },
+    {
+      "step_id": "EM-03",
+      "step_name": "Model System C - Environment",
+      "description": "Define environmental conditions affecting the sample",
+      "actions": [
+        {
+          "action_id": "EM-03-A01",
+          "description": "Define environmental components",
+          "details": "For each: component_id, component_name, system_category='system_c_environment', knowledge_state='KNOWN'",
+          "prompt": "What environmental controls exist? Examples: temperature (cryostat/furnace), pressure (vacuum/gas), magnetic field, electric field",
+          "output": "System C components in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-03-A02",
+          "description": "Define environmental properties",
+          "details": "Properties: temperature range, pressure range, field strength, stability, control precision, etc.",
+          "output": "System C properties"
+        },
+        {
+          "action_id": "EM-03-A03",
+          "description": "Define environment → sample interactions",
+          "details": "Create edges from System C to System D: interaction_type='environment_to_sample', mechanism (thermal coupling, mechanical stress, field coupling), observability='MEDIUM'",
+          "output": "Interactions C→D (will connect to System D in next step)"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "System C components defined (can be empty for room-temperature ambient experiments)",
+          "Environment→sample interactions defined if System C exists"
+        ]
+      },
+      "next_step": "EM-04"
+    },
+    {
+      "step_id": "EM-04",
+      "step_name": "Model System D - Sample (KNOWLEDGE GAP)",
+      "description": "Define the sample/system under investigation as a knowledge gap",
+      "actions": [
+        {
+          "action_id": "EM-04-A01",
+          "description": "Define sample component as UNKNOWN",
+          "details": "component_id='sample_001', component_name='<user sample name>', system_category='system_d_sample', knowledge_state='UNKNOWN'",
+          "prompt": "Describe your sample briefly (e.g., 'Unknown crystalline oxide', 'Biological protein crystal', 'Thin film material')",
+          "output": "System D component in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-04-A02",
+          "description": "Define unknown properties (knowledge gaps)",
+          "details": "List properties as 'UNKNOWN' placeholders: crystal_structure='UNKNOWN', lattice_parameters='UNKNOWN', chemical_composition='UNKNOWN', etc. These are what gap closure will infer!",
+          "prompt": "What properties do you want to discover about the sample?",
+          "output": "System D properties (all UNKNOWN or PARTIALLY_KNOWN)"
+        },
+        {
+          "action_id": "EM-04-A03",
+          "description": "Define gap closure goal",
+          "details": "Add 'gap_closure_goal' field describing what you want to infer from measurements",
+          "output": "Gap closure goal documented"
+        },
+        {
+          "action_id": "EM-04-A04",
+          "description": "Define manipulation → sample interactions",
+          "details": "Create edges from System B (or A if no B) to System D: interaction_type='manipulation_to_sample', mechanism (irradiation, excitation, scattering), observability='MEDIUM'",
+          "output": "Interactions B→D"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "System D component defined",
+          "knowledge_state='UNKNOWN' or 'PARTIALLY_KNOWN'",
+          "At least one unknown property identified",
+          "Incoming interactions from A or B defined"
+        ]
+      },
+      "next_step": "EM-05"
+    },
+    {
+      "step_id": "EM-05",
+      "step_name": "Model System E - Detection",
+      "description": "Define detectors and measurement systems",
+      "actions": [
+        {
+          "action_id": "EM-05-A01",
+          "description": "Define detection components",
+          "details": "For each detector: component_id, component_name, system_category='system_e_detection', knowledge_state='KNOWN'",
+          "prompt": "What detectors are used? Examples: CCD camera, photodiode, spectrometer, scintillator, APD",
+          "output": "System E components in experimental_system_architecture.json"
+        },
+        {
+          "action_id": "EM-05-A02",
+          "description": "Define detector properties",
+          "details": "Properties: quantum efficiency, energy resolution, spatial resolution, temporal resolution, dynamic range, noise characteristics",
+          "output": "System E properties"
+        },
+        {
+          "action_id": "EM-05-A03",
+          "description": "Define sample → detection interactions (CRITICAL FOR GAP CLOSURE)",
+          "details": "Create edges from System D to System E: interaction_type='sample_to_detection', mechanism (scattering, fluorescence, transmission), observability='HIGH', critical_for_gap_closure='TRUE'. THIS IS YOUR MEASURED DATA!",
+          "output": "Interactions D→E (this encodes System D in measurements)"
+        },
+        {
+          "action_id": "EM-05-A04",
+          "description": "Define reference/calibration paths (optional)",
+          "details": "If direct beam measurement or reference detector exists, create B→E or A→E edges: interaction_type='manipulation_to_detection', observability='HIGH'",
+          "output": "Reference interactions (optional)"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "At least one System E component defined",
+          "Sample→detector interaction(s) defined with observability='HIGH'",
+          "critical_for_gap_closure='TRUE' for D→E interactions"
+        ]
+      },
+      "next_step": "EM-06"
+    },
+    {
+      "step_id": "EM-06",
+      "step_name": "Review and Validate Architecture",
+      "description": "Review complete experimental system architecture and validate graph structure",
+      "actions": [
+        {
+          "action_id": "EM-06-A01",
+          "description": "Generate architecture summary",
+          "details": "Create human-readable summary: # of components per system (A, B, C, D, E), total interactions, identified knowledge gaps",
+          "output": "docs/experimental_system_summary.md"
+        },
+        {
+          "action_id": "EM-06-A02",
+          "description": "Validate graph connectivity",
+          "details": "Check: (1) System D reachable from A (via B), (2) System D reaches E, (3) No isolated components, (4) At least one D→E interaction",
+          "validation": "All checks pass (BLOCKING)"
+        },
+        {
+          "action_id": "EM-06-A03",
+          "description": "User review",
+          "details": "Present architecture to user for approval. Ask: Does this accurately represent your experimental setup?",
+          "validation": "User approval required (BLOCKING)"
+        },
+        {
+          "action_id": "EM-06-A04",
+          "description": "Save architecture",
+          "details": "Save to specs/machine/experimental_systems/experimental_system_architecture.json with metadata (version, date, user, framework)",
+          "output": "experimental_system_architecture.json"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "Architecture file generated",
+          "Graph connectivity validated",
+          "User approval obtained"
+        ]
+      },
+      "next_step": "EM-07"
+    },
+    {
+      "step_id": "EM-07",
+      "step_name": "Workflow Completion",
+      "description": "Finalize modeling and prepare for gap discovery",
+      "actions": [
+        {
+          "action_id": "EM-07-A01",
+          "description": "Update working memory",
+          "details": "Set current_workflow='02-knowledge_gap_discovery', current_step='KG-01', increment operations_since_refresh",
+          "output": "Updated context/working_memory.json"
+        },
+        {
+          "action_id": "EM-07-A02",
+          "description": "Generate modeling report",
+          "details": "Create docs/modeling_report.md with: systems defined, interactions defined, knowledge gaps identified, readiness for gap closure",
+          "output": "docs/modeling_report.md"
+        },
+        {
+          "action_id": "EM-07-A03",
+          "description": "Prompt user to proceed",
+          "details": "Ask: 'Experimental system modeled! Ready to discover knowledge gaps? Proceed to workflow 02-knowledge_gap_discovery.'",
+          "output": "User confirmation"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Working memory updated",
+          "Modeling report generated"
+        ]
+      },
+      "next_step": null,
+      "next_workflow": "02-knowledge_gap_discovery"
+    }
+  ],
+  "quality_gates": [
+    {
+      "gate_id": "QG-EM-01",
+      "gate_name": "Architecture Completeness",
+      "description": "Verify experimental system architecture is complete and valid",
+      "blocking": true,
+      "criteria": [
+        "All 5 systems (A, B, C, D, E) considered (C can be empty)",
+        "System D has knowledge_state='UNKNOWN'",
+        "At least one D→E interaction exists",
+        "Graph is connected (A reaches D, D reaches E)",
+        "User approval obtained"
+      ],
+      "evaluated_at": "EM-06"
+    }
+  ],
+  "context_refresh_triggers": {
+    "operations_threshold": 10
+  }
+}

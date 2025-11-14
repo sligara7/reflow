@@ -1,0 +1,252 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "02-knowledge_gap_discovery",
+    "workflow_name": "Knowledge Gap Discovery",
+    "version": "1.0.0",
+    "framework": "experimental_scientific_systems",
+    "description": "Use system_of_systems_graph_v2.py to analyze experimental system and identify knowledge gaps",
+    "purpose": "Transform experimental architecture to graph, run NetworkX analyses, detect gaps (System D), and prepare for gap closure",
+    "estimated_duration": "15-20 minutes",
+    "prerequisites": ["00-scientific_setup", "01-experimental_modeling"],
+    "next_workflow": "03-gap_closure_analysis"
+  },
+  "workflow_steps": [
+    {
+      "step_id": "KG-01",
+      "step_name": "Generate System-of-Systems Graph",
+      "description": "Convert experimental_system_architecture.json to NetworkX graph",
+      "actions": [
+        {
+          "action_id": "KG-01-A01",
+          "description": "Load paths from working memory",
+          "details": "Read context/working_memory.json, extract tools_path, system_root, reflow_root",
+          "validation": "Paths loaded successfully"
+        },
+        {
+          "action_id": "KG-01-A02",
+          "description": "Run system_of_systems_graph_v2.py",
+          "command": "python3 {tools_path}/system_of_systems_graph_v2.py --framework experimental_scientific_systems specs/machine/experimental_systems/experimental_system_architecture.json",
+          "details": "Generate graph JSON, run all recommended analyses (DAG, centrality, paths, gap detection)",
+          "output": "specs/machine/graphs/experimental_system_graph.json"
+        },
+        {
+          "action_id": "KG-01-A03",
+          "description": "Verify graph generation",
+          "details": "Check that experimental_system_graph.json exists and contains nodes, edges, analyses",
+          "validation": "Graph file generated (BLOCKING)"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "system_of_systems_graph_v2.py executed successfully",
+          "experimental_system_graph.json generated",
+          "Graph contains all 5 systems (A, B, C, D, E)"
+        ]
+      },
+      "next_step": "KG-02"
+    },
+    {
+      "step_id": "KG-02",
+      "step_name": "Analyze Graph Structure",
+      "description": "Analyze DAG, centrality, paths, and connectivity",
+      "actions": [
+        {
+          "action_id": "KG-02-A01",
+          "description": "DAG analysis",
+          "details": "Verify graph is a DAG (no cycles except intentional feedback loops). Expected: A→B→D→E is a DAG. If cycles exist, identify them (e.g., sample heating → temperature change → sample).",
+          "output": "DAG validation report"
+        },
+        {
+          "action_id": "KG-02-A02",
+          "description": "Centrality analysis",
+          "details": "Identify high-centrality nodes. Expected: System D (sample) should have high betweenness centrality (bottleneck between source and detector).",
+          "output": "Centrality ranking (System D should be top-ranked)"
+        },
+        {
+          "action_id": "KG-02-A03",
+          "description": "Path analysis",
+          "details": "Find all paths from System A (source) to System E (detection). Identify: (1) Direct paths (A→...→D→E) - primary signal, (2) Bypass paths (A→...→E without D) - background/calibration",
+          "output": "Path enumeration (should see A→B→D→E or similar)"
+        },
+        {
+          "action_id": "KG-02-A04",
+          "description": "Connectivity analysis",
+          "details": "Verify System D is reachable from A and reaches E. Detect any isolated components.",
+          "validation": "System D fully connected (BLOCKING)"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "DAG structure verified (or cycles explained)",
+          "System D has high centrality (confirms it's the bottleneck)",
+          "At least one path A→D→E exists",
+          "No isolated components"
+        ]
+      },
+      "next_step": "KG-03"
+    },
+    {
+      "step_id": "KG-03",
+      "step_name": "Gap Detection",
+      "description": "Identify knowledge gaps (System D nodes with unknown properties)",
+      "actions": [
+        {
+          "action_id": "KG-03-A01",
+          "description": "Identify UNKNOWN nodes",
+          "details": "Parse experimental_system_graph.json, find all nodes with knowledge_state='UNKNOWN' or 'PARTIALLY_KNOWN'. Expected: System D (sample).",
+          "output": "List of gap nodes"
+        },
+        {
+          "action_id": "KG-03-A02",
+          "description": "Analyze gap observability",
+          "details": "For each gap node (System D): (1) Count incoming edges (causal influences), (2) Count outgoing edges to KNOWN nodes (observables), (3) Check observability='HIGH' for D→E edges",
+          "output": "Gap observability report"
+        },
+        {
+          "action_id": "KG-03-A03",
+          "description": "Assess gap closure feasibility",
+          "details": "Check: (1) Is System D influenced by KNOWN systems (A, B, C)? (2) Is System D observed by KNOWN detectors (E)? (3) Are D→E interactions HIGH observability? If all YES, gap closure is feasible.",
+          "validation": "Gap closure feasible (BLOCKING if NO)"
+        },
+        {
+          "action_id": "KG-03-A04",
+          "description": "Generate gap report",
+          "details": "Create docs/gap_detection_report.md: identified gaps, observability, feasibility, required measurements",
+          "output": "docs/gap_detection_report.md"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "System D identified as knowledge gap",
+          "D→E observability confirmed",
+          "Gap closure feasible",
+          "Gap report generated"
+        ]
+      },
+      "next_step": "KG-04"
+    },
+    {
+      "step_id": "KG-04",
+      "step_name": "Identify Missing Measurements (If Any)",
+      "description": "Detect if additional measurements would improve gap closure",
+      "actions": [
+        {
+          "action_id": "KG-04-A01",
+          "description": "Check for under-constrained gaps",
+          "details": "If System D has multiple unknown properties but only one D→E measurement, gap may be under-constrained. Example: inferring 3D crystal structure from 1D spectrum is under-constrained.",
+          "output": "Constraint analysis"
+        },
+        {
+          "action_id": "KG-04-A02",
+          "description": "Suggest additional measurements",
+          "details": "If under-constrained, suggest adding measurements: (1) More detectors, (2) Multi-angle measurements, (3) Spectroscopic scanning, (4) Time-resolved measurements",
+          "output": "Measurement recommendations (if applicable)"
+        },
+        {
+          "action_id": "KG-04-A03",
+          "description": "User decision",
+          "details": "Ask user: Do you want to add more measurements to the architecture, or proceed with current setup?",
+          "validation": "User decision recorded"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Constraint analysis completed",
+          "User aware of potential under-constraints"
+        ]
+      },
+      "next_step": "KG-05"
+    },
+    {
+      "step_id": "KG-05",
+      "step_name": "Visualization",
+      "description": "Generate visual representations of experimental system and gaps",
+      "actions": [
+        {
+          "action_id": "KG-05-A01",
+          "description": "Generate Mermaid diagram",
+          "details": "Create Mermaid flowchart: System A → System B → System D (UNKNOWN) → System E, with System C → System D",
+          "output": "docs/experimental_system_diagram.mmd"
+        },
+        {
+          "action_id": "KG-05-A02",
+          "description": "Highlight knowledge gaps",
+          "details": "In diagram, use red/dashed lines for UNKNOWN nodes (System D), bold lines for critical_for_gap_closure='TRUE' edges (D→E)",
+          "output": "Visual gap highlighting"
+        },
+        {
+          "action_id": "KG-05-A03",
+          "description": "Generate human-readable documentation",
+          "details": "Create docs/EXPERIMENTAL_SYSTEM.md with: system overview, component descriptions, interaction flows, identified gaps, gap closure strategy",
+          "output": "docs/EXPERIMENTAL_SYSTEM.md"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Diagram generated",
+          "Human-readable documentation created"
+        ]
+      },
+      "next_step": "KG-06"
+    },
+    {
+      "step_id": "KG-06",
+      "step_name": "Workflow Completion",
+      "description": "Finalize gap discovery and prepare for gap closure analysis",
+      "actions": [
+        {
+          "action_id": "KG-06-A01",
+          "description": "Update working memory",
+          "details": "Set current_workflow='03-gap_closure_analysis', current_step='GC-01', increment operations_since_refresh",
+          "output": "Updated context/working_memory.json"
+        },
+        {
+          "action_id": "KG-06-A02",
+          "description": "Generate discovery summary",
+          "details": "Create docs/gap_discovery_summary.md: graph analysis results, identified gaps, observability assessment, readiness for gap closure",
+          "output": "docs/gap_discovery_summary.md"
+        },
+        {
+          "action_id": "KG-06-A03",
+          "description": "Prompt user to proceed",
+          "details": "Ask: 'Knowledge gaps identified! System D (sample) is observable via System E (detection). Ready to infer System D properties? Proceed to workflow 03-gap_closure_analysis.'",
+          "output": "User confirmation"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Working memory updated",
+          "Gap discovery complete"
+        ]
+      },
+      "next_step": null,
+      "next_workflow": "03-gap_closure_analysis"
+    }
+  ],
+  "quality_gates": [
+    {
+      "gate_id": "QG-KG-01",
+      "gate_name": "Gap Discovery Validation",
+      "description": "Verify knowledge gaps are properly identified and observable",
+      "blocking": true,
+      "criteria": [
+        "System-of-systems graph generated",
+        "System D identified as knowledge gap",
+        "System D reachable from source (A)",
+        "System D observable by detector (E)",
+        "D→E interactions have HIGH observability",
+        "Gap closure feasible"
+      ],
+      "evaluated_at": "KG-03"
+    }
+  ],
+  "context_refresh_triggers": {
+    "operations_threshold": 10
+  }
+}
