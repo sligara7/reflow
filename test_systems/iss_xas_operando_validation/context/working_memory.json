@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "created_date": "2025-11-14",
+    "last_updated": "2025-11-14",
+    "version": "1.0.0",
+    "context_type": "scientific_reflow_validation"
+  },
+  "project_info": {
+    "project_name": "ISS XAS Operando Validation",
+    "description": "Validation test for Systems A-F generalizability using 8-ID ISS beamline XAS operando measurements",
+    "facility": "NSLS2",
+    "beamline": "8-ID ISS (Inner Shell Spectroscopy)",
+    "technique": "Operando X-ray Absorption Spectroscopy (XAS)",
+    "validation_purpose": "Verify Systems A-F architecture works for time-resolved operando measurements with System F (async DAQ)"
+  },
+  "paths": {
+    "reflow_root": "/home/asligar/git_projects/reflow",
+    "scientific_reflow_root": "/home/asligar/git_projects/reflow/scientific-reflow",
+    "system_root": "/home/asligar/git_projects/reflow/test_systems/iss_xas_operando_validation",
+    "tools_path": "/home/asligar/git_projects/reflow/tools",
+    "templates_path": "/home/asligar/git_projects/reflow/scientific-reflow/templates",
+    "workflow_steps_path": "/home/asligar/git_projects/reflow/workflow_steps",
+    "definitions_path": "/home/asligar/git_projects/reflow/scientific-reflow/definitions"
+  },
+  "current_workflow": "validation_testing",
+  "current_step": "INIT",
+  "framework": "experimental_scientific_systems",
+  "systems_architecture": {
+    "validation_case_file": "iss_xas_operando_validation_case.json",
+    "systems_present": ["A", "B", "C", "D", "E", "F"],
+    "system_f_type": "async_daq",
+    "knowledge_gaps": ["System D - Ru6IrOx catalyst oxidation state evolution and degradation mechanism"]
+  },
+  "scientific_goal": {
+    "primary_goal": "Infer catalyst degradation mechanism from operando XAS measurements",
+    "target_discovery": "Ru oxidation state evolution, Ir stabilization mechanism, degradation pathway",
+    "published_results": {
+      "ru_oxidation": "Ru^4+ → Ru^(4+δ) under OER conditions",
+      "degradation": "Ru dissolution to Ru^6+, Ir subsurface stabilization"
+    },
+    "success_criteria": "Gap closure qualitatively identifies Ru oxidation and degradation pathway"
+  },
+  "operations_since_refresh": 0,
+  "refresh_threshold": 50,
+  "notes": "Pre-built validation case with Systems A-F. System F (async DAQ) is REQUIRED for operando measurements."
+}

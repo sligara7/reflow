@@ -1,0 +1,393 @@
+{
+  "metadata": {
+    "validation_case_name": "Ru6IrOx Catalyst Operando XAS Study",
+    "purpose": "Validate Scientific Reflow generalizability to XAS operando measurements at 8-ID ISS",
+    "reference_paper": {
+      "title": "Low-iridium stabilized ruthenium oxide anode catalyst for durable proton-exchange membrane water electrolysis",
+      "authors": "TBD",
+      "journal": "Nature Nanotechnology",
+      "year": "2025",
+      "doi": "10.1038/s41565-025-02030-y"
+    },
+    "facility": "NSLS2",
+    "beamline": "ISS (8-ID) - Inner Shell Spectroscopy",
+    "technique": "Operando X-ray Absorption Spectroscopy (XAS)",
+    "validation_approach": "Model operando electrochemical experiment (Systems A-F), run gap closure, infer catalyst degradation mechanism from time-resolved XAS"
+  },
+  "validation_strategy": {
+    "description": "We will treat the Ru6IrOx catalyst as having PARTIALLY_KNOWN properties (crystal structure and initial oxidation states known, degradation pathway and operando oxidation state evolution UNKNOWN), then use gap closure to see if we can infer the degradation mechanism from time-resolved XAS measurements.",
+    "known_beforehand": [
+      "Crystal structure: Rutile RuO2 with Ir substitution",
+      "Initial composition: Ru:Ir = 6:1 (atomic ratio)",
+      "Initial oxidation states: Ru^4+, Ir^4+ (nominal)",
+      "Electrochemical performance: 1500h stability at 2 A/cm^2"
+    ],
+    "discovered_by_experiment": [
+      "Ru oxidation state evolution during OER",
+      "Ir oxidation state evolution during OER",
+      "Critical Ir concentration in subsurface layer",
+      "Degradation pathway: Ru dissolution vs Ir stabilization"
+    ],
+    "gap_closure_target": "Can we infer the catalyst degradation mechanism (oxidation state changes, dissolution pathway) from operando XAS spectra?",
+    "success_criteria": "Gap closure should propose: (1) Ru oxidation state increases under OER conditions, (2) Ir stabilizes Ru by occupying subsurface sites, (3) Degradation occurs via Ru dissolution to soluble Ru^(6+)"
+  },
+  "experimental_components": [
+    {
+      "component_id": "damping_wiggler_iss",
+      "component_name": "NSLS2 Damping Wiggler (ISS Source)",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "7m long damping wiggler for hard X-ray generation at ISS beamline",
+      "physical_properties": {
+        "wiggler_type": "Damping wiggler",
+        "length": "7 m",
+        "periods": "75",
+        "period_length": "90 mm",
+        "critical_energy": "11 keV",
+        "energy_range": "5-30 keV (primary hard X-ray range)",
+        "flux": "~10^13 photons/sec at 22 keV (Ru K-edge)",
+        "beam_brilliance": "High (NSLS2 specification)",
+        "ring_energy": "3 GeV",
+        "ring_current": "400-500 mA"
+      },
+      "experimental_functions": [
+        "Generate hard X-ray photons for XAS",
+        "Provide tunable incident energy (22.1 keV for Ru K-edge, 11.2 keV for Ir L-edge)"
+      ],
+      "physical_interactions": ["int_001_source_to_mono"],
+      "notes": "Damping wiggler provides high flux for fast XAS acquisition (1s per spectrum)"
+    },
+    {
+      "component_id": "monochromator_iss",
+      "component_name": "ISS High-Throughput Monochromator",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "High-flux monochromator optimized for fast scanning XAS",
+      "physical_properties": {
+        "monochromator_type": "Double-crystal monochromator",
+        "energy_resolution": "~1-2 eV at 22 keV (ΔE/E ~ 10^-4)",
+        "flux_throughput": "~10^12 photons/sec (high efficiency for operando measurements)",
+        "scanning_speed": "Fast continuous scanning (1s per XANES+EXAFS spectrum)",
+        "stability": "Long-term energy stability over hours-days"
+      },
+      "experimental_functions": [
+        "Select incident X-ray energy for Ru K-edge (22.117 keV) or Ir L3-edge (11.215 keV)",
+        "Fast energy scanning for time-resolved operando XAS"
+      ],
+      "physical_interactions": ["int_001_source_to_mono", "int_002_mono_to_sample"]
+    },
+    {
+      "component_id": "focusing_optics_iss",
+      "component_name": "Kirkpatrick-Baez Focusing Mirrors",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "KB mirrors for focusing X-rays onto sample in electrochemical cell",
+      "physical_properties": {
+        "optics_type": "Kirkpatrick-Baez (KB) mirrors",
+        "focal_spot_size": "~50-100 μm (typical for hard X-ray)",
+        "reflectivity": "~0.8 at 22 keV",
+        "working_distance": "Compatible with electrochemical cell geometry"
+      },
+      "experimental_functions": [
+        "Focus X-rays onto catalyst electrode in electrochemical cell",
+        "Increase photon density for high signal-to-noise ratio"
+      ],
+      "physical_interactions": ["int_002_mono_to_sample"]
+    },
+    {
+      "component_id": "electrochemical_cell_iss",
+      "component_name": "Operando Electrochemical Cell",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "Custom electrochemical cell for operando XAS during oxygen evolution reaction (OER)",
+      "physical_properties": {
+        "cell_type": "Three-electrode electrochemical cell",
+        "electrolyte": "0.1-1 M H2SO4 (acidic, pH ~0-1)",
+        "temperature": "Room temperature (~298 K)",
+        "applied_potential_range": "0-2.0 V vs RHE (Reversible Hydrogen Electrode)",
+        "current_density": "Up to 2 A/cm^2 (operating condition)",
+        "atmosphere": "Ambient (water vapor, O2 evolution)",
+        "window_material": "Kapton or thin glass (X-ray transparent)",
+        "time_resolution": "Continuous operation over 1-1500 hours"
+      },
+      "experimental_functions": [
+        "Apply electrochemical potential to drive oxygen evolution reaction (OER)",
+        "Control catalyst operating conditions (voltage, current)",
+        "Enable operando XAS measurements under realistic electrocatalysis conditions"
+      ],
+      "physical_interactions": ["int_003_env_to_sample"],
+      "notes": "THIS IS OPERANDO ENVIRONMENT - dynamic, time-varying conditions (not static like cryostat)"
+    },
+    {
+      "component_id": "sample_ru6irox_catalyst",
+      "component_name": "Ru6IrOx Catalyst Electrode",
+      "system_category": "system_d_sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "description": "Low-iridium ruthenium oxide catalyst for PEM water electrolysis - degradation mechanism UNKNOWN",
+      "physical_properties": {
+        "_comment_known": "KNOWN properties (from synthesis and ex-situ characterization)",
+        "composition": "KNOWN: Ru6IrOx (Ru:Ir = 6:1 atomic ratio)",
+        "crystal_structure": "KNOWN: Rutile RuO2 lattice with Ir substitution",
+        "ir_location": "KNOWN: Ir preferentially occupies first subsurface layer (DFT prediction)",
+        "initial_oxidation_states": "KNOWN: Ru^4+, Ir^4+ (nominal, ex-situ)",
+        "particle_size": "KNOWN: ~5-10 nm nanoparticles",
+        "surface_area": "KNOWN: High surface area for catalysis",
+        "electrochemical_performance": "KNOWN: 1500h stability at 2 A/cm^2, 80% Ir reduction vs commercial",
+        "_comment_unknown": "UNKNOWN properties (target of operando XAS discovery)",
+        "ru_oxidation_state_under_oer": "UNKNOWN (GOAL: measure from Ru K-edge XANES)",
+        "ir_oxidation_state_under_oer": "UNKNOWN (GOAL: measure from Ir L-edge XANES)",
+        "degradation_pathway": "UNKNOWN (GOAL: infer from time-resolved oxidation state changes)",
+        "ru_dissolution_mechanism": "UNKNOWN (Ru^4+ → Ru^6+ → soluble species?)",
+        "ir_stabilization_mechanism": "UNKNOWN (How does Ir prevent Ru dissolution?)",
+        "coordination_environment_changes": "UNKNOWN (GOAL: infer from EXAFS analysis)"
+      },
+      "gap_closure_goal": "Infer catalyst degradation mechanism from operando XAS: (1) Ru oxidation state evolution, (2) Ir stabilization role, (3) Dissolution pathway",
+      "constraints": {
+        "oxidation_state_limits": "Ru: +3 to +6, Ir: +3 to +6",
+        "dissolution_potential": "Ru dissolves as Ru^6+ at high potentials (>1.4 V vs RHE)",
+        "ir_stabilization": "Ir in subsurface layer stabilizes surface Ru (DFT prediction)",
+        "electrochemical_stability": "1500h at 2 A/cm^2 implies minimal Ru dissolution"
+      },
+      "experimental_functions": [
+        "Catalyze oxygen evolution reaction (OER): 2H2O → O2 + 4H+ + 4e-",
+        "Absorb incident X-rays at Ru K-edge (22.1 keV) and Ir L-edge (11.2 keV)",
+        "Emit fluorescence X-rays encoding oxidation state and coordination"
+      ],
+      "physical_interactions": [
+        "int_002_mono_to_sample",
+        "int_003_env_to_sample",
+        "int_004_sample_to_detector"
+      ],
+      "notes": "THIS IS SYSTEM D - THE KNOWLEDGE GAP. Operando oxidation states and degradation mechanism are UNKNOWN and will be inferred from time-resolved XAS."
+    },
+    {
+      "component_id": "fluorescence_detector_iss",
+      "component_name": "Multi-Element Fluorescence Detector",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "Multi-element Ge or Si fluorescence detector for XAS measurements",
+      "physical_properties": {
+        "detector_type": "Multi-element germanium (Ge) or silicon drift detector (SDD)",
+        "number_of_elements": "4-32 elements (typical)",
+        "energy_resolution": "~150-200 eV at 22 keV (FWHM)",
+        "detection_mode": "Fluorescence yield (suitable for concentrated samples)",
+        "count_rate": "Up to 10^6 counts/sec per element",
+        "solid_angle": "Large (multi-element increases solid angle coverage)",
+        "time_resolution": "1s per spectrum (fast acquisition)",
+        "dynamic_range": ">10^4"
+      },
+      "experimental_functions": [
+        "Detect fluorescence X-rays from Ru Kα (19.3 keV) and Ir Lα (9.2 keV)",
+        "Measure X-ray absorption coefficient μ(E) as function of incident energy",
+        "Resolve XANES (oxidation state) and EXAFS (coordination environment)"
+      ],
+      "physical_interactions": ["int_004_sample_to_detector"],
+      "measured_observables": {
+        "primary_observable": "X-ray absorption coefficient μ(E) as function of incident energy E",
+        "xanes_region": "Ru K-edge: 22.1-22.2 keV, Ir L3-edge: 11.2-11.3 keV (oxidation state)",
+        "exafs_region": "Extended to k=12-15 Å^-1 (coordination environment)",
+        "time_resolution": "1s per spectrum (enables time-resolved operando measurements)",
+        "detection_geometry": "90° or backscattering (fluorescence yield mode)"
+      },
+      "notes": "CRITICAL MEASUREMENT - Fluorescence yield μ(E) encodes oxidation state (XANES edge shift) and coordination environment (EXAFS oscillations)"
+    },
+    {
+      "component_id": "daq_system_iss",
+      "component_name": "ISS Asynchronous Data Acquisition System",
+      "system_category": "system_f_analysis",
+      "knowledge_state": "KNOWN",
+      "description": "Novel DAQ architecture with asynchronous continuous data collection and 8ns timestamp resolution for fast operando XAS",
+      "physical_properties": {
+        "daq_architecture": "Asynchronous continuous collection with independent device timestamps",
+        "timestamp_resolution": "8 ns (using NSLS2 timing system)",
+        "data_streams": [
+          "Monochromator energy encoder",
+          "Multi-element fluorescence detector counts",
+          "Incident beam intensity (I0 monitor)",
+          "Electrochemical cell voltage/current",
+          "Temperature sensors"
+        ],
+        "synchronization": "Post-processing synchronization using timestamps",
+        "acquisition_speed": "1s per XANES+EXAFS spectrum",
+        "long_term_stability": "Days-long continuous acquisition (1500h for this study)",
+        "data_format": "HDF5 with Bluesky data model"
+      },
+      "experimental_functions": [
+        "Synchronize multi-channel data streams (energy, fluorescence, I0, electrochemistry)",
+        "Timestamp each data point with 8ns precision using NSLS2 timing",
+        "Enable fast time-resolved XAS (1s per spectrum) for operando measurements",
+        "Generate absorption coefficient μ(E,t) as function of time"
+      ],
+      "physical_interactions": ["int_005_detection_to_analysis"],
+      "computational_properties": {
+        "input_data": "Multi-channel asynchronous data streams with timestamps",
+        "output_data": "Time-resolved absorption spectra μ(E,t)",
+        "processing_steps": [
+          "Timestamp alignment (8ns resolution)",
+          "Fluorescence/I0 normalization",
+          "Dead-time correction",
+          "Energy calibration",
+          "Background subtraction"
+        ],
+        "real_time": "Streaming analysis during acquisition",
+        "software_tools": ["Bluesky", "ISS beamline DAQ", "PyXAS/Larch for XAS analysis"]
+      },
+      "notes": "THIS IS SYSTEM F - Required for operando XAS. Fast DAQ enables time-resolved tracking of oxidation state evolution."
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001_source_to_mono",
+      "interaction_name": "Damping Wiggler to Monochromator",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "damping_wiggler_iss",
+      "to_component": "monochromator_iss",
+      "causal_direction": "forward",
+      "physical_mechanism": "Hard X-ray generation and monochromation",
+      "interaction_strength": "Flux = 10^13 ph/s → ~10^12 ph/s after monochromator (efficiency ~0.1-0.3)",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Damping wiggler generates broad-spectrum hard X-rays, monochromator selects Ru K-edge (22.1 keV) or Ir L-edge (11.2 keV)"
+    },
+    {
+      "interaction_id": "int_002_mono_to_sample",
+      "interaction_name": "Monochromated X-rays to Catalyst Sample",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "monochromator_iss",
+      "to_component": "sample_ru6irox_catalyst",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray absorption at Ru/Ir edges, core-level excitation",
+      "interaction_strength": "Flux at sample ~10^11-10^12 ph/s (after focusing)",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "Hard X-rays excite Ru 1s → 4p/continuum (K-edge) or Ir 2p → 5d/continuum (L-edge) transitions"
+    },
+    {
+      "interaction_id": "int_003_env_to_sample",
+      "interaction_name": "Electrochemical Potential to Catalyst",
+      "interaction_type": "environment_to_sample",
+      "from_component": "electrochemical_cell_iss",
+      "to_component": "sample_ru6irox_catalyst",
+      "causal_direction": "forward",
+      "physical_mechanism": "Electrochemical oxidation/reduction, oxygen evolution reaction (OER)",
+      "interaction_strength": "Applied potential 0-2 V vs RHE, current density up to 2 A/cm^2",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Electrochemical potential drives OER (2H2O → O2 + 4H+ + 4e-), changes catalyst oxidation state"
+    },
+    {
+      "interaction_id": "int_004_sample_to_detector",
+      "interaction_name": "Catalyst Fluorescence to Detector",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_ru6irox_catalyst",
+      "to_component": "fluorescence_detector_iss",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray fluorescence (Ru Kα, Ir Lα emission after core-hole decay)",
+      "interaction_strength": "Fluorescence yield ~0.5-0.8 for K-edge (Ru), ~0.1-0.3 for L-edge (Ir)",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "measured_data": {
+        "ru_k_edge_shift": "XANES edge position shifts to higher energy under OER conditions (oxidation)",
+        "ir_l_edge_stability": "XANES edge position remains stable (Ir resists oxidation)",
+        "time_evolution": "Ru edge shifts over time (hours-days), Ir edge stable",
+        "coordination_changes": "EXAFS oscillations show Ru-O distance changes, Ir-Ru bonding",
+        "degradation_signature": "Gradual Ru edge shift → dissolution as Ru^6+?"
+      },
+      "description": "THIS IS THE CRITICAL DATA - XAS measures time-resolved oxidation state evolution. Ru edge shift encodes degradation pathway."
+    },
+    {
+      "interaction_id": "int_005_detection_to_analysis",
+      "interaction_name": "Detector Signals to DAQ Analysis",
+      "interaction_type": "detection_to_analysis",
+      "from_component": "fluorescence_detector_iss",
+      "to_component": "daq_system_iss",
+      "causal_direction": "forward",
+      "physical_mechanism": "Asynchronous data stream synchronization and XAS processing",
+      "interaction_strength": "Multi-channel data synchronization with 8ns precision",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "description": "System F processes raw detector signals → μ(E,t) absorption spectra. Enables time-resolved operando analysis."
+    }
+  ],
+  "published_results": {
+    "system_d_discovered_properties": {
+      "ru_oxidation_under_oer": {
+        "value": "Ru^4+ → Ru^(4+δ) (oxidation under OER conditions)",
+        "interpretation": "Ru oxidation state increases at high potential, approaches Ru^6+ dissolution threshold"
+      },
+      "ir_oxidation_under_oer": {
+        "value": "Ir^4+ remains stable (minimal oxidation)",
+        "interpretation": "Ir resists oxidation better than Ru, provides stabilization"
+      },
+      "degradation_mechanism": {
+        "description": "Ru surface atoms oxidize to Ru^6+ and dissolve into electrolyte",
+        "ir_stabilization_role": "Ir in subsurface layer prevents Ru dissolution by modifying electronic structure",
+        "critical_ir_concentration": "Ir:Ru = 1:6 is sufficient (< 50 at.% Ir)",
+        "stability_metric": "1500h at 2 A/cm^2 (80% Ir reduction vs commercial catalysts)"
+      },
+      "coordination_environment": {
+        "ru_o_distance": "~1.98 Å (Ru-O bond in rutile structure)",
+        "ir_substitution_effect": "Ir-O bonds slightly longer (~2.0 Å), stabilize local structure"
+      }
+    }
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_ru6irox_catalyst"],
+    "unknown_properties": [
+      "ru_oxidation_state_under_oer",
+      "ir_oxidation_state_under_oer",
+      "degradation_pathway",
+      "ir_stabilization_mechanism"
+    ],
+    "measured_observables": [
+      "Time-resolved XAS μ(E,t) at Ru K-edge shows edge shift (oxidation)",
+      "Time-resolved XAS μ(E,t) at Ir L-edge shows stability (no oxidation)",
+      "Electrochemical current/voltage tracks catalyst activity"
+    ],
+    "matrix_formulation": "Infer System D (oxidation states, degradation mechanism) from measured D→E interaction (XAS spectra) and C→D interaction (electrochemical conditions) given known A, B, C, E, F",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "expected_outcome": "Gap closure should propose: (1) Ru oxidizes under OER, (2) Ir stabilizes surface, (3) Degradation via Ru dissolution"
+  },
+  "validation_metrics": {
+    "success_criteria": {
+      "ru_oxidation_detected": "Gap closure identifies Ru oxidation state increase under OER conditions",
+      "ir_stability_detected": "Gap closure identifies Ir oxidation state remains stable",
+      "degradation_mechanism_inferred": "Gap closure proposes Ru dissolution as degradation pathway",
+      "ir_stabilization_role_inferred": "Gap closure recognizes Ir subsurface stabilization prevents Ru dissolution",
+      "confidence_level": "SVD condition number < 100 (well-conditioned problem)"
+    },
+    "comparison_to_published": {
+      "published_ru_oxidation": "Ru^4+ → Ru^(4+δ) under OER",
+      "scientific_reflow_inferred_ru_oxidation": "TBD (after running workflow)",
+      "published_degradation": "Ru dissolution to Ru^6+, Ir stabilization via subsurface sites",
+      "scientific_reflow_inferred_degradation": "TBD (after running workflow)",
+      "verdict": "TBD (PASS if qualitatively correct mechanism inferred)"
+    }
+  },
+  "comparison_to_rixs_case": {
+    "similarities": [
+      "Systems A-E architecture maps directly",
+      "System D is PARTIALLY_KNOWN (target of discovery)",
+      "Critical measurement is D→E interaction",
+      "Gap closure goal is to infer System D properties"
+    ],
+    "differences": [
+      "System A: Damping wiggler (hard X-rays) vs EPU49 undulator (soft X-rays)",
+      "System C: Operando electrochemical cell (dynamic) vs cryostat (static)",
+      "System E: Fluorescence detector (absorption) vs RIXS spectrometer (energy loss)",
+      "System F: REQUIRED for ISS (async DAQ), NOT NEEDED for RIXS",
+      "Time domain: Time-resolved (1500h) vs single snapshot",
+      "Observable: μ(E,t) vs I(ΔE)"
+    ],
+    "key_insight": "Systems A-E are generalizable, but System F is CONDITIONALLY REQUIRED (for time-resolved techniques)"
+  },
+  "notes": {
+    "validation_approach": "This test validates that Scientific Reflow can generalize beyond RIXS to operando XAS. If gap closure successfully infers the degradation mechanism (Ru oxidation → dissolution, Ir stabilization), it confirms the Systems A-F architecture is beamline-agnostic.",
+    "system_f_importance": "System F (async DAQ) is CRITICAL for operando XAS. Without it, we cannot capture time-resolved oxidation state evolution. This validates the addition of System F to the architecture.",
+    "challenge": "Operando XAS is more complex than RIXS: (1) time-dependent, (2) electrochemical environment varies, (3) degradation is slow (hours-days). Gap closure must handle time-varying System C→D and D→E interactions.",
+    "next_steps": "After running this validation, compare with XPCS case (11-ID CHX) to see if all three beamlines confirm Systems A-F generalizability."
+  }
+}

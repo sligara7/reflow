@@ -1,0 +1,274 @@
+{
+  "schema_metadata": {
+    "schema_name": "Scientific Reflow Beamline Profile",
+    "schema_version": "1.0.0",
+    "description": "Configuration profile schema for beamline-specific Systems A-F parameters",
+    "purpose": "Enable single universal architecture (A-F) with beamline-specific configurations",
+    "created_date": "2025-11-14",
+    "validation_status": "Validated against 3 beamlines (RIXS, XAS, XPCS)"
+  },
+
+  "profile_structure": {
+    "beamline_metadata": {
+      "beamline_id": {
+        "type": "string",
+        "required": true,
+        "description": "Unique beamline identifier (e.g., '2-ID-SIX', '8-ID-ISS', '11-ID-CHX')",
+        "example": "2-ID-SIX"
+      },
+      "beamline_name": {
+        "type": "string",
+        "required": true,
+        "description": "Full beamline name",
+        "example": "Soft Inelastic X-ray Scattering"
+      },
+      "facility": {
+        "type": "string",
+        "required": true,
+        "description": "Facility name (e.g., 'NSLS2', 'APS', 'PETRA-III')",
+        "example": "NSLS2"
+      },
+      "technique": {
+        "type": "string",
+        "required": true,
+        "description": "Primary experimental technique",
+        "example": "Resonant Inelastic X-ray Scattering (RIXS)"
+      },
+      "technique_abbreviation": {
+        "type": "string",
+        "required": false,
+        "description": "Short form of technique name",
+        "example": "RIXS"
+      }
+    },
+
+    "systems_config": {
+      "system_a": {
+        "required": true,
+        "description": "Source configuration (undulator, wiggler, bending magnet)",
+        "fields": {
+          "component_type": {
+            "type": "string",
+            "enum": ["epu_undulator", "in_vacuum_undulator", "damping_wiggler", "bending_magnet", "coherent_undulator"],
+            "description": "Type of X-ray source"
+          },
+          "energy_range": {
+            "type": "string",
+            "description": "Energy range of source (e.g., '400-1600 eV', '5-30 keV')"
+          },
+          "optimization": {
+            "type": "string",
+            "enum": ["polarization", "flux", "coherence", "brightness"],
+            "description": "What the source is optimized for"
+          },
+          "coherence_requirements": {
+            "type": "object",
+            "required": false,
+            "description": "Spatial and temporal coherence lengths (for coherent techniques)",
+            "fields": {
+              "transverse_coherence_length": {"type": "string", "example": "10-50 μm"},
+              "longitudinal_coherence_length": {"type": "string", "example": "~100 nm"}
+            }
+          }
+        }
+      },
+
+      "system_b": {
+        "required": true,
+        "description": "Manipulation configuration (monochromator, mirrors, optics)",
+        "fields": {
+          "component_type": {
+            "type": "string",
+            "enum": ["monochromator_focusing", "coherence_preserving_optics", "multilayer_monochromator"],
+            "description": "Type of beam manipulation system"
+          },
+          "optimization": {
+            "type": "string",
+            "enum": ["energy_resolution", "flux_throughput", "speed", "coherence_preservation"],
+            "description": "What the manipulation system optimizes"
+          },
+          "resolving_power": {
+            "type": "string",
+            "required": false,
+            "description": "Energy resolving power (E/ΔE)",
+            "example": "17000-35000"
+          },
+          "scanning_mode": {
+            "type": "string",
+            "enum": ["step_scan", "continuous_scan", "fly_scan", "static"],
+            "required": false,
+            "description": "How energy/angle scanning is performed"
+          }
+        }
+      },
+
+      "system_c": {
+        "required": true,
+        "description": "Environment configuration (cryostat, furnace, operando cells)",
+        "fields": {
+          "component_type": {
+            "type": "string",
+            "enum": ["cryostat", "electrochemical_cell", "electric_field_cell", "furnace", "flow_cell", "ambient"],
+            "description": "Type of sample environment"
+          },
+          "dynamic": {
+            "type": "boolean",
+            "description": "Whether environment changes during measurement",
+            "example": false
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Environmental control capabilities",
+            "example": ["temperature_control", "electric_field", "gas_flow", "voltage_control"]
+          },
+          "temperature_range": {
+            "type": "string",
+            "required": false,
+            "description": "Temperature range of environment",
+            "example": "10-300 K"
+          },
+          "time_resolved": {
+            "type": "boolean",
+            "description": "Whether environment supports time-resolved measurements",
+            "default": false
+          }
+        }
+      },
+
+      "system_d": {
+        "required": true,
+        "description": "Sample configuration (always PARTIALLY_KNOWN with gaps)",
+        "fields": {
+          "typical_samples": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Types of samples typically studied at this beamline",
+            "example": ["crystals", "thin_films", "catalysts", "polymers", "biological_samples"]
+          },
+          "typical_unknowns": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Properties typically unknown (gap closure targets)",
+            "example": ["electronic_structure", "oxidation_states", "dynamics", "structure"]
+          },
+          "knowledge_state_default": {
+            "type": "string",
+            "enum": ["PARTIALLY_KNOWN"],
+            "description": "System D is always PARTIALLY_KNOWN (by definition)",
+            "fixed": "PARTIALLY_KNOWN"
+          }
+        }
+      },
+
+      "system_e": {
+        "required": true,
+        "description": "Detection configuration (spectrometers, detectors, cameras)",
+        "fields": {
+          "detector_type": {
+            "type": "string",
+            "enum": ["rixs_spectrometer", "fluorescence_detector", "fast_area_detector", "point_detector", "ccd_camera", "emccd"],
+            "description": "Type of detector"
+          },
+          "data_structure": {
+            "type": "string",
+            "description": "Structure of raw detector output",
+            "example": "I(ΔE) | μ(E) | I(q,t) | I(x,y)"
+          },
+          "resolution": {
+            "type": "object",
+            "required": false,
+            "description": "Detector resolution (energy, spatial, temporal)",
+            "fields": {
+              "energy_resolution": {"type": "string", "example": "10-20 meV"},
+              "spatial_resolution": {"type": "string", "example": "<5 μm FWHM"},
+              "temporal_resolution": {"type": "string", "example": "1 ms per frame"}
+            }
+          },
+          "acquisition_speed": {
+            "type": "string",
+            "required": false,
+            "description": "How fast detector acquires data",
+            "example": "1 Hz | kHz | MHz"
+          }
+        }
+      },
+
+      "system_f": {
+        "required": true,
+        "description": "Analysis configuration (ALWAYS present - pass-through or active)",
+        "fields": {
+          "processing_type": {
+            "type": "string",
+            "enum": ["pass_through", "async_daq", "correlation_analysis", "phase_retrieval", "tomographic_reconstruction", "fourier_transform", "deconvolution", "ml_inference"],
+            "description": "Type of data processing/analysis",
+            "required": true
+          },
+          "transformation": {
+            "type": "string",
+            "description": "What System F does to the data",
+            "example": "identity | g2(q,τ) calculation | phase retrieval | Fourier transform"
+          },
+          "input_structure": {
+            "type": "string",
+            "description": "Structure of System F input (from System E)",
+            "example": "I(ΔE) | [fluorescence, I0, E, V(t)] | I(q,t)"
+          },
+          "output_structure": {
+            "type": "string",
+            "description": "Structure of System F output (the observable)",
+            "example": "I(ΔE) | μ(E,t) | g2(q,τ)"
+          },
+          "latency": {
+            "type": "string",
+            "enum": ["negligible", "real_time", "minutes", "hours"],
+            "description": "Processing time/latency",
+            "default": "negligible"
+          },
+          "computational_cost": {
+            "type": "string",
+            "enum": ["negligible", "low", "moderate", "high"],
+            "description": "Computational resources required",
+            "default": "negligible"
+          },
+          "criticality": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "How critical System F is for gap closure",
+            "note": "low=pass-through OK, medium=required for sync, high=analysis IS the measurement"
+          }
+        }
+      }
+    },
+
+    "data_flow": {
+      "type": "string",
+      "required": true,
+      "description": "Human-readable description of data flow through systems",
+      "example": "A → B → D ← C, D → E → F (pass-through) → Observable I(ΔE)"
+    },
+
+    "gap_closure_typical": {
+      "type": "object",
+      "required": false,
+      "description": "Typical gap closure scenario for this beamline",
+      "fields": {
+        "target": {"type": "string", "description": "What System D property is typically inferred"},
+        "measurement": {"type": "string", "description": "What observable is used for inference"},
+        "inference_method": {"type": "string", "description": "How inference is typically done"}
+      }
+    }
+  },
+
+  "validation_notes": {
+    "validated_beamlines": ["2-ID-SIX", "8-ID-ISS", "11-ID-CHX"],
+    "validation_date": "2025-11-14",
+    "validation_status": "3/3 beamlines PASS (100%)",
+    "key_findings": [
+      "Systems A-F are universal across all three beamlines",
+      "System F pass-through pattern works (RIXS validation)",
+      "Differences are configuration parameters, not architecture",
+      "System F criticality varies by technique (low/medium/high)"
+    ]
+  }
+}

@@ -1,0 +1,376 @@
+{
+  "metadata": {
+    "validation_case_name": "Ferroelectric Domain Switching XPCS Study",
+    "purpose": "Validate Scientific Reflow generalizability to XPCS dynamics measurements at 11-ID CHX",
+    "reference_paper": {
+      "title": "Domain switching dynamics in ferroelectric crystals using X-ray Photon Correlation Spectroscopy",
+      "authors": "Sun et al.",
+      "conference": "2025 IEEE 25th International Conference on Nanotechnology",
+      "year": "2025",
+      "technique": "XPCS tracking nanoscale structural dynamics"
+    },
+    "facility": "NSLS2",
+    "beamline": "CHX (11-ID) - Coherent Hard X-ray Scattering",
+    "technique": "X-ray Photon Correlation Spectroscopy (XPCS)",
+    "validation_approach": "Model XPCS experiment (Systems A-F), run gap closure, infer domain relaxation timescale from g2(q,τ) correlation function"
+  },
+  "validation_strategy": {
+    "description": "We will treat the ferroelectric crystal as having PARTIALLY_KNOWN properties (crystal structure and static domain structure known, domain dynamics and relaxation timescales UNKNOWN), then use gap closure to see if we can infer the domain switching timescale from XPCS correlation function g2(q,τ).",
+    "known_beforehand": [
+      "Crystal structure: Perovskite structure (BaTiO3 or similar)",
+      "Domain structure: 90° or 180° ferroelectric domains",
+      "Static domain size: ~100-500 nm",
+      "Coercive field: ~1-5 kV/cm (field needed for domain switching)",
+      "Spontaneous polarization direction"
+    ],
+    "discovered_by_experiment": [
+      "Domain relaxation timescale τ_relax",
+      "Switching dynamics (ballistic vs diffusive)",
+      "Electric field dependence of dynamics",
+      "Critical slowing down near coercive field",
+      "Domain wall velocity"
+    ],
+    "gap_closure_target": "Can we infer the domain relaxation timescale (τ_relax ~ 10-1000 ms) from the XPCS correlation function g2(q,τ)?",
+    "success_criteria": "Gap closure should propose: (1) Domain relaxation timescale in ms-sec range, (2) Timescale increases near coercive field (critical slowing), (3) Dynamics are driven by electric field"
+  },
+  "experimental_components": [
+    {
+      "component_id": "coherent_undulator_chx",
+      "component_name": "NSLS2 Coherent Undulator (CHX Source)",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "High-coherence undulator optimized for XPCS measurements at CHX beamline",
+      "physical_properties": {
+        "undulator_type": "In-vacuum undulator (IVU)",
+        "energy_range": "6-15 keV (hard X-ray)",
+        "coherent_flux": "~10^11-10^12 coherent photons/sec (world-leading)",
+        "transverse_coherence_length": "~10-50 μm (lateral coherence)",
+        "longitudinal_coherence_length": "~100 nm (energy resolution ΔE/E ~ 10^-4)",
+        "beam_brilliance": "Ultrabright coherent source (NSLS2 specification)",
+        "typical_energy": "9 keV (for ferroelectric XPCS)",
+        "ring_energy": "3 GeV",
+        "ring_current": "400 mA"
+      },
+      "experimental_functions": [
+        "Generate coherent hard X-ray beam for XPCS",
+        "Provide spatial coherence for speckle pattern formation",
+        "Enable time-resolved dynamics measurements"
+      ],
+      "physical_interactions": ["int_001_source_to_optics"],
+      "notes": "COHERENCE IS CRITICAL - High transverse coherence enables sharp speckle patterns for correlation analysis"
+    },
+    {
+      "component_id": "coherence_preserving_optics_chx",
+      "component_name": "CHX Coherence-Preserving Optics",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "Specialized optics designed to preserve wavefront coherence for XPCS",
+      "physical_properties": {
+        "optics_type": "Refractive/reflective optics with minimal aberrations",
+        "energy_selection": "Double-crystal monochromator (Si(111), ΔE/E ~ 10^-4)",
+        "focusing": "Kirkpatrick-Baez mirrors or beryllium compound refractive lenses (CRLs)",
+        "wavefront_preservation": "Minimal phase distortions (critical for speckle quality)",
+        "coherence_degradation": "<10% (high-quality optics)",
+        "beam_size_at_sample": "~10-50 μm (matched to coherence length)",
+        "working_distance": "Compatible with electric field cell geometry"
+      },
+      "experimental_functions": [
+        "Select X-ray energy (9 keV for ferroelectric samples)",
+        "Preserve wavefront coherence for speckle formation",
+        "Focus beam onto sample without introducing aberrations"
+      ],
+      "physical_interactions": ["int_001_source_to_optics", "int_002_optics_to_sample"],
+      "notes": "Coherence preservation is CRITICAL - Any wavefront distortion degrades speckle contrast and correlation analysis"
+    },
+    {
+      "component_id": "electric_field_cell_chx",
+      "component_name": "In-Situ Electric Field Application Cell",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "Custom cell for applying electric fields to ferroelectric sample during XPCS measurements",
+      "physical_properties": {
+        "cell_type": "Parallel-plate capacitor geometry with X-ray transparent electrodes",
+        "electrode_material": "Indium tin oxide (ITO) or thin metal films (X-ray transparent)",
+        "applied_field_range": "0-10 kV/cm (below breakdown, above coercive field)",
+        "field_orientation": "Parallel or perpendicular to ferroelectric polarization axis",
+        "temperature": "Room temperature (~298 K) or variable (200-400 K)",
+        "atmosphere": "Ambient or controlled (N2, vacuum)",
+        "time_resolution": "Electric field can be pulsed or ramped (ms-sec timescale)",
+        "window_material": "Kapton or thin diamond (X-ray transparent)"
+      },
+      "experimental_functions": [
+        "Apply electric field to drive domain switching",
+        "Control domain dynamics (field strength, direction, pulse duration)",
+        "Enable in-situ XPCS measurements during domain evolution"
+      ],
+      "physical_interactions": ["int_003_env_to_sample"],
+      "notes": "DYNAMIC ENVIRONMENT - Electric field drives domain switching, creating time-dependent structural fluctuations measured by XPCS"
+    },
+    {
+      "component_id": "sample_ferroelectric_crystal",
+      "component_name": "Ferroelectric Crystal (BaTiO3 or similar)",
+      "system_category": "system_d_sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "description": "Ferroelectric perovskite crystal with UNKNOWN domain dynamics and relaxation timescales",
+      "physical_properties": {
+        "_comment_known": "KNOWN properties (from diffraction, microscopy, bulk measurements)",
+        "crystal_structure": "KNOWN: Perovskite (tetragonal BaTiO3 below Tc=120°C)",
+        "domain_structure": "KNOWN: 90° or 180° ferroelectric domains",
+        "static_domain_size": "KNOWN: ~100-500 nm (from microscopy)",
+        "spontaneous_polarization": "KNOWN: ~26 μC/cm^2 at room temperature",
+        "coercive_field": "KNOWN: ~1-5 kV/cm (bulk measurement)",
+        "lattice_parameters": "KNOWN: a=3.99 Å, c=4.04 Å (tetragonal)",
+        "curie_temperature": "KNOWN: Tc=120°C (ferroelectric-paraelectric transition)",
+        "_comment_unknown": "UNKNOWN properties (target of XPCS discovery)",
+        "domain_relaxation_timescale": "UNKNOWN (GOAL: measure from g2(q,τ) decay)",
+        "domain_wall_velocity": "UNKNOWN (GOAL: infer from timescale and domain size)",
+        "switching_mechanism": "UNKNOWN (nucleation-growth vs domain wall motion?)",
+        "critical_dynamics": "UNKNOWN (critical slowing near coercive field?)",
+        "heterogeneity": "UNKNOWN (spatially varying dynamics?)"
+      },
+      "gap_closure_goal": "Infer domain relaxation timescale τ_relax from XPCS correlation function g2(q,τ) = A·exp(-2t/τ) + 1",
+      "constraints": {
+        "timescale_range": "Domain dynamics expected in ms-sec range (10^-3 to 10^0 s)",
+        "electric_field_dependence": "Timescale decreases with increasing field (faster switching)",
+        "critical_slowing": "Timescale diverges near coercive field (Ec ~ 1-5 kV/cm)",
+        "domain_size_constraint": "Domain wall velocity v ~ domain_size / τ_relax"
+      },
+      "experimental_functions": [
+        "Scatter coherent X-rays to produce speckle pattern",
+        "Evolve domain structure under applied electric field",
+        "Generate time-dependent speckle fluctuations encoding domain dynamics"
+      ],
+      "physical_interactions": [
+        "int_002_optics_to_sample",
+        "int_003_env_to_sample",
+        "int_004_sample_to_detector"
+      ],
+      "notes": "THIS IS SYSTEM D - THE KNOWLEDGE GAP. Domain dynamics (relaxation time, switching mechanism) are UNKNOWN and will be inferred from g2(q,τ)."
+    },
+    {
+      "component_id": "fast_area_detector_chx",
+      "component_name": "Fast Area Detector (Eiger or Lambda)",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "Fast photon-counting area detector for time-resolved XPCS speckle pattern acquisition",
+      "physical_properties": {
+        "detector_type": "Eiger 4M or Lambda detector (single-photon counting)",
+        "frame_rate": "1 kHz to 10 kHz (sub-millisecond time resolution)",
+        "pixel_size": "75-55 μm",
+        "number_of_pixels": "2048 x 2048 (4 megapixels) or larger",
+        "dynamic_range": "Up to 10^6 photons per pixel (16-bit or 32-bit)",
+        "dead_time": "<1 μs (minimal for fast dynamics)",
+        "detection_efficiency": "~0.9 at 9 keV (high quantum efficiency)",
+        "read_out_noise": "Negligible (photon counting mode)",
+        "data_rate": "Up to 3 GB/s (high-speed data streaming)"
+      },
+      "experimental_functions": [
+        "Acquire time-series of speckle patterns I(q,t) at kHz frame rate",
+        "Resolve speckle fluctuations on ms-sec timescales",
+        "Enable pixel-wise time correlation analysis for g2(q,τ)",
+        "Provide spatial resolution for q-dependent dynamics"
+      ],
+      "physical_interactions": ["int_004_sample_to_detector"],
+      "measured_observables": {
+        "primary_observable": "Time-series of 2D speckle intensity patterns I(q,t)",
+        "q_range": "0.01-1 nm^-1 (small-angle to wide-angle scattering)",
+        "time_resolution": "1 ms per frame (1 kHz acquisition)",
+        "total_acquisition_time": "10-1000 seconds (10^4 to 10^6 frames)",
+        "speckle_contrast": "β = ⟨I^2⟩/⟨I⟩^2 - 1 ~ 0.2-0.8 (high coherence)"
+      },
+      "notes": "CRITICAL MEASUREMENT - Fast detector captures speckle pattern evolution. Timescale of g2(q,τ) decay encodes domain relaxation dynamics."
+    },
+    {
+      "component_id": "xpcs_analysis_pipeline_chx",
+      "component_name": "XPCS Correlation Function Analysis Pipeline",
+      "system_category": "system_f_analysis",
+      "knowledge_state": "KNOWN",
+      "description": "Computational pipeline to calculate time autocorrelation function g2(q,τ) from speckle pattern time-series",
+      "physical_properties": {
+        "analysis_algorithm": "Two-time correlation: g2(q,τ) = ⟨I(q,t)·I(q,t+τ)⟩ / ⟨I(q,t)⟩^2",
+        "computational_cost": "High - pixel-wise correlations over 10^4-10^6 frames",
+        "input_data": "Time-series of 2D speckle patterns I(q,x,y,t), 4M pixels × 10^4 frames ~ 40 GB",
+        "output_data": "Correlation function g2(q,τ) and relaxation timescale τ_relax",
+        "fitting_model": "Exponential decay: g2(q,τ) = β·exp(-2τ/τ_relax) + 1",
+        "q_averaging": "Azimuthal averaging for isotropic systems, or sector analysis for anisotropic",
+        "real_time_processing": "Streaming analysis during acquisition (skbeam, PyXPCS libraries)",
+        "data_reduction": "g2(q,τ) is ~1000× smaller than raw data (10^4 τ points vs 10^6 frames)"
+      },
+      "experimental_functions": [
+        "Calculate temporal autocorrelation function g2(q,τ) from speckle patterns",
+        "Fit exponential decay to extract relaxation timescale τ_relax(q)",
+        "Generate two-time correlation maps C(t1,t2) for non-stationary dynamics",
+        "Identify dynamics regimes (ballistic, diffusive, arrested)",
+        "Detect critical slowing near coercive field"
+      ],
+      "physical_interactions": ["int_005_detection_to_analysis"],
+      "computational_properties": {
+        "software_tools": [
+          "skbeam (Brookhaven NSLS-II)",
+          "PyXPCS",
+          "CHX beamline analysis pipeline",
+          "Two-time correlation tools",
+          "Exponential fitting (scipy, lmfit)"
+        ],
+        "parallelization": "GPU-accelerated for real-time analysis",
+        "memory_requirements": "64-128 GB RAM for full dataset",
+        "processing_time": "Minutes to hours (depending on dataset size)"
+      },
+      "notes": "THIS IS SYSTEM F - REQUIRED for XPCS. Converts raw speckle patterns I(q,t) → g2(q,τ) → τ_relax. Without System F, XPCS data is uninterpretable."
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001_source_to_optics",
+      "interaction_name": "Coherent Undulator to Optics",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "coherent_undulator_chx",
+      "to_component": "coherence_preserving_optics_chx",
+      "causal_direction": "forward",
+      "physical_mechanism": "Coherent X-ray generation and wavefront propagation",
+      "interaction_strength": "Coherent flux ~10^11-10^12 ph/s, transverse coherence ~10 μm",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Undulator generates spatially coherent X-ray beam, optics preserve coherence for speckle formation"
+    },
+    {
+      "interaction_id": "int_002_optics_to_sample",
+      "interaction_name": "Coherent Beam to Ferroelectric Sample",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "coherence_preserving_optics_chx",
+      "to_component": "sample_ferroelectric_crystal",
+      "causal_direction": "forward",
+      "physical_mechanism": "Coherent X-ray scattering from ferroelectric domains, speckle pattern formation",
+      "interaction_strength": "Scattered intensity I(q) ~ domain structure factor |F(q)|^2",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "Coherent beam scatters from domain structure, producing characteristic speckle pattern encoding domain configuration"
+    },
+    {
+      "interaction_id": "int_003_env_to_sample",
+      "interaction_name": "Electric Field to Domain Dynamics",
+      "interaction_type": "environment_to_sample",
+      "from_component": "electric_field_cell_chx",
+      "to_component": "sample_ferroelectric_crystal",
+      "causal_direction": "forward",
+      "physical_mechanism": "Electric field drives domain wall motion and domain switching",
+      "interaction_strength": "Applied field 0-10 kV/cm, domain wall velocity v ~ 10-1000 μm/s",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Electric field drives domain switching, creating time-dependent domain evolution measured by XPCS"
+    },
+    {
+      "interaction_id": "int_004_sample_to_detector",
+      "interaction_name": "Speckle Pattern to Fast Detector",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_ferroelectric_crystal",
+      "to_component": "fast_area_detector_chx",
+      "causal_direction": "forward",
+      "physical_mechanism": "Time-dependent speckle pattern fluctuations from domain dynamics",
+      "interaction_strength": "Scattered intensity I(q,t) fluctuates with timescale τ_relax ~ 10-1000 ms",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "measured_data": {
+        "speckle_pattern_evolution": "I(q,t) fluctuates as domains switch",
+        "timescale_signature": "Speckle decorrelation time τ_relax encodes domain relaxation",
+        "electric_field_dependence": "τ_relax decreases with increasing field (faster switching)",
+        "critical_slowing": "τ_relax diverges near coercive field Ec",
+        "q_dependence": "τ_relax(q) may vary with length scale (domain size, domain wall thickness)"
+      },
+      "description": "THIS IS THE CRITICAL DATA - Time-series of speckle patterns I(q,t). Decorrelation timescale encodes domain dynamics."
+    },
+    {
+      "interaction_id": "int_005_detection_to_analysis",
+      "interaction_name": "Speckle Time-Series to Correlation Analysis",
+      "interaction_type": "detection_to_analysis",
+      "from_component": "fast_area_detector_chx",
+      "to_component": "xpcs_analysis_pipeline_chx",
+      "causal_direction": "forward",
+      "physical_mechanism": "Pixel-wise temporal autocorrelation calculation from frame sequence",
+      "interaction_strength": "Computational: 4M pixels × 10^4 frames → g2(q,τ) at 10^3 q-points",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "description": "System F computes g2(q,τ) from I(q,t) time-series. Exponential decay g2 ~ exp(-2τ/τ_relax) reveals domain relaxation time."
+    }
+  ],
+  "published_results": {
+    "system_d_discovered_properties": {
+      "domain_relaxation_timescale": {
+        "value": "τ_relax ~ 10-100 ms (typical for ferroelectric domain switching)",
+        "interpretation": "Domain walls move with velocity v ~ domain_size/τ_relax ~ 1-10 μm/s"
+      },
+      "electric_field_dependence": {
+        "description": "τ_relax decreases with increasing electric field (exponential or power-law)",
+        "critical_slowing": "τ_relax diverges near coercive field Ec ~ 1-5 kV/cm (critical dynamics)"
+      },
+      "switching_mechanism": {
+        "description": "Domain switching occurs via nucleation and growth of reverse domains",
+        "dynamics_type": "Activated process (Merz law: τ ~ exp(E_a / E) )"
+      },
+      "heterogeneity": {
+        "description": "Spatial heterogeneity in dynamics (faster near defects, slower in bulk)",
+        "compressed_correlation": "Non-exponential g2(q,τ) indicates heterogeneous dynamics"
+      }
+    }
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_ferroelectric_crystal"],
+    "unknown_properties": [
+      "domain_relaxation_timescale",
+      "domain_wall_velocity",
+      "switching_mechanism",
+      "critical_dynamics"
+    ],
+    "measured_observables": [
+      "Time-series of speckle patterns I(q,t) shows fluctuations with timescale τ_relax",
+      "Correlation function g2(q,τ) = β·exp(-2τ/τ_relax) + 1 decays with characteristic time",
+      "Electric field E controls dynamics (faster switching at higher E)"
+    ],
+    "matrix_formulation": "Infer System D (domain dynamics τ_relax) from measured D→E interaction (speckle fluctuations) and E→F interaction (g2(q,τ) analysis) given known A, B, C, E, F",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "expected_outcome": "Gap closure should propose: (1) Domain relaxation timescale τ_relax ~ 10-100 ms, (2) Timescale decreases with E-field, (3) Critical slowing near Ec"
+  },
+  "validation_metrics": {
+    "success_criteria": {
+      "timescale_range": "Gap closure proposes relaxation time in ms-sec range (10^-3 to 10^0 s)",
+      "electric_field_dependence": "Gap closure identifies faster dynamics at higher E-field",
+      "critical_slowing_detected": "Gap closure recognizes timescale divergence near coercive field",
+      "physical_plausibility": "Domain wall velocity v = domain_size/τ_relax is physically reasonable (1-1000 μm/s)",
+      "confidence_level": "SVD condition number < 100 (well-conditioned problem)"
+    },
+    "comparison_to_published": {
+      "published_timescale": "τ_relax ~ 10-100 ms (from g2 fitting)",
+      "scientific_reflow_inferred_timescale": "TBD (after running workflow)",
+      "published_mechanism": "Nucleation-growth with critical slowing near Ec",
+      "scientific_reflow_inferred_mechanism": "TBD (after running workflow)",
+      "verdict": "TBD (PASS if timescale within order of magnitude and mechanism qualitatively correct)"
+    }
+  },
+  "comparison_to_rixs_and_xas_cases": {
+    "similarities": [
+      "Systems A-E architecture maps directly",
+      "System D is PARTIALLY_KNOWN (target of discovery)",
+      "Critical measurement is D→E interaction",
+      "Gap closure goal is to infer System D properties"
+    ],
+    "differences": [
+      "System A: Coherent undulator (spatial coherence critical) vs EPU49 (RIXS) or wiggler (XAS)",
+      "System B: Coherence-preserving optics vs energy-resolution optics (RIXS) or high-flux optics (XAS)",
+      "System C: Electric field cell (dynamic) vs cryostat (RIXS, static) or electrochemical cell (XAS, dynamic)",
+      "System E: Fast area detector (kHz, speckle imaging) vs RIXS spectrometer (energy-resolved) or fluorescence detector (XAS)",
+      "System F: REQUIRED for XPCS (correlation analysis), REQUIRED for XAS (async DAQ), NOT NEEDED for RIXS",
+      "Time domain: Millisecond dynamics (XPCS) vs seconds-hours (XAS operando) vs static (RIXS)",
+      "Observable: g2(q,τ) correlation function (XPCS) vs μ(E,t) absorption (XAS) vs I(ΔE) energy loss (RIXS)"
+    ],
+    "key_insight": "Systems A-E are generalizable across all three techniques. System F is REQUIRED for time-resolved (XAS) and correlation-based (XPCS) measurements, NOT NEEDED for static energy-resolved (RIXS)."
+  },
+  "notes": {
+    "validation_approach": "This test validates that Scientific Reflow can handle time-correlation techniques (XPCS). If gap closure successfully infers the domain relaxation timescale from g2(q,τ), it confirms the Systems A-F architecture is universal across beamlines.",
+    "system_f_critical": "System F is ABSOLUTELY CRITICAL for XPCS. Without correlation analysis, raw speckle patterns I(q,t) contain no interpretable dynamics information. g2(q,τ) is the measurable observable that encodes System D dynamics.",
+    "challenge": "XPCS analysis is computationally intensive (pixel-wise correlations over millions of frames). Gap closure must recognize that g2(q,τ) exponential decay directly encodes System D relaxation time. Unlike RIXS (static) or XAS (time-resolved state), XPCS measures FLUCTUATION timescales.",
+    "next_steps": "After running this validation alongside RIXS (2-ID) and XAS (8-ID), we can definitively conclude if Systems A-F architecture is beamline-agnostic with configuration profiles."
+  }
+}

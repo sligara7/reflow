@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "validation_case_name": "Ru6IrOx Catalyst Operando XAS Study",
+    "purpose": "Validate Scientific Reflow generalizability to XAS operando measurements at 8-ID ISS",
+    "reference_paper": {
+      "title": "Low-iridium stabilized ruthenium oxide anode catalyst for durable proton-exchange membrane water electrolysis",
+      "authors": "TBD",
+      "journal": "Nature Nanotechnology",
+      "year": "2025",
+      "doi": "10.1038/s41565-025-02030-y"
+    },
+    "facility": "NSLS2",
+    "beamline": "ISS (8-ID) - Inner Shell Spectroscopy",
+    "technique": "Operando X-ray Absorption Spectroscopy (XAS)",
+    "validation_approach": "Model operando electrochemical experiment (Systems A-F), run gap closure, infer catalyst degradation mechanism from time-resolved XAS"
+  },
+  "system_counts": {
+    "A": 1,
+    "B": 2,
+    "C": 1,
+    "D": 1,
+    "E": 1,
+    "F": 1
+  },
+  "systems_present": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "system_f_analysis": {
+    "present": true,
+    "component_id": "daq_system_iss",
+    "component_name": "ISS Asynchronous Data Acquisition System",
+    "processing_type": "unknown",
+    "is_pass_through": false,
+    "is_active": true,
+    "configuration": {}
+  },
+  "knowledge_gaps": [
+    {
+      "component_id": "sample_ru6irox_catalyst",
+      "component_name": "Ru6IrOx Catalyst Electrode",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "unknown_properties": [
+        "_comment_unknown",
+        "ru_oxidation_state_under_oer",
+        "ir_oxidation_state_under_oer",
+        "degradation_pathway",
+        "ru_dissolution_mechanism",
+        "ir_stabilization_mechanism",
+        "coordination_environment_changes"
+      ],
+      "gap_closure_goal": "Infer catalyst degradation mechanism from operando XAS: (1) Ru oxidation state evolution, (2) Ir stabilization role, (3) Dissolution pathway"
+    }
+  ],
+  "interaction_analysis": {
+    "total_interactions": 5,
+    "interaction_map": {
+      "damping_wiggler_iss": [
+        "monochromator_iss"
+      ],
+      "monochromator_iss": [
+        "sample_ru6irox_catalyst"
+      ],
+      "electrochemical_cell_iss": [
+        "sample_ru6irox_catalyst"
+      ],
+      "sample_ru6irox_catalyst": [
+        "fluorescence_detector_iss"
+      ],
+      "fluorescence_detector_iss": [
+        "daq_system_iss"
+      ]
+    },
+    "critical_d_to_e": true,
+    "has_e_to_f": true
+  },
+  "validation_status": {
+    "all_systems_present": true,
+    "system_f_present": true,
+    "knowledge_gaps_identified": true,
+    "critical_interactions_present": true
+  },
+  "overall_valid": true,
+  "validation_message": "PASS - Systems A-F architecture valid"
+}

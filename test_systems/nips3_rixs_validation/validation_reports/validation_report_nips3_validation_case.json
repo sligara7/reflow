@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "validation_case_name": "NiPS3 Hund's Exciton RIXS Study",
+    "purpose": "Validate Scientific Reflow against published results from NSLS2 SIX beamline",
+    "reference_paper": {
+      "title": "Magnetically propagating Hund's exciton in van der Waals antiferromagnet NiPS3",
+      "authors": "He, W., Shen, Y., Wohlfeld, K., Sears, J., Li, J., Pelliciari, J., et al.",
+      "journal": "Nature Communications",
+      "volume": "15",
+      "pages": "3496",
+      "year": "2024",
+      "doi": "10.1038/s41467-024-47852-x"
+    },
+    "facility": "NSLS2",
+    "beamline": "SIX (2-ID) - Soft Inelastic X-ray Scattering",
+    "technique": "Resonant Inelastic X-ray Scattering (RIXS)",
+    "validation_approach": "Model experimental setup (Systems A-F with F as pass-through), run gap closure, compare inferred System D properties to published results"
+  },
+  "system_counts": {
+    "A": 1,
+    "B": 2,
+    "C": 1,
+    "D": 1,
+    "E": 1,
+    "F": 1
+  },
+  "systems_present": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "system_f_analysis": {
+    "present": true,
+    "component_id": "rixs_analysis_passthrough",
+    "component_name": "RIXS Data Analysis Pipeline (Pass-Through)",
+    "processing_type": "pass_through",
+    "is_pass_through": true,
+    "is_active": false,
+    "configuration": {
+      "processing_type": "pass_through",
+      "pass_through": {
+        "enabled": true,
+        "transformation": "identity",
+        "input_data": "I(\u0394E) - RIXS energy-loss spectrum from spectrometer",
+        "output_data": "I(\u0394E) - Same spectrum (no transformation)",
+        "processing_steps": [
+          "Energy calibration (linear mapping)",
+          "Detector normalization (count rate correction)",
+          "Background subtraction (optional, elastic line removal)"
+        ],
+        "latency": "< 1 second",
+        "computational_cost": "Negligible"
+      },
+      "active_processing": {
+        "enabled": false
+      }
+    }
+  },
+  "knowledge_gaps": [
+    {
+      "component_id": "sample_nips3",
+      "component_name": "NiPS3 Single Crystal Sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "unknown_properties": [
+        "_comment_unknown",
+        "exciton_energy",
+        "exciton_dispersion",
+        "hund_exchange_strength",
+        "exciton_wavefunction",
+        "exciton_lifetime"
+      ],
+      "gap_closure_goal": "Infer exciton energy and Hund's exchange interaction from RIXS spectral data (sample\u2192detector measurements)"
+    }
+  ],
+  "interaction_analysis": {
+    "total_interactions": 5,
+    "interaction_map": {
+      "undulator_six": [
+        "monochromator_six"
+      ],
+      "monochromator_six": [
+        "sample_nips3"
+      ],
+      "cryostat_six": [
+        "sample_nips3"
+      ],
+      "sample_nips3": [
+        "rixs_spectrometer_six"
+      ],
+      "rixs_spectrometer_six": [
+        "rixs_analysis_passthrough"
+      ]
+    },
+    "critical_d_to_e": true,
+    "has_e_to_f": true
+  },
+  "validation_status": {
+    "all_systems_present": true,
+    "system_f_present": true,
+    "knowledge_gaps_identified": true,
+    "critical_interactions_present": true
+  },
+  "overall_valid": true,
+  "validation_message": "PASS - Systems A-F architecture valid"
+}

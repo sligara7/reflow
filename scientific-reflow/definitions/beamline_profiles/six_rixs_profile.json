@@ -1,0 +1,114 @@
+{
+  "beamline_metadata": {
+    "beamline_id": "2-ID-SIX",
+    "beamline_name": "Soft Inelastic X-ray Scattering",
+    "facility": "NSLS2",
+    "technique": "Resonant Inelastic X-ray Scattering (RIXS)",
+    "technique_abbreviation": "RIXS"
+  },
+
+  "systems_config": {
+    "system_a": {
+      "component_type": "epu_undulator",
+      "energy_range": "400-1600 eV (primary), 180-2000 eV (extended)",
+      "optimization": "polarization",
+      "source_details": {
+        "undulator_type": "EPU49 (Elliptically Polarizing Undulator)",
+        "period": "49 mm",
+        "length": "2.0 m",
+        "flux": "~10^13 photons/sec",
+        "polarization_modes": ["linear", "circular", "elliptical"]
+      }
+    },
+
+    "system_b": {
+      "component_type": "monochromator_focusing",
+      "optimization": "energy_resolution",
+      "resolving_power": "17000-35000 (design goal: 100000 at 1000 eV)",
+      "scanning_mode": "step_scan",
+      "optics_details": {
+        "monochromator_type": "Grating monochromator",
+        "focusing": "Kirkpatrick-Baez mirrors or similar",
+        "energy_resolution": "~50 meV at 853 eV"
+      }
+    },
+
+    "system_c": {
+      "component_type": "cryostat",
+      "dynamic": false,
+      "capabilities": ["temperature_control"],
+      "temperature_range": "10-300 K",
+      "time_resolved": false,
+      "typical_conditions": {
+        "temperature": "10-40 K (for magnetic/electronic order)",
+        "atmosphere": "UHV (ultra-high vacuum)"
+      }
+    },
+
+    "system_d": {
+      "typical_samples": [
+        "Single crystals",
+        "Thin films",
+        "Heterostructures",
+        "Quantum materials",
+        "Strongly correlated systems"
+      ],
+      "typical_unknowns": [
+        "Electronic structure (excitons, charge excitations)",
+        "Magnetic excitations (magnons, spin waves)",
+        "Orbital excitations",
+        "Dispersion relations (E vs k)"
+      ],
+      "knowledge_state_default": "PARTIALLY_KNOWN"
+    },
+
+    "system_e": {
+      "detector_type": "rixs_spectrometer",
+      "data_structure": "I(ΔE) - intensity vs energy loss",
+      "resolution": {
+        "energy_resolution": "14-17 meV at 853-1000 eV",
+        "angular_range": "38° to 150° (2θ scattering angle)"
+      },
+      "acquisition_speed": "Typical: minutes per spectrum",
+      "spectrometer_details": {
+        "design": "Centurion ultra-high-resolution RIXS spectrometer",
+        "design_type": "Hettrick-Underwood with plane mirror",
+        "detector": "EMCCD (electron-multiplying CCD)",
+        "spatial_resolution": "<5 μm FWHM"
+      }
+    },
+
+    "system_f": {
+      "processing_type": "pass_through",
+      "transformation": "identity (energy calibration + detector normalization only)",
+      "input_structure": "I(ΔE) from RIXS spectrometer",
+      "output_structure": "I(ΔE) - same structure (directly interpretable spectrum)",
+      "latency": "negligible",
+      "computational_cost": "negligible",
+      "criticality": "low",
+      "processing_steps": [
+        "Energy calibration (linear mapping)",
+        "Detector normalization (count rate correction)",
+        "Background subtraction (optional, elastic line removal)"
+      ],
+      "notes": "System F is present but performs identity transformation. Observable I(ΔE) is directly usable for gap closure."
+    }
+  },
+
+  "data_flow": "A (EPU49) → B (Monochromator) → D (Sample) ← C (Cryostat), D → E (RIXS Spectrometer) → F (Pass-Through) → Observable I(ΔE)",
+
+  "gap_closure_typical": {
+    "target": "System D electronic structure (exciton energy, magnon dispersion)",
+    "measurement": "RIXS spectrum I(ΔE) showing energy loss peaks",
+    "inference_method": "Peak position in I(ΔE) directly gives excitation energy; k-space mapping gives dispersion E(k)"
+  },
+
+  "validation_evidence": {
+    "validated": true,
+    "validation_date": "2025-11-14",
+    "validation_case": "NiPS3 Hund's exciton (Nature Communications 2024)",
+    "system_f_mode_verified": "pass_through",
+    "all_systems_present": true,
+    "knowledge_gaps_identified": ["exciton_energy (1.47 eV target)"]
+  }
+}

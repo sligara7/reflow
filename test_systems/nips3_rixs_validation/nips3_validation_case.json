@@ -14,7 +14,7 @@
     "facility": "NSLS2",
     "beamline": "SIX (2-ID) - Soft Inelastic X-ray Scattering",
     "technique": "Resonant Inelastic X-ray Scattering (RIXS)",
-    "validation_approach": "Model experimental setup (Systems A-E), run gap closure, compare inferred System D properties to published results"
+    "validation_approach": "Model experimental setup (Systems A-F with F as pass-through), run gap closure, compare inferred System D properties to published results"
   },
   "validation_strategy": {
     "description": "We will treat the NiPS3 sample as having PARTIALLY_KNOWN properties (crystal structure known, electronic excitations UNKNOWN), then use gap closure to see if we can infer the exciton energy and dispersion relation from the RIXS measurements.",
@@ -187,6 +187,44 @@
         "scattering_geometry": "Various 2θ angles for k-space mapping"
       },
       "notes": "THIS IS THE CRITICAL MEASUREMENT - RIXS spectra encode exciton energy and dispersion"
+    },
+    {
+      "component_id": "rixs_analysis_passthrough",
+      "component_name": "RIXS Data Analysis Pipeline (Pass-Through)",
+      "system_category": "system_f_analysis",
+      "knowledge_state": "KNOWN",
+      "description": "Minimal processing pipeline - RIXS spectra are directly interpretable, no transformation required",
+      "processing_config": {
+        "processing_type": "pass_through",
+        "pass_through": {
+          "enabled": true,
+          "transformation": "identity",
+          "input_data": "I(ΔE) - RIXS energy-loss spectrum from spectrometer",
+          "output_data": "I(ΔE) - Same spectrum (no transformation)",
+          "processing_steps": [
+            "Energy calibration (linear mapping)",
+            "Detector normalization (count rate correction)",
+            "Background subtraction (optional, elastic line removal)"
+          ],
+          "latency": "< 1 second",
+          "computational_cost": "Negligible"
+        },
+        "active_processing": {
+          "enabled": false
+        }
+      },
+      "physical_properties": {
+        "data_format": "HDF5 or ASCII with columns [E_loss, Intensity, Uncertainty]",
+        "processing_time": "Real-time (< 1s)",
+        "software_tools": ["Standard RIXS analysis software", "beamline DAQ"]
+      },
+      "experimental_functions": [
+        "Pass detector output I(ΔE) to analysis workflow",
+        "Apply minimal data reduction (calibration, normalization)",
+        "Output directly interpretable RIXS spectrum for gap closure"
+      ],
+      "physical_interactions": ["int_005_detection_to_analysis"],
+      "notes": "System F exists but is PASS-THROUGH. No transformation of observable. I(ΔE) from detector = I(ΔE) to observable."
     }
   ],
   "physical_interactions": [
@@ -249,6 +287,20 @@
         "spectral_width": "~100-200 meV FWHM (exciton lifetime broadening + instrumental resolution)"
       },
       "description": "THIS IS THE CRITICAL DATA - RIXS measures exciton energy loss of 1.47 eV. This encodes System D electronic properties."
+    },
+    {
+      "interaction_id": "int_005_detection_to_analysis",
+      "interaction_name": "RIXS Spectrometer to Analysis Pipeline (Pass-Through)",
+      "interaction_type": "detection_to_analysis",
+      "from_component": "rixs_spectrometer_six",
+      "to_component": "rixs_analysis_passthrough",
+      "causal_direction": "forward",
+      "physical_mechanism": "Pass-through (identity transformation) with minimal data reduction",
+      "interaction_strength": "I(ΔE) output = I(ΔE) input (no transformation)",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": false,
+      "description": "System F passes RIXS spectrum through without transformation. Energy calibration and normalization are applied, but the observable I(ΔE) is unchanged. This demonstrates that System F can be present even when no complex analysis is needed."
     }
   ],
   "published_results": {

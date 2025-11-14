@@ -1,0 +1,139 @@
+{
+  "beamline_metadata": {
+    "beamline_id": "11-ID-CHX",
+    "beamline_name": "Coherent Hard X-ray Scattering",
+    "facility": "NSLS2",
+    "technique": "X-ray Photon Correlation Spectroscopy (XPCS)",
+    "technique_abbreviation": "XPCS"
+  },
+
+  "systems_config": {
+    "system_a": {
+      "component_type": "coherent_undulator",
+      "energy_range": "6-15 keV (hard X-ray)",
+      "optimization": "coherence",
+      "source_details": {
+        "undulator_type": "In-vacuum undulator (IVU)",
+        "coherent_flux": "~10^11-10^12 coherent photons/sec (world-leading)",
+        "typical_energy": "9 keV"
+      },
+      "coherence_requirements": {
+        "transverse_coherence_length": "10-50 μm (lateral coherence)",
+        "longitudinal_coherence_length": "~100 nm (energy resolution ΔE/E ~ 10^-4)",
+        "notes": "COHERENCE IS CRITICAL - High transverse coherence enables sharp speckle patterns"
+      }
+    },
+
+    "system_b": {
+      "component_type": "coherence_preserving_optics",
+      "optimization": "coherence_preservation",
+      "scanning_mode": "static",
+      "optics_details": {
+        "monochromator_type": "Double-crystal Si(111) (ΔE/E ~ 10^-4)",
+        "focusing": "Kirkpatrick-Baez mirrors or beryllium compound refractive lenses (CRLs)",
+        "wavefront_preservation": "Minimal phase distortions (critical for speckle quality)",
+        "coherence_degradation": "<10% (high-quality optics)",
+        "beam_size_at_sample": "~10-50 μm (matched to coherence length)"
+      },
+      "notes": "Coherence preservation is CRITICAL - Any wavefront distortion degrades speckle contrast"
+    },
+
+    "system_c": {
+      "component_type": "electric_field_cell",
+      "dynamic": true,
+      "capabilities": ["electric_field", "temperature_control", "mechanical_stress"],
+      "temperature_range": "200-400 K (variable) or room temperature",
+      "time_resolved": true,
+      "typical_conditions": {
+        "electrode_material": "ITO or thin metal films (X-ray transparent)",
+        "applied_field_range": "0-10 kV/cm (below breakdown, above coercive field)",
+        "field_orientation": "Parallel or perpendicular to polarization axis",
+        "atmosphere": "Ambient, N2, or vacuum",
+        "time_resolution": "ms-sec timescale (field can be pulsed or ramped)"
+      },
+      "notes": "DYNAMIC environment - Electric field drives domain switching, creating time-dependent structural fluctuations"
+    },
+
+    "system_d": {
+      "typical_samples": [
+        "Polymers (bulk and thin films)",
+        "Colloidal suspensions and gels",
+        "Ferroelectric domains",
+        "Soft matter",
+        "Biological materials",
+        "Phase-separating systems"
+      ],
+      "typical_unknowns": [
+        "Dynamics and relaxation timescales (τ_relax)",
+        "Domain wall velocity",
+        "Switching mechanisms",
+        "Heterogeneity in dynamics",
+        "Critical slowing near phase transitions"
+      ],
+      "knowledge_state_default": "PARTIALLY_KNOWN"
+    },
+
+    "system_e": {
+      "detector_type": "fast_area_detector",
+      "data_structure": "I(q,t) - time-series of 2D speckle intensity patterns",
+      "resolution": {
+        "temporal_resolution": "1 ms per frame (1 kHz acquisition)",
+        "spatial_resolution": "75-55 μm pixel size"
+      },
+      "acquisition_speed": "kHz to MHz",
+      "detector_details": {
+        "type": "Eiger 4M or Lambda detector (single-photon counting)",
+        "frame_rate": "1 kHz to 10 kHz (sub-millisecond time resolution)",
+        "number_of_pixels": "2048 x 2048 (4 megapixels) or larger",
+        "dynamic_range": "Up to 10^6 photons per pixel (16-bit or 32-bit)",
+        "dead_time": "<1 μs (minimal for fast dynamics)",
+        "data_rate": "Up to 3 GB/s (high-speed data streaming)"
+      },
+      "notes": "Fast detector captures speckle pattern evolution - timescale of g2(q,τ) decay encodes sample dynamics"
+    },
+
+    "system_f": {
+      "processing_type": "correlation_analysis",
+      "transformation": "g2(q,τ) = ⟨I(q,t)·I(q,t+τ)⟩ / ⟨I(q,t)⟩² (temporal autocorrelation)",
+      "input_structure": "I(q,x,y,t) - Time-series of 2D speckle patterns (10^4-10^6 frames, ~40 GB)",
+      "output_structure": "g2(q,τ) - Temporal autocorrelation function → relaxation timescale τ_relax(q)",
+      "latency": "minutes",
+      "computational_cost": "high",
+      "criticality": "high",
+      "processing_steps": [
+        "Azimuthal averaging I(q,x,y,t) → I(q,t)",
+        "Calculate two-time correlation C(q,t1,t2) = ⟨I(q,t1)·I(q,t2)⟩",
+        "Extract one-time correlation g2(q,τ) = C(q,t,t+τ) / ⟨I(q)⟩²",
+        "Fit exponential decay: g2(q,τ) = β·exp(-2τ/τ_relax) + 1",
+        "Extract relaxation timescale τ_relax(q)",
+        "Generate two-time correlation maps for non-stationary dynamics"
+      },
+      "computational_details": {
+        "algorithm": "Pixel-wise temporal autocorrelation over 10^4-10^6 frames",
+        "memory_requirements": "64-128 GB RAM for full dataset",
+        "parallelization": "GPU-accelerated for real-time analysis",
+        "processing_time": "Minutes to hours (depending on dataset size)",
+        "software_tools": ["skbeam (Brookhaven NSLS-II)", "PyXPCS", "CHX beamline pipeline"],
+        "data_reduction": "g2(q,τ) is ~1000× smaller than raw data"
+      },
+      "notes": "System F is ABSOLUTELY CRITICAL. Raw detector output I(q,t) is uninterpretable without correlation analysis. g2(q,τ) IS the actual observable."
+    }
+  },
+
+  "data_flow": "A (Coherent Undulator) → B (Coherence Optics) → D (Ferroelectric) ← C (E-field Cell - DYNAMIC), D → E (Fast Area Detector) → F (Correlation Analysis) → Observable g2(q,τ)",
+
+  "gap_closure_typical": {
+    "target": "System D dynamics and relaxation timescale (τ_relax, domain wall velocity)",
+    "measurement": "g2(q,τ) correlation function showing exponential decay",
+    "inference_method": "Fit g2(q,τ) = β·exp(-2τ/τ_relax) + 1 to extract τ_relax; domain wall velocity v ~ domain_size/τ_relax; identify dynamics regimes (ballistic, diffusive, arrested)"
+  },
+
+  "validation_evidence": {
+    "validated": true,
+    "validation_date": "2025-11-14",
+    "validation_case": "Ferroelectric domain switching (IEEE Nanotechnology 2025)",
+    "system_f_mode_verified": "correlation_analysis (active processing)",
+    "all_systems_present": true,
+    "knowledge_gaps_identified": ["domain_relaxation_timescale (10-100 ms target)"]
+  }
+}

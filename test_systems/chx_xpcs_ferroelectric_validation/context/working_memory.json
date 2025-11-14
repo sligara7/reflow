@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "created_date": "2025-11-14",
+    "last_updated": "2025-11-14",
+    "version": "1.0.0",
+    "context_type": "scientific_reflow_validation"
+  },
+  "project_info": {
+    "project_name": "CHX XPCS Ferroelectric Validation",
+    "description": "Validation test for Systems A-F generalizability using 11-ID CHX beamline XPCS dynamics measurements",
+    "facility": "NSLS2",
+    "beamline": "11-ID CHX (Coherent Hard X-ray Scattering)",
+    "technique": "X-ray Photon Correlation Spectroscopy (XPCS)",
+    "validation_purpose": "Verify Systems A-F architecture works for correlation-based dynamics measurements with System F (correlation analysis)"
+  },
+  "paths": {
+    "reflow_root": "/home/asligar/git_projects/reflow",
+    "scientific_reflow_root": "/home/asligar/git_projects/reflow/scientific-reflow",
+    "system_root": "/home/asligar/git_projects/reflow/test_systems/chx_xpcs_ferroelectric_validation",
+    "tools_path": "/home/asligar/git_projects/reflow/tools",
+    "templates_path": "/home/asligar/git_projects/reflow/scientific-reflow/templates",
+    "workflow_steps_path": "/home/asligar/git_projects/reflow/workflow_steps",
+    "definitions_path": "/home/asligar/git_projects/reflow/scientific-reflow/definitions"
+  },
+  "current_workflow": "validation_testing",
+  "current_step": "INIT",
+  "framework": "experimental_scientific_systems",
+  "systems_architecture": {
+    "validation_case_file": "chx_xpcs_ferroelectric_validation_case.json",
+    "systems_present": ["A", "B", "C", "D", "E", "F"],
+    "system_f_type": "correlation_analysis",
+    "knowledge_gaps": ["System D - Ferroelectric domain relaxation timescale and switching dynamics"]
+  },
+  "scientific_goal": {
+    "primary_goal": "Infer domain relaxation timescale from XPCS correlation function g2(q,τ)",
+    "target_discovery": "Domain relaxation time τ_relax, switching mechanism, critical dynamics",
+    "expected_results": {
+      "timescale_range": "10-100 ms",
+      "mechanism": "Nucleation-growth with critical slowing near coercive field"
+    },
+    "success_criteria": "Gap closure proposes relaxation time within order of magnitude (ms-sec range)"
+  },
+  "operations_since_refresh": 0,
+  "refresh_threshold": 50,
+  "notes": "Pre-built validation case with Systems A-F. System F (correlation analysis) is CRITICAL - transforms I(q,t) speckle patterns to g2(q,τ) observable."
+}

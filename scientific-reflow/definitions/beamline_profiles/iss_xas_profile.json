@@ -1,0 +1,128 @@
+{
+  "beamline_metadata": {
+    "beamline_id": "8-ID-ISS",
+    "beamline_name": "Inner Shell Spectroscopy",
+    "facility": "NSLS2",
+    "technique": "X-ray Absorption Spectroscopy (XAS/XANES/EXAFS)",
+    "technique_abbreviation": "XAS"
+  },
+
+  "systems_config": {
+    "system_a": {
+      "component_type": "damping_wiggler",
+      "energy_range": "5-30 keV (hard X-ray)",
+      "optimization": "flux",
+      "source_details": {
+        "wiggler_type": "Damping wiggler",
+        "length": "7 m",
+        "periods": "75",
+        "period_length": "90 mm",
+        "critical_energy": "11 keV",
+        "flux": "~10^13 photons/sec at 22 keV"
+      }
+    },
+
+    "system_b": {
+      "component_type": "monochromator_focusing",
+      "optimization": "flux_throughput",
+      "resolving_power": "~10^4 (ΔE/E ~ 10^-4)",
+      "scanning_mode": "continuous_scan",
+      "optics_details": {
+        "monochromator_type": "Double-crystal monochromator",
+        "focusing": "Kirkpatrick-Baez (KB) mirrors",
+        "scanning_speed": "1s per XANES+EXAFS spectrum (world-leading)",
+        "energy_resolution": "~1-2 eV at 22 keV"
+      }
+    },
+
+    "system_c": {
+      "component_type": "electrochemical_cell",
+      "dynamic": true,
+      "capabilities": ["voltage_control", "current_control", "gas_flow"],
+      "temperature_range": "Room temperature (typical) or variable",
+      "time_resolved": true,
+      "typical_conditions": {
+        "electrolyte": "0.1-1 M H2SO4 (acidic)",
+        "applied_potential": "0-2.0 V vs RHE",
+        "current_density": "Up to 2 A/cm^2 (OER conditions)",
+        "duration": "Hours to days (operando stability testing)"
+      },
+      "notes": "DYNAMIC environment - electrochemical potential drives sample oxidation state changes over time"
+    },
+
+    "system_d": {
+      "typical_samples": [
+        "Battery electrodes (operando cycling)",
+        "Electrocatalysts (operando OER/ORR)",
+        "Nanoparticles",
+        "Catalysts (operando reaction conditions)",
+        "Thin films"
+      ],
+      "typical_unknowns": [
+        "Oxidation states under operating conditions",
+        "Coordination environment changes",
+        "Reaction kinetics and mechanisms",
+        "Degradation pathways"
+      ],
+      "knowledge_state_default": "PARTIALLY_KNOWN"
+    },
+
+    "system_e": {
+      "detector_type": "fluorescence_detector",
+      "data_structure": "μ(E) - absorption coefficient vs energy (or fluorescence yield)",
+      "resolution": {
+        "energy_resolution": "~150-200 eV at 22 keV (detector FWHM)",
+        "count_rate": "Up to 10^6 counts/sec per element"
+      },
+      "acquisition_speed": "1 Hz (1s per spectrum)",
+      "detector_details": {
+        "type": "Multi-element germanium (Ge) or silicon drift detector (SDD)",
+        "number_of_elements": "4-32 elements (typical)",
+        "detection_mode": "Fluorescence yield (suitable for concentrated samples)",
+        "geometry": "90° or backscattering"
+      }
+    },
+
+    "system_f": {
+      "processing_type": "async_daq",
+      "transformation": "Multi-channel timestamp synchronization + fluorescence/I0 normalization → μ(E,t)",
+      "input_structure": "[Multi-element fluorescence counts, I0 monitor, energy encoder, electrochemical cell V/I] - all timestamped",
+      "output_structure": "μ(E,t) - time-resolved absorption coefficient",
+      "latency": "real_time",
+      "computational_cost": "moderate",
+      "criticality": "medium",
+      "processing_steps": [
+        "Timestamp alignment (8ns resolution using NSLS2 timing system)",
+        "Fluorescence/I0 normalization (dead-time correction)",
+        "Energy calibration",
+        "Background subtraction",
+        "Generate μ(E,t) time-series"
+      ],
+      "daq_details": {
+        "architecture": "Asynchronous continuous collection with independent device timestamps",
+        "timestamp_resolution": "8 ns (NSLS2 timing system)",
+        "data_streams": ["Fluorescence", "I0", "Energy", "Voltage", "Current", "Temperature"],
+        "synchronization": "Post-processing using timestamps",
+        "data_format": "HDF5 with Bluesky data model"
+      },
+      "notes": "System F is REQUIRED for operando XAS. Without async DAQ, multi-channel data streams cannot be synchronized at 8ns precision."
+    }
+  },
+
+  "data_flow": "A (Damping Wiggler) → B (Monochromator) → D (Catalyst) ← C (Electrochemical Cell - DYNAMIC), D → E (Fluorescence Detector) → F (Async DAQ) → Observable μ(E,t)",
+
+  "gap_closure_typical": {
+    "target": "System D oxidation state evolution and degradation mechanism",
+    "measurement": "Time-resolved XAS μ(E,t) showing edge shifts (oxidation) and EXAFS changes (coordination)",
+    "inference_method": "XANES edge position shift → oxidation state change; EXAFS analysis → coordination environment; time-dependence → kinetics and degradation pathway"
+  },
+
+  "validation_evidence": {
+    "validated": true,
+    "validation_date": "2025-11-14",
+    "validation_case": "Ru6IrOx catalyst operando (Nature Nanotechnology 2025)",
+    "system_f_mode_verified": "async_daq (active processing)",
+    "all_systems_present": true,
+    "knowledge_gaps_identified": ["ru_oxidation_state_under_oer", "degradation_mechanism"]
+  }
+}
