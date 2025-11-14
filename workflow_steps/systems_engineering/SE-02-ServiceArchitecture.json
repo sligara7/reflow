@@ -34,14 +34,58 @@
       },
       "preservation_rule": "NEVER delete old versions - they are historical record and enable rollback",
       "uaf_compliance": "UAF 1.2 framework",
-      "required_sections": [
-        "metadata (name, version, description)",
-        "operational_view (capabilities, activities, services)",
-        "system_view (components, interfaces, data_models)",
-        "service_view (service_specs, resources)",
-        "constraints (technical, deployment, security)",
-        "deployment_architecture (environment, infrastructure)"
-      ],
+
+      "🚨_MANDATORY_STRUCTURE_REQUIREMENTS_READ_FIRST": {
+        "critical_importance": "LLMs frequently create service architectures in WRONG format, causing tool failures at SE-06. You MUST follow this exact structure.",
+        "when_to_read": "BEFORE creating ANY service_architecture.json file - this prevents reformatting loops",
+
+        "TOP_LEVEL_FIELDS_REQUIREMENT": {
+          "rule": "service_id and service_name MUST be at TOP LEVEL of JSON, NOT nested in any object",
+          "why": "Tools expect data.get('service_id'), NOT data.get('metadata', {}).get('service_id')",
+          "validation": "After creation, verify service_id appears at JSON root level (not nested 2+ levels deep)"
+        },
+
+        "✅_CORRECT_STRUCTURE_EXAMPLE": {
+          "$schema": "../templates/schemas/service_architecture_schema.json",
+          "service_id": "user_service",
+          "service_name": "User Service",
+          "hierarchical_tier": "tier_2_components",
+          "component_classification": "service",
+          "purpose": "User management and authentication",
+          "dependencies": ["auth_service", "database_service"],
+          "interfaces": [
+            {
+              "name": "User API",
+              "interface_type": "http_endpoint",
+              "direction": "produced",
+              "description": "REST API for user operations"
+            }
+          ],
+          "version": "1.0.0+2025-11-13"
+        },
+
+        "❌_INCORRECT_STRUCTURE_DO_NOT_USE": {
+          "$schema": "../templates/schemas/service_architecture_schema.json",
+          "service_metadata": {
+            "service_id": "user_service",
+            "service_name": "User Service"
+          },
+          "operational_view": {},
+          "NOTE": "THIS IS WRONG - service_id is nested, tools will fail to find it"
+        },
+
+        "PRE_CREATION_CHECKLIST": {
+          "description": "Before creating service_architecture.json, verify you understand:",
+          "checklist": [
+            "☐ service_id is at TOP LEVEL (not in service_metadata or metadata object)",
+            "☐ service_name is at TOP LEVEL (not nested)",
+            "☐ interfaces is an ARRAY [ ... ], not an object { provided: ..., consumed: ... }",
+            "☐ I will validate IMMEDIATELY after creation with validate_architecture_format.py",
+            "☐ I will NOT proceed to next service until validation passes"
+          ],
+          "if_unsure": "Read templates/service_architecture_template.json lines 14-16 to see correct structure"
+        }
+      },
 
       "⚠️_CRITICAL_FORMAT_REQUIREMENTS_FOR_SE-06_GRAPH_TOOL": {
         "purpose": "These format requirements ensure SE-06 graph tool (system_of_systems_graph_v2.py) can read your architecture WITHOUT needing to go back and reformat",
@@ -178,16 +222,19 @@
       },
 
       "execution_steps_WITH_VALIDATION": [
-        "1. Read {reflow_root}/templates/service_architecture_template.json",
+        "0. ⚠️ FIRST: Read MANDATORY_STRUCTURE_REQUIREMENTS_READ_FIRST section above and review checklist",
+        "1. Read {reflow_root}/templates/service_architecture_template.json - note service_id at line 16 (TOP LEVEL)",
         "2. For EACH service:",
-        "   a. Create service_architecture_v1.0.0-{YYYYMMDD}.json",
-        "   b. Ensure interfaces field is ARRAY format (see CRITICAL_FORMAT_REQUIREMENTS above)",
-        "   c. Ensure all components have component_id and component_name fields",
-        "   d. ⚠️ IMMEDIATELY validate format:",
+        "   a. Create service_architecture_v1.0.0-{YYYYMMDD}.json following CORRECT_STRUCTURE_EXAMPLE",
+        "   b. ✅ VERIFY service_id and service_name are at TOP LEVEL (not in metadata/service_metadata object)",
+        "   c. ✅ VERIFY interfaces field is ARRAY format [ {...}, {...} ], not object { provided: ..., consumed: ... }",
+        "   d. ✅ VERIFY all components have component_id and component_name fields (if components exist)",
+        "   e. 🚨 IMMEDIATELY validate format (BLOCKING - do not proceed until this passes):",
         "      python3 {reflow_root}/tools/validate_architecture_format.py specs/machine/service_arch/{service}/service_architecture_v1.0.0-{date}.json --mode service",
-        "   e. If validation FAILS: FIX errors NOW (see on_validation_failure above)",
-        "   f. If validation PASSES: Create symlink service_architecture.json → service_architecture_v1.0.0-{date}.json",
-        "   g. Repeat for next service",
+        "   f. If validation FAILS: READ error message, compare to INCORRECT_STRUCTURE_DO_NOT_USE example, FIX NOW",
+        "   g. If validation PASSES: Create symlink service_architecture.json → service_architecture_v1.0.0-{date}.json",
+        "   h. Double-check: grep -E '^  \"service_id\"' {file} should return service_id at top level (2 spaces indent, not 4+)",
+        "   i. Repeat for next service - DO NOT batch creation, validate each service immediately",
         "3. After ALL services created and validated, proceed to SE-02-A02"
       ]
     },
@@ -883,6 +930,15 @@
   ],
 
   "llm_agent_guidance": {
+    "🚨_CRITICAL_STRUCTURE_REMINDERS_PREVENT_REFORMATTING_LOOPS": [
+      "⚠️ #1 MISTAKE: Creating service architectures with service_id NESTED in metadata/service_metadata object",
+      "✅ CORRECT: service_id and service_name at TOP LEVEL of JSON (root level, 2-space indent)",
+      "❌ INCORRECT: { \"service_metadata\": { \"service_id\": \"...\" } } ← Tools will fail",
+      "🔍 VERIFY: After creating EACH file, check service_id is at top level: grep -E '^  \"service_id\"' file.json",
+      "🚨 VALIDATE: Immediately after EACH file creation, run validate_architecture_format.py (BLOCKING)",
+      "📋 CHECKLIST: Review PRE_CREATION_CHECKLIST in MANDATORY_STRUCTURE_REQUIREMENTS_READ_FIRST before creating files"
+    ],
+
     "critical_reminders": [
       "Create VERSIONED architecture files (v1.0.0-{date}.json) with symlinks",
       "CONDITIONAL actions: Check framework_id and user_facing flags before executing A04-A08",
@@ -891,11 +947,36 @@
       "Edge weights (A02B): Required for Decision Flow and Ecological frameworks if doing flow analysis",
       "Never skip conditional checks - executing wrong actions wastes time and creates incorrect artifacts"
     ],
+
     "common_mistakes": [
+      "🚨 MOST COMMON: Nesting service_id in service_metadata object (see INCORRECT_STRUCTURE_DO_NOT_USE example)",
+      "Creating interfaces as object { provided: [...], consumed: [...] } instead of ARRAY",
       "Creating port_registry.json for biological systems (doesn't apply)",
       "Skipping security_architecture.json for user-facing web apps (required!)",
       "Not creating versioned files with symlinks",
-      "Forgetting to plan edge weights for Decision Flow framework → flow analysis fails later"
-    ]
+      "Forgetting to plan edge weights for Decision Flow framework → flow analysis fails later",
+      "Not validating each file immediately - deferring validation until SE-06 causes reformatting loops"
+    ],
+
+    "prevention_workflow": {
+      "before_creating_any_files": [
+        "1. Read SE-02-A01 → MANDATORY_STRUCTURE_REQUIREMENTS_READ_FIRST section",
+        "2. Review ✅_CORRECT_STRUCTURE_EXAMPLE - this is what you will create",
+        "3. Review ❌_INCORRECT_STRUCTURE_DO_NOT_USE - never create this",
+        "4. Confirm in your response: 'I will create service architectures with service_id at TOP LEVEL'"
+      ],
+      "while_creating_files": [
+        "1. Follow CORRECT_STRUCTURE_EXAMPLE exactly",
+        "2. After EACH file: run validate_architecture_format.py IMMEDIATELY",
+        "3. If validation fails: FIX NOW (compare to INCORRECT example), do not proceed",
+        "4. Only create symlink after validation passes"
+      ],
+      "if_you_see_format_errors_at_SE-06": [
+        "1. You ignored MANDATORY_STRUCTURE_REQUIREMENTS - return to SE-02-A01",
+        "2. Read INCORRECT_STRUCTURE_DO_NOT_USE to see what you did wrong",
+        "3. Restructure ALL service architectures following CORRECT_STRUCTURE_EXAMPLE",
+        "4. Re-validate each file before proceeding to SE-06 again"
+      ]
+    }
   }
 }
