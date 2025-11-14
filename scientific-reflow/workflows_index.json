@@ -1,0 +1,169 @@
+{
+  "version": "1.0.0",
+  "description": "Scientific Reflow workflow index for knowledge gap discovery in experimental science",
+  "framework": "experimental_scientific_systems",
+  "workflows": {
+    "00-scientific_setup": {
+      "id": "00-scientific_setup",
+      "name": "Scientific Setup",
+      "file": "workflows/00-scientific_setup.json",
+      "description": "Initialize scientific discovery project, define goals, identify knowledge gaps, configure tools",
+      "entry_points": [
+        "new_experiment",
+        "beamline_experiment",
+        "knowledge_gap_discovery"
+      ],
+      "prerequisites": [],
+      "next_workflow": "01-experimental_modeling",
+      "estimated_duration": "10-15 minutes",
+      "key_outputs": [
+        "context/working_memory.json",
+        "docs/scientific_goal.md",
+        "docs/system_categorization_plan.md"
+      ]
+    },
+    "01-experimental_modeling": {
+      "id": "01-experimental_modeling",
+      "name": "Experimental System Modeling",
+      "file": "workflows/01-experimental_modeling.json",
+      "description": "Model experimental apparatus as system-of-systems graph (Systems A, B, C, D, E)",
+      "entry_points": [],
+      "prerequisites": ["00-scientific_setup"],
+      "next_workflow": "02-knowledge_gap_discovery",
+      "estimated_duration": "30-60 minutes",
+      "key_outputs": [
+        "specs/machine/experimental_systems/experimental_system_architecture.json",
+        "docs/experimental_system_summary.md",
+        "docs/modeling_report.md"
+      ]
+    },
+    "02-knowledge_gap_discovery": {
+      "id": "02-knowledge_gap_discovery",
+      "name": "Knowledge Gap Discovery",
+      "file": "workflows/02-knowledge_gap_discovery.json",
+      "description": "Use system_of_systems_graph_v2.py to analyze graph and detect knowledge gaps (System D)",
+      "entry_points": [],
+      "prerequisites": [
+        "00-scientific_setup",
+        "01-experimental_modeling"
+      ],
+      "next_workflow": "03-gap_closure_analysis",
+      "estimated_duration": "15-20 minutes",
+      "key_outputs": [
+        "specs/machine/graphs/experimental_system_graph.json",
+        "docs/gap_detection_report.md",
+        "docs/experimental_system_diagram.mmd",
+        "docs/EXPERIMENTAL_SYSTEM.md"
+      ],
+      "tools_used": ["system_of_systems_graph_v2.py"]
+    },
+    "03-gap_closure_analysis": {
+      "id": "03-gap_closure_analysis",
+      "name": "Gap Closure Analysis (SVD-Based Inference)",
+      "file": "workflows/03-gap_closure_analysis.json",
+      "description": "Transform DAG to matrices, apply SVD-based gap closure to infer System D properties",
+      "entry_points": [],
+      "prerequisites": [
+        "00-scientific_setup",
+        "01-experimental_modeling",
+        "02-knowledge_gap_discovery"
+      ],
+      "next_workflow": null,
+      "estimated_duration": "20-30 minutes",
+      "key_outputs": [
+        "specs/machine/gap_closure/gap_closure_proposals.json",
+        "specs/machine/gap_closure/inferred_system_d.json",
+        "docs/matrix_transformation.md",
+        "docs/scientific_hypotheses.md",
+        "docs/validation_experiment_plan.md",
+        "docs/GAP_CLOSURE_REPORT.md"
+      ],
+      "tools_used": [
+        "reflow_gap_closure.py",
+        "matrix_gap_detection.py",
+        "link_architectures.py"
+      ]
+    }
+  },
+  "workflow_order": [
+    "00-scientific_setup",
+    "01-experimental_modeling",
+    "02-knowledge_gap_discovery",
+    "03-gap_closure_analysis"
+  ],
+  "total_estimated_time": "75-125 minutes (1.25-2 hours)",
+  "paths": {
+    "scientific_reflow_root": "Path to scientific-reflow installation",
+    "workflows_directory": "workflows/",
+    "workflow_steps_directory": "workflow_steps/",
+    "templates_directory": "templates/",
+    "definitions_directory": "definitions/",
+    "docs_directory": "docs/"
+  },
+  "tools_integration": {
+    "reflow_tools_used": [
+      {
+        "tool": "system_of_systems_graph_v2.py",
+        "purpose": "Graph generation, gap detection, NetworkX analyses (DAG, centrality, paths)",
+        "workflow": "02-knowledge_gap_discovery",
+        "path": "../tools/system_of_systems_graph_v2.py"
+      },
+      {
+        "tool": "reflow_gap_closure.py",
+        "purpose": "Integration wrapper for matrix transformation + SVD gap closure",
+        "workflow": "03-gap_closure_analysis",
+        "path": "../tools/reflow_gap_closure.py"
+      },
+      {
+        "tool": "matrix_gap_detection.py",
+        "purpose": "Matrix-based gap solver (DAG → matrices → SVD → inferred properties)",
+        "workflow": "03-gap_closure_analysis (internal)",
+        "path": "../tools/matrix_gap_detection.py"
+      },
+      {
+        "tool": "link_architectures.py",
+        "purpose": "Architecture linking engine (functional goals → experimental design)",
+        "workflow": "03-gap_closure_analysis (internal)",
+        "path": "../tools/link_architectures.py"
+      }
+    ]
+  },
+  "framework_info": {
+    "framework_id": "experimental_scientific_systems",
+    "framework_name": "Experimental Scientific Systems (ESS)",
+    "framework_file": "definitions/experimental_scientific_systems_framework.json",
+    "system_categories": {
+      "system_a": "Source (energy/particle source)",
+      "system_b": "Manipulation (optics/mechanics)",
+      "system_c": "Environment (temperature, pressure, fields)",
+      "system_d": "Sample (THE KNOWLEDGE GAP - target of discovery)",
+      "system_e": "Detection (detectors, measurement systems)"
+    },
+    "knowledge_states": ["KNOWN", "UNKNOWN", "PARTIALLY_KNOWN"],
+    "observability_levels": ["HIGH", "MEDIUM", "LOW"],
+    "gap_closure_method": "SVD-based matrix inversion (B = C × A⁻¹)"
+  },
+  "use_cases": [
+    "Synchrotron beamline experiments (X-ray scattering, spectroscopy, imaging)",
+    "Neutron scattering facilities",
+    "Laser-based experiments (spectroscopy, microscopy)",
+    "Electron microscopy and spectroscopy",
+    "Materials characterization (unknown samples)",
+    "Chemical analysis (unknown composition)",
+    "Biological structure determination",
+    "Inverse problems in experimental physics/chemistry"
+  ],
+  "key_outputs": {
+    "experimental_system_architecture": "Machine-readable model of apparatus (A, B, C, D, E)",
+    "experimental_system_graph": "NetworkX graph with gap detection",
+    "gap_closure_proposals": "SVD-based inferred System D properties",
+    "scientific_hypotheses": "Testable hypotheses generated from gap closure",
+    "validation_plan": "Experimental validation strategy"
+  },
+  "documentation": {
+    "readme": "README.md",
+    "quick_start": "docs/QUICK_START.md",
+    "master_index": "docs/MASTER_INDEX.md",
+    "framework_definition": "definitions/experimental_scientific_systems_framework.json"
+  }
+}

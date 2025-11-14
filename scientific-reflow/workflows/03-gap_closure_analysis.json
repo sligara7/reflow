@@ -1,0 +1,376 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "03-gap_closure_analysis",
+    "workflow_name": "Gap Closure Analysis (SVD-Based Inference)",
+    "version": "1.0.0",
+    "framework": "experimental_scientific_systems",
+    "description": "Use reflow_gap_closure.py (matrix transformation + SVD) to infer System D (sample) properties",
+    "purpose": "Transform DAG to matrices, apply SVD-based gap closure, generate hypotheses for System D properties, validate scientific plausibility",
+    "estimated_duration": "20-30 minutes",
+    "prerequisites": ["00-scientific_setup", "01-experimental_modeling", "02-knowledge_gap_discovery"],
+    "next_workflow": null
+  },
+  "workflow_steps": [
+    {
+      "step_id": "GC-01",
+      "step_name": "Matrix Transformation",
+      "description": "Transform experimental system DAG to matrices for mathematical inference",
+      "actions": [
+        {
+          "action_id": "GC-01-A01",
+          "description": "Load architecture and graph",
+          "details": "Read experimental_system_architecture.json and experimental_system_graph.json from working memory paths",
+          "validation": "Files loaded successfully"
+        },
+        {
+          "action_id": "GC-01-A02",
+          "description": "Generate adjacency matrix A",
+          "details": "Create adjacency matrix A[i,j] = 1 if edge from node i to node j exists, 0 otherwise. Rows/cols = [System A, System B, System C, System D, System E]",
+          "output": "Adjacency matrix A (N×N)"
+        },
+        {
+          "action_id": "GC-01-A03",
+          "description": "Generate measurement matrix B",
+          "details": "Create measurement matrix B encoding OBSERVED interactions. B[i,j] = observability (HIGH=1.0, MEDIUM=0.5, LOW=0.1) if edge i→j is measured. Focus on D→E (sample→detector) edges.",
+          "output": "Measurement matrix B (N×N or M×N where M = # of measurements)"
+        },
+        {
+          "action_id": "GC-01-A04",
+          "description": "Generate causal matrix C",
+          "details": "Create causal matrix C encoding KNOWN causal relationships. C[i,j] = interaction_strength if edge i→j has KNOWN properties (Systems A, B, C, E). C[d,j] = UNKNOWN for System D rows.",
+          "output": "Causal matrix C (N×N with unknowns for System D)"
+        },
+        {
+          "action_id": "GC-01-A05",
+          "description": "Document matrix transformation",
+          "details": "Create docs/matrix_transformation.md: matrix dimensions, encoding schemes, known vs unknown elements, mathematical formulation (B = C × A or similar)",
+          "output": "docs/matrix_transformation.md"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "Matrices A, B, C generated",
+          "System D elements identified as unknowns",
+          "Matrix dimensions consistent",
+          "Transformation documented"
+        ]
+      },
+      "next_step": "GC-02"
+    },
+    {
+      "step_id": "GC-02",
+      "step_name": "Run reflow_gap_closure.py",
+      "description": "Apply SVD-based gap closure to infer System D properties",
+      "actions": [
+        {
+          "action_id": "GC-02-A01",
+          "description": "Execute reflow_gap_closure.py",
+          "command": "python3 {tools_path}/reflow_gap_closure.py specs/machine/experimental_systems/experimental_system_architecture.json",
+          "details": "Run gap closure integration wrapper. Internally calls matrix_gap_detection.py (SVD solver) and link_architectures.py (architecture linking).",
+          "output": "specs/machine/gap_closure/gap_closure_proposals.json"
+        },
+        {
+          "action_id": "GC-02-A02",
+          "description": "Verify gap closure execution",
+          "details": "Check that gap_closure_proposals.json exists and contains proposals for System D properties",
+          "validation": "Gap closure proposals generated (BLOCKING)"
+        },
+        {
+          "action_id": "GC-02-A03",
+          "description": "Parse gap closure results",
+          "details": "Extract: (1) SVD singular values (condition number), (2) Inferred System D properties, (3) Confidence scores, (4) Alternative hypotheses",
+          "output": "Parsed gap closure results"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "reflow_gap_closure.py executed successfully",
+          "gap_closure_proposals.json generated",
+          "At least one proposal for System D"
+        ]
+      },
+      "next_step": "GC-03"
+    },
+    {
+      "step_id": "GC-03",
+      "step_name": "Analyze SVD Results",
+      "description": "Interpret SVD singular values and assess inference quality",
+      "actions": [
+        {
+          "action_id": "GC-03-A01",
+          "description": "Analyze singular values",
+          "details": "Check SVD singular values (σ1, σ2, ..., σn): (1) Large singular values → strong constraints, (2) Small singular values → weak constraints, (3) Condition number κ = σ_max/σ_min (if κ >> 1, problem is ill-conditioned)",
+          "output": "SVD analysis report"
+        },
+        {
+          "action_id": "GC-03-A02",
+          "description": "Identify well-constrained properties",
+          "details": "Properties corresponding to large singular values are well-constrained by measurements. Example: If σ1 is large and corresponds to 'lattice parameter a', then 'a' is well-determined.",
+          "output": "Well-constrained properties list"
+        },
+        {
+          "action_id": "GC-03-A03",
+          "description": "Identify under-constrained properties",
+          "details": "Properties corresponding to small singular values are under-constrained. Example: If σ_n is tiny and corresponds to 'crystal orientation', orientation is poorly determined.",
+          "output": "Under-constrained properties list"
+        },
+        {
+          "action_id": "GC-03-A04",
+          "description": "Assess inference confidence",
+          "details": "Overall confidence based on: (1) Condition number (κ < 100 is good), (2) Ratio of well-constrained to total properties, (3) Number of measurements vs unknowns",
+          "output": "Confidence assessment (HIGH/MEDIUM/LOW)"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "SVD analysis completed",
+          "Confidence assessed"
+        ]
+      },
+      "next_step": "GC-04"
+    },
+    {
+      "step_id": "GC-04",
+      "step_name": "Generate Scientific Hypotheses",
+      "description": "Translate gap closure proposals into testable scientific hypotheses",
+      "actions": [
+        {
+          "action_id": "GC-04-A01",
+          "description": "Extract inferred System D properties",
+          "details": "From gap_closure_proposals.json, extract inferred values for System D properties. Example: crystal_structure='FCC', lattice_parameter_a='3.92 Å', space_group='Fm-3m'",
+          "output": "Inferred System D properties"
+        },
+        {
+          "action_id": "GC-04-A02",
+          "description": "Generate primary hypothesis",
+          "details": "Formulate primary hypothesis based on highest-confidence proposals. Example: 'Hypothesis 1: Sample is an FCC crystal with lattice parameter a=3.92±0.05 Å, space group Fm-3m.'",
+          "output": "Primary hypothesis"
+        },
+        {
+          "action_id": "GC-04-A03",
+          "description": "Generate alternative hypotheses",
+          "details": "If multiple plausible solutions exist (degeneracy), generate alternative hypotheses. Example: 'Hypothesis 2: Sample could also be HCP with c/a=1.63.'",
+          "output": "Alternative hypotheses (if any)"
+        },
+        {
+          "action_id": "GC-04-A04",
+          "description": "Identify testable predictions",
+          "details": "For each hypothesis, identify testable predictions. Example: 'If FCC Fm-3m, then diffraction peaks should appear at 2θ = 38.5°, 44.7°, 65.1° (Cu Kα).'",
+          "output": "Testable predictions"
+        },
+        {
+          "action_id": "GC-04-A05",
+          "description": "Document hypotheses",
+          "details": "Create docs/scientific_hypotheses.md: primary hypothesis, alternative hypotheses, testable predictions, confidence levels, experimental validation plan",
+          "output": "docs/scientific_hypotheses.md"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "At least one hypothesis generated",
+          "Testable predictions identified",
+          "Hypotheses documented"
+        ]
+      },
+      "next_step": "GC-05"
+    },
+    {
+      "step_id": "GC-05",
+      "step_name": "Physical Plausibility Check",
+      "description": "Validate gap closure proposals for physical plausibility",
+      "actions": [
+        {
+          "action_id": "GC-05-A01",
+          "description": "Check physical constraints",
+          "details": "Verify inferred properties obey physical laws: (1) Positive energies, (2) Lattice parameters > 0, (3) Physically realizable crystal structures, (4) Reasonable material properties",
+          "validation": "All proposals physically plausible (WARN if violations)"
+        },
+        {
+          "action_id": "GC-05-A02",
+          "description": "Compare to known materials",
+          "details": "If sample type is partially known (e.g., 'oxide'), compare inferred properties to known materials databases (e.g., ICSD, Materials Project). Flag if no match found.",
+          "output": "Database comparison results"
+        },
+        {
+          "action_id": "GC-05-A03",
+          "description": "Check internal consistency",
+          "details": "Verify inferred properties are internally consistent. Example: If space group is centrosymmetric, but structure has asymmetric atomic positions, flag inconsistency.",
+          "validation": "Internal consistency validated"
+        },
+        {
+          "action_id": "GC-05-A04",
+          "description": "User/expert review",
+          "details": "Present hypotheses to user for expert review. Ask: Do these hypotheses make physical sense for your sample?",
+          "validation": "User approval or feedback (BLOCKING)"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "Physical plausibility checked",
+          "No major inconsistencies",
+          "User/expert approval obtained"
+        ]
+      },
+      "next_step": "GC-06"
+    },
+    {
+      "step_id": "GC-06",
+      "step_name": "Design Validation Experiments",
+      "description": "Propose follow-up experiments to validate hypotheses",
+      "actions": [
+        {
+          "action_id": "GC-06-A01",
+          "description": "Identify discriminating measurements",
+          "details": "What additional measurements would distinguish between hypotheses? Example: If Hypothesis 1 (FCC) vs Hypothesis 2 (HCP), measure {111} vs {002} peak intensities.",
+          "output": "Discriminating measurement plan"
+        },
+        {
+          "action_id": "GC-06-A02",
+          "description": "Suggest complementary techniques",
+          "details": "What other experimental techniques would validate inferred properties? Example: XRD infers structure → validate with TEM, Raman, or neutron diffraction.",
+          "output": "Complementary techniques list"
+        },
+        {
+          "action_id": "GC-06-A03",
+          "description": "Prioritize validation experiments",
+          "details": "Rank validation experiments by: (1) Confidence gain, (2) Experimental feasibility, (3) Cost/time",
+          "output": "Prioritized validation plan"
+        },
+        {
+          "action_id": "GC-06-A04",
+          "description": "Document validation strategy",
+          "details": "Create docs/validation_experiment_plan.md: discriminating measurements, complementary techniques, prioritized validation plan, expected outcomes",
+          "output": "docs/validation_experiment_plan.md"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Validation experiments proposed",
+          "Prioritization completed"
+        ]
+      },
+      "next_step": "GC-07"
+    },
+    {
+      "step_id": "GC-07",
+      "step_name": "Generate Final Report",
+      "description": "Synthesize all results into comprehensive scientific report",
+      "actions": [
+        {
+          "action_id": "GC-07-A01",
+          "description": "Compile gap closure report",
+          "details": "Create docs/GAP_CLOSURE_REPORT.md with sections: (1) Experimental system summary, (2) Matrix transformation, (3) SVD analysis, (4) Inferred properties, (5) Hypotheses, (6) Validation plan",
+          "output": "docs/GAP_CLOSURE_REPORT.md"
+        },
+        {
+          "action_id": "GC-07-A02",
+          "description": "Generate visualizations",
+          "details": "Create: (1) Before/after diagrams (System D UNKNOWN → System D inferred), (2) SVD singular value plot, (3) Hypothesis comparison table",
+          "output": "docs/gap_closure_visualizations/"
+        },
+        {
+          "action_id": "GC-07-A03",
+          "description": "Export results",
+          "details": "Export inferred System D properties to: (1) JSON (specs/machine/gap_closure/inferred_system_d.json), (2) CSV for analysis, (3) LaTeX table for publication",
+          "output": "Multiple export formats"
+        },
+        {
+          "action_id": "GC-07-A04",
+          "description": "Archive workflow state",
+          "details": "Save complete workflow state: architectures, graphs, matrices, proposals, hypotheses, validation plan. Timestamp all artifacts.",
+          "output": "Archived workflow state"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Final report generated",
+          "Results exported",
+          "Workflow archived"
+        ]
+      },
+      "next_step": "GC-08"
+    },
+    {
+      "step_id": "GC-08",
+      "step_name": "Workflow Completion",
+      "description": "Finalize gap closure analysis and provide next steps",
+      "actions": [
+        {
+          "action_id": "GC-08-A01",
+          "description": "Update working memory",
+          "details": "Set workflow_status='completed', current_workflow=null, completion_date=<timestamp>",
+          "output": "Updated context/working_memory.json"
+        },
+        {
+          "action_id": "GC-08-A02",
+          "description": "Generate completion summary",
+          "details": "Create docs/workflow_completion_summary.md: workflows executed, key results, inferred System D properties, hypotheses generated, validation plan, next steps",
+          "output": "docs/workflow_completion_summary.md"
+        },
+        {
+          "action_id": "GC-08-A03",
+          "description": "Provide next steps to user",
+          "details": "Present to user: (1) Inferred System D properties, (2) Generated hypotheses, (3) Recommended validation experiments, (4) Invitation to iterate (refine measurements, update architecture, re-run gap closure)",
+          "output": "Next steps presented"
+        },
+        {
+          "action_id": "GC-08-A04",
+          "description": "Offer iteration",
+          "details": "Ask user: 'Would you like to: (1) Refine the experimental system model? (2) Add more measurements? (3) Update System D constraints? (4) Re-run gap closure analysis?'",
+          "output": "User decision (iterate or complete)"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Workflow marked complete",
+          "Summary generated",
+          "User informed of next steps"
+        ]
+      },
+      "next_step": null,
+      "next_workflow": null
+    }
+  ],
+  "quality_gates": [
+    {
+      "gate_id": "QG-GC-01",
+      "gate_name": "Gap Closure Quality",
+      "description": "Verify gap closure analysis produced valid, plausible results",
+      "blocking": true,
+      "criteria": [
+        "Matrices generated successfully",
+        "SVD executed without numerical issues",
+        "At least one hypothesis generated",
+        "Hypotheses are physically plausible",
+        "User/expert approval obtained",
+        "Validation plan created"
+      ],
+      "evaluated_at": "GC-05"
+    }
+  ],
+  "context_refresh_triggers": {
+    "operations_threshold": 10
+  },
+  "iteration_support": {
+    "description": "Scientific discovery is iterative - users may want to refine and re-run gap closure",
+    "iteration_actions": [
+      "Add more measurements (new System E components)",
+      "Refine System D constraints (change UNKNOWN to PARTIALLY_KNOWN)",
+      "Update interaction strengths (better calibration)",
+      "Explore alternative architectures (different system decompositions)"
+    ],
+    "re_run_workflows": [
+      "01-experimental_modeling (if adding measurements)",
+      "02-knowledge_gap_discovery (after architecture changes)",
+      "03-gap_closure_analysis (always re-run after updates)"
+    ]
+  }
+}

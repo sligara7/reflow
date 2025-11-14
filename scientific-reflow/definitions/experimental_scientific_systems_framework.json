@@ -1,0 +1,447 @@
+{
+  "metadata": {
+    "framework_id": "experimental_scientific_systems",
+    "name": "Experimental Scientific Systems (ESS) Framework",
+    "version": "1.0.0",
+    "purpose": "Model experimental systems for scientific discovery and inverse problem solving",
+    "domain": "Experimental physics, chemistry, materials science (beamlines, laboratories, field experiments)",
+    "created_for": "Beamline experimentation at synchrotron facilities (NSLS2, ALS, APS, etc.)",
+    "key_innovation": "Supports 'knowledge gap' nodes for inverse problem solving via matrix-based gap closure (SVD)"
+  },
+  "framework_philosophy": {
+    "core_principle": "Model the KNOWN experimental components (sources, manipulators, environments, detectors) to mathematically infer the UNKNOWN (sample properties, hidden mechanisms)",
+    "inverse_problem_approach": "Define System D (knowledge gap) as a node with unknown properties, then use DAG → Matrix transformation → SVD gap closure to infer System D characteristics",
+    "scientific_discovery_workflow": [
+      "1. Model experimental apparatus as system-of-systems graph",
+      "2. Identify 'knowledge gap' nodes (unknown sample properties, hidden mechanisms)",
+      "3. Transform DAG to adjacency/interaction matrices",
+      "4. Apply SVD-based gap closure (tools/reflow_gap_closure.py) to infer unknown properties",
+      "5. Generate hypotheses for experimental validation"
+    ]
+  },
+  "terminology": {
+    "node": "experimental_component",
+    "edge": "physical_interaction",
+    "architecture_file": "experimental_system_architecture.json",
+    "system_graph": "experimental_system_graph.json",
+    "node_collection": "experimental_components",
+    "edge_collection": "physical_interactions"
+  },
+  "node_schema": {
+    "primary_type": "ExperimentalComponent",
+    "id_field": "component_id",
+    "name_field": "component_name",
+    "type_field": "component_type",
+    "system_field": "system_category",
+    "functions_field": "experimental_functions",
+    "interfaces_field": "physical_interactions",
+    "dependencies_field": "causal_dependencies",
+    "properties_field": "physical_properties",
+    "knowledge_state_field": "knowledge_state"
+  },
+  "edge_schema": {
+    "primary_type": "PhysicalInteraction",
+    "id_field": "interaction_id",
+    "type_field": "interaction_type",
+    "direction_field": "causal_direction",
+    "mechanism_field": "physical_mechanism",
+    "connects_to_field": "target_components",
+    "quantitative_field": "interaction_strength",
+    "observability_field": "observability"
+  },
+  "system_categories": {
+    "description": "High-level categorization of experimental components into functional systems",
+    "categories": {
+      "system_a_source": {
+        "name": "System A - Energy/Particle Source",
+        "description": "Primary source of energy, particles, or excitation (X-rays, electrons, photons, etc.)",
+        "examples_beamline": ["Synchrotron ring", "Undulator", "Wiggler", "Bending magnet", "X-ray tube"],
+        "examples_general": ["Laser source", "Particle accelerator", "Plasma source", "Chemical reactor"],
+        "knowledge_state": "KNOWN (typically well-characterized)",
+        "typical_properties": ["Energy spectrum", "Flux", "Beam profile", "Polarization", "Temporal structure"]
+      },
+      "system_b_manipulation": {
+        "name": "System B - Mechanical/Optical Manipulation",
+        "description": "Components that manipulate, focus, steer, or condition the source",
+        "examples_beamline": ["Mirrors", "Monochromators", "Slits", "Attenuators", "Focusing optics", "Beam positioning stages"],
+        "examples_general": ["Lenses", "Apertures", "Filters", "Actuators", "Goniometers", "Translation stages"],
+        "knowledge_state": "KNOWN (engineered components with specifications)",
+        "typical_properties": ["Reflectivity", "Transmission", "Angular resolution", "Positioning accuracy", "Bandwidth"]
+      },
+      "system_c_environment": {
+        "name": "System C - Environmental Conditions",
+        "description": "Controlled environmental parameters surrounding the sample",
+        "examples_beamline": ["Vacuum chamber", "Cryostat", "Furnace", "Gas handling system", "Pressure control"],
+        "examples_general": ["Temperature control", "Atmospheric composition", "Pressure regulation", "Humidity control", "Magnetic field"],
+        "knowledge_state": "KNOWN (measured and controlled)",
+        "typical_properties": ["Temperature", "Pressure", "Gas composition", "Magnetic field strength", "Electric field"]
+      },
+      "system_d_sample": {
+        "name": "System D - Sample Properties (KNOWLEDGE GAP)",
+        "description": "The sample under investigation - the primary unknown in the experiment",
+        "examples_beamline": ["Crystal structure", "Electronic states", "Magnetic ordering", "Chemical composition", "Defects"],
+        "examples_general": ["Material properties", "Biological structure", "Chemical reactivity", "Phase transitions"],
+        "knowledge_state": "UNKNOWN (the target of scientific discovery)",
+        "typical_properties": ["Structural properties", "Electronic properties", "Optical properties", "Mechanical properties", "Chemical properties"],
+        "gap_closure_approach": "Infer from Systems A, B, C, E using matrix-based gap detection and SVD"
+      },
+      "system_e_detection": {
+        "name": "System E - Detection/Measurement",
+        "description": "Components that detect, measure, and record experimental observables",
+        "examples_beamline": ["CCD detector", "Photodiode", "Spectrometer", "Time-of-flight detector", "Imaging detector"],
+        "examples_general": ["Cameras", "Sensors", "Spectrometers", "Oscilloscopes", "Data acquisition systems"],
+        "knowledge_state": "KNOWN (calibrated instruments with response functions)",
+        "typical_properties": ["Quantum efficiency", "Energy resolution", "Spatial resolution", "Temporal resolution", "Dynamic range"]
+      }
+    }
+  },
+  "knowledge_states": {
+    "KNOWN": {
+      "description": "Component with well-characterized properties (measured, engineered, or controlled)",
+      "modeling_approach": "Define properties explicitly in architecture file",
+      "examples": ["X-ray source energy", "Mirror reflectivity curve", "Detector quantum efficiency"]
+    },
+    "UNKNOWN": {
+      "description": "Component with properties to be discovered (the scientific target)",
+      "modeling_approach": "Define as 'knowledge gap' node with placeholder properties, infer via gap closure",
+      "examples": ["Sample crystal structure", "Unknown chemical composition", "Hidden defect states"],
+      "gap_closure_methods": ["SVD-based matrix inversion", "Graph-theoretic inference", "Constraint propagation"]
+    },
+    "PARTIALLY_KNOWN": {
+      "description": "Component with some known properties and some unknowns (constrained problem)",
+      "modeling_approach": "Define known constraints, infer remaining properties via gap closure",
+      "examples": ["Known crystal symmetry, unknown lattice parameters", "Known elemental composition, unknown bonding"]
+    }
+  },
+  "interaction_types": {
+    "source_to_manipulation": {
+      "description": "Energy/particle transmission from source through optical/mechanical system",
+      "examples": ["X-ray beam through monochromator", "Laser through focusing lens"],
+      "typical_mechanisms": ["Transmission", "Reflection", "Diffraction", "Refraction"],
+      "observability": "HIGH (can be measured directly)"
+    },
+    "manipulation_to_sample": {
+      "description": "Conditioned beam incident on sample",
+      "examples": ["Focused X-rays on sample", "Collimated neutrons on target"],
+      "typical_mechanisms": ["Irradiation", "Excitation", "Scattering", "Absorption"],
+      "observability": "MEDIUM (incident beam measurable, interaction partially observable)"
+    },
+    "environment_to_sample": {
+      "description": "Environmental conditions affecting sample state",
+      "examples": ["Temperature effect on phase transition", "Pressure-induced structural change"],
+      "typical_mechanisms": ["Thermal coupling", "Mechanical stress", "Chemical reaction", "Field coupling"],
+      "observability": "MEDIUM (environmental parameters measured, sample response inferred)"
+    },
+    "sample_to_detection": {
+      "description": "Sample response measured by detectors",
+      "examples": ["Scattered X-rays", "Fluorescence emission", "Transmitted intensity"],
+      "typical_mechanisms": ["Elastic scattering", "Inelastic scattering", "Emission", "Absorption"],
+      "observability": "HIGH (directly measured - this is the experimental DATA)",
+      "critical_for_gap_closure": "This interaction encodes sample properties (System D) in measurement (System E)"
+    },
+    "manipulation_to_detection": {
+      "description": "Direct paths bypassing sample (e.g., reference measurements, alignment beams)",
+      "examples": ["Direct beam measurement", "Reference detector", "Alignment laser"],
+      "typical_mechanisms": ["Direct transmission", "Calibration signal"],
+      "observability": "HIGH (used for normalization and calibration)"
+    }
+  },
+  "best_for": [
+    "Synchrotron beamline experiments (X-ray scattering, spectroscopy, imaging)",
+    "Neutron scattering facilities",
+    "Laser-based experiments (spectroscopy, ablation, microscopy)",
+    "Electron microscopy and spectroscopy",
+    "Materials characterization (unknown samples)",
+    "Chemical analysis (unknown composition)",
+    "Biological structure determination",
+    "Inverse problems in experimental physics/chemistry"
+  ],
+  "visualization_types": [
+    "Experimental system-of-systems graph (Source → Manipulation → Sample → Detection)",
+    "Causal interaction diagrams (who affects whom)",
+    "Knowledge gap identification diagrams",
+    "Matrix representations (adjacency, interaction, causal)",
+    "SVD-based gap closure visualizations"
+  ],
+  "deployment_characteristics": {
+    "port_management_applicable": false,
+    "rationale": "Experimental systems are physical apparatus, not IT services",
+    "container_orchestration_applicable": false,
+    "deployment_types": ["experimental_facility", "laboratory_instrumentation", "field_experiment"],
+    "control_systems": ["EPICS", "Tango", "LabVIEW", "Custom DAQ"],
+    "data_systems": ["HDF5", "NeXus", "TIFF stacks", "Raw detector data"]
+  },
+  "recommended_analyses": {
+    "high_priority": {
+      "dag": {
+        "reason": "CRITICAL - Experimental systems are inherently causal (source → manipulation → sample → detection). DAG analysis verifies no circular causality.",
+        "use_cases": [
+          "Verify causal ordering (no time-travel paradoxes)",
+          "Identify topological ordering for forward simulation",
+          "Detect invalid feedback loops (physical impossibility)"
+        ],
+        "required_fields": [],
+        "expected_result": "Should be a DAG (no cycles) unless explicit feedback mechanisms exist (e.g., sample heating → temperature control → sample)"
+      },
+      "gap_detection": {
+        "reason": "CORE SCIENTIFIC DISCOVERY TOOL - Identify knowledge gaps (System D nodes with unknown properties)",
+        "use_cases": [
+          "Identify 'orphaned' nodes (System D with no incoming measured edges)",
+          "Detect under-constrained systems (insufficient measurements to infer System D)",
+          "Find missing interactions that would enable gap closure"
+        ],
+        "required_fields": ["knowledge_state", "observability"],
+        "tool": "tools/system_of_systems_graph_v2.py --detect-gaps"
+      },
+      "matrix_transformation": {
+        "reason": "ENABLES SVD GAP CLOSURE - Convert DAG to matrices for mathematical inference",
+        "use_cases": [
+          "Generate adjacency matrix A (who connects to whom)",
+          "Generate interaction matrix B (measured observables)",
+          "Generate causal matrix C (causal relationships)",
+          "Solve for unknown properties: B = C × A⁻¹ (matrix gap closure)"
+        ],
+        "required_fields": ["interaction_strength", "observability"],
+        "tool": "tools/reflow_gap_closure.py (integrates matrix_gap_detection.py + link_architectures.py)"
+      },
+      "centrality": {
+        "reason": "Identify critical components (System D - sample - should have high betweenness centrality)",
+        "use_cases": [
+          "Verify sample is the 'bottleneck' between source and detection (high betweenness)",
+          "Identify alternative paths (background signals, scatter)",
+          "Prioritize measurements for gap closure (high centrality nodes)"
+        ],
+        "required_fields": []
+      }
+    },
+    "medium_priority": {
+      "paths": {
+        "reason": "Trace signal paths from source to detector",
+        "use_cases": [
+          "Identify all source→sample→detector paths (direct measurements)",
+          "Find shortest path (primary signal)",
+          "Detect alternative paths (confounding signals, background)"
+        ],
+        "required_fields": []
+      },
+      "connectivity": {
+        "reason": "Ensure system is fully connected (no isolated components)",
+        "use_cases": [
+          "Verify all components are reachable from source",
+          "Ensure sample is observable by at least one detector",
+          "Detect isolated subsystems (instrumentation errors)"
+        ],
+        "required_fields": []
+      },
+      "reachability": {
+        "reason": "Verify System D (sample) is reachable from System A (source) and reaches System E (detection)",
+        "use_cases": [
+          "Ensure sample is illuminated by source (via System B)",
+          "Ensure sample signal reaches detector",
+          "Identify measurement blind spots"
+        ],
+        "required_fields": []
+      }
+    },
+    "optional": {
+      "flow": {
+        "reason": "Model photon flux, particle flux, or signal strength propagation",
+        "use_cases": [
+          "Estimate signal-to-noise ratio",
+          "Photon budget analysis (source → detector)",
+          "Identify flux bottlenecks (low transmission optics)"
+        ],
+        "required_fields": ["interaction_strength (flux, transmission, quantum efficiency)"]
+      },
+      "cycles": {
+        "reason": "Identify feedback loops (e.g., sample heating → temperature change → sample properties)",
+        "use_cases": [
+          "Detect thermal feedback loops",
+          "Identify control system feedback (beam stabilization)",
+          "Distinguish physical feedback from measurement artifacts"
+        ],
+        "required_fields": []
+      }
+    }
+  },
+  "gap_closure_workflow": {
+    "description": "Step-by-step workflow for using Reflow tools to infer System D (knowledge gap)",
+    "steps": [
+      {
+        "step": 1,
+        "name": "Model experimental system as graph",
+        "tool": "Manual (using templates/experimental_system_template.json)",
+        "output": "experimental_system_architecture.json",
+        "action": "Define Systems A, B, C, D (as UNKNOWN), E with interactions"
+      },
+      {
+        "step": 2,
+        "name": "Generate system-of-systems graph and detect gaps",
+        "tool": "python3 tools/system_of_systems_graph_v2.py --framework experimental_scientific_systems",
+        "output": "experimental_system_graph.json + gap report",
+        "action": "Verify System D is identified as a knowledge gap"
+      },
+      {
+        "step": 3,
+        "name": "Transform DAG to matrices",
+        "tool": "tools/reflow_gap_closure.py (internal matrix transformation)",
+        "output": "Adjacency matrix A, Measurement matrix B, Causal matrix C",
+        "action": "Automatic - called by reflow_gap_closure.py"
+      },
+      {
+        "step": 4,
+        "name": "Apply SVD-based gap closure",
+        "tool": "python3 tools/reflow_gap_closure.py experimental_system_architecture.json",
+        "output": "gap_closure_proposals.json (inferred System D properties)",
+        "action": "Analyze SVD singular values, infer System D constraints"
+      },
+      {
+        "step": 5,
+        "name": "Validate gap closure proposals",
+        "tool": "Manual (scientist reviews proposals for physical plausibility)",
+        "output": "Hypotheses for experimental validation",
+        "action": "Generate testable predictions, design follow-up experiments"
+      }
+    ]
+  },
+  "beamline_example": {
+    "facility": "NSLS2 (Brookhaven National Laboratory)",
+    "beamline": "Generic X-ray scattering beamline",
+    "systems": {
+      "system_a": {
+        "component_id": "undulator_001",
+        "component_name": "Insertion Device (Undulator)",
+        "system_category": "system_a_source",
+        "knowledge_state": "KNOWN",
+        "properties": {
+          "energy_range": "5-30 keV",
+          "flux": "1e13 photons/sec",
+          "beam_size": "100 μm × 50 μm"
+        }
+      },
+      "system_b": {
+        "components": [
+          {
+            "component_id": "dcm_001",
+            "component_name": "Double Crystal Monochromator",
+            "system_category": "system_b_manipulation",
+            "knowledge_state": "KNOWN",
+            "properties": {
+              "energy_resolution": "1e-4",
+              "reflectivity": "0.7"
+            }
+          },
+          {
+            "component_id": "kb_mirrors_001",
+            "component_name": "Kirkpatrick-Baez Focusing Mirrors",
+            "system_category": "system_b_manipulation",
+            "knowledge_state": "KNOWN",
+            "properties": {
+              "focal_spot_size": "1 μm × 1 μm",
+              "reflectivity": "0.9"
+            }
+          }
+        ]
+      },
+      "system_c": {
+        "component_id": "sample_env_001",
+        "component_name": "Cryogenic Sample Environment",
+        "system_category": "system_c_environment",
+        "knowledge_state": "KNOWN",
+        "properties": {
+          "temperature_range": "10-300 K",
+          "temperature_stability": "±0.1 K",
+          "atmosphere": "helium exchange gas"
+        }
+      },
+      "system_d": {
+        "component_id": "sample_001",
+        "component_name": "Unknown Crystalline Sample",
+        "system_category": "system_d_sample",
+        "knowledge_state": "UNKNOWN",
+        "properties": {
+          "crystal_structure": "UNKNOWN (target of discovery)",
+          "lattice_parameters": "UNKNOWN",
+          "space_group": "PARTIALLY_KNOWN (assumed centrosymmetric)",
+          "chemical_composition": "PARTIALLY_KNOWN (elemental analysis known, bonding unknown)"
+        },
+        "gap_closure_goal": "Infer crystal structure and lattice parameters from diffraction pattern"
+      },
+      "system_e": {
+        "component_id": "pilatus_001",
+        "component_name": "Pilatus 2D X-ray Detector",
+        "system_category": "system_e_detection",
+        "knowledge_state": "KNOWN",
+        "properties": {
+          "pixel_size": "172 μm",
+          "dynamic_range": "20-bit",
+          "quantum_efficiency": "0.9 at 12 keV"
+        }
+      }
+    },
+    "interactions": [
+      {
+        "from": "undulator_001",
+        "to": "dcm_001",
+        "interaction_type": "source_to_manipulation",
+        "mechanism": "X-ray transmission",
+        "observability": "HIGH"
+      },
+      {
+        "from": "dcm_001",
+        "to": "kb_mirrors_001",
+        "interaction_type": "source_to_manipulation",
+        "mechanism": "Monochromatic beam focusing",
+        "observability": "HIGH"
+      },
+      {
+        "from": "kb_mirrors_001",
+        "to": "sample_001",
+        "interaction_type": "manipulation_to_sample",
+        "mechanism": "Focused X-ray irradiation",
+        "observability": "MEDIUM"
+      },
+      {
+        "from": "sample_env_001",
+        "to": "sample_001",
+        "interaction_type": "environment_to_sample",
+        "mechanism": "Temperature control",
+        "observability": "MEDIUM"
+      },
+      {
+        "from": "sample_001",
+        "to": "pilatus_001",
+        "interaction_type": "sample_to_detection",
+        "mechanism": "X-ray diffraction (Bragg scattering)",
+        "observability": "HIGH",
+        "critical_for_gap_closure": "TRUE (diffraction pattern encodes crystal structure)"
+      }
+    ],
+    "gap_closure_strategy": "Use measured diffraction pattern (sample → detector) combined with known source/optics (A, B) and environment (C) to infer crystal structure (D) via Bragg's law and structure factor analysis. SVD gap closure identifies missing d-spacings and systematic absences that constrain space group."
+  },
+  "tools_integration": {
+    "system_of_systems_graph_v2.py": {
+      "usage": "python3 tools/system_of_systems_graph_v2.py --framework experimental_scientific_systems experimental_system_architecture.json",
+      "generates": "Experimental system graph, gap detection report, NetworkX analyses (DAG, centrality, paths)"
+    },
+    "reflow_gap_closure.py": {
+      "usage": "python3 tools/reflow_gap_closure.py experimental_system_architecture.json",
+      "generates": "Gap closure proposals (inferred System D properties), matrix analysis, SVD results"
+    },
+    "matrix_gap_detection.py": {
+      "usage": "Called internally by reflow_gap_closure.py",
+      "function": "Transforms DAG to matrices, applies SVD, solves B = C × A⁻¹ for unknowns"
+    },
+    "link_architectures.py": {
+      "usage": "Links functional architecture (WHAT we want to know) to experimental architecture (HOW we measure it)",
+      "function": "Bridges scientific questions to experimental design"
+    }
+  },
+  "key_differences_from_standard_reflow": {
+    "focus": "Scientific discovery (inferring unknowns) vs. Engineering (building systems)",
+    "knowledge_gaps": "EXPECTED and DESIRED (System D is the goal) vs. ERRORS to fix",
+    "validation": "Physical plausibility and experimental testability vs. Functional correctness",
+    "workflow": "Model → Detect gaps → Infer unknowns → Validate experimentally vs. Design → Implement → Test",
+    "success_metric": "Quality of scientific hypotheses generated vs. System implementation completeness"
+  }
+}

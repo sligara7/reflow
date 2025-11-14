@@ -1,0 +1,205 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "00-scientific_setup",
+    "workflow_name": "Scientific Reflow - Setup for Knowledge Discovery",
+    "version": "1.0.0",
+    "framework": "experimental_scientific_systems",
+    "description": "Initialize scientific discovery project for beamline/laboratory experiments with knowledge gap identification",
+    "purpose": "Set up experimental system modeling project, configure paths, define scientific goals, and prepare for gap closure analysis",
+    "estimated_duration": "10-15 minutes",
+    "prerequisites": [],
+    "next_workflow": "01-experimental_modeling"
+  },
+  "workflow_steps": [
+    {
+      "step_id": "SS-01",
+      "step_name": "Project Initialization",
+      "description": "Create project structure and configure paths for scientific discovery workflow",
+      "actions": [
+        {
+          "action_id": "SS-01-A01",
+          "description": "Confirm project paths",
+          "details": "Ask user for: (1) Scientific Reflow path (default: /path/to/reflow/scientific-reflow), (2) Experimental system path (where experimental_system_architecture.json will be created)",
+          "output": "Paths stored in working_memory.json"
+        },
+        {
+          "action_id": "SS-01-A02",
+          "description": "Create project directory structure",
+          "details": "Create: context/, specs/machine/experimental_systems/, specs/human/visualizations/, docs/",
+          "validation": "Verify all directories exist"
+        },
+        {
+          "action_id": "SS-01-A03",
+          "description": "Initialize working memory",
+          "details": "Create context/working_memory.json with paths, current workflow (00-scientific_setup), framework (experimental_scientific_systems)",
+          "output": "context/working_memory.json"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "All directories created",
+          "working_memory.json exists with correct paths"
+        ]
+      },
+      "next_step": "SS-02"
+    },
+    {
+      "step_id": "SS-02",
+      "step_name": "Define Scientific Goal",
+      "description": "Define the experimental goal and identify the knowledge gap (System D)",
+      "actions": [
+        {
+          "action_id": "SS-02-A01",
+          "description": "Ask user to describe the experiment",
+          "details": "Questions: (1) What facility/beamline are you using? (2) What are you trying to discover? (3) What sample/system is under investigation? (4) What measurements will be performed?",
+          "output": "docs/scientific_goal.md"
+        },
+        {
+          "action_id": "SS-02-A02",
+          "description": "Identify knowledge gaps",
+          "details": "Ask: What properties of System D (sample) are UNKNOWN? What do you want to infer? Examples: crystal structure, chemical composition, electronic states, phase transitions",
+          "output": "Append to docs/scientific_goal.md - section 'Knowledge Gaps'"
+        },
+        {
+          "action_id": "SS-02-A03",
+          "description": "Define success criteria",
+          "details": "What would constitute successful gap closure? Examples: determine crystal space group, identify chemical species, measure band gap",
+          "output": "Append to docs/scientific_goal.md - section 'Success Criteria'"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Scientific goal documented",
+          "Knowledge gaps explicitly identified"
+        ]
+      },
+      "next_step": "SS-03"
+    },
+    {
+      "step_id": "SS-03",
+      "step_name": "System Categorization Planning",
+      "description": "Plan how to categorize experimental components into Systems A, B, C, D, E",
+      "actions": [
+        {
+          "action_id": "SS-03-A01",
+          "description": "Introduce ESS framework to user",
+          "details": "Explain the 5-system model: A (Source), B (Manipulation), C (Environment), D (Sample - UNKNOWN), E (Detection). Show beamline example from framework definition.",
+          "output": "User understands ESS framework"
+        },
+        {
+          "action_id": "SS-03-A02",
+          "description": "Ask user to list experimental components",
+          "details": "Ask: What are all the physical components in your experiment? (sources, optics, sample stages, detectors, environmental controls, etc.)",
+          "output": "docs/experimental_components_list.md"
+        },
+        {
+          "action_id": "SS-03-A03",
+          "description": "Pre-categorize components (LLM suggestion)",
+          "details": "LLM suggests categorization into Systems A, B, C, D, E based on user's component list. User reviews and approves.",
+          "output": "docs/system_categorization_plan.md",
+          "validation": "User approval required (BLOCKING)"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "All experimental components listed",
+          "System categorization plan approved by user",
+          "System D (knowledge gap) clearly identified"
+        ]
+      },
+      "next_step": "SS-04"
+    },
+    {
+      "step_id": "SS-04",
+      "step_name": "Tool Configuration",
+      "description": "Configure Scientific Reflow tools for gap closure analysis",
+      "actions": [
+        {
+          "action_id": "SS-04-A01",
+          "description": "Verify tool availability",
+          "details": "Check that required tools exist: system_of_systems_graph_v2.py, reflow_gap_closure.py, matrix_gap_detection.py, link_architectures.py",
+          "validation": "All tools found (BLOCKING)"
+        },
+        {
+          "action_id": "SS-04-A02",
+          "description": "Verify Python dependencies",
+          "details": "Check networkx >= 3.0, numpy, scipy (for SVD). If missing, prompt user to install: pip install networkx numpy scipy OR pixi install",
+          "validation": "Dependencies installed"
+        },
+        {
+          "action_id": "SS-04-A03",
+          "description": "Store tool paths in working memory",
+          "details": "Update context/working_memory.json with tool paths: tools_path, scientific_reflow_root, reflow_root",
+          "output": "Updated working_memory.json"
+        }
+      ],
+      "validation": {
+        "blocking": true,
+        "criteria": [
+          "All required tools available",
+          "Python dependencies installed",
+          "Tool paths configured in working_memory.json"
+        ]
+      },
+      "next_step": "SS-05"
+    },
+    {
+      "step_id": "SS-05",
+      "step_name": "Workflow Completion",
+      "description": "Finalize setup and prepare for experimental modeling",
+      "actions": [
+        {
+          "action_id": "SS-05-A01",
+          "description": "Update working memory for next workflow",
+          "details": "Set current_workflow = '01-experimental_modeling', current_step = 'EM-01', operations_since_refresh = 0",
+          "output": "Updated context/working_memory.json"
+        },
+        {
+          "action_id": "SS-05-A02",
+          "description": "Generate setup summary",
+          "details": "Create docs/setup_summary.md with: project paths, scientific goal, knowledge gaps, system categorization plan, tool configuration",
+          "output": "docs/setup_summary.md"
+        },
+        {
+          "action_id": "SS-05-A03",
+          "description": "Prompt user to proceed",
+          "details": "Ask: 'Setup complete! Ready to model your experimental system? Proceed to workflow 01-experimental_modeling.'",
+          "output": "User confirmation"
+        }
+      ],
+      "validation": {
+        "blocking": false,
+        "criteria": [
+          "Setup summary generated",
+          "Working memory updated for next workflow"
+        ]
+      },
+      "next_step": null,
+      "next_workflow": "01-experimental_modeling"
+    }
+  ],
+  "quality_gates": [
+    {
+      "gate_id": "QG-SS-01",
+      "gate_name": "Setup Validation",
+      "description": "Verify all setup requirements met",
+      "blocking": true,
+      "criteria": [
+        "Project structure created",
+        "Working memory initialized",
+        "Scientific goal documented",
+        "Knowledge gaps identified",
+        "System categorization plan approved",
+        "Tools configured"
+      ],
+      "evaluated_at": "SS-05"
+    }
+  ],
+  "context_refresh_triggers": {
+    "operations_threshold": 10,
+    "description": "Refresh context every 10 operations to prevent drift"
+  }
+}

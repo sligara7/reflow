@@ -1,0 +1,47 @@
+{
+  "component_id": "<unique_id>",
+  "component_name": "<descriptive_name>",
+  "system_category": "<system_a_source | system_b_manipulation | system_c_environment | system_d_sample | system_e_detection>",
+  "knowledge_state": "<KNOWN | UNKNOWN | PARTIALLY_KNOWN>",
+  "description": "<detailed description>",
+  "physical_properties": {
+    "_comment": "Properties depend on system category - see examples below",
+    "_system_a_example": {
+      "energy_range": "5-30 keV",
+      "flux": "1e13 photons/sec",
+      "beam_size": "100 μm × 50 μm"
+    },
+    "_system_b_example": {
+      "reflectivity": "0.7",
+      "energy_resolution": "1e-4"
+    },
+    "_system_c_example": {
+      "temperature_range": "10-300 K",
+      "pressure_range": "1e-6 to 1 atm"
+    },
+    "_system_d_example": {
+      "crystal_structure": "UNKNOWN",
+      "lattice_parameters": "UNKNOWN"
+    },
+    "_system_e_example": {
+      "quantum_efficiency": "0.9",
+      "energy_resolution": "150 eV"
+    }
+  },
+  "experimental_functions": [
+    "<list of functions>"
+  ],
+  "physical_interactions": [
+    "<list of interaction_ids this component participates in>"
+  ],
+  "causal_dependencies": [
+    "<list of component_ids this component depends on>"
+  ],
+  "metadata": {
+    "manufacturer": "<if applicable>",
+    "model": "<if applicable>",
+    "calibration_date": "<if applicable>",
+    "documentation": "<link to specs/manual>"
+  },
+  "notes": "<any additional notes>"
+}
