@@ -1,0 +1,312 @@
+{
+  "metadata": {
+    "validation_case_name": "NiPS3 Hund's Exciton RIXS Study",
+    "purpose": "Validate Scientific Reflow against published results from NSLS2 SIX beamline",
+    "reference_paper": {
+      "title": "Magnetically propagating Hund's exciton in van der Waals antiferromagnet NiPS3",
+      "authors": "He, W., Shen, Y., Wohlfeld, K., Sears, J., Li, J., Pelliciari, J., et al.",
+      "journal": "Nature Communications",
+      "volume": "15",
+      "pages": "3496",
+      "year": "2024",
+      "doi": "10.1038/s41467-024-47852-x"
+    },
+    "facility": "NSLS2",
+    "beamline": "SIX (2-ID) - Soft Inelastic X-ray Scattering",
+    "technique": "Resonant Inelastic X-ray Scattering (RIXS)",
+    "validation_approach": "Model experimental setup (Systems A-E), run gap closure, compare inferred System D properties to published results"
+  },
+  "validation_strategy": {
+    "description": "We will treat the NiPS3 sample as having PARTIALLY_KNOWN properties (crystal structure known, electronic excitations UNKNOWN), then use gap closure to see if we can infer the exciton energy and dispersion relation from the RIXS measurements.",
+    "known_beforehand": [
+      "Crystal structure: Monoclinic C2/m",
+      "Lattice parameters: a=5.812 Å, b=10.07 Å, c=6.632 Å, β=106.98°",
+      "Magnetic order: Antiferromagnetic, TN=155 K",
+      "Electronic structure: Charge-transfer insulator, bandgap ~1.6 eV",
+      "Chemical composition: NiPS3"
+    ],
+    "discovered_by_experiment": [
+      "Hund's exciton energy: 1.47 eV (energy loss)",
+      "Exciton resonance: 853.4 eV (incident energy)",
+      "Exciton dispersion: propagates like double-magnon",
+      "Dominant interaction: Hund's exchange (~1.4 eV energy offset from double-magnon)"
+    ],
+    "gap_closure_target": "Can we infer the exciton energy (1.47 eV) and Hund's exchange interaction from the RIXS spectral data?",
+    "success_criteria": "Gap closure should propose exciton energy within ±10% of published value (1.47 eV ± 0.15 eV = 1.32-1.62 eV range)"
+  },
+  "experimental_components": [
+    {
+      "component_id": "undulator_six",
+      "component_name": "NSLS2 EPU49 Undulator (SIX Beamline Source)",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "2.0m long Elliptically Polarizing Undulator (EPU49) for SIX beamline at NSLS2",
+      "physical_properties": {
+        "undulator_type": "EPU49 (Elliptically Polarizing Undulator)",
+        "period": "49 mm",
+        "length": "2.0 m",
+        "minimum_gap": "11.5 mm",
+        "energy_range": "400-1600 eV (primary), 180-2000 eV (extended)",
+        "flux": "~10^13 photons/sec (typical for NSLS2 3 GeV ring at 400 mA)",
+        "beam_brilliance": "ultrabright (NSLS2 specification: >10^21 ph/s/mm^2/mrad^2/0.1%BW)",
+        "polarization": "elliptical (linear π-polarized for this experiment)",
+        "source_size": "~10 μm H × ~5 μm V (typical NSLS2 source size)",
+        "ring_energy": "3 GeV",
+        "ring_current": "400 mA"
+      },
+      "experimental_functions": [
+        "Generate soft X-ray photons",
+        "Provide tunable incident energy (853.4 eV for Ni L-edge)"
+      ],
+      "physical_interactions": ["int_001_source_to_mono"],
+      "notes": "NSLS2 ring operated at 3 GeV with 400 mA current"
+    },
+    {
+      "component_id": "monochromator_six",
+      "component_name": "SIX Beamline Monochromator",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "High-resolution monochromator for energy selection",
+      "physical_properties": {
+        "resolving_power": "17000 (medium-high) to 35000 (high)",
+        "energy_resolution": "~50 meV at 853 eV (E/ΔE = 17000)",
+        "efficiency": "~0.3-0.5 (typical soft X-ray monochromator)",
+        "tuning_range": "400-1600 eV"
+      },
+      "experimental_functions": [
+        "Select incident photon energy (853.4 eV - Ni L3 edge)",
+        "Reduce energy bandwidth for high-resolution RIXS"
+      ],
+      "physical_interactions": ["int_001_source_to_mono", "int_002_mono_to_sample"]
+    },
+    {
+      "component_id": "focusing_optics_six",
+      "component_name": "Focusing Mirrors/Optics",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "Kirkpatrick-Baez mirrors or similar focusing optics",
+      "physical_properties": {
+        "focal_spot_size": "~10-50 μm (typical for soft X-ray)",
+        "reflectivity": "~0.7-0.9 at 853 eV",
+        "angular_acceptance": "varies"
+      },
+      "experimental_functions": [
+        "Focus X-rays onto sample",
+        "Increase photon density at sample position"
+      ],
+      "physical_interactions": ["int_002_mono_to_sample"]
+    },
+    {
+      "component_id": "cryostat_six",
+      "component_name": "Cryogenic Sample Environment",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "Closed-cycle cryostat for low-temperature measurements",
+      "physical_properties": {
+        "temperature": "40 K (measurement temperature)",
+        "temperature_range": "10-300 K (typical cryostat range)",
+        "stability": "±0.5 K (estimate)",
+        "atmosphere": "vacuum (UHV chamber)"
+      },
+      "experimental_functions": [
+        "Cool sample below TN=155 K to study antiferromagnetic state",
+        "Stabilize sample temperature during measurement"
+      ],
+      "physical_interactions": ["int_003_env_to_sample"],
+      "notes": "Temperature 40 K << TN=155 K ensures antiferromagnetic order"
+    },
+    {
+      "component_id": "sample_nips3",
+      "component_name": "NiPS3 Single Crystal Sample",
+      "system_category": "system_d_sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "description": "Van der Waals antiferromagnetic NiPS3 crystal - electronic excitations UNKNOWN",
+      "physical_properties": {
+        "_comment": "KNOWN properties (from prior characterization)",
+        "crystal_structure": "KNOWN: Monoclinic, space group C2/m",
+        "lattice_parameters": "KNOWN: a=5.812 Å, b=10.07 Å, c=6.632 Å, β=106.98°",
+        "chemical_composition": "KNOWN: NiPS3 (nickel phosphorus trisulfide)",
+        "magnetic_order": "KNOWN: Antiferromagnetic zigzag chains, TN=155 K",
+        "bandgap": "KNOWN: ~1.6 eV (optical measurements)",
+        "electronic_structure": "KNOWN: Charge-transfer insulator",
+        "_comment_unknown": "UNKNOWN properties (target of RIXS discovery)",
+        "exciton_energy": "UNKNOWN (GOAL: discover from RIXS)",
+        "exciton_dispersion": "UNKNOWN (GOAL: map k-space dependence)",
+        "hund_exchange_strength": "UNKNOWN (GOAL: infer from exciton-magnon offset)",
+        "exciton_wavefunction": "UNKNOWN",
+        "exciton_lifetime": "UNKNOWN"
+      },
+      "gap_closure_goal": "Infer exciton energy and Hund's exchange interaction from RIXS spectral data (sample→detector measurements)",
+      "constraints": {
+        "exciton_must_be_positive": "Energy loss must be > 0",
+        "exciton_below_bandgap": "Exciton energy < 1.6 eV (below optical gap)",
+        "temperature_constraint": "T=40 K < TN=155 K (antiferromagnetic state)",
+        "resonance_condition": "Maximum exciton intensity at Ni L3 edge (~853 eV)"
+      },
+      "experimental_functions": [
+        "Absorb incident X-rays (853.4 eV)",
+        "Generate electronic excitations (excitons, magnons)",
+        "Scatter X-rays inelastically (RIXS process)"
+      ],
+      "physical_interactions": [
+        "int_002_mono_to_sample",
+        "int_003_env_to_sample",
+        "int_004_sample_to_spectrometer"
+      ],
+      "notes": "THIS IS SYSTEM D - THE KNOWLEDGE GAP. Exciton properties are UNKNOWN and will be inferred from RIXS measurements."
+    },
+    {
+      "component_id": "rixs_spectrometer_six",
+      "component_name": "Centurion RIXS Spectrometer",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "Ultra-high-resolution soft X-ray RIXS spectrometer at SIX beamline",
+      "physical_properties": {
+        "spectrometer_type": "Hettrick-Underwood design with plane mirror",
+        "resolving_power": "100000 at 1000 eV (design), ~60000 at 853 eV (operational estimate)",
+        "energy_resolution": "14 meV at 1000 eV (total), ~17 meV at 853 eV (estimate)",
+        "angular_range": "38° to 150° (2θ scattering angle)",
+        "detector_type": "Electron-multiplying CCD (EMCCD)",
+        "detector_mode": "Photon counting with charge centroiding",
+        "spatial_resolution": "<5 μm FWHM",
+        "detector_noise": "<1 electron per pixel RMS",
+        "quantum_efficiency": "~0.5-0.8 at 853 eV (typical CCD QE)",
+        "dynamic_range": ">10^4 (photon counting mode)"
+      },
+      "experimental_functions": [
+        "Measure inelastically scattered X-ray energy (Ef = Ei - ΔE)",
+        "Resolve energy loss ΔE with ~17 meV resolution",
+        "Detect scattered X-rays at various angles (k-space mapping)",
+        "Record RIXS spectra as function of energy loss"
+      ],
+      "physical_interactions": ["int_004_sample_to_spectrometer"],
+      "measured_observables": {
+        "primary_observable": "RIXS intensity I(Ei, ΔE, k) as function of energy loss ΔE",
+        "energy_loss_range": "0 to ~3 eV",
+        "incident_energy": "853.4 eV (Ni L3 edge - exciton resonance)",
+        "scattering_geometry": "Various 2θ angles for k-space mapping"
+      },
+      "notes": "THIS IS THE CRITICAL MEASUREMENT - RIXS spectra encode exciton energy and dispersion"
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001_source_to_mono",
+      "interaction_name": "Undulator to Monochromator",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "undulator_six",
+      "to_component": "monochromator_six",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray propagation and diffraction (monochromator grating)",
+      "interaction_strength": "Flux = 10^13 ph/s → ~3-5×10^12 ph/s after monochromator (efficiency ~0.3-0.5)",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Undulator generates broad-spectrum soft X-rays, monochromator selects 853.4 eV"
+    },
+    {
+      "interaction_id": "int_002_mono_to_sample",
+      "interaction_name": "Monochromated X-rays to Sample",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "monochromator_six",
+      "to_component": "sample_nips3",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray absorption and RIXS excitation (Ni L3 edge resonance)",
+      "interaction_strength": "Flux at sample ~10^11-10^12 ph/s (after focusing losses)",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "853.4 eV X-rays excite Ni 2p → 3d transitions, creating excitons and other excitations"
+    },
+    {
+      "interaction_id": "int_003_env_to_sample",
+      "interaction_name": "Cryostat to Sample Temperature",
+      "interaction_type": "environment_to_sample",
+      "from_component": "cryostat_six",
+      "to_component": "sample_nips3",
+      "causal_direction": "forward",
+      "physical_mechanism": "Thermal coupling (conduction)",
+      "interaction_strength": "Thermal conductivity sets sample at T=40 K",
+      "observability": "MEDIUM",
+      "measured": true,
+      "description": "Cryostat cools sample to 40 K, ensuring antiferromagnetic order (TN=155 K)"
+    },
+    {
+      "interaction_id": "int_004_sample_to_spectrometer",
+      "interaction_name": "Sample RIXS Scattering to Spectrometer",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_nips3",
+      "to_component": "rixs_spectrometer_six",
+      "causal_direction": "forward",
+      "physical_mechanism": "Resonant inelastic X-ray scattering (RIXS) - Ni 2p3d excitations with energy loss",
+      "interaction_strength": "RIXS cross-section ~10^-26 cm^2 (typical), scattered intensity I(ΔE)",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "measured_data": {
+        "exciton_peak_position": "ΔE = 1.47 eV (energy loss)",
+        "exciton_peak_intensity": "Maximum at Ei=853.4 eV (resonance condition)",
+        "exciton_dispersion": "Maps as function of scattering angle (k-space)",
+        "exciton_magnon_offset": "~1.4 eV (exciton appears 1.4 eV above double-magnon energy)",
+        "spectral_width": "~100-200 meV FWHM (exciton lifetime broadening + instrumental resolution)"
+      },
+      "description": "THIS IS THE CRITICAL DATA - RIXS measures exciton energy loss of 1.47 eV. This encodes System D electronic properties."
+    }
+  ],
+  "published_results": {
+    "system_d_discovered_properties": {
+      "exciton_energy_loss": {
+        "value": "1.47 eV",
+        "uncertainty": "±0.02 eV (estimate from figure resolution)",
+        "interpretation": "Hund's exciton - electronic excitation where electron hops to neighboring Ni site with opposite spin"
+      },
+      "exciton_resonance_energy": {
+        "value": "853.4 eV",
+        "interpretation": "Ni L3 edge (2p3/2 → 3d transition)"
+      },
+      "hund_exchange_interaction": {
+        "value": "~1.4 eV",
+        "interpretation": "Energy offset between exciton and double-magnon, indicates Hund's exchange dominates exciton formation"
+      },
+      "exciton_dispersion": {
+        "description": "Exciton disperses through crystal with bandwidth ~100-200 meV",
+        "interpretation": "Propagates like double-magnon (magnetically-driven hopping)"
+      },
+      "measurement_temperature": "40 K",
+      "polarization_dependence": "π-polarized incident X-rays used"
+    }
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_nips3"],
+    "unknown_properties": [
+      "exciton_energy",
+      "hund_exchange_strength",
+      "exciton_dispersion"
+    ],
+    "measured_observables": [
+      "RIXS intensity I(ΔE) vs energy loss - shows peak at ΔE=1.47 eV"
+    ],
+    "matrix_formulation": "Infer System D (exciton energy) from measured D→E interaction (RIXS spectrum) given known A, B, C, E",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "expected_outcome": "Gap closure should propose exciton energy ~1.47 eV and Hund's exchange ~1.4 eV"
+  },
+  "validation_metrics": {
+    "success_criteria": {
+      "exciton_energy_match": "Gap closure proposes exciton energy within 1.32-1.62 eV (±10% of 1.47 eV)",
+      "hund_exchange_match": "Gap closure proposes Hund's exchange within 1.2-1.6 eV (±15% of 1.4 eV)",
+      "confidence_level": "SVD condition number < 100 (well-conditioned problem)",
+      "physical_plausibility": "Exciton energy < bandgap (1.6 eV) and > 0"
+    },
+    "comparison_to_published": {
+      "published_exciton_energy": "1.47 eV",
+      "scientific_reflow_inferred_exciton_energy": "TBD (after running workflow)",
+      "percent_error": "TBD",
+      "verdict": "TBD (PASS if within ±10%)"
+    }
+  },
+  "notes": {
+    "validation_approach": "This is a RIGOROUS TEST of Scientific Reflow. We are using real published data from a high-impact Nature Communications paper. If gap closure can successfully infer the exciton energy (~1.47 eV) from the experimental setup, it validates the framework.",
+    "challenge": "RIXS is a complex technique - the D→E interaction involves quantum mechanics (2p→3d transitions, exciton formation, inelastic scattering). The gap closure must capture that the 1.47 eV energy loss encodes System D electronic properties.",
+    "realistic_expectations": "We may not perfectly match 1.47 eV, but gap closure should: (1) Identify an excitation in the ~1-2 eV range, (2) Recognize it's related to electronic structure, (3) Provide a testable hypothesis. Even qualitative success (right order of magnitude) validates the approach.",
+    "next_steps_after_this_test": "If validation succeeds, we can refine Scientific Reflow with domain-specific physics (RIXS theory, exciton models). If it fails, we identify gaps in the framework (e.g., need better coupling between measurement matrix B and physical interactions)."
+  }
+}
