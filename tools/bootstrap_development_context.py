@@ -249,17 +249,25 @@ None identified at bootstrap
 
 def main():
     parser = argparse.ArgumentParser(description="Bootstrap development context for service development workflow")
-    parser.add_argument("system_name", help="Name of the system being developed")
-    parser.add_argument("--system-path", default=None, 
-                       help="Path to system directory (default: systems/<system_name>)")
+    parser.add_argument("system_name", help="Name of the system being developed, or path to system directory")
+    parser.add_argument("--system-path", default=None,
+                       help="Path to system directory (default: systems/<system_name>, or uses system_name if it's a path)")
     parser.add_argument("--force", action="store_true",
                        help="Overwrite existing files if they exist")
-    
+
     args = parser.parse_args()
-    
+
+    # Determine system path and name
+    # If system_name looks like a path (contains / or is absolute), use it as the path
     if args.system_path is None:
-        # Default to systems/<system_name> relative to current directory
-        args.system_path = f"systems/{args.system_name}"
+        if "/" in args.system_name or Path(args.system_name).is_absolute():
+            # system_name is actually a path
+            args.system_path = args.system_name
+            # Extract actual system name from path
+            args.system_name = Path(args.system_name).name
+        else:
+            # system_name is just a name, create default path
+            args.system_path = f"systems/{args.system_name}"
 
     # Security: Validate system path (v3.4.0 fix - SV-01)
     # Allow creating new directory, but validate it's not a traversal path
