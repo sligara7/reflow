@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "validation_case_name": "Solid-State Battery Filament Formation - In-Situ Tomography",
+    "purpose": "Validate HIGH-FIDELITY System E modeling with full temporal and positional complexity",
+    "reference_paper": {
+      "title": "Filament-Induced Failure in Lithium-Reservoir-Free Solid-State Batteries",
+      "authors": "Se Hwan Park et al.",
+      "journal": "ACS Energy Letters",
+      "volume": "10",
+      "issue": "3",
+      "pages": "1174-1182",
+      "year": "2025",
+      "doi": "10.1021/acsenergylett.5c00004",
+      "technique": "In-situ 3D X-ray computed tomography (XCT) during battery cycling",
+      "key_result": "X-ray tomography reveals filament growth faster at high local current density regions"
+    },
+    "facility": "NSLS2",
+    "beamline": "HEX (27-ID) - High Energy Engineering X-ray Scattering",
+    "technique": "In-Situ X-ray Computed Tomography (XCT)",
+    "validation_approach": "HIGH-FIDELITY System E - Explicitly model temporal and positional acquisition complexity",
+    "system_e_focus": "This case demonstrates full System E complexity: tomographic sample rotation (positional) + time-resolved in-situ cycling (temporal)"
+  },
+  "system_counts": {
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "D": 1,
+    "E": 1,
+    "F": 1
+  },
+  "systems_present": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "system_f_analysis": {
+    "present": true,
+    "component_id": "tomography_reconstruction_pipeline_hex",
+    "component_name": "3D Tomographic Reconstruction and Analysis Pipeline",
+    "processing_type": "unknown",
+    "is_pass_through": false,
+    "is_active": true,
+    "configuration": {}
+  },
+  "knowledge_gaps": [
+    {
+      "component_id": "sample_solid_state_battery",
+      "component_name": "Solid-State Battery with Lithium Filament Formation",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "unknown_properties": [
+        "_comment_unknown",
+        "filament_morphology_3d",
+        "filament_growth_rate",
+        "crack_initiation_sites",
+        "local_current_density_distribution",
+        "pressure_dependent_failure_pathway",
+        "time_to_failure"
+      ],
+      "gap_closure_goal": "Infer filament formation mechanisms and pressure-dependent failure pathways from 3D tomography time series collected during in-situ battery cycling"
+    }
+  ],
+  "interaction_analysis": {
+    "total_interactions": 5,
+    "interaction_map": {
+      "superconducting_wiggler_hex": [
+        "high_energy_optics_hex"
+      ],
+      "high_energy_optics_hex": [
+        "sample_solid_state_battery"
+      ],
+      "in_situ_battery_cell_hex": [
+        "sample_solid_state_battery"
+      ],
+      "sample_solid_state_battery": [
+        "fast_area_detector_hex_with_rotation"
+      ],
+      "fast_area_detector_hex_with_rotation": [
+        "tomography_reconstruction_pipeline_hex"
+      ]
+    },
+    "critical_d_to_e": true,
+    "has_e_to_f": true
+  },
+  "validation_status": {
+    "all_systems_present": true,
+    "system_f_present": true,
+    "knowledge_gaps_identified": true,
+    "critical_interactions_present": true
+  },
+  "overall_valid": true,
+  "validation_message": "PASS - Systems A-F architecture valid"
+}
