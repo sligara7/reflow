@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "validation_case_name": "Cellulose Nanocrystal Self-Assembly XPCS Study",
+    "purpose": "Validate Scientific Reflow consistency on CHX beamline (DEPTH TEST) - same beamline, different publication",
+    "reference_paper": {
+      "title": "Probing the Self-Assembly dynamics of cellulose nanocrystals by X-ray photon correlation spectroscopy",
+      "authors": "Jiajun Tian et al.",
+      "journal": "Journal of Colloid and Interface Science",
+      "volume": "683",
+      "pages": "1077-1086",
+      "year": "2025",
+      "doi": "10.1016/j.jcis.2024.12.234",
+      "technique": "XPCS tracking colloidal self-assembly dynamics",
+      "awards": "1st Place Poster Competition, 2025 NSLS-II & CFN Users' Meeting"
+    },
+    "facility": "NSLS2",
+    "beamline": "CHX (11-ID) - Coherent Hard X-ray Scattering",
+    "technique": "X-ray Photon Correlation Spectroscopy (XPCS)",
+    "validation_approach": "DEPTH TEST - Validate process consistency on same beamline with different sample system",
+    "comparison_to_previous": "First CHX validation used ferroelectric domain switching. This tests CNC colloidal self-assembly."
+  },
+  "system_counts": {
+    "A": 1,
+    "B": 1,
+    "C": 1,
+    "D": 1,
+    "E": 1,
+    "F": 1
+  },
+  "systems_present": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "system_f_analysis": {
+    "present": true,
+    "component_id": "xpcs_analysis_pipeline_chx_cnc",
+    "component_name": "XPCS Correlation Function Analysis Pipeline",
+    "processing_type": "unknown",
+    "is_pass_through": false,
+    "is_active": true,
+    "configuration": {}
+  },
+  "knowledge_gaps": [
+    {
+      "component_id": "sample_cnc_suspension",
+      "component_name": "Cellulose Nanocrystal Suspension in Propylene Glycol",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "unknown_properties": [
+        "_comment_unknown",
+        "self_assembly_timescale",
+        "brownian_diffusion_rates",
+        "dynamic_stages",
+        "diffusion_slowdown_magnitude",
+        "deviation_from_ideal_rods",
+        "critical_volume_fractions"
+      ],
+      "gap_closure_goal": "Infer self-assembly dynamics timescales and diffusion rates from XPCS correlation function g2(q,\u03c4) during isotropic \u2192 liquid crystal phase transition"
+    }
+  ],
+  "interaction_analysis": {
+    "total_interactions": 5,
+    "interaction_map": {
+      "coherent_undulator_chx_cnc": [
+        "coherence_preserving_optics_chx_cnc"
+      ],
+      "coherence_preserving_optics_chx_cnc": [
+        "sample_cnc_suspension"
+      ],
+      "liquid_cell_chx_cnc": [
+        "sample_cnc_suspension"
+      ],
+      "sample_cnc_suspension": [
+        "fast_area_detector_chx_cnc"
+      ],
+      "fast_area_detector_chx_cnc": [
+        "xpcs_analysis_pipeline_chx_cnc"
+      ]
+    },
+    "critical_d_to_e": true,
+    "has_e_to_f": true
+  },
+  "validation_status": {
+    "all_systems_present": true,
+    "system_f_present": true,
+    "knowledge_gaps_identified": true,
+    "critical_interactions_present": true
+  },
+  "overall_valid": true,
+  "validation_message": "PASS - Systems A-F architecture valid"
+}
