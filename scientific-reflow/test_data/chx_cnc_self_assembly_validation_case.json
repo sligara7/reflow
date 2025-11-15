@@ -1,0 +1,414 @@
+{
+  "metadata": {
+    "validation_case_name": "Cellulose Nanocrystal Self-Assembly XPCS Study",
+    "purpose": "Validate Scientific Reflow consistency on CHX beamline (DEPTH TEST) - same beamline, different publication",
+    "reference_paper": {
+      "title": "Probing the Self-Assembly dynamics of cellulose nanocrystals by X-ray photon correlation spectroscopy",
+      "authors": "Jiajun Tian et al.",
+      "journal": "Journal of Colloid and Interface Science",
+      "volume": "683",
+      "pages": "1077-1086",
+      "year": "2025",
+      "doi": "10.1016/j.jcis.2024.12.234",
+      "technique": "XPCS tracking colloidal self-assembly dynamics",
+      "awards": "1st Place Poster Competition, 2025 NSLS-II & CFN Users' Meeting"
+    },
+    "facility": "NSLS2",
+    "beamline": "CHX (11-ID) - Coherent Hard X-ray Scattering",
+    "technique": "X-ray Photon Correlation Spectroscopy (XPCS)",
+    "validation_approach": "DEPTH TEST - Validate process consistency on same beamline with different sample system",
+    "comparison_to_previous": "First CHX validation used ferroelectric domain switching. This tests CNC colloidal self-assembly."
+  },
+  "validation_strategy": {
+    "description": "We will treat cellulose nanocrystals as having PARTIALLY_KNOWN properties (crystal structure and particle size known, self-assembly dynamics and phase transition timescales UNKNOWN), then use gap closure to see if we can infer the self-assembly timescale and diffusion dynamics from XPCS correlation function g2(q,τ).",
+    "known_beforehand": [
+      "Crystal structure: Cellulose I-beta (monoclinic)",
+      "Particle dimensions: Rod-like, length ~100-200 nm, width ~5-20 nm",
+      "Aspect ratio: ~10-20 (anisotropic rods)",
+      "Surface chemistry: Anionic (sulfate groups from acid hydrolysis)",
+      "Solvent: Propylene glycol (PG) and water mixtures",
+      "Volume fractions: Range spanning isotropic → biphasic → liquid crystal phases",
+      "Expected phases: Isotropic liquid → Biphasic (coexistence) → Cholesteric liquid crystal"
+    ],
+    "discovered_by_experiment": [
+      "Self-assembly timescale during phase transitions",
+      "Brownian diffusion rates in each phase",
+      "Magnitude of diffusion slowdown (orders of magnitude)",
+      "Number of dynamic stages (stepped decay pattern)",
+      "Deviation from ideal Brownian rod behavior",
+      "Critical volume fractions for phase transitions"
+    ],
+    "gap_closure_target": "Can we infer the self-assembly dynamics timescales and diffusion rate changes from the XPCS correlation function g2(q,τ)?",
+    "success_criteria": "Gap closure should propose: (1) Multi-stage dynamics (3 stages), (2) 4 orders of magnitude drop in diffusion rates, (3) Diffusion 1000x slower than ideal Brownian rods, (4) Phase-dependent dynamics"
+  },
+  "experimental_components": [
+    {
+      "component_id": "coherent_undulator_chx_cnc",
+      "component_name": "NSLS2 Coherent Undulator (CHX Source)",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "High-coherence undulator optimized for XPCS measurements at CHX beamline",
+      "physical_properties": {
+        "undulator_type": "In-vacuum undulator (IVU)",
+        "energy_range": "6-15 keV (hard X-ray)",
+        "coherent_flux": "~10^11-10^12 coherent photons/sec",
+        "transverse_coherence_length": "~10-50 μm (lateral coherence)",
+        "longitudinal_coherence_length": "~100 nm (energy resolution ΔE/E ~ 10^-4)",
+        "beam_brilliance": "Ultrabright coherent source (NSLS2 specification)",
+        "typical_energy": "8.9 keV (for colloidal XPCS)",
+        "ring_energy": "3 GeV",
+        "ring_current": "400 mA"
+      },
+      "experimental_functions": [
+        "Generate coherent hard X-ray beam for XPCS",
+        "Provide spatial coherence for speckle pattern formation from colloidal suspension",
+        "Enable time-resolved dynamics measurements of self-assembly"
+      ],
+      "physical_interactions": ["int_001_source_to_optics"],
+      "notes": "COHERENCE IS CRITICAL - High transverse coherence enables sharp speckle patterns from CNC suspension"
+    },
+    {
+      "component_id": "coherence_preserving_optics_chx_cnc",
+      "component_name": "CHX Coherence-Preserving Optics",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "Specialized optics designed to preserve wavefront coherence for XPCS",
+      "physical_properties": {
+        "optics_type": "Refractive/reflective optics with minimal aberrations",
+        "energy_selection": "Double-crystal monochromator (Si(111), ΔE/E ~ 10^-4)",
+        "focusing": "Kirkpatrick-Baez mirrors or beryllium compound refractive lenses (CRLs)",
+        "wavefront_preservation": "Minimal phase distortions (critical for speckle quality)",
+        "coherence_degradation": "<10% (high-quality optics)",
+        "beam_size_at_sample": "~10-50 μm (matched to coherence length)",
+        "working_distance": "Compatible with liquid cell geometry"
+      },
+      "experimental_functions": [
+        "Select X-ray energy (8.9 keV for CNC suspensions)",
+        "Preserve wavefront coherence for speckle formation",
+        "Focus beam onto sample without introducing aberrations"
+      ],
+      "physical_interactions": ["int_001_source_to_optics", "int_002_optics_to_sample"],
+      "notes": "Coherence preservation is CRITICAL - Any wavefront distortion degrades speckle contrast and correlation analysis"
+    },
+    {
+      "component_id": "liquid_cell_chx_cnc",
+      "component_name": "Temperature-Controlled Liquid Cell",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "Controlled environment for CNC suspension during XPCS measurements",
+      "physical_properties": {
+        "cell_type": "Kapton window liquid cell with temperature control",
+        "window_material": "Kapton film (~25 μm, X-ray transparent)",
+        "path_length": "~0.5-2 mm (optimized for transmission through suspension)",
+        "temperature_range": "Room temperature (20-25°C, controlled)",
+        "temperature_stability": "±0.1°C (minimize convection artifacts)",
+        "atmosphere": "Sealed cell (prevent solvent evaporation)",
+        "time_resolution": "Static or quasi-static (equilibration timescale ~ minutes to hours)"
+      },
+      "experimental_functions": [
+        "Contain CNC suspension at controlled volume fraction",
+        "Maintain temperature stability (prevent convection)",
+        "Provide X-ray transparent windows for transmission geometry",
+        "Enable equilibration of self-assembled phases"
+      ],
+      "physical_interactions": ["int_003_env_to_sample"],
+      "notes": "STATIC ENVIRONMENT - Temperature stability critical to isolate intrinsic CNC dynamics from convection"
+    },
+    {
+      "component_id": "sample_cnc_suspension",
+      "component_name": "Cellulose Nanocrystal Suspension in Propylene Glycol",
+      "system_category": "system_d_sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "description": "Anionic CNC rods in propylene glycol with UNKNOWN self-assembly dynamics and phase transition timescales",
+      "physical_properties": {
+        "_comment_known": "KNOWN properties (from microscopy, scattering, bulk measurements)",
+        "crystal_structure": "KNOWN: Cellulose I-beta (monoclinic lattice)",
+        "particle_shape": "KNOWN: Rod-like (anisotropic)",
+        "particle_length": "KNOWN: ~100-200 nm (from TEM, AFM)",
+        "particle_width": "KNOWN: ~5-20 nm (from SAXS)",
+        "aspect_ratio": "KNOWN: ~10-20 (length/width)",
+        "surface_charge": "KNOWN: Anionic (sulfate groups, zeta potential ~ -40 to -60 mV)",
+        "solvent": "KNOWN: Propylene glycol (PG) and water mixtures",
+        "volume_fractions_studied": "KNOWN: Range from dilute (~1%) to concentrated (~10-20%)",
+        "phase_diagram": "KNOWN: Isotropic → Biphasic → Cholesteric LC (from polarized microscopy)",
+        "_comment_unknown": "UNKNOWN properties (target of XPCS discovery)",
+        "self_assembly_timescale": "UNKNOWN (GOAL: measure from g2(q,τ) decay)",
+        "brownian_diffusion_rates": "UNKNOWN (GOAL: extract from correlation time vs q)",
+        "dynamic_stages": "UNKNOWN (GOAL: identify stepped decay pattern)",
+        "diffusion_slowdown_magnitude": "UNKNOWN (GOAL: quantify orders of magnitude drop)",
+        "deviation_from_ideal_rods": "UNKNOWN (GOAL: compare to theoretical Brownian rod model)",
+        "critical_volume_fractions": "UNKNOWN (GOAL: identify transition points from dynamics)"
+      },
+      "gap_closure_goal": "Infer self-assembly dynamics timescales and diffusion rates from XPCS correlation function g2(q,τ) during isotropic → liquid crystal phase transition",
+      "constraints": {
+        "timescale_range": "Colloidal dynamics expected in seconds to hours range (10^0 to 10^4 s)",
+        "volume_fraction_dependence": "Dynamics slow dramatically with increasing volume fraction (phase transitions)",
+        "q_dependence": "Diffusion coefficient D(q) = τ^-1 / q^2 (Brownian dynamics)",
+        "phase_transition_signature": "Stepped decay (3 stages) with 4 orders of magnitude change in D",
+        "non_ideal_behavior": "Dynamics 1000x slower than ideal repulsive Brownian rods"
+      },
+      "experimental_functions": [
+        "Scatter coherent X-rays to produce speckle pattern from CNC suspension",
+        "Self-assemble into liquid crystalline phases at critical volume fractions",
+        "Generate time-dependent speckle fluctuations encoding self-assembly dynamics"
+      ],
+      "physical_interactions": [
+        "int_002_optics_to_sample",
+        "int_003_env_to_sample",
+        "int_004_sample_to_detector"
+      ],
+      "notes": "THIS IS SYSTEM D - THE KNOWLEDGE GAP. Self-assembly dynamics (timescales, diffusion rates, transition mechanisms) are UNKNOWN and will be inferred from g2(q,τ)."
+    },
+    {
+      "component_id": "fast_area_detector_chx_cnc",
+      "component_name": "Fast Area Detector (Eiger or Lambda)",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "Fast photon-counting area detector for time-resolved XPCS speckle pattern acquisition",
+      "physical_properties": {
+        "detector_type": "Eiger 4M or Lambda detector (single-photon counting)",
+        "frame_rate": "1 Hz to 100 Hz (for slow colloidal dynamics, seconds timescale)",
+        "pixel_size": "75-55 μm",
+        "number_of_pixels": "2048 x 2048 (4 megapixels) or larger",
+        "dynamic_range": "Up to 10^6 photons per pixel (16-bit or 32-bit)",
+        "dead_time": "<1 μs (minimal for slow dynamics)",
+        "detection_efficiency": "~0.9 at 8.9 keV (high quantum efficiency)",
+        "read_out_noise": "Negligible (photon counting mode)",
+        "data_rate": "Up to 3 GB/s (high-speed data streaming)"
+      },
+      "experimental_functions": [
+        "Acquire time-series of speckle patterns I(q,t) at Hz frame rate",
+        "Resolve speckle fluctuations on seconds to hours timescales",
+        "Enable pixel-wise time correlation analysis for g2(q,τ)",
+        "Provide spatial resolution for q-dependent dynamics"
+      ],
+      "physical_interactions": ["int_004_sample_to_detector"],
+      "measured_observables": {
+        "primary_observable": "Time-series of 2D speckle intensity patterns I(q,t)",
+        "q_range": "0.001-0.1 nm^-1 (small-angle scattering from colloidal rods)",
+        "time_resolution": "1-10 seconds per frame (for slow dynamics)",
+        "total_acquisition_time": "100-10000 seconds (10^2 to 10^4 frames)",
+        "speckle_contrast": "β = ⟨I^2⟩/⟨I⟩^2 - 1 ~ 0.2-0.8 (high coherence)"
+      },
+      "notes": "CRITICAL MEASUREMENT - Fast detector captures speckle pattern evolution. Timescale of g2(q,τ) decay encodes self-assembly dynamics."
+    },
+    {
+      "component_id": "xpcs_analysis_pipeline_chx_cnc",
+      "component_name": "XPCS Correlation Function Analysis Pipeline",
+      "system_category": "system_f_analysis",
+      "knowledge_state": "KNOWN",
+      "description": "Computational pipeline to calculate time autocorrelation function g2(q,τ) from speckle pattern time-series",
+      "physical_properties": {
+        "analysis_algorithm": "Two-time correlation: g2(q,τ) = ⟨I(q,t)·I(q,t+τ)⟩ / ⟨I(q,t)⟩^2",
+        "computational_cost": "High - pixel-wise correlations over 10^2-10^4 frames",
+        "input_data": "Time-series of 2D speckle patterns I(q,x,y,t), 4M pixels × 10^3 frames ~ 4 GB",
+        "output_data": "Correlation function g2(q,τ) and relaxation timescale τ(q), diffusion coefficient D(q)",
+        "fitting_model": "Exponential decay: g2(q,τ) = β·exp(-2τ/τ_relax) + 1, or stretched exponential for heterogeneous dynamics",
+        "q_averaging": "Azimuthal averaging for isotropic systems, or sector analysis for oriented LC phases",
+        "real_time_processing": "Streaming analysis during acquisition (skbeam, PyXPCS libraries)",
+        "data_reduction": "g2(q,τ) is ~1000× smaller than raw data (10^3 τ points vs 10^4 frames)",
+        "diffusion_extraction": "D(q) = 1 / (τ(q) · q^2) for Brownian dynamics"
+      },
+      "experimental_functions": [
+        "Calculate temporal autocorrelation function g2(q,τ) from speckle patterns",
+        "Fit decay model to extract relaxation timescale τ(q) and diffusion coefficient D(q)",
+        "Generate two-time correlation maps C(t1,t2) for non-stationary dynamics",
+        "Identify dynamics regimes (Brownian, caged, arrested)",
+        "Detect phase transitions from changes in dynamics (stepped decay pattern)"
+      ],
+      "physical_interactions": ["int_005_detection_to_analysis"],
+      "computational_properties": {
+        "software_tools": [
+          "skbeam (Brookhaven NSLS-II)",
+          "PyXPCS",
+          "CHX beamline analysis pipeline",
+          "Two-time correlation tools",
+          "Exponential fitting (scipy, lmfit)"
+        ],
+        "parallelization": "GPU-accelerated for real-time analysis",
+        "memory_requirements": "64-128 GB RAM for full dataset",
+        "processing_time": "Minutes to hours (depending on dataset size)"
+      },
+      "notes": "THIS IS SYSTEM F - REQUIRED for XPCS. Converts raw speckle patterns I(q,t) → g2(q,τ) → τ(q) → D(q). Without System F, XPCS data is uninterpretable."
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001_source_to_optics",
+      "interaction_name": "Coherent Undulator to Optics",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "coherent_undulator_chx_cnc",
+      "to_component": "coherence_preserving_optics_chx_cnc",
+      "causal_direction": "forward",
+      "physical_mechanism": "Coherent X-ray generation and wavefront propagation",
+      "interaction_strength": "Coherent flux ~10^11-10^12 ph/s, transverse coherence ~10 μm",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Undulator generates spatially coherent X-ray beam, optics preserve coherence for speckle formation"
+    },
+    {
+      "interaction_id": "int_002_optics_to_sample",
+      "interaction_name": "Coherent Beam to CNC Suspension",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "coherence_preserving_optics_chx_cnc",
+      "to_component": "sample_cnc_suspension",
+      "causal_direction": "forward",
+      "physical_mechanism": "Coherent X-ray scattering from CNC rods, speckle pattern formation",
+      "interaction_strength": "Scattered intensity I(q) ~ particle form factor P(q) × structure factor S(q)",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "Coherent beam scatters from CNC suspension, producing characteristic speckle pattern encoding particle configuration"
+    },
+    {
+      "interaction_id": "int_003_env_to_sample",
+      "interaction_name": "Temperature Control to CNC Dynamics",
+      "interaction_type": "environment_to_sample",
+      "from_component": "liquid_cell_chx_cnc",
+      "to_component": "sample_cnc_suspension",
+      "causal_direction": "forward",
+      "physical_mechanism": "Temperature stabilization prevents convection, allows intrinsic self-assembly dynamics",
+      "interaction_strength": "Temperature stability ±0.1°C suppresses thermal gradients",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Temperature control isolates intrinsic CNC dynamics from external perturbations (convection, solvent evaporation)"
+    },
+    {
+      "interaction_id": "int_004_sample_to_detector",
+      "interaction_name": "Speckle Pattern to Fast Detector",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_cnc_suspension",
+      "to_component": "fast_area_detector_chx_cnc",
+      "causal_direction": "forward",
+      "physical_mechanism": "Time-dependent speckle pattern fluctuations from CNC self-assembly dynamics",
+      "interaction_strength": "Scattered intensity I(q,t) fluctuates with timescale τ(q) ~ seconds to hours",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "measured_data": {
+        "speckle_pattern_evolution": "I(q,t) fluctuates as CNCs self-assemble",
+        "timescale_signature": "Speckle decorrelation time τ(q) encodes self-assembly dynamics",
+        "phase_dependence": "τ(q) changes dramatically across isotropic → LC phase transition",
+        "stepped_decay": "Three-stage dynamics with 4 orders of magnitude change in diffusion rates",
+        "q_dependence": "D(q) = 1/(τ(q)·q^2) for Brownian dynamics"
+      },
+      "description": "THIS IS THE CRITICAL DATA - Time-series of speckle patterns I(q,t). Decorrelation timescale encodes self-assembly dynamics."
+    },
+    {
+      "interaction_id": "int_005_detection_to_analysis",
+      "interaction_name": "Speckle Time-Series to Correlation Analysis",
+      "interaction_type": "detection_to_analysis",
+      "from_component": "fast_area_detector_chx_cnc",
+      "to_component": "xpcs_analysis_pipeline_chx_cnc",
+      "causal_direction": "forward",
+      "physical_mechanism": "Pixel-wise temporal autocorrelation calculation from frame sequence",
+      "interaction_strength": "Computational: 4M pixels × 10^3 frames → g2(q,τ) at 10^2 q-points",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "description": "System F computes g2(q,τ) from I(q,t) time-series. Decay timescale τ(q) reveals self-assembly dynamics and diffusion rates."
+    }
+  ],
+  "published_results": {
+    "system_d_discovered_properties": {
+      "self_assembly_timescale": {
+        "value": "Three-stage stepped decay pattern in CNC dynamics during phase transition",
+        "interpretation": "Self-assembly occurs in distinct stages, not as continuous process"
+      },
+      "brownian_diffusion_rates": {
+        "description": "Total drop of Brownian diffusion rates by FOUR ORDERS OF MAGNITUDE",
+        "magnitude": "D decreases by factor of 10^4 from isotropic to liquid crystal phase",
+        "comparison": "More than 1000 times slower than expected in ideal system of repulsive Brownian rods"
+      },
+      "dynamic_stages": {
+        "description": "Particle dynamics undergo stepped decay in THREE stages",
+        "stages": [
+          "Stage 1: Dilute isotropic phase (fast Brownian diffusion)",
+          "Stage 2: Biphasic coexistence (intermediate dynamics)",
+          "Stage 3: Liquid crystal phase (arrested/caged dynamics)"
+        ]
+      },
+      "non_ideal_behavior": {
+        "description": "Diffusion slowdown 1000x larger than ideal repulsive Brownian rod model",
+        "mechanism": "Attractive interactions, entanglement, or collective dynamics beyond simple excluded volume"
+      },
+      "phase_transition_signatures": {
+        "description": "Phase transitions coincide with dramatic changes in g2(q,τ) decay timescale",
+        "critical_volume_fractions": "Identified from discontinuous jumps in dynamics"
+      }
+    }
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_cnc_suspension"],
+    "unknown_properties": [
+      "self_assembly_timescale",
+      "brownian_diffusion_rates",
+      "dynamic_stages",
+      "diffusion_slowdown_magnitude",
+      "deviation_from_ideal_rods"
+    ],
+    "measured_observables": [
+      "Time-series of speckle patterns I(q,t) shows fluctuations with timescale τ(q)",
+      "Correlation function g2(q,τ) = β·exp(-2τ/τ(q)) + 1 decays with characteristic time",
+      "Diffusion coefficient D(q) = 1/(τ(q)·q^2) extracted from q-dependence",
+      "Stepped decay pattern reveals three dynamic stages",
+      "Four orders of magnitude drop in D indicates dramatic self-assembly slowdown"
+    ],
+    "matrix_formulation": "Infer System D (CNC self-assembly dynamics) from measured D→E interaction (speckle fluctuations) and E→F interaction (g2(q,τ) analysis) given known A, B, C, E, F",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "expected_outcome": "Gap closure should propose: (1) Three-stage dynamics, (2) Four orders of magnitude drop in diffusion, (3) Timescales in seconds to hours range, (4) Non-ideal behavior (1000x slower than theoretical)"
+  },
+  "validation_metrics": {
+    "success_criteria": {
+      "timescale_range": "Gap closure proposes relaxation times in seconds to hours range (10^0 to 10^4 s)",
+      "diffusion_slowdown": "Gap closure identifies 4 orders of magnitude drop in diffusion rates",
+      "staged_dynamics": "Gap closure recognizes three-stage stepped decay pattern",
+      "non_ideal_behavior": "Gap closure detects deviation from ideal Brownian rod model (1000x slowdown)",
+      "phase_transition_signatures": "Gap closure links dynamics changes to isotropic → LC phase transition",
+      "confidence_level": "SVD condition number < 100 (well-conditioned problem)"
+    },
+    "comparison_to_published": {
+      "published_dynamic_stages": "Three-stage stepped decay",
+      "scientific_reflow_inferred_stages": "TBD (after running workflow)",
+      "published_diffusion_drop": "Four orders of magnitude (10^4)",
+      "scientific_reflow_inferred_drop": "TBD (after running workflow)",
+      "published_non_ideal_factor": "1000x slower than ideal Brownian rods",
+      "scientific_reflow_inferred_factor": "TBD (after running workflow)",
+      "verdict": "TBD (PASS if dynamics stages, diffusion drop magnitude, and non-ideal behavior qualitatively match)"
+    }
+  },
+  "comparison_to_first_chx_case": {
+    "similarities": [
+      "Same beamline (CHX 11-ID) - DEPTH TEST VALIDATION",
+      "Same technique (XPCS with g2 correlation analysis)",
+      "Same Systems A-F architecture",
+      "System D is PARTIALLY_KNOWN (target of discovery)",
+      "Critical measurement is D→E interaction (speckle fluctuations)",
+      "System F is REQUIRED (correlation analysis)",
+      "Gap closure goal is to infer System D dynamics from g2(q,τ)"
+    ],
+    "differences": [
+      "System D: CNC colloidal rods vs ferroelectric crystal domains",
+      "Dynamics type: Self-assembly (colloidal) vs domain switching (ferroelectric)",
+      "Timescale: Seconds to hours (CNCs) vs milliseconds (ferroelectric)",
+      "System C: Temperature-controlled liquid cell vs electric field cell",
+      "Driving force: Volume fraction (CNCs) vs electric field (ferroelectric)",
+      "Phase transition: Isotropic → Liquid crystal vs Domain switching",
+      "Observable: Diffusion coefficient D(q) vs domain relaxation time τ_relax"
+    ],
+    "key_insight": "DEPTH TEST - Systems A-F architecture is CONSISTENT on same beamline (CHX) across different sample systems. This validates that the Scientific Reflow process is beamline-specific (not publication-specific)."
+  },
+  "depth_test_rationale": {
+    "what_is_depth_test": "Testing the same beamline with different publications to verify process consistency",
+    "why_this_publication": "Same CHX beamline (11-ID), same XPCS technique, different System D (CNCs vs ferroelectrics)",
+    "validation_goal": "Confirm that Scientific Reflow produces consistent Systems A-F architecture for ANY publication on CHX beamline",
+    "expected_architecture": "Should map to same 6 systems (A-F) with System F = correlation_analysis, only System D and C configurations differ",
+    "pass_criteria": "If Systems A, B, E, F are identical to first CHX case, and only System C and D differ in configuration (not structure), then DEPTH TEST PASSES"
+  },
+  "notes": {
+    "validation_approach": "This DEPTH TEST validates that Scientific Reflow is BEAMLINE-CONSISTENT. If gap closure successfully infers the CNC self-assembly dynamics from g2(q,τ), and the architecture matches the first CHX case (only differing in System C/D configuration), it confirms the process is robust across publications on the same beamline.",
+    "system_f_critical": "System F is ABSOLUTELY CRITICAL for XPCS (same as first CHX case). Without correlation analysis, raw speckle patterns I(q,t) contain no interpretable dynamics information.",
+    "challenge": "CNC dynamics are MUCH slower (seconds-hours) than ferroelectric dynamics (milliseconds), testing XPCS capability across 3-4 orders of magnitude in timescale.",
+    "next_steps": "After running this DEPTH TEST alongside the first CHX validation (ferroelectric), we can definitively conclude if Systems A-F architecture is PUBLICATION-AGNOSTIC on a given beamline (only System D and C configurations change)."
+  }
+}
