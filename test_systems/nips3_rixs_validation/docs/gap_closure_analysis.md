@@ -16,14 +16,14 @@ This validation test reveals **CRITICAL INSIGHTS** about Scientific Reflow's cur
 
 ### Conceptual Framework
 
-Scientific Reflow aims to solve: **B = C × A** or **B = C × A⁻¹**
+Scientific Reflow aims to solve: **B = P × A** or **B = P × A⁻¹**
 
 Where:
 - **A** = Adjacency matrix (who connects to whom)
 - **B** = Measurement matrix (observed data)
-- **C** = Causal matrix (system properties, including unknowns)
+- **P** = Property matrix (system properties, including unknowns)
 
-**Goal**: Solve for unknown elements in C (System D properties) given measured B and known A.
+**Goal**: Solve for unknown elements in P (System D properties) given measured B and known A.
 
 ---
 
@@ -98,11 +98,11 @@ Where:
 
 **Matrix B would encode**: Peak position at ΔE = 1.47 eV
 
-### Step 2: Formulate Causal Matrix C (with unknowns)
+### Step 2: Formulate Property Matrix P (with unknowns)
 
-**System D row in C** (NiPS3 properties):
+**System D row in P** (NiPS3 properties):
 ```
-C_D = [... , exciton_energy = ?, Hund_exchange = ?, ...]
+P_D = [... , exciton_energy = ?, Hund_exchange = ?, ...]
 ```
 
 **Known**: Crystal structure, magnetic order, temperature
@@ -118,7 +118,7 @@ Peak_position_in_B ≈ Exciton_energy_in_C
 ```
 
 **SVD would**:
-1. Identify that peak position in RIXS spectrum (B) directly encodes exciton energy (C)
+1. Identify that peak position in RIXS spectrum (B) directly encodes exciton energy (P)
 2. Extract peak position via spectral analysis
 3. Assign exciton energy = peak position ± uncertainty
 

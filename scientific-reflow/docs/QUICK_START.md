@@ -117,7 +117,7 @@ LLM proceeds to `03-gap_closure_analysis.json`.
 **Matrix transformation**:
 - Adjacency matrix A (5×5): Undulator, DCM, KB, Sample, Detector
 - Measurement matrix B: Sample→Detector diffraction pattern (HIGH observability)
-- Causal matrix C: Known for A, B, C, E; **UNKNOWN for D**
+- Property matrix P: Known properties of Systems A, B, C, E; **UNKNOWN properties of System D**
 
 **Run gap closure**:
 ```bash

@@ -36,21 +36,21 @@
         },
         {
           "action_id": "GC-01-A04",
-          "description": "Generate causal matrix C",
-          "details": "Create causal matrix C encoding KNOWN causal relationships. C[i,j] = interaction_strength if edge i→j has KNOWN properties (Systems A, B, C, E). C[d,j] = UNKNOWN for System D rows.",
-          "output": "Causal matrix C (N×N with unknowns for System D)"
+          "description": "Generate property matrix P",
+          "details": "Create property matrix P encoding KNOWN system properties. P[i,j] = interaction_strength if edge i→j has KNOWN properties (Systems A, B, C, E). P[d,j] = UNKNOWN for System D rows.",
+          "output": "Property matrix P (N×N with unknowns for System D)"
         },
         {
           "action_id": "GC-01-A05",
           "description": "Document matrix transformation",
-          "details": "Create docs/matrix_transformation.md: matrix dimensions, encoding schemes, known vs unknown elements, mathematical formulation (B = C × A or similar)",
+          "details": "Create docs/matrix_transformation.md: matrix dimensions, encoding schemes, known vs unknown elements, mathematical formulation (B = P × A or similar)",
           "output": "docs/matrix_transformation.md"
         }
       ],
       "validation": {
         "blocking": true,
         "criteria": [
-          "Matrices A, B, C generated",
+          "Matrices A, B, P generated",
           "System D elements identified as unknowns",
           "Matrix dimensions consistent",
           "Transformation documented"
