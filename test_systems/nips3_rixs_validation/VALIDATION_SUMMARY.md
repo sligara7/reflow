@@ -122,7 +122,7 @@
 4. **Physics-Architecture Coupling**
    - Map architectural interactions (D→E) to physical processes (RIXS scattering)
    - Encode measurement matrix B from spectral data
-   - Solve for unknown properties in causal matrix C
+   - Solve for unknown properties in property matrix P
 
 ---
 

@@ -139,7 +139,7 @@ Compare Scientific Reflow's inferred exciton energy to published value:
 
 1. **Complexity of RIXS**: RIXS involves quantum mechanics (2p→3d transitions, exciton formation). Gap closure must recognize that ΔE=1.47 eV encodes System D electronic properties.
 
-2. **Matrix Formulation**: Need to correctly formulate measurement matrix B (RIXS spectrum) and causal matrix C (sample properties).
+2. **Matrix Formulation**: Need to correctly formulate measurement matrix B (RIXS spectrum) and property matrix P (sample properties).
 
 3. **Realistic Expectations**: We may not perfectly match 1.47 eV. Success is:
    - Identifying an excitation in ~1-2 eV range
@@ -206,7 +206,7 @@ Compare Scientific Reflow's inferred exciton energy to published value:
 **Diagnose**:
 1. Check SVD condition number (ill-conditioned problem?)
 2. Review measurement matrix B (correctly encoded RIXS data?)
-3. Review causal matrix C (sample properties correctly linked to observables?)
+3. Review property matrix P (sample properties correctly linked to observables?)
 4. Check System D→E interaction (observability HIGH? critical_for_gap_closure=TRUE?)
 
 **Fix**:

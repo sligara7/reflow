@@ -198,8 +198,8 @@
         "use_cases": [
           "Generate adjacency matrix A (who connects to whom)",
           "Generate interaction matrix B (measured observables)",
-          "Generate causal matrix C (causal relationships)",
-          "Solve for unknown properties: B = C × A⁻¹ (matrix gap closure)"
+          "Generate property matrix P (system properties: known for A,B,C,E; unknown for D)",
+          "Solve for unknown properties: B = P × A⁻¹ (matrix gap closure)"
         ],
         "required_fields": ["interaction_strength", "observability"],
         "tool": "tools/reflow_gap_closure.py (integrates matrix_gap_detection.py + link_architectures.py)"
@@ -285,7 +285,7 @@
         "step": 3,
         "name": "Transform DAG to matrices",
         "tool": "tools/reflow_gap_closure.py (internal matrix transformation)",
-        "output": "Adjacency matrix A, Measurement matrix B, Causal matrix C",
+        "output": "Adjacency matrix A, Measurement matrix B, Property matrix P",
         "action": "Automatic - called by reflow_gap_closure.py"
       },
       {
@@ -430,7 +430,7 @@
     },
     "matrix_gap_detection.py": {
       "usage": "Called internally by reflow_gap_closure.py",
-      "function": "Transforms DAG to matrices, applies SVD, solves B = C × A⁻¹ for unknowns"
+      "function": "Transforms DAG to matrices, applies SVD, solves B = P × A⁻¹ for unknowns"
     },
     "link_architectures.py": {
       "usage": "Links functional architecture (WHAT we want to know) to experimental architecture (HOW we measure it)",

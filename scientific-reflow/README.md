@@ -136,8 +136,8 @@ Determine the crystal structure of an unknown material using X-ray diffraction.
 2. **Transform experimental graph to matrices**:
    - Adjacency matrix A (who connects to whom)
    - Measurement matrix B (observed D→E diffraction pattern)
-   - Causal matrix C (known A, B, C, E properties; unknown D properties)
-3. **Apply SVD-based gap closure**: Solve B = C × A⁻¹ for unknown C elements (System D properties)
+   - Property matrix P (known properties of Systems A, B, C, E; unknown properties of System D)
+3. **Apply SVD-based gap closure**: Solve B = P × A⁻¹ for unknown P elements (System D properties)
 4. **Generate hypothesis**: "Sample is FCC crystal with lattice parameter a=3.92±0.05 Å, space group Fm-3m"
 5. **Validate**: Predict diffraction peak positions at 2θ = 38.5°, 44.7°, 65.1° (Cu Kα) → compare to measured pattern
 
