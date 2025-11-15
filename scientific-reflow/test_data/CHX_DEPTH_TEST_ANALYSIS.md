@@ -135,6 +135,56 @@
 
 **Verdict**: System E is **BEAMLINE-SPECIFIC** with minor **CONFIGURATION** differences (frame rate adapted to timescale of dynamics).
 
+**⚠️ IMPORTANT NOTE - Temporal and Positional Complexity**:
+
+System E is often **MORE COMPLEX** than a single image capture or single event. Real-world detection involves:
+
+**Temporal Aspects**:
+- **Integration time**: How long to collect photons per measurement
+- **Time series**: Multiple measurements over time (XPCS: 10^3-10^6 frames)
+- **Scans**: Stepping through parameters (XAS: energy scan, RIXS: energy loss scan)
+- **Repetition**: Multiple acquisitions for averaging or statistical analysis
+
+**Positional/Geometric Aspects**:
+- **Sample rotation**: Tomography rotates System D through angles (0-180° or 0-360°)
+- **Detector movement**: Some techniques move detector position (SAXS/WAXS distances)
+- **Beam scanning**: Raster scanning beam across sample (imaging, mapping)
+- **Multi-modal**: Simultaneous measurements at different detector positions
+
+**Examples from Our Cases**:
+- **XPCS (both CHX cases)**: Time series acquisition (10^3-10^4 frames) with integration time per frame
+- **XAS (ISS operando)**: Energy scan (500-1000 points) × time evolution (hours-days) = 2D measurement space
+- **RIXS (SIX)**: Incident energy scan × energy loss spectrum = 2D excitation map
+- **Tomography** (hypothetical): Sample rotation (100-1000 angles) × radiograph per angle
+
+**BLOP Optimization Opportunities**:
+
+These temporal and positional aspects are **EXACTLY** what BLOP (Bayesian Learning for Optimization and Physics) can optimize:
+- **Optimal integration times**: Balance signal/noise vs acquisition speed
+- **Scan trajectories**: Smart sampling (not uniform grids) for faster acquisition
+- **Adaptive strategies**: Spend more time where features are changing rapidly
+- **Multi-objective**: Optimize for multiple goals (speed, resolution, dose)
+
+**Current Simplification**:
+
+For now, our System E descriptions treat detection as "capture single image" or "single event," but we acknowledge this is a **simplification**. The full complexity includes:
+
+```
+System E (Detection) = {
+  Detector Hardware (fixed),
+  Temporal Strategy (integration time, frame rate, duration),
+  Positional Strategy (sample orientation, detector position),
+  Scan Parameters (energy, angle, position steps)
+}
+```
+
+**Future Work**:
+- Expand System E schema to include temporal/positional acquisition strategies
+- Link to BLOP for optimization of scan parameters
+- Capture scan metadata (not just detector specs) in experimental system architecture
+
+**Reference**: See `BLOP_INTEGRATION_ANALYSIS.md` for detailed discussion of BLOP opportunities in Systems B and E optimization.
+
 ---
 
 ### System F: Analysis (✅ IDENTICAL)

@@ -178,7 +178,7 @@
         "total_acquisition_time": "10-1000 seconds (10^4 to 10^6 frames)",
         "speckle_contrast": "β = ⟨I^2⟩/⟨I⟩^2 - 1 ~ 0.2-0.8 (high coherence)"
       },
-      "notes": "CRITICAL MEASUREMENT - Fast detector captures speckle pattern evolution. Timescale of g2(q,τ) decay encodes domain relaxation dynamics."
+      "notes": "CRITICAL MEASUREMENT - Fast detector captures speckle pattern evolution. Timescale of g2(q,τ) decay encodes domain relaxation dynamics. IMPORTANT: System E involves TEMPORAL complexity (time series of 10^4-10^6 frames with ms integration time), not just single event. Detection strategy includes scan parameters (frame rate, duration, integration time) that could be optimized via BLOP."
     },
     {
       "component_id": "xpcs_analysis_pipeline_chx",
