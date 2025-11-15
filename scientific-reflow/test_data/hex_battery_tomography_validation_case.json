@@ -1,0 +1,459 @@
+{
+  "metadata": {
+    "validation_case_name": "Solid-State Battery Filament Formation - In-Situ Tomography",
+    "purpose": "Validate HIGH-FIDELITY System E modeling with full temporal and positional complexity",
+    "reference_paper": {
+      "title": "Filament-Induced Failure in Lithium-Reservoir-Free Solid-State Batteries",
+      "authors": "Se Hwan Park et al.",
+      "journal": "ACS Energy Letters",
+      "volume": "10",
+      "issue": "3",
+      "pages": "1174-1182",
+      "year": "2025",
+      "doi": "10.1021/acsenergylett.5c00004",
+      "technique": "In-situ 3D X-ray computed tomography (XCT) during battery cycling",
+      "key_result": "X-ray tomography reveals filament growth faster at high local current density regions"
+    },
+    "facility": "NSLS2",
+    "beamline": "HEX (27-ID) - High Energy Engineering X-ray Scattering",
+    "technique": "In-Situ X-ray Computed Tomography (XCT)",
+    "validation_approach": "HIGH-FIDELITY System E - Explicitly model temporal and positional acquisition complexity",
+    "system_e_focus": "This case demonstrates full System E complexity: tomographic sample rotation (positional) + time-resolved in-situ cycling (temporal)"
+  },
+  "validation_strategy": {
+    "description": "We will treat the solid-state battery as having PARTIALLY_KNOWN properties (solid electrolyte structure and electrochemistry known, filament formation dynamics and fracture mechanisms UNKNOWN), then use gap closure to infer failure mechanisms from 3D tomography data collected during in-situ cycling.",
+    "known_beforehand": [
+      "Solid electrolyte material: Garnet-type Li7La3Zr2O12 (LLZO) or similar",
+      "Cell architecture: Lithium-reservoir-free (no excess Li anode)",
+      "Applied stack pressure: Variable (low vs high pressure conditions)",
+      "Electrochemical parameters: Current density, voltage, capacity",
+      "Nominal electrolyte structure: Crystal lattice, grain boundaries",
+      "Expected failure mode: Lithium filament penetration and/or solid electrolyte fracture"
+    ],
+    "discovered_by_experiment": [
+      "3D filament morphology and growth pathways",
+      "Filament growth rate as function of local current density",
+      "Crack formation and propagation in solid electrolyte",
+      "Pressure-dependent failure mechanisms (filament vs fracture)",
+      "Spatial distribution of lithium plating irregularities",
+      "Time evolution of filament penetration through electrolyte"
+    ],
+    "gap_closure_target": "Can we infer filament formation mechanisms and pressure-dependent failure pathways from 3D tomography time series?",
+    "success_criteria": "Gap closure should propose: (1) Filament growth correlates with local current density, (2) Low pressure → irregular plating, (3) High pressure → uniform plating but stress-induced fracture, (4) Time-dependent filament penetration"
+  },
+  "experimental_components": [
+    {
+      "component_id": "superconducting_wiggler_hex",
+      "component_name": "NSLS2 Superconducting Wiggler (HEX Source)",
+      "system_category": "system_a_source",
+      "knowledge_state": "KNOWN",
+      "description": "High-energy superconducting wiggler optimized for penetration through thick battery cells",
+      "physical_properties": {
+        "source_type": "Superconducting wiggler (high energy X-rays)",
+        "energy_range": "30-100 keV (high energy for battery penetration)",
+        "typical_energy": "60-70 keV (for solid-state battery imaging)",
+        "flux": "~10^13-10^14 photons/sec (high flux for fast imaging)",
+        "beam_brilliance": "Optimized for high-energy range",
+        "ring_energy": "3 GeV",
+        "ring_current": "400 mA",
+        "penetration_capability": "High energy enables imaging through thick samples (mm-scale battery cells)"
+      },
+      "experimental_functions": [
+        "Generate high-energy X-ray beam for battery cell penetration",
+        "Provide sufficient flux for fast tomographic acquisition",
+        "Enable time-resolved imaging during battery operation"
+      ],
+      "physical_interactions": ["int_001_source_to_optics"],
+      "notes": "HIGH ENERGY IS CRITICAL - Must penetrate through battery cell (several mm thick including steel casing). Lower energy (e.g., soft X-rays) would be absorbed."
+    },
+    {
+      "component_id": "high_energy_optics_hex",
+      "component_name": "HEX High-Energy Beam Conditioning Optics",
+      "system_category": "system_b_manipulation",
+      "knowledge_state": "KNOWN",
+      "description": "Monochromator and focusing optics optimized for high-energy X-rays (30-100 keV)",
+      "physical_properties": {
+        "optics_type": "Double-crystal monochromator (Si) + optional focusing",
+        "energy_selection": "Monochromatic mode (ΔE/E ~ 10^-4) or white beam (broadband)",
+        "typical_mode": "Monochromatic at 60-70 keV for battery imaging",
+        "beam_size_at_sample": "4 mm field of view (matched to battery electrode area)",
+        "flux_at_sample": "~10^12-10^13 photons/sec/mm^2",
+        "coherence": "Partial coherence (not critical for absorption imaging)"
+      },
+      "experimental_functions": [
+        "Select X-ray energy (60-70 keV for solid-state battery)",
+        "Condition beam for uniform illumination across sample",
+        "Deliver flux sufficient for sub-second radiography"
+      ],
+      "physical_interactions": ["int_001_source_to_optics", "int_002_optics_to_sample"],
+      "notes": "High energy optics differ from standard beamlines - designed for 30-100 keV range"
+    },
+    {
+      "component_id": "in_situ_battery_cell_hex",
+      "component_name": "Custom In-Situ Battery Cell for Tomography",
+      "system_category": "system_c_environment",
+      "knowledge_state": "KNOWN",
+      "description": "Custom electrochemical cell designed for X-ray transparency and in-situ tomography during cycling",
+      "physical_properties": {
+        "cell_type": "Custom-designed lithium-reservoir-free solid-state battery cell",
+        "electrodes": "Symmetric cell or full cell with cathode",
+        "solid_electrolyte": "LLZO pellet or similar garnet-type",
+        "stack_pressure": "Controlled (low vs high pressure conditions tested)",
+        "window_material": "X-ray transparent (thin metal current collectors, <100 μm)",
+        "field_of_view": "4 mm diameter (captures entire lithium plating area)",
+        "cell_diameter": "~10-20 mm",
+        "electrochemical_control": "Potentiostat/galvanostat for cycling",
+        "current_density": "Variable (0.1-1 mA/cm^2)",
+        "temperature": "Room temperature or controlled (25-60°C)",
+        "atmosphere": "Sealed (argon-filled, moisture-free)"
+      },
+      "experimental_functions": [
+        "Apply electrochemical cycling to drive lithium plating",
+        "Control stack pressure to modulate failure mechanism",
+        "Provide X-ray transparent path for tomographic imaging",
+        "Enable in-situ measurements during battery operation (operando mode)"
+      ],
+      "physical_interactions": ["int_003_env_to_sample"],
+      "notes": "DYNAMIC ENVIRONMENT - Electrochemical cell cycles battery in real-time during tomography acquisition. Custom cell architecture ensures X-ray transparency."
+    },
+    {
+      "component_id": "sample_solid_state_battery",
+      "component_name": "Solid-State Battery with Lithium Filament Formation",
+      "system_category": "system_d_sample",
+      "knowledge_state": "PARTIALLY_KNOWN",
+      "description": "Lithium-reservoir-free solid-state battery with UNKNOWN filament formation dynamics and fracture mechanisms",
+      "physical_properties": {
+        "_comment_known": "KNOWN properties (from electrochemistry, SEM, bulk measurements)",
+        "solid_electrolyte_material": "KNOWN: Garnet-type LLZO or similar",
+        "electrolyte_thickness": "KNOWN: ~500 μm to 1 mm",
+        "grain_size": "KNOWN: ~10-50 μm (from SEM)",
+        "ionic_conductivity": "KNOWN: ~10^-4 S/cm at room temperature",
+        "electrochemical_window": "KNOWN: Stable vs Li metal (0-6 V)",
+        "mechanical_properties": "KNOWN: Young's modulus, fracture toughness (bulk)",
+        "_comment_unknown": "UNKNOWN properties (target of tomography discovery)",
+        "filament_morphology_3d": "UNKNOWN (GOAL: visualize from tomography)",
+        "filament_growth_rate": "UNKNOWN (GOAL: measure from time-resolved tomography)",
+        "crack_initiation_sites": "UNKNOWN (GOAL: identify from 3D structure)",
+        "local_current_density_distribution": "UNKNOWN (GOAL: infer from filament growth patterns)",
+        "pressure_dependent_failure_pathway": "UNKNOWN (GOAL: compare low vs high pressure)",
+        "time_to_failure": "UNKNOWN (GOAL: measure from in-situ cycling)"
+      },
+      "gap_closure_goal": "Infer filament formation mechanisms and pressure-dependent failure pathways from 3D tomography time series collected during in-situ battery cycling",
+      "constraints": {
+        "spatial_resolution": "1.3 μm voxel size (must resolve filaments and cracks)",
+        "temporal_resolution": "~minutes to hours (tomography scan time limits time resolution)",
+        "field_of_view": "4 mm (must capture entire electrode area)",
+        "sample_stability": "Battery must remain stable during ~10-30 minute tomography scan",
+        "electrochemical_constraints": "Cycling must continue during tomography (operando mode)"
+      },
+      "experimental_functions": [
+        "Scatter X-rays to produce radiographic projections (absorption contrast)",
+        "Evolve filament structure under electrochemical cycling",
+        "Generate time-dependent 3D morphology encoding failure mechanisms"
+      ],
+      "physical_interactions": [
+        "int_002_optics_to_sample",
+        "int_003_env_to_sample",
+        "int_004_sample_to_detector"
+      ],
+      "notes": "THIS IS SYSTEM D - THE KNOWLEDGE GAP. Filament formation dynamics (growth rate, 3D morphology, failure pathway) are UNKNOWN and will be inferred from tomography."
+    },
+    {
+      "component_id": "fast_area_detector_hex_with_rotation",
+      "component_name": "Fast Area Detector with Tomographic Sample Rotation Stage",
+      "system_category": "system_e_detection",
+      "knowledge_state": "KNOWN",
+      "description": "High-energy X-ray area detector with automated sample rotation for computed tomography",
+      "detector_hardware": {
+        "detector_type": "Perkin Elmer 1621 or Varex 4343 (scintillator-based, high energy)",
+        "scintillator": "CsI or GOS (optimized for 60-70 keV)",
+        "pixel_size": "200 μm (detector pixel)",
+        "effective_pixel_size": "1.3 μm (with optical magnification)",
+        "number_of_pixels": "2048 x 2048 (4 megapixels)",
+        "dynamic_range": "16-bit (65536 gray levels)",
+        "frame_rate": "Up to 30 Hz (for fast radiography)",
+        "detection_efficiency": "~0.4-0.6 at 60-70 keV",
+        "read_out_time": "~33 ms per frame (30 Hz)"
+      },
+      "acquisition_strategy": {
+        "_comment": "THIS IS THE KEY HIGH-FIDELITY SECTION - Full temporal and positional complexity",
+        "measurement_type": "3D X-ray computed tomography (XCT) with in-situ cycling",
+        "temporal_strategy": {
+          "integration_time_per_projection": "0.1-0.5 seconds (balance signal/noise vs speed)",
+          "dark_field_frames": "10 frames (before scan, detector noise baseline)",
+          "flat_field_frames": "10 frames (before scan, beam profile without sample)",
+          "projections_per_tomography": "1000-1500 (over 180° rotation)",
+          "total_scan_time_per_tomography": "100-750 seconds (1.7-12.5 minutes)",
+          "number_of_tomography_scans": "5-20 (time series during battery cycling)",
+          "time_between_scans": "10-60 minutes (electrochemical evolution time)",
+          "total_experiment_duration": "2-24 hours (depending on cycling protocol)",
+          "adaptive_strategies": "May increase scan frequency near failure (when voltage drops)"
+        },
+        "positional_strategy": {
+          "sample_rotation": "0-180° (half rotation for parallel beam geometry)",
+          "angular_step_size": "0.12-0.18° (1000-1500 projections over 180°)",
+          "rotation_speed": "Continuous rotation (fly scan) or step-and-shoot",
+          "rotation_axis_stability": "±0.1 μm (critical for reconstruction quality)",
+          "sample_centering": "Automated (pre-scan to find rotation axis)",
+          "detector_distance": "Fixed (~50-200 mm for 4 mm FOV with 1.3 μm resolution)",
+          "magnification": "Optical magnification via scintillator + lens system"
+        },
+        "scan_parameters": {
+          "energy": "60-70 keV (fixed for each scan)",
+          "field_of_view": "4 mm × 4 mm (2048 pixels × 1.3 μm/pixel)",
+          "voxel_size": "1.3 μm (isotropic in reconstructed volume)",
+          "reconstruction_volume": "4 mm × 4 mm × 4 mm (~3×10^9 voxels)",
+          "data_per_scan": "~4 GB (1500 projections × 2048 × 2048 × 2 bytes)",
+          "total_data_per_experiment": "80-400 GB (20 tomography scans)"
+        },
+        "multi_modal_capability": {
+          "imaging_mode": "Primary (absorption contrast tomography)",
+          "diffraction_mode": "Optional (can switch to diffraction detector for phase ID)",
+          "detector_exchange": "Remotely movable (imaging vs diffraction detectors)",
+          "simultaneous_measurements": "Electrochemistry (voltage, current) logged during tomography"
+        }
+      },
+      "experimental_functions": [
+        "Acquire radiographic projections at each rotation angle",
+        "Rotate sample through 180° (1000-1500 angles) for tomographic reconstruction",
+        "Repeat tomography scans during battery cycling (time-resolved 3D imaging)",
+        "Capture electrochemical data synchronized with tomography timestamps"
+      ],
+      "physical_interactions": ["int_004_sample_to_detector"],
+      "measured_observables": {
+        "primary_observable": "Time series of 3D tomographic volumes showing filament evolution",
+        "single_projection": "2D radiograph (absorption image at one angle)",
+        "tomographic_scan": "1000-1500 projections → 3D volume (4 mm)^3 with 1.3 μm resolution",
+        "time_series": "5-20 tomographic scans over 2-24 hours",
+        "spatial_resolution": "1.3 μm (can resolve lithium filaments and cracks)",
+        "temporal_resolution": "10-60 minutes (limited by tomography scan time)",
+        "contrast_mechanism": "Absorption (lithium metal appears dark, LLZO appears gray)"
+      },
+      "notes": "HIGH-FIDELITY SYSTEM E - This component explicitly models BOTH temporal (time-resolved tomography during cycling) and positional (sample rotation through 1000+ angles) complexity. Total measurement space: (x, y, z, time, angle) = 4D reconstructed + rotation dimension during acquisition.",
+      "blop_optimization_opportunities": [
+        "Adaptive integration time: Shorter exposures when sample is stable, longer near features",
+        "Smart angular sampling: Dense sampling near features of interest (filaments), sparse elsewhere",
+        "Adaptive scan frequency: Increase tomography rate when battery voltage indicates imminent failure",
+        "Multi-objective optimization: Minimize radiation dose while maintaining resolution and temporal sampling",
+        "Trajectory optimization: Non-uniform angular sampling (golden ratio, Fibonacci) for faster scans",
+        "Region-of-interest tomography: Image only active region (lithium plating zone) for faster acquisition"
+      ]
+    },
+    {
+      "component_id": "tomography_reconstruction_pipeline_hex",
+      "component_name": "3D Tomographic Reconstruction and Analysis Pipeline",
+      "system_category": "system_f_analysis",
+      "knowledge_state": "KNOWN",
+      "description": "Computational pipeline to reconstruct 3D volumes from projection data and analyze filament morphology",
+      "physical_properties": {
+        "reconstruction_algorithm": "Filtered back-projection (FBP) or iterative reconstruction (SIRT, TV)",
+        "computational_cost": "High - reconstruct 3×10^9 voxels per scan × 20 scans",
+        "input_data": "1000-1500 projections (2048×2048 pixels each) per tomography scan",
+        "output_data": "3D volume (4 mm)^3 with 1.3 μm voxels, 8-bit or 16-bit grayscale",
+        "data_reduction": "Minimal - tomography data is already spatially integrated",
+        "segmentation": "Thresholding or machine learning to identify lithium filaments and cracks",
+        "quantification": "Filament volume, surface area, growth rate, crack length",
+        "real_time_processing": "Fast reconstruction (<5 min per scan) enables in-situ feedback",
+        "4D_analysis": "Track filament evolution over time (register 3D volumes from different scans)"
+      },
+      "experimental_functions": [
+        "Reconstruct 3D volumes from tomographic projection data",
+        "Segment lithium filaments and cracks from solid electrolyte matrix",
+        "Quantify filament morphology (volume, tortuosity, growth direction)",
+        "Track time evolution (4D analysis: 3D + time)",
+        "Correlate filament growth with electrochemical data (current, voltage)",
+        "Identify failure mechanisms (filament penetration vs electrolyte fracture)"
+      ],
+      "physical_interactions": ["int_005_detection_to_analysis"],
+      "computational_properties": {
+        "software_tools": [
+          "TomoPy (Argonne, fast GPU reconstruction)",
+          "Fiji/ImageJ (visualization and segmentation)",
+          "Avizo or Dragonfly (3D rendering and quantification)",
+          "Custom Python scripts (4D tracking, filament growth analysis)",
+          "Machine learning segmentation (U-Net, etc.)"
+        ],
+        "parallelization": "GPU-accelerated reconstruction (NVIDIA A100/V100)",
+        "memory_requirements": "128-256 GB RAM (for 3D volume + projections)",
+        "processing_time": "1-5 minutes per tomography scan (reconstruction)",
+        "storage_requirements": "80-400 GB per experiment (raw + reconstructed data)"
+      },
+      "notes": "THIS IS SYSTEM F - REQUIRED for tomography. Converts 2D projections → 3D volume → quantitative filament analysis. Without reconstruction, projection data is uninterpretable (can't resolve 3D structure)."
+    }
+  ],
+  "physical_interactions": [
+    {
+      "interaction_id": "int_001_source_to_optics",
+      "interaction_name": "Superconducting Wiggler to High-Energy Optics",
+      "interaction_type": "source_to_manipulation",
+      "from_component": "superconducting_wiggler_hex",
+      "to_component": "high_energy_optics_hex",
+      "causal_direction": "forward",
+      "physical_mechanism": "High-energy X-ray generation and beam conditioning",
+      "interaction_strength": "Flux ~10^13-10^14 ph/s, energy 60-70 keV",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Wiggler generates high-energy X-rays, optics select energy and condition beam for battery imaging"
+    },
+    {
+      "interaction_id": "int_002_optics_to_sample",
+      "interaction_name": "High-Energy Beam to Battery Cell",
+      "interaction_type": "manipulation_to_sample",
+      "from_component": "high_energy_optics_hex",
+      "to_component": "sample_solid_state_battery",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray absorption by battery components (Li, LLZO, electrodes)",
+      "interaction_strength": "Transmitted intensity I = I0 × exp(-μ·t), absorption contrast",
+      "observability": "MEDIUM",
+      "measured": false,
+      "description": "High-energy beam penetrates battery cell, absorption contrast reveals lithium filaments and solid electrolyte"
+    },
+    {
+      "interaction_id": "int_003_env_to_sample",
+      "interaction_name": "Electrochemical Cycling to Filament Formation",
+      "interaction_type": "environment_to_sample",
+      "from_component": "in_situ_battery_cell_hex",
+      "to_component": "sample_solid_state_battery",
+      "causal_direction": "forward",
+      "physical_mechanism": "Electrochemical lithium plating drives filament growth and electrolyte fracture",
+      "interaction_strength": "Current density 0.1-1 mA/cm^2, stack pressure variable",
+      "observability": "HIGH",
+      "measured": true,
+      "description": "Electrochemical cell applies cycling to drive lithium plating, filament formation, and eventual failure"
+    },
+    {
+      "interaction_id": "int_004_sample_to_detector",
+      "interaction_name": "Tomographic Projections to Detector with Sample Rotation",
+      "interaction_type": "sample_to_detection",
+      "from_component": "sample_solid_state_battery",
+      "to_component": "fast_area_detector_hex_with_rotation",
+      "causal_direction": "forward",
+      "physical_mechanism": "X-ray transmission through rotating sample produces angular projections for tomography",
+      "interaction_strength": "1000-1500 projections over 180° rotation, 0.1-0.5 s per projection",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "measured_data": {
+        "tomographic_projections": "2D radiographs at each rotation angle encode 3D filament structure",
+        "temporal_evolution": "Repeated tomography scans reveal time-dependent filament growth",
+        "spatial_resolution": "1.3 μm voxels resolve filament morphology and crack propagation",
+        "pressure_dependence": "Compare low vs high stack pressure → different failure modes",
+        "4D_dataset": "3D volumes × time series = 4D (x, y, z, t) filament evolution"
+      },
+      "description": "THIS IS THE CRITICAL DATA - Tomographic projections acquired during sample rotation. 3D reconstruction reveals filament morphology. Time series of 3D volumes reveals growth dynamics.",
+      "system_e_complexity_note": "This interaction involves BOTH positional (sample rotation through 1000+ angles) AND temporal (repeated scans over hours) complexity. Measurement space is 5D: (detector_x, detector_y, rotation_angle, scan_number, electrochemical_time)."
+    },
+    {
+      "interaction_id": "int_005_detection_to_analysis",
+      "interaction_name": "Projection Data to 3D Tomographic Reconstruction",
+      "interaction_type": "detection_to_analysis",
+      "from_component": "fast_area_detector_hex_with_rotation",
+      "to_component": "tomography_reconstruction_pipeline_hex",
+      "causal_direction": "forward",
+      "physical_mechanism": "Radon transform inversion (FBP or iterative) converts projections to 3D volume",
+      "interaction_strength": "Computational: 1500 projections (2048×2048) → 3D volume (3×10^9 voxels)",
+      "observability": "HIGH",
+      "measured": true,
+      "critical_for_gap_closure": true,
+      "description": "System F performs tomographic reconstruction. 2D projections → 3D volume → filament segmentation → quantitative analysis. Without reconstruction, cannot infer 3D filament morphology or growth mechanisms."
+    }
+  ],
+  "published_results": {
+    "system_d_discovered_properties": {
+      "filament_morphology_3d": {
+        "value": "Tortuous filaments grow through solid electrolyte grain boundaries",
+        "interpretation": "Tomography reveals 3D pathway - filaments exploit weak points (grain boundaries, pores)"
+      },
+      "filament_growth_rate": {
+        "description": "Filaments grow faster at regions with higher local current density",
+        "mechanism": "Inhomogeneous current distribution accelerates localized lithium plating"
+      },
+      "pressure_dependent_failure": {
+        "low_pressure": "Irregular lithium plating → high local current density → filament-driven failure",
+        "high_pressure": "Uniform lithium plating favored, BUT notch-like features in electrolyte surface → high tensile stress → fracture-driven failure"
+      },
+      "time_to_failure": {
+        "description": "Time-resolved tomography captures gradual filament penetration until short circuit",
+        "typical_time": "Hours to days (depending on current density and pressure)"
+      },
+      "crack_formation": {
+        "description": "Lithium-penetration-induced cracks in solid electrolyte pellet",
+        "observation": "Tomography confirms cracks propagate from stress concentration sites"
+      }
+    }
+  },
+  "gap_closure_configuration": {
+    "target_gaps": ["sample_solid_state_battery"],
+    "unknown_properties": [
+      "filament_morphology_3d",
+      "filament_growth_rate",
+      "crack_initiation_sites",
+      "local_current_density_distribution",
+      "pressure_dependent_failure_pathway",
+      "time_to_failure"
+    ],
+    "measured_observables": [
+      "Time series of 3D tomographic volumes showing filament evolution",
+      "Filament volume and morphology quantified from segmented 3D data",
+      "Crack propagation tracked over time in 3D",
+      "Electrochemical data (voltage, current) synchronized with tomography",
+      "Pressure-dependent failure modes observed (low vs high pressure)"
+    ],
+    "matrix_formulation": "Infer System D (filament formation mechanisms) from measured D→E interaction (tomographic projections during cycling) and E→F interaction (3D reconstruction) given known A, B, C, E, F",
+    "svd_tolerance": 1e-6,
+    "confidence_threshold": 0.5,
+    "expected_outcome": "Gap closure should propose: (1) Filament growth correlates with local current density, (2) Low pressure → filament failure, (3) High pressure → fracture failure, (4) 3D morphology reveals grain boundary pathways"
+  },
+  "validation_metrics": {
+    "success_criteria": {
+      "3d_morphology": "Gap closure proposes filament morphology from tomography data",
+      "growth_mechanism": "Gap closure identifies current density dependence",
+      "pressure_dependence": "Gap closure distinguishes low vs high pressure failure modes",
+      "temporal_evolution": "Gap closure infers time-dependent filament penetration",
+      "physical_plausibility": "Proposed mechanisms match electrochemical theory",
+      "confidence_level": "SVD condition number < 100 (well-conditioned problem)"
+    },
+    "comparison_to_published": {
+      "published_filament_mechanism": "Faster growth at high local current density",
+      "scientific_reflow_inferred_mechanism": "TBD (after running workflow)",
+      "published_pressure_effect": "Low pressure → filament, high pressure → fracture",
+      "scientific_reflow_inferred_pressure_effect": "TBD (after running workflow)",
+      "verdict": "TBD (PASS if mechanisms qualitatively match)"
+    }
+  },
+  "system_e_high_fidelity_demonstration": {
+    "what_is_demonstrated": "This validation case is the FIRST to explicitly model System E with full temporal and positional complexity",
+    "temporal_complexity": {
+      "integration_time": "0.1-0.5 s per projection (trade-off: signal/noise vs speed)",
+      "time_series": "5-20 tomography scans over 2-24 hours (in-situ cycling)",
+      "total_measurements": "5000-30000 projections (1500 per scan × 5-20 scans)",
+      "adaptive_potential": "Can increase scan frequency near battery failure"
+    },
+    "positional_complexity": {
+      "sample_rotation": "0-180° (1000-1500 angular positions)",
+      "angular_sampling": "0.12-0.18° per step",
+      "rotation_control": "Automated high-precision stage (±0.1 μm stability)",
+      "measurement_space": "5D (detector_x, detector_y, angle, scan_number, time)"
+    },
+    "blop_opportunities": {
+      "adaptive_integration_time": "Optimize exposure based on signal/noise in real-time",
+      "smart_angular_sampling": "Non-uniform sampling (denser near features)",
+      "adaptive_scan_frequency": "Increase tomography rate when voltage drops (near failure)",
+      "multi_objective": "Minimize radiation dose while maintaining resolution and temporal sampling",
+      "roi_tomography": "Image only lithium plating region (faster scans)"
+    },
+    "comparison_to_previous_cases": {
+      "XPCS_CHX": "System E modeled as 'fast detector, 1 kHz' - temporal series acknowledged but not detailed",
+      "XAS_ISS": "System E modeled as 'fluorescence detector' - energy scan acknowledged but not detailed",
+      "RIXS_SIX": "System E modeled as 'RIXS spectrometer' - energy-resolved but scan not detailed",
+      "THIS_CASE": "System E modeled with FULL acquisition_strategy: temporal + positional + scan parameters + BLOP opportunities"
+    }
+  },
+  "notes": {
+    "validation_approach": "This HIGH-FIDELITY case demonstrates that System E is NOT just detector hardware, but includes acquisition strategy (temporal + positional). Gap closure must recognize that 3D filament morphology comes from tomographic reconstruction (System F), not direct measurement (System E projections).",
+    "system_e_critical_complexity": "System E involves sample rotation (1000+ angles) AND time-resolved measurement (repeated scans). Measurement space is 5D: (detector_x, detector_y, rotation_angle, scan_number, electrochemical_time).",
+    "system_f_critical": "System F is ABSOLUTELY CRITICAL for tomography. Without 3D reconstruction, 2D projections cannot reveal filament morphology. Reconstruction is THE OBSERVABLE (not projections).",
+    "challenge": "Tomography data is massive (80-400 GB per experiment). Fast reconstruction (GPU) enables in-situ feedback. Time resolution is limited by scan duration (~10-30 minutes per tomography).",
+    "next_steps": "This case establishes template for high-fidelity System E modeling. Future cases should include acquisition_strategy section with temporal + positional + BLOP opportunities."
+  }
+}
