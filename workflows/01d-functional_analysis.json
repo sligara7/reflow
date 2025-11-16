@@ -555,10 +555,12 @@
         },
         {
           "action_id": "FA-06-A03B",
-          "description": "Parse stakeholder edits from human docs back to machine specs (NEW v3.14.4)",
-          "tool": "parse_human_documentation.py",
-          "command_pattern": "python3 {reflow_root}/tools/parse_human_documentation.py {system_root}/specs/human {system_root}/specs/functional/functional_architecture.json --mode merge",
-          "purpose": "Automate Human → Machine translation - incorporate stakeholder edits made in markdown back into JSON specs",
+          "description": "Parse stakeholder edits from human docs back to machine specs (PLACEHOLDER - v3.14.5)",
+          "tool": "parse_functional_documentation.py (NOT YET IMPLEMENTED)",
+          "status": "placeholder",
+          "implementation_note": "parse_human_documentation.py exists but only supports SERVICE architectures, not FUNCTIONAL architectures. A new tool parse_functional_documentation.py is needed for this use case. See v3.14.5 findings.",
+          "command_pattern_when_implemented": "python3 {reflow_root}/tools/parse_functional_documentation.py --system-root {system_root} --functional-arch {system_root}/specs/functional/functional_architecture.json --validate",
+          "purpose": "Automate Human → Machine translation - incorporate stakeholder edits made in markdown back into functional_architecture.json",
           "when_to_use": "When stakeholders have edited human-readable docs (FUNCTIONAL_ARCHITECTURE.md, visualizations) and those edits need to be incorporated into functional_architecture.json",
           "workflow": [
             "1. Stakeholders review docs/FUNCTIONAL_ARCHITECTURE.md during FA-04 validation",
@@ -571,13 +573,13 @@
           "benefits": [
             "Stakeholders can edit familiar markdown instead of JSON",
             "Automated parsing reduces manual transcription errors",
-            "Bidirectional sync: Machine → Human (generate_human_documentation.py) and Human → Machine (this tool)",
+            "Bidirectional sync: Machine → Human (future tool) and Human → Machine (this tool)",
             "Speeds up refinement loop - stakeholders edit directly, tool parses back"
           ],
           "output_location": "specs/functional/stakeholder_edits_parsed.json",
           "optional": true,
-          "note": "Only use if stakeholders have edited human docs. Most refinements happen directly in functional_architecture.json.",
-          "time_savings": "15-30 min per refinement iteration (automated parsing vs manual transcription)"
+          "note": "SKIP FOR NOW - Tool not yet implemented. Most refinements happen directly in functional_architecture.json.",
+          "time_savings_when_implemented": "15-30 min per refinement iteration (automated parsing vs manual transcription)"
         },
         {
           "action_id": "FA-06-A04",

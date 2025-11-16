@@ -278,10 +278,10 @@
         },
         {
           "action_id": "AV-03-A02B",
-          "description": "Auto-generate human-readable documentation from machine specs (NEW v3.14.4)",
+          "description": "Auto-generate human-readable documentation from machine specs (NEW v3.14.4, CORRECTED v3.14.5)",
           "tool": "generate_human_documentation.py",
-          "command_pattern": "python3 {reflow_root}/tools/generate_human_documentation.py {system_root}/specs/machine {system_root}/specs/human --format markdown",
-          "purpose": "Automate Machine → Human translation - convert JSON specs to stakeholder-friendly markdown",
+          "command_pattern": "python3 {reflow_root}/tools/generate_human_documentation.py --system-root {system_root} --output-dir {system_root}/specs/human/documentation/services",
+          "purpose": "Automate Machine → Human translation - convert service architecture JSON specs to stakeholder-friendly markdown",
           "translation_targets": [
             "service_architecture.json → system_description.md",
             "interface_contracts.json → interface_specifications.md",
