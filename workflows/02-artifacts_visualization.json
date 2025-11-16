@@ -277,6 +277,27 @@
           ]
         },
         {
+          "action_id": "AV-03-A02B",
+          "description": "Auto-generate human-readable documentation from machine specs (NEW v3.14.4)",
+          "tool": "generate_human_documentation.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_human_documentation.py {system_root}/specs/machine {system_root}/specs/human --format markdown",
+          "purpose": "Automate Machine → Human translation - convert JSON specs to stakeholder-friendly markdown",
+          "translation_targets": [
+            "service_architecture.json → system_description.md",
+            "interface_contracts.json → interface_specifications.md",
+            "system_of_systems_graph.json → architecture_overview.md"
+          ],
+          "benefits": [
+            "Consistency - automated translation ensures machine and human docs stay synchronized",
+            "Time savings - 30-60 min per service vs manual documentation",
+            "Completeness - tool ensures all machine spec elements are documented",
+            "Updates - regenerate human docs whenever machine specs change"
+          ],
+          "output_location": "specs/human/",
+          "note": "Tool generates initial draft - LLM should review and enhance with rationale, examples, and context",
+          "when_to_run": "After service architectures finalized, before stakeholder review"
+        },
+        {
           "action_id": "AV-03-A03",
           "description": "Create Architecture Context Summary",
           "template": "architecture_context_summary_template.json",

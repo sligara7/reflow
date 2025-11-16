@@ -554,6 +554,32 @@
           "note": "Can use gap_closure_report.json as input for automated proposals"
         },
         {
+          "action_id": "FA-06-A03B",
+          "description": "Parse stakeholder edits from human docs back to machine specs (NEW v3.14.4)",
+          "tool": "parse_human_documentation.py",
+          "command_pattern": "python3 {reflow_root}/tools/parse_human_documentation.py {system_root}/specs/human {system_root}/specs/functional/functional_architecture.json --mode merge",
+          "purpose": "Automate Human → Machine translation - incorporate stakeholder edits made in markdown back into JSON specs",
+          "when_to_use": "When stakeholders have edited human-readable docs (FUNCTIONAL_ARCHITECTURE.md, visualizations) and those edits need to be incorporated into functional_architecture.json",
+          "workflow": [
+            "1. Stakeholders review docs/FUNCTIONAL_ARCHITECTURE.md during FA-04 validation",
+            "2. Stakeholders make edits directly in markdown (add functions, correct flows, clarify descriptions)",
+            "3. Tool parses edited markdown and identifies changes vs current JSON spec",
+            "4. Tool proposes updates to functional_architecture.json (new functions, modified flows, etc.)",
+            "5. LLM reviews proposed updates for validity",
+            "6. LLM applies approved updates to functional_architecture.json"
+          ],
+          "benefits": [
+            "Stakeholders can edit familiar markdown instead of JSON",
+            "Automated parsing reduces manual transcription errors",
+            "Bidirectional sync: Machine → Human (generate_human_documentation.py) and Human → Machine (this tool)",
+            "Speeds up refinement loop - stakeholders edit directly, tool parses back"
+          ],
+          "output_location": "specs/functional/stakeholder_edits_parsed.json",
+          "optional": true,
+          "note": "Only use if stakeholders have edited human docs. Most refinements happen directly in functional_architecture.json.",
+          "time_savings": "15-30 min per refinement iteration (automated parsing vs manual transcription)"
+        },
+        {
           "action_id": "FA-06-A04",
           "description": "Re-run technical analysis FIRST",
           "returns_to": "FA-05 actions (regenerate graph, re-run gap/redundancy/efficiency analysis)",

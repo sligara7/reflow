@@ -270,6 +270,28 @@
           "validation": "Validate workflow JSON schema after edits"
         },
         {
+          "action_id": "RFU-05-A02B",
+          "description": "Validate all workflow files for schema compliance (NEW v3.14.4)",
+          "tool": "validate_workflow_files.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_workflow_files.py {reflow_root}/workflows",
+          "purpose": "Catch workflow schema errors immediately after editing - prevents broken workflows from being deployed",
+          "validation_checks": [
+            "All workflow files are valid JSON",
+            "Required fields present (workflow_metadata, workflow_steps, etc.)",
+            "Step IDs unique within workflow",
+            "next_step references point to valid steps",
+            "Tool references point to existing tools",
+            "Template references point to existing templates",
+            "Action IDs properly formatted",
+            "Gates properly defined"
+          ],
+          "on_failure": "FIX ERRORS NOW before proceeding - report which workflows have schema violations",
+          "benefit": "Prevents deployment of malformed workflows that would break Reflow",
+          "blocking": true,
+          "output_location": "context/workflow_validation_report.json",
+          "note": "Runs on ALL workflows in workflows/ directory, not just modified ones"
+        },
+        {
           "action_id": "RFU-05-A03",
           "description": "Refactor tools/*.py files",
           "for_each_issue": "Optimize new tool functions",
@@ -320,6 +342,7 @@
           "name": "Implementation Validated (Self-Sharpening Complete)",
           "checks": [
             "All workflows/*.json files valid and executable",
+            "Workflow schema validation PASSED (RFU-05-A02B) - no schema violations detected",
             "All tools/*.py files pass syntax check",
             "Integration tests pass (new feature works)",
             "Regression tests pass (existing functionality works)",
@@ -327,7 +350,8 @@
             "Context consumption optimized for new feature"
           ],
           "blocking": true,
-          "success_message": "New feature implemented AND optimized - Reflow has sharpened itself"
+          "success_message": "New feature implemented AND optimized - Reflow has sharpened itself",
+          "critical_note": "Workflow validation (RFU-05-A02B) is MANDATORY - prevents broken workflows"
         }
       ],
       "next_step": "RFU-06"
