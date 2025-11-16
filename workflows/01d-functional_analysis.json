@@ -172,6 +172,23 @@
             "Execution time estimates"
           ],
           "note": "This is a MACHINE-READABLE specification for analysis"
+        },
+        {
+          "action_id": "FA-02-A05",
+          "description": "IMMEDIATELY validate functional architecture format",
+          "tool": "validate_architecture_format.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_architecture_format.py {system_root}/specs/functional/functional_architecture.json --mode functional",
+          "purpose": "Catch format errors NOW (not at FA-05 when it's too late) - ensures file works with system_of_systems_graph_v2.py",
+          "validation_checks": [
+            "functions field exists and is ARRAY",
+            "All functions have function_id and function_name",
+            "dependencies field exists and is ARRAY",
+            "All dependencies have source and target",
+            "Valid JSON syntax"
+          ],
+          "on_failure": "FIX ERRORS NOW before proceeding - DO NOT defer to FA-05",
+          "blocking": true,
+          "critical": "This validation prevents reformatting loops at FA-05"
         }
       ],
       "templates_used": [
@@ -183,25 +200,27 @@
       "gates": [
         {
           "gate_id": "G-FA-02",
-          "name": "Functional Architecture Defined",
+          "name": "Functional Architecture Defined and Validated",
           "checks": [
             "All user scenarios mapped to functional flows",
             "All flows decomposed into atomic functions",
             "Function dependencies defined",
-            "functional_architecture.json created"
+            "functional_architecture.json created",
+            "Format validation PASSED (FA-02-A05) - file ready for FA-05 tools"
           ],
-          "blocking": true
+          "blocking": true,
+          "critical": "Format validation is MANDATORY - prevents reformatting loops at FA-05"
         }
       ],
-      "next_step": "FA-03"
+      "next_step": "FA-05"
     },
     {
       "step_id": "FA-03",
       "name": "Functional Architecture Visualization",
-      "description": "Generate human-readable visualizations of functional architecture for stakeholder validation",
+      "description": "Generate human-readable visualizations of functional architecture for stakeholder validation (after technical validation)",
       "phase": "visualization",
       "step_file": "workflow_steps/functional_analysis/FA-03-Visualization.json",
-      "rationale": "CRITICAL: Stakeholders cannot validate machine-readable JSON - must create visual diagrams using standard notation (BPMN, UML)",
+      "rationale": "CRITICAL: Stakeholders cannot validate machine-readable JSON - must create visual diagrams using standard notation (BPMN, UML). Visualizations created AFTER technical analysis so gap information can be included.",
       "actions": [
         {
           "action_id": "FA-03-A01",
@@ -291,7 +310,7 @@
       "conditional_execution": {
         "condition": "user_preferences.stakeholder_approval_required == true",
         "if_true": "Execute full stakeholder validation (mandatory and blocking)",
-        "if_false": "SKIP this step - proceed directly to FA-05"
+        "if_false": "SKIP this step - proceed directly to FA-06"
       },
       "rationale": "Stakeholder sign-off on functional architecture BEFORE service allocation prevents costly rework and misalignment. However, personal/hobby projects may not need formal approval.",
       "actions": [
@@ -340,8 +359,8 @@
           "action_id": "FA-04-A04",
           "description": "Obtain stakeholder sign-off or identify refinements needed",
           "outcomes": [
-            "APPROVED: Stakeholders validate functional architecture - proceed to FA-05",
-            "REFINEMENTS NEEDED: Critical issues identified - return to FA-02 or FA-03 to address"
+            "APPROVED: Stakeholders validate functional architecture - proceed to FA-06",
+            "REFINEMENTS NEEDED: Critical issues identified - return to FA-06 for iterative refinement"
           ]
         }
       ],
@@ -360,10 +379,10 @@
             "Stakeholders approve functional architecture"
           ],
           "blocking": true,
-          "note": "MANDATORY gate - cannot proceed to technical analysis without stakeholder validation"
+          "note": "MANDATORY gate - cannot proceed to refinement without stakeholder validation (when required)"
         }
       ],
-      "next_step": "FA-05"
+      "next_step": "FA-06"
     },
     {
       "step_id": "FA-05",
@@ -465,7 +484,7 @@
           "blocking": true
         }
       ],
-      "next_step": "FA-06"
+      "next_step": "FA-03"
     },
     {
       "step_id": "FA-06",
@@ -536,21 +555,24 @@
         },
         {
           "action_id": "FA-06-A04",
-          "description": "Regenerate visualizations with refinements",
-          "returns_to": "FA-03 actions (generate all diagrams and documentation)",
-          "purpose": "Stakeholders must review refined visualizations"
+          "description": "Re-run technical analysis FIRST",
+          "returns_to": "FA-05 actions (regenerate graph, re-run gap/redundancy/efficiency analysis)",
+          "purpose": "Verify refinements resolve technical issues BEFORE creating visualizations",
+          "order_note": "Technical validation comes FIRST - must verify architecture is sound before visualizing"
         },
         {
           "action_id": "FA-06-A05",
-          "description": "Re-run stakeholder validation",
-          "returns_to": "FA-04 actions (stakeholder review of refined visualizations)",
-          "purpose": "Verify refinements address stakeholder concerns"
+          "description": "Regenerate visualizations with refinements",
+          "returns_to": "FA-03 actions (generate all diagrams and documentation)",
+          "purpose": "Create visualizations of technically-validated architecture for stakeholder review",
+          "order_note": "Visualizations created AFTER technical validation passes"
         },
         {
           "action_id": "FA-06-A06",
-          "description": "Re-run technical analysis",
-          "returns_to": "FA-05 actions (regenerate graph, re-run gap/redundancy/efficiency analysis)",
-          "purpose": "Verify refinements resolve technical issues"
+          "description": "Re-run stakeholder validation",
+          "returns_to": "FA-04 actions (stakeholder review of refined visualizations)",
+          "purpose": "Verify refinements address stakeholder concerns",
+          "order_note": "Stakeholder validation comes LAST - reviews technically-sound, visualized architecture"
         },
         {
           "action_id": "FA-06-A07",
@@ -730,9 +752,10 @@
     "required": [
       "Functional requirements extracted and validated (FA-01)",
       "Functional flows defined and functions decomposed (FA-02)",
-      "Visualizations generated using standard notation (FA-03)",
-      "Stakeholder validation obtained (FA-04)",
+      "Functional architecture format validated IMMEDIATELY after creation (FA-02-A05)",
       "Technical analysis complete with no critical issues (FA-05)",
+      "Visualizations generated using standard notation (FA-03)",
+      "Stakeholder validation obtained (FA-04) - CONDITIONAL based on user preferences",
       "Iterative refinement complete (FA-06)",
       "Functional architecture package finalized (FA-07)"
     ],
@@ -757,7 +780,10 @@
   "llm_agent_guidance": {
     "critical_reminders": [
       "This workflow focuses on FUNCTIONAL ARCHITECTURE (what functions, how they interact) - NOT service allocation",
-      "Stakeholder validation (FA-04) is MANDATORY - must obtain sign-off on visualizations before technical analysis",
+      "CRITICAL: After creating functional_architecture.json (FA-02), IMMEDIATELY validate format (FA-02-A05) before proceeding",
+      "Step order is FA-02 (create + validate) → FA-05 (technical analysis) → FA-03 (visualizations) → FA-04 (stakeholder validation)",
+      "Technical validation (FA-05) comes BEFORE visualizations (FA-03) - ensures architecture is sound before presenting to stakeholders",
+      "Stakeholder validation (FA-04) is CONDITIONAL - only required if user_preferences.stakeholder_approval_required == true",
       "Dual validation required: BOTH stakeholder (FA-04) AND technical (FA-05) must pass",
       "Iterative refinement (FA-06) is a LOOP - continue until no critical issues from EITHER source",
       "User decides at FA-07 whether to continue to service allocation (01b/01c) or stop here",
