@@ -31,24 +31,37 @@ Comprehensive meta-analysis revealed:
 **Action**: Added S-01-A05
 
 **What it does**:
-- Auto-detects LLM model and context window (Claude Sonnet 4.5: 200k, GPT-4 Turbo: 128k, etc.)
+- Auto-detects LLM model and context window
 - Configures context thresholds with 80% safety margin
 - Stores LLM capabilities in working_memory.json for entire workflow
 
+**Verified Models**:
+- ✅ **Claude Sonnet 4.5 (200k context window)** - VERIFIED and RECOMMENDED
+
+**Potentially Compatible** (unverified):
+- GPT-5 or GPT-5.1 (if released with large context window)
+- Other LLMs with >128k context windows
+
+**Not Recommended**:
+- ❌ GPT-4 and earlier models - insufficient success rate with Reflow workflows
+
 **Benefits**:
-- **Multi-LLM support**: Same workflow works for Claude, GPT-4, GPT-3.5 with appropriate thresholds
+- **Optimized for Claude**: Workflows designed and tested with Claude Sonnet 4.5
 - **Prevents context exhaustion**: Auto-configures refresh triggers based on actual capabilities
 - **Self-reporting**: LLM agents self-report capabilities during setup
+- **Future-ready**: Can adapt to new LLMs with large context windows
 
 **Command**:
 ```bash
 python3 {reflow_root}/tools/detect_llm_capabilities.py --interactive --update-working-memory {system_root}
 ```
 
-**Example LLM self-report**:
+**Example LLM self-report** (Claude Sonnet 4.5):
 ```
 "I'm Claude Sonnet 4.5 with a 200,000 token context window."
-→ Tool configures: usable_context=160,000, refresh_threshold=5 operations
+→ Tool configures: usable_context=160,000 tokens (80% safety margin)
+                   refresh_threshold=5 operations
+                   status=VERIFIED_MODEL ✓
 ```
 
 **Integration Point**: Runs IMMEDIATELY after path configuration (S-01-A04), before any heavy workflow operations
@@ -135,10 +148,11 @@ python3 {reflow_root}/tools/analyze_workflow_complexity.py {reflow_root}/workflo
 
 ### Immediate Benefits
 
-1. **Multi-LLM Support** (S-01-A05)
-   - GPT-4 users: Auto-configure for 128k window (vs 200k for Claude)
-   - GPT-3.5 users: Auto-configure for 16k window
-   - Future LLMs: Automatically supported via self-reporting
+1. **Claude Sonnet 4.5 Optimization** (S-01-A05)
+   - **VERIFIED**: Tested and working with 200k context window
+   - Auto-configures 160k usable context (80% safety margin)
+   - Optimal refresh threshold (5 operations)
+   - Future LLMs: Can be supported via self-reporting (pending verification)
 
 2. **Proactive Workflow Maintenance** (META-04-A05)
    - Detect complex workflows before they cause issues
@@ -154,12 +168,18 @@ python3 {reflow_root}/tools/analyze_workflow_complexity.py {reflow_root}/workflo
 ### User Experience
 
 **Before**:
-- LLM agents used default 200k threshold (wrong for GPT-4)
+- Manual context threshold configuration
+- No model verification status
 - Workflow complexity issues discovered reactively (after failures)
 
 **After**:
-- LLM agents auto-configure for their actual capabilities
+- Auto-configured thresholds for verified models (Claude Sonnet 4.5)
+- Clear model verification status
 - Workflow complexity issues detected proactively (in meta-analysis)
+
+**Recommended Setup**:
+- **Primary**: Claude Sonnet 4.5 (Claude Code, Claude API) - VERIFIED ✓
+- **Future**: GPT-5/GPT-5.1 may work pending verification
 
 ---
 

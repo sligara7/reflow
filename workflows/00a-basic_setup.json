@@ -117,8 +117,18 @@
           "description": "Detect LLM capabilities and configure context thresholds (v3.9.1)",
           "tool": "detect_llm_capabilities.py",
           "command_pattern": "python3 {reflow_root}/tools/detect_llm_capabilities.py --interactive --update-working-memory {system_root}",
-          "purpose": "Auto-configure context window thresholds based on LLM model (Claude Sonnet 4.5: 200k, GPT-4 Turbo: 128k, etc.)",
+          "purpose": "Auto-configure context window thresholds based on LLM model capabilities",
           "when_to_run": "IMMEDIATE after path configuration - enables proper context management for entire workflow",
+          "verified_models": [
+            "Claude Sonnet 4.5 (200k context window) - VERIFIED and RECOMMENDED"
+          ],
+          "potentially_compatible": [
+            "GPT-5 or GPT-5.1 (if released) - unverified but may work with appropriate context window",
+            "Other LLMs with large context windows (>128k) - unverified"
+          ],
+          "not_recommended": [
+            "GPT-4 and earlier models - insufficient success rate with Reflow workflows"
+          ],
           "outputs": [
             "LLM model name and context window stored in working_memory.json",
             "Recommended context thresholds calculated (80% safety margin)",
@@ -127,7 +137,7 @@
           "benefit": "Prevents context exhaustion by adapting to LLM's actual capabilities",
           "optional": false,
           "blocking": false,
-          "note": "LLM agents should self-report capabilities: 'I am [MODEL] with [CONTEXT WINDOW] tokens'. Tool auto-configures thresholds."
+          "note": "LLM agents should self-report capabilities: 'I am Claude Sonnet 4.5 with a 200,000 token context window'. Tool auto-configures thresholds."
         }
       ],
       "tools_used": [

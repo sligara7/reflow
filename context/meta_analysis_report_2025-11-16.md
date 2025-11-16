@@ -349,9 +349,12 @@ All 18 cycles are **intentional iterative refinement patterns**:
 1. **Integrate LLM Capability Detection (v3.9.1)**
    - Tool: detect_llm_capabilities.py
    - Target: 00a-basic_setup.json (S-01A step)
-   - Benefit: Auto-configure context thresholds for different LLMs (Claude, GPT-4, etc.)
+   - Verified Model: Claude Sonnet 4.5 (200k context) - TESTED and WORKING
+   - Potentially Compatible: GPT-5/GPT-5.1 (unverified), other large-context LLMs
+   - Not Recommended: GPT-4 and earlier (insufficient success rate)
+   - Benefit: Auto-configure context thresholds for verified LLMs
    - Effort: 30 minutes
-   - Impact: Better multi-LLM support
+   - Impact: Optimized for Claude Sonnet 4.5, future-ready for new LLMs
 
 2. **Integrate Workflow Complexity Analysis into Meta-Analysis**
    - Tool: analyze_workflow_complexity.py
