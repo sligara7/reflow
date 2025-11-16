@@ -268,13 +268,14 @@
         },
         {
           "action_id": "FA-03-A05",
-          "description": "Create human-readable functional architecture document",
+          "description": "Create human-readable functional architecture document (CORRECTED v3.14.6)",
           "tool": "generate_functional_documentation.py",
-          "command_pattern": "python3 {reflow_root}/tools/generate_functional_documentation.py {system_root}",
-          "purpose": "Generate markdown documentation describing functional architecture",
+          "command_pattern": "python3 {reflow_root}/tools/generate_functional_documentation.py --system-root {system_root}",
+          "purpose": "Generate markdown documentation describing functional architecture - enables stakeholder review and editing",
           "outputs": [
-            "docs/FUNCTIONAL_ARCHITECTURE.md - Complete written description"
-          ]
+            "specs/human/FUNCTIONAL_ARCHITECTURE.md - Complete written description"
+          ],
+          "note": "Tool implemented in v3.14.6 - generates markdown from functional_architecture.json for stakeholder review"
         }
       ],
       "tools_used": [
@@ -555,31 +556,33 @@
         },
         {
           "action_id": "FA-06-A03B",
-          "description": "Parse stakeholder edits from human docs back to machine specs (PLACEHOLDER - v3.14.5)",
-          "tool": "parse_functional_documentation.py (NOT YET IMPLEMENTED)",
-          "status": "placeholder",
-          "implementation_note": "parse_human_documentation.py exists but only supports SERVICE architectures, not FUNCTIONAL architectures. A new tool parse_functional_documentation.py is needed for this use case. See v3.14.5 findings.",
-          "command_pattern_when_implemented": "python3 {reflow_root}/tools/parse_functional_documentation.py --system-root {system_root} --functional-arch {system_root}/specs/functional/functional_architecture.json --validate",
+          "description": "Parse stakeholder edits from human docs back to machine specs (IMPLEMENTED v3.14.6)",
+          "tool": "parse_functional_documentation.py",
+          "command_pattern": "python3 {reflow_root}/tools/parse_functional_documentation.py --system-root {system_root} --functional-arch {system_root}/specs/functional/functional_architecture.json --validate",
           "purpose": "Automate Human → Machine translation - incorporate stakeholder edits made in markdown back into functional_architecture.json",
-          "when_to_use": "When stakeholders have edited human-readable docs (FUNCTIONAL_ARCHITECTURE.md, visualizations) and those edits need to be incorporated into functional_architecture.json",
+          "when_to_use": "When stakeholders have edited human-readable docs (FUNCTIONAL_ARCHITECTURE.md) and those edits need to be incorporated into functional_architecture.json",
           "workflow": [
-            "1. Stakeholders review docs/FUNCTIONAL_ARCHITECTURE.md during FA-04 validation",
+            "1. Stakeholders review specs/human/FUNCTIONAL_ARCHITECTURE.md during FA-04 validation",
             "2. Stakeholders make edits directly in markdown (add functions, correct flows, clarify descriptions)",
             "3. Tool parses edited markdown and identifies changes vs current JSON spec",
-            "4. Tool proposes updates to functional_architecture.json (new functions, modified flows, etc.)",
-            "5. LLM reviews proposed updates for validity",
-            "6. LLM applies approved updates to functional_architecture.json"
+            "4. Tool reports detected changes (added/removed/modified flows and functions)",
+            "5. LLM reviews proposed updates for validity and consistency",
+            "6. Tool updates functional_architecture.json with approved changes (creates versioned file + symlink)"
           ],
           "benefits": [
             "Stakeholders can edit familiar markdown instead of JSON",
             "Automated parsing reduces manual transcription errors",
-            "Bidirectional sync: Machine → Human (future tool) and Human → Machine (this tool)",
+            "Bidirectional sync: Machine → Human (FA-03-A05) and Human → Machine (this action)",
             "Speeds up refinement loop - stakeholders edit directly, tool parses back"
           ],
-          "output_location": "specs/functional/stakeholder_edits_parsed.json",
+          "outputs": [
+            "specs/functional/functional_architecture_v{version}-{date}.json - Versioned update",
+            "specs/functional/functional_architecture.json - Symlink to current version",
+            "context/functional_architecture_changes.json - Change detection report"
+          ],
           "optional": true,
-          "note": "SKIP FOR NOW - Tool not yet implemented. Most refinements happen directly in functional_architecture.json.",
-          "time_savings_when_implemented": "15-30 min per refinement iteration (automated parsing vs manual transcription)"
+          "note": "Tool implemented in v3.14.6 - enables bidirectional sync for functional architecture. Use --dry-run flag first to review changes before applying.",
+          "time_savings": "15-30 min per refinement iteration (automated parsing vs manual transcription)"
         },
         {
           "action_id": "FA-06-A04",
