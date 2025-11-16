@@ -308,12 +308,36 @@
             "specs/functional/graphs/system_of_systems_graph.json",
             "Console output with NetworkX analysis results"
           ]
+        },
+        {
+          "action_id": "META-04-A05",
+          "description": "Analyze workflow file complexity (NEW v3.14.3)",
+          "tool": "analyze_workflow_complexity.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_workflow_complexity.py {reflow_root}/workflows",
+          "purpose": "Detect overly complex workflow files that need refactoring",
+          "analyses_performed": [
+            "File size analysis (detect workflows >50KB needing splitting)",
+            "Step count analysis (detect workflows >20 steps)",
+            "Action density (average actions per step)",
+            "Complexity scoring (combination of size, steps, action count)",
+            "Refactoring recommendations"
+          ],
+          "output_location": "context/workflow_complexity_analysis.json",
+          "benefit": "Proactively identifies workflows approaching context limits or becoming unmaintainable",
+          "when_to_use": "Every meta-analysis to track workflow growth over time",
+          "expected_results": [
+            "List of workflows by complexity score",
+            "Recommendations for splitting complex workflows",
+            "Trend analysis if previous reports exist"
+          ],
+          "note": "Complements functional architecture analysis by examining the workflow files themselves (implementation-level analysis)"
         }
       ],
       "outputs": [
         "specs/functional/functional_architecture_analysis.json",
         "specs/functional/graphs/functional_architecture_graph.json (from system_of_systems_graph_v2.py)",
         "specs/functional/graphs/system_of_systems_graph.json (from system_of_systems_graph_v2.py)",
+        "context/workflow_complexity_analysis.json (from analyze_workflow_complexity.py)",
         "Console output with summary and recommendations"
       ],
       "typical_time": "5-10 minutes",

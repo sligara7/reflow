@@ -111,10 +111,28 @@
           "description": "Run validate_reflow_setup.py",
           "command_pattern": "python3 {reflow_root}/tools/validate_reflow_setup.py {system_root}",
           "success_criteria": "All validation checks pass"
+        },
+        {
+          "action_id": "S-01-A05",
+          "description": "Detect LLM capabilities and configure context thresholds (v3.9.1)",
+          "tool": "detect_llm_capabilities.py",
+          "command_pattern": "python3 {reflow_root}/tools/detect_llm_capabilities.py --interactive --update-working-memory {system_root}",
+          "purpose": "Auto-configure context window thresholds based on LLM model (Claude Sonnet 4.5: 200k, GPT-4 Turbo: 128k, etc.)",
+          "when_to_run": "IMMEDIATE after path configuration - enables proper context management for entire workflow",
+          "outputs": [
+            "LLM model name and context window stored in working_memory.json",
+            "Recommended context thresholds calculated (80% safety margin)",
+            "Context refresh threshold configured"
+          ],
+          "benefit": "Prevents context exhaustion by adapting to LLM's actual capabilities",
+          "optional": false,
+          "blocking": false,
+          "note": "LLM agents should self-report capabilities: 'I am [MODEL] with [CONTEXT WINDOW] tokens'. Tool auto-configures thresholds."
         }
       ],
       "tools_used": [
-        "validate_reflow_setup.py"
+        "validate_reflow_setup.py",
+        "detect_llm_capabilities.py"
       ],
       "outputs": [
         "context/working_memory.json with complete path configuration"
