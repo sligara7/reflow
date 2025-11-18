@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.14.1
-**Last Updated**: 2025-11-12
+**Version**: 3.15.0
+**Last Updated**: 2025-11-18
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.15.0**: **Architecture Synchronization Loop** - Systematic iterative loop that keeps architecture synchronized with implementation during development and testing. Detects drift, versions changes with rationale, and enforces synchronization gates.
 
 **NEW in v3.1.0**: Support for 6+ architectural frameworks - UAF 1.2, Systems Biology, Social Network Analysis, Ecological Systems, Complex Adaptive Systems, Decision Flow, and Custom frameworks.
 

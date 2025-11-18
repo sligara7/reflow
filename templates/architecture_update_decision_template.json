@@ -1,0 +1,46 @@
+{
+  "_template_metadata": {
+    "template_name": "architecture_update_decision_template.json",
+    "version": "1.0.0",
+    "description": "Template for documenting decision to update architecture or fix implementation",
+    "created": "2025-11-18",
+    "part_of": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+    "usage": "Created during D-06.5-A03 (Architecture Update Decision)"
+  },
+  "decision_metadata": {
+    "timestamp": "{{TIMESTAMP}}",
+    "workflow_step": "D-06.5-A03",
+    "system_name": "{{SYSTEM_NAME}}",
+    "decided_by": "LLM Agent with user input"
+  },
+  "decision": "update_architecture | fix_implementation | hybrid",
+  "rationale": "{{WHY_THIS_DECISION_WAS_MADE}}",
+  "similarity_score": 0.0,
+  "primary_root_cause": "{{CATEGORY_FROM_ROOT_CAUSE_ANALYSIS}}",
+  "architecture_changes_to_apply": [
+    {
+      "file": "{{ARCHITECTURE_FILE_PATH}}",
+      "change": "{{WHAT_TO_CHANGE}}",
+      "rationale": "{{WHY_THIS_CHANGE}}",
+      "priority": "high | medium | low"
+    }
+  ],
+  "implementation_fixes_needed": [
+    {
+      "service": "{{SERVICE_NAME}}",
+      "issue": "{{DESCRIPTION_OF_DEVIATION}}",
+      "action": "{{WHAT_TO_FIX}}",
+      "priority": "high | medium | low"
+    }
+  ],
+  "expected_outcome": {
+    "similarity_score_target": 0.95,
+    "architecture_version_increment": "major | minor | patch",
+    "breaking_changes": false
+  },
+  "_decision_types": {
+    "update_architecture": "All changes are legitimate - update architecture to match validated implementation",
+    "fix_implementation": "Changes were mistakes or undesirable - fix code to match original design",
+    "hybrid": "Some changes are legitimate (update architecture), others are mistakes (fix implementation) - most common for moderate drift"
+  }
+}
