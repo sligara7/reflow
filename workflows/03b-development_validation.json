@@ -341,6 +341,83 @@
           "note": "Non-blocking to allow controlled architectural drift with documentation"
         }
       ],
+      "next_step": "D-06.5"
+    },
+    {
+      "step_id": "D-06.5",
+      "name": "Architecture Synchronization & Versioning Loop",
+      "description": "Iterative loop to synchronize architecture with implementation reality when drift is detected",
+      "phase": "validation",
+      "step_file": "workflow_steps/development/D-06.5-ArchitectureSynchronizationLoop.json",
+      "new_in_version": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+      "purpose": "Ensure architecture documents always reflect implementation reality through systematic synchronization and versioning",
+      "actions": [
+        {
+          "action_id": "D-06.5-A01",
+          "description": "Analyze architecture delta significance from D-06 delta report"
+        },
+        {
+          "action_id": "D-06.5-A02",
+          "description": "Classify root cause of architectural drift"
+        },
+        {
+          "action_id": "D-06.5-A03",
+          "description": "Decide whether to update architecture or fix implementation"
+        },
+        {
+          "action_id": "D-06.5-A04",
+          "description": "Version and update architecture specifications using version_architecture.py tool"
+        },
+        {
+          "action_id": "D-06.5-A05",
+          "description": "Re-validate updated architecture"
+        },
+        {
+          "action_id": "D-06.5-A06",
+          "description": "Regenerate architecture artifacts (graphs, diagrams, docs)"
+        },
+        {
+          "action_id": "D-06.5-A07",
+          "description": "Verify architecture synchronization (similarity >= 0.95)"
+        },
+        {
+          "action_id": "D-06.5-A08",
+          "description": "Update implementation if needed (fix code to match architecture)"
+        },
+        {
+          "action_id": "D-06.5-A09",
+          "description": "Document synchronization completion"
+        }
+      ],
+      "tools_used": [
+        "version_architecture.py (NEW v3.15.0)",
+        "validate_architecture.py",
+        "generate_as_built_architecture.py",
+        "system_of_systems_graph_v2.py"
+      ],
+      "outputs": [
+        "specs/machine/architecture_version_history.json (version history)",
+        "Versioned architecture files (service_architecture_v{version}.json)",
+        "Updated architecture files",
+        "docs/ARCHITECTURE_SYNCHRONIZATION_REPORT.md",
+        "context/architecture_synchronization_signoff.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-D-06.5",
+          "name": "Architecture Synchronization Gate",
+          "checks": [
+            "Architecture delta analyzed and classified",
+            "If similarity < 0.7: MANDATORY synchronization completed",
+            "If similarity 0.7-0.95: Review and decision documented",
+            "If architecture updated: Re-validated successfully",
+            "Final similarity >= 0.95 (architecture matches implementation)",
+            "Changes versioned with rationale"
+          ],
+          "blocking": true,
+          "enforcement": "MANDATORY when similarity < 0.7, BLOCKING for review when 0.7-0.95"
+        }
+      ],
       "next_step": "D-07"
     },
     {
@@ -465,9 +542,29 @@
         },
         {
           "action_id": "D-Post-A02",
-          "description": "Update architecture artifacts if needed",
-          "purpose": "Reflect implementation reality in architecture docs",
-          "note": "Document deviations from original architecture"
+          "name": "Final Architecture Synchronization Verification",
+          "description": "Mandatory verification that architecture and implementation are synchronized before testing",
+          "purpose": "Prevent stale architecture from entering testing phase",
+          "enhanced_in_version": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+          "validation_steps": [
+            "1. Read architecture delta report from D-06",
+            "2. Verify D-06.5 Architecture Synchronization Loop was executed",
+            "3. Check architecture version history exists and is up-to-date",
+            "4. Final similarity check: as-built vs as-designed >= 0.95",
+            "5. If similarity < 0.95: BLOCK and return to D-06.5"
+          ],
+          "inputs": [
+            "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json (from D-06)",
+            "specs/machine/architecture_version_history.json (from D-06.5)",
+            "context/architecture_synchronization_signoff.json (from D-06.5-A09)"
+          ],
+          "blocking_conditions": {
+            "similarity < 0.95": "BLOCK - Major drift unresolved, return to D-06.5 for resolution",
+            "no_version_history_when_updated": "WARNING - If architecture was updated but no version history, investigate",
+            "D-06.5_not_executed": "WARNING - If similarity < 0.95 but D-06.5 was skipped, return to D-06.5"
+          },
+          "output": "context/architecture_synchronization_signoff.json (final sign-off)",
+          "gate_enforcement": "BLOCKING if similarity < 0.95"
         },
         {
           "action_id": "D-Post-A03",

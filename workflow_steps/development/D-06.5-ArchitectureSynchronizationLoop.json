@@ -1,0 +1,635 @@
+{
+  "step_id": "D-06.5",
+  "name": "Architecture Synchronization & Versioning Loop",
+  "description": "Iterative loop to synchronize architecture with implementation reality when drift is detected",
+  "phase": "validation",
+  "new_in_version": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+  "purpose": "Ensure architecture documents always reflect implementation reality through systematic synchronization and versioning",
+  "rationale": "Development and testing iterations cause implementation to diverge from designed architecture due to requirements creep, performance optimization, and operational realities. This step provides a systematic mechanism to detect drift, classify root causes, update architecture with versioning, and verify synchronization.",
+  "when_to_execute": "After D-06 (As-Built Architecture Generation) and before D-07 (Pre-Deployment Validation)",
+  "actions": [
+    {
+      "action_id": "D-06.5-A01",
+      "name": "Analyze Architecture Delta Significance",
+      "description": "Determine severity of architectural drift from D-06 delta report",
+      "inputs": [
+        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json (from D-06-A02)"
+      ],
+      "extract_from_delta_report": {
+        "similarity_score": "Overall Jaccard similarity between designed and built architecture",
+        "breaking_changes": "List of breaking changes (service removals, interface changes)",
+        "non_breaking_changes": "List of non-breaking changes (additions, modifications)"
+      },
+      "decision_tree": {
+        "similarity_score >= 0.95": {
+          "severity": "MINIMAL",
+          "interpretation": "Implementation matches design very closely (95%+ match)",
+          "action": "Document minor deltas in rationale file, proceed to D-07",
+          "blocking": false,
+          "llm_guidance": "Skip to D-06.5-A09 (document and complete step)"
+        },
+        "0.7 <= similarity_score < 0.95": {
+          "severity": "MODERATE",
+          "interpretation": "Noticeable drift (70-95% match) - requires review",
+          "action": "REVIEW REQUIRED - decide whether to update architecture OR fix implementation",
+          "blocking": true,
+          "llm_guidance": "Proceed to D-06.5-A02 (classify root causes)",
+          "review_criteria": [
+            "Are changes intentional and well-justified?",
+            "Do changes improve the system (performance, security, maintainability)?",
+            "Are changes properly documented?",
+            "Do changes align with requirements?"
+          ]
+        },
+        "similarity_score < 0.7": {
+          "severity": "MAJOR",
+          "interpretation": "Significant drift (<70% match) - implementation substantially different from design",
+          "action": "MANDATORY SYNCHRONIZATION - must update architecture OR fix implementation before proceeding",
+          "blocking": true,
+          "llm_guidance": "Proceed to D-06.5-A02 (classify root causes), synchronization is REQUIRED",
+          "enforcement": "Gate G-D-06.5 will BLOCK if drift remains unresolved"
+        }
+      },
+      "output": "Console summary of drift severity and required action"
+    },
+    {
+      "action_id": "D-06.5-A02",
+      "name": "Root Cause Classification",
+      "description": "Classify why architecture diverged from design to track patterns and guide decision",
+      "purpose": "Understanding root cause helps decide whether to update architecture or fix implementation",
+      "llm_instructions": [
+        "Review the delta report from D-06-A02",
+        "Examine breaking_changes and non_breaking_changes lists",
+        "For each significant change, determine the most likely root cause",
+        "Consider development history, test results, performance data",
+        "Classify into one or more categories below"
+      ],
+      "categories": {
+        "requirements_creep": {
+          "description": "New or changed requirements discovered during implementation/testing",
+          "examples": [
+            "Stakeholder requested additional functionality during development",
+            "Discovered missing use cases during integration testing",
+            "Integration with external system revealed new requirements",
+            "Compliance requirements discovered during security review"
+          ],
+          "indicators_in_delta": [
+            "New services added",
+            "New interfaces added",
+            "New data models added",
+            "Expanded API endpoints"
+          ],
+          "recommended_action": "Update functional architecture AND service architecture to reflect validated new requirements"
+        },
+        "performance_optimization": {
+          "description": "Original design could not meet performance requirements",
+          "examples": [
+            "Synchronous design too slow, switched to async processing",
+            "Database schema caused slow queries, redesigned indexes/schema",
+            "Memory consumption too high, refactored to streaming",
+            "Network latency required caching layer not in original design",
+            "Batch processing too slow, added parallel processing"
+          ],
+          "indicators_in_delta": [
+            "Changed service communication patterns (sync → async)",
+            "Added caching services",
+            "Added message queues",
+            "Changed database technology",
+            "Added load balancers or scaling components"
+          ],
+          "recommended_action": "Update service architecture to reflect optimized design (functional architecture may not change)"
+        },
+        "technical_constraints": {
+          "description": "Design was impossible or impractical to implement due to technical limitations",
+          "examples": [
+            "Library/framework limitations not known during design",
+            "Deployment environment constraints (e.g., database permissions)",
+            "Technology stack incompatibilities",
+            "Cloud provider limitations",
+            "Container orchestration constraints"
+          ],
+          "indicators_in_delta": [
+            "Changed technology choices (different database, message queue, etc.)",
+            "Changed deployment architecture",
+            "Simplified service boundaries due to technology limits"
+          ],
+          "recommended_action": "Update service architecture, document constraints in architecture notes"
+        },
+        "security_hardening": {
+          "description": "Security requirements not fully addressed in original design",
+          "examples": [
+            "Added authentication layer not in original design",
+            "Added authorization service for fine-grained access control",
+            "Added encryption for data at rest/in transit",
+            "Added audit logging service",
+            "Added API gateway for rate limiting and security"
+          ],
+          "indicators_in_delta": [
+            "Added authentication service",
+            "Added API gateway",
+            "Changed interface contracts to include auth tokens",
+            "Added security-related services"
+          ],
+          "recommended_action": "Update service architecture to reflect security enhancements"
+        },
+        "operational_reality": {
+          "description": "Deployment/operational constraints changed architecture",
+          "examples": [
+            "Database permissions prevented designed approach, used alternative",
+            "Network topology required different service layout",
+            "Scaling requirements changed service boundaries",
+            "Monitoring/observability requirements added services",
+            "Cost optimization changed infrastructure design"
+          ],
+          "indicators_in_delta": [
+            "Changed service deployment topology",
+            "Added monitoring/logging services",
+            "Changed database access patterns",
+            "Added infrastructure services (load balancers, proxies)"
+          ],
+          "recommended_action": "Update service architecture, document operational constraints"
+        },
+        "developer_mistake": {
+          "description": "Implementation deviated from design unintentionally (oversight or misunderstanding)",
+          "examples": [
+            "Misunderstood architecture specifications",
+            "Forgot to implement designed features",
+            "Implemented wrong interface contract",
+            "Missed services or interfaces in implementation"
+          ],
+          "indicators_in_delta": [
+            "Missing services that were designed",
+            "Missing interfaces",
+            "Interface contracts don't match ICDs",
+            "Services have wrong responsibilities"
+          ],
+          "recommended_action": "FIX IMPLEMENTATION to match design (do NOT update architecture)"
+        }
+      },
+      "output_file": "context/architecture_drift_root_cause_analysis.json",
+      "output_format": {
+        "structure": {
+          "summary": {
+            "similarity_score": 0.62,
+            "total_changes": 15,
+            "breaking_changes_count": 2,
+            "non_breaking_changes_count": 13
+          },
+          "root_causes": [
+            {
+              "category": "performance_optimization",
+              "confidence": "high",
+              "rationale": "Operational testing revealed 45s character generation time, redesigned to async",
+              "affected_changes": [
+                "Added RabbitMQ message queue service",
+                "Changed CharacterService → AttributeService interface to async message-based",
+                "Added async processing functions to functional architecture"
+              ],
+              "evidence": "Performance test results in specs/machine/ote_artifacts.json"
+            }
+          ]
+        }
+      },
+      "llm_instructions_detailed": [
+        "For each category, assess if it applies to the observed drift",
+        "Assign confidence level: high, medium, low",
+        "Provide clear rationale linking delta changes to root cause",
+        "List specific changes affected by this root cause",
+        "Include evidence (test results, stakeholder feedback, technical docs)",
+        "Multiple root causes are possible (e.g., both performance + security)"
+      ]
+    },
+    {
+      "action_id": "D-06.5-A03",
+      "name": "Architecture Update Decision",
+      "description": "Decide whether to update architecture or fix implementation based on root cause analysis",
+      "inputs": [
+        "context/architecture_drift_root_cause_analysis.json (from D-06.5-A02)",
+        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json"
+      ],
+      "decision_matrix": {
+        "update_architecture_if": [
+          "Root cause is requirements_creep AND new requirements are validated by stakeholders",
+          "Root cause is performance_optimization AND optimization is validated through testing",
+          "Root cause is technical_constraints AND constraints are real/documented",
+          "Root cause is security_hardening AND security requirements are validated",
+          "Root cause is operational_reality AND constraints are unavoidable/documented"
+        ],
+        "fix_implementation_if": [
+          "Root cause is developer_mistake (always fix code, not architecture)",
+          "Changes introduce unnecessary complexity or technical debt",
+          "Original design is superior and implementation should match",
+          "Changes violate security, quality, or architectural standards",
+          "Changes were made without proper justification"
+        ],
+        "hybrid_approach": [
+          "Some changes are legitimate (update architecture for these)",
+          "Some changes are mistakes (fix implementation for these)",
+          "Most common in real-world scenarios"
+        ]
+      },
+      "user_prompt": {
+        "question": "Architecture diverged from design (similarity: {score}). Root cause: {categories}. How should we proceed?",
+        "options": [
+          "Update architecture to match implementation (validated changes)",
+          "Fix implementation to match architecture (unintentional deviation)",
+          "Hybrid: Update some aspects of architecture, fix others (RECOMMENDED for moderate drift)"
+        ],
+        "show_details": {
+          "delta_summary": "Display key breaking/non-breaking changes",
+          "root_cause_analysis": "Display categories with confidence and rationale",
+          "similarity_score": "Show current similarity score",
+          "change_count": "Show number of changes"
+        },
+        "llm_guidance": [
+          "For developer_mistake: ALWAYS recommend fixing implementation",
+          "For performance_optimization with test evidence: USUALLY recommend updating architecture",
+          "For requirements_creep: Verify with user that requirements are validated, then update architecture",
+          "For moderate drift (0.7-0.95): Hybrid approach is usually best",
+          "For major drift (<0.7): Likely multiple root causes, need comprehensive review"
+        ]
+      },
+      "output_decision": "context/architecture_update_decision.json",
+      "output_format": {
+        "decision": "update_architecture | fix_implementation | hybrid",
+        "architecture_changes_to_apply": [
+          {
+            "file": "service_architecture.json",
+            "change": "Add RabbitMQ message queue service",
+            "rationale": "Performance optimization validated by testing"
+          }
+        ],
+        "implementation_fixes_needed": [
+          {
+            "service": "UserService",
+            "issue": "Missing /users/profile endpoint specified in ICD",
+            "action": "Implement missing endpoint"
+          }
+        ]
+      }
+    },
+    {
+      "action_id": "D-06.5-A04",
+      "name": "Version and Update Architecture Specifications",
+      "description": "Update architecture files with versioning and rationale using version_architecture.py tool",
+      "conditional": "Only if D-06.5-A03 decision includes architecture updates",
+      "tool": "version_architecture.py",
+      "command_pattern": "python3 {reflow_root}/tools/version_architecture.py --system-root {system_root} --change-type {primary_root_cause} --rationale \"{rationale_summary}\" --similarity-score {score} --changed-files \"{comma_separated_files}\" --triggered-by \"D-06.5 Architecture Synchronization Loop\" [--test-evidence \"{evidence_path}\"]",
+      "steps": [
+        {
+          "step": "1. Determine which architecture files to update",
+          "guidance": "Based on D-06.5-A03 decision, identify files that need updates",
+          "files_that_may_need_updates": [
+            "specs/machine/service_arch/{service}/service_architecture.json (if service changes)",
+            "specs/machine/functional/functional_architecture.json (if functional flow changes)",
+            "specs/machine/interfaces/{interface}_icd.json (if interface contracts change)",
+            "specs/machine/interface_registry.json (if interfaces added/removed)",
+            "specs/machine/graphs/system_of_systems_graph.json (regenerated later)"
+          ]
+        },
+        {
+          "step": "2. Make architecture updates",
+          "guidance": "Edit architecture JSON files to reflect implementation reality",
+          "llm_instructions": [
+            "Use Edit tool to update architecture files",
+            "Add new services, interfaces, or functions as needed",
+            "Update existing definitions to match implementation",
+            "Ensure JSON schema validity after edits",
+            "Document changes clearly in commit messages"
+          ]
+        },
+        {
+          "step": "3. Run version_architecture.py tool",
+          "purpose": "Create versioned snapshots and update version history",
+          "example": "python3 {reflow_root}/tools/version_architecture.py --system-root {system_root} --change-type performance_optimization --rationale \"Redesigned for async processing due to 45s latency in operational testing\" --similarity-score 0.62 --changed-files \"service_architecture.json,functional_architecture.json\" --triggered-by \"D-06.5\"",
+          "creates": [
+            "Versioned architecture files (e.g., service_architecture_v1.1.0.json)",
+            "Updated specs/machine/architecture_version_history.json",
+            "Updated symlinks (service_architecture.json → service_architecture_v1.1.0.json)"
+          ]
+        }
+      ],
+      "versioning_strategy": {
+        "semantic_versioning": "v{major}.{minor}.{patch}",
+        "version_increment_rules": {
+          "major": "Breaking changes (interface contract changes, service removal) - increments major version",
+          "minor": "Non-breaking additions (new endpoints, new services) - increments minor version",
+          "patch": "Internal changes (performance optimization, refactoring) - increments patch version"
+        }
+      },
+      "outputs": [
+        "Updated architecture files (service_architecture.json, etc.)",
+        "Versioned architecture files (service_architecture_v{version}.json)",
+        "specs/machine/architecture_version_history.json (complete change history)"
+      ]
+    },
+    {
+      "action_id": "D-06.5-A05",
+      "name": "Re-validate Updated Architecture",
+      "description": "Ensure updated architecture is still valid, complete, and internally consistent",
+      "conditional": "Only if D-06.5-A04 updated architecture",
+      "tool": "validate_architecture.py",
+      "command_pattern": "python3 {reflow_root}/tools/validate_architecture.py {system_root}",
+      "validation_checks": [
+        "All services have complete specifications",
+        "All interfaces defined in interface_registry.json",
+        "No orphaned services (services without connections)",
+        "No orphaned interfaces (interfaces not used by any service)",
+        "Functional flows still valid (if functional_architecture.json updated)",
+        "Graph structure valid (no unintentional cycles)",
+        "All ICDs valid and well-formed",
+        "Service dependencies are resolvable",
+        "Data models complete and consistent"
+      ],
+      "blocking": true,
+      "on_failure": {
+        "action": "Fix architecture validation errors before proceeding",
+        "guidance": "Common validation errors after architecture updates:",
+        "common_errors": [
+          "Interface added to service but not in interface_registry.json - add to registry",
+          "Service references interface that doesn't exist - create ICD for interface",
+          "Circular dependencies introduced - review service dependencies",
+          "Missing required fields in service_architecture.json - add missing fields"
+        ]
+      },
+      "success_criteria": "validate_architecture.py exits with success (exit code 0, no errors)",
+      "output": "specs/machine/validation/architecture_validation_report.json"
+    },
+    {
+      "action_id": "D-06.5-A06",
+      "name": "Regenerate Architecture Artifacts",
+      "description": "Regenerate all derived artifacts from updated architecture specifications",
+      "conditional": "Only if D-06.5-A04 updated architecture",
+      "purpose": "Keep all architecture representations (graphs, diagrams, docs) synchronized with updated specs",
+      "artifacts_to_regenerate": [
+        {
+          "artifact": "System of Systems Graph",
+          "file": "specs/machine/graphs/system_of_systems_graph.json",
+          "tool": "system_of_systems_graph_v2.py",
+          "command": "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --output specs/machine/graphs/system_of_systems_graph.json",
+          "purpose": "Master graph representation of system architecture"
+        },
+        {
+          "artifact": "Interface Contracts (if interfaces changed)",
+          "files": "specs/machine/interfaces/*_icd.json",
+          "tool": "generate_interface_contracts.py",
+          "command": "python3 {reflow_root}/tools/generate_interface_contracts.py {system_root}",
+          "conditional": "Only if interface_registry.json was updated"
+        },
+        {
+          "artifact": "Language-Native Interface Contracts (if used)",
+          "files": "services/{service}/src/interfaces/ (Python ABC, TypeScript, etc.)",
+          "tool": "generate_interface_abc.py",
+          "command": "python3 {reflow_root}/tools/generate_interface_abc.py {system_root} --language {language}",
+          "conditional": "Only if project uses language-native contracts (v3.10.0 feature)"
+        },
+        {
+          "artifact": "Mermaid Diagrams",
+          "files": "specs/human/visualizations/*.mmd",
+          "tool": "generate_mermaid_diagrams.py",
+          "command": "python3 {reflow_root}/tools/generate_mermaid_diagrams.py {system_root}",
+          "purpose": "Visual architecture diagrams"
+        },
+        {
+          "artifact": "Human-Readable Documentation",
+          "file": "docs/ARCHITECTURE_CONTEXT_SUMMARY.md",
+          "tool": "generate_human_documentation.py",
+          "command": "python3 {reflow_root}/tools/generate_human_documentation.py {system_root}",
+          "purpose": "Comprehensive architecture documentation for humans"
+        }
+      ],
+      "llm_instructions": [
+        "Run tools in order listed above",
+        "Check that each tool completes successfully",
+        "Verify generated artifacts are valid (JSON parseable, diagrams renderable)",
+        "If any tool fails, fix the issue before proceeding"
+      ],
+      "outputs": [
+        "Updated system_of_systems_graph.json",
+        "Updated ICDs (if applicable)",
+        "Updated Mermaid diagrams",
+        "Updated human documentation"
+      ]
+    },
+    {
+      "action_id": "D-06.5-A07",
+      "name": "Verify Architecture Synchronization",
+      "description": "Generate new as-built architecture and compare to updated as-designed to verify synchronization",
+      "purpose": "Prove that architecture now matches implementation (similarity should be >= 0.95)",
+      "tool": "generate_as_built_architecture.py",
+      "command_pattern": "python3 {reflow_root}/tools/generate_as_built_architecture.py --system-root {system_root} --output specs/machine/graphs/system_of_systems_graph_as_built_v2.json --compare-to specs/machine/graphs/system_of_systems_graph.json",
+      "process": [
+        "1. Re-generate as-built architecture from current implementation (may have changed if D-06.5-A08 ran)",
+        "2. Compare as-built to updated as-designed architecture",
+        "3. Calculate new similarity score",
+        "4. Check similarity threshold"
+      ],
+      "success_criteria": {
+        "similarity_score": ">= 0.95",
+        "rationale": "After synchronization, as-built and as-designed should match very closely (95%+)",
+        "acceptable_remaining_drift": "Minor implementation details (comments, internal refactorings) may still differ"
+      },
+      "loop_condition": {
+        "if": "similarity_score < 0.95",
+        "then": "Review remaining differences - may need another iteration",
+        "actions": [
+          "Examine new delta report",
+          "Determine if remaining differences are acceptable or need resolution",
+          "If not acceptable: Return to D-06.5-A03 (decide update vs fix)",
+          "If acceptable: Document rationale and proceed"
+        ],
+        "else": "Architecture synchronized, proceed to D-06.5-A09"
+      },
+      "max_iterations": 3,
+      "on_max_iterations": "If still not synchronized after 3 iterations, escalate to human review - may need fundamental redesign",
+      "output": "specs/machine/graphs/architecture_delta_designed_to_built_v2_{date}.json"
+    },
+    {
+      "action_id": "D-06.5-A08",
+      "name": "Update Implementation (If Needed)",
+      "description": "If decision was to fix implementation, update code to match designed architecture",
+      "conditional": "Only if D-06.5-A03 decision was 'fix_implementation' or 'hybrid' with implementation fixes needed",
+      "purpose": "Correct implementation deviations so code matches intended design",
+      "process": [
+        {
+          "step": "1. Review implementation fixes from D-06.5-A03 decision",
+          "guidance": "Read context/architecture_update_decision.json → implementation_fixes_needed"
+        },
+        {
+          "step": "2. Identify code files that deviate from architecture",
+          "methods": [
+            "Review delta report to see what's missing or wrong",
+            "Cross-reference service_architecture.json with actual code",
+            "Check interface_registry.json against implemented endpoints"
+          ]
+        },
+        {
+          "step": "3. Update implementation to match designed architecture",
+          "examples": [
+            "Implement missing endpoints specified in ICDs",
+            "Remove services that were added by mistake",
+            "Fix interface contracts to match ICDs",
+            "Correct service responsibilities per architecture"
+          ]
+        },
+        {
+          "step": "4. Re-run 'Prove It Works' validations",
+          "validations": [
+            "D-02-A99: Domain model validation (if applicable)",
+            "D-04-A99: Integration validation",
+            "Unit tests still pass",
+            "Integration tests still pass"
+          ]
+        },
+        {
+          "step": "5. Re-generate as-built architecture",
+          "command": "python3 {reflow_root}/tools/generate_as_built_architecture.py --system-root {system_root} --output specs/machine/graphs/system_of_systems_graph_as_built_fixed.json --compare-to specs/machine/graphs/system_of_systems_graph.json",
+          "verify": "Similarity score now >= 0.95"
+        }
+      ],
+      "feedback_loop": "This action creates iteration: fix code → re-validate → re-generate as-built → verify synchronization",
+      "note": "May need multiple iterations if fixes introduce new issues"
+    },
+    {
+      "action_id": "D-06.5-A09",
+      "name": "Document Synchronization Completion",
+      "description": "Create final documentation of architecture synchronization process and outcome",
+      "purpose": "Provide clear record of what changed, why, and that architecture is now synchronized",
+      "output_file": "docs/ARCHITECTURE_SYNCHRONIZATION_REPORT.md",
+      "output_format": {
+        "structure": [
+          "# Architecture Synchronization Report",
+          "**Date**: {timestamp}",
+          "**Workflow Step**: D-06.5",
+          "",
+          "## Summary",
+          "- Initial Similarity Score: {initial_score}",
+          "- Final Similarity Score: {final_score}",
+          "- Synchronization Status: {SYNCHRONIZED | PARTIAL | FAILED}",
+          "",
+          "## Root Cause Analysis",
+          "For each root cause category:",
+          "  ### {category}",
+          "  - Confidence: {high/medium/low}",
+          "  - Rationale: {explanation}",
+          "  - Evidence: {links to test results, etc.}",
+          "",
+          "## Actions Taken",
+          "### Architecture Updates",
+          "- Files Updated: {list}",
+          "- New Version: {version}",
+          "- Change Type: {type}",
+          "- Rationale: {summary}",
+          "",
+          "### Implementation Fixes",
+          "- Files Modified: {list}",
+          "- Issues Resolved: {list}",
+          "",
+          "## Verification",
+          "- As-Built vs As-Designed Similarity: {final_score}",
+          "- Remaining Acceptable Drift: {description if any}",
+          "",
+          "## Lessons Learned",
+          "- What caused drift: {summary}",
+          "- How to prevent in future: {recommendations}",
+          "",
+          "## Version History",
+          "See: specs/machine/architecture_version_history.json"
+        ]
+      },
+      "additional_output": "context/architecture_synchronization_signoff.json",
+      "signoff_format": {
+        "synchronization_complete": true,
+        "initial_similarity": 0.62,
+        "final_similarity": 0.96,
+        "architecture_version": "v1.1.0",
+        "timestamp": "2025-11-18T14:30:00Z",
+        "triggered_by": "D-06.5",
+        "acceptable_remaining_drift": "Minor internal refactorings, no functional differences"
+      }
+    }
+  ],
+  "outputs": [
+    "context/architecture_drift_root_cause_analysis.json (root cause classification)",
+    "context/architecture_update_decision.json (decision record)",
+    "specs/machine/architecture_version_history.json (complete version history)",
+    "Versioned architecture files (service_architecture_v{version}.json, etc.)",
+    "Updated architecture files (current version)",
+    "Regenerated artifacts (graphs, diagrams, docs)",
+    "docs/ARCHITECTURE_SYNCHRONIZATION_REPORT.md (synchronization report)",
+    "context/architecture_synchronization_signoff.json (signoff for D-Post-A02)"
+  ],
+  "gates": [
+    {
+      "gate_id": "G-D-06.5",
+      "name": "Architecture Synchronization Gate",
+      "checks": [
+        "Architecture delta analyzed and classified by root cause (D-06.5-A01, D-06.5-A02)",
+        "Decision made: update architecture OR fix implementation (D-06.5-A03)",
+        "If similarity < 0.7: Synchronization actions COMPLETED (architecture updated OR implementation fixed)",
+        "If similarity 0.7-0.95: Review completed and documented",
+        "If architecture updated: Updated architecture re-validated successfully (D-06.5-A05)",
+        "If architecture updated: All artifacts regenerated (D-06.5-A06)",
+        "As-built matches as-designed: Final similarity >= 0.95 (D-06.5-A07)",
+        "Changes versioned with rationale in architecture_version_history.json (D-06.5-A04)",
+        "Synchronization documented in ARCHITECTURE_SYNCHRONIZATION_REPORT.md (D-06.5-A09)"
+      ],
+      "blocking": true,
+      "enforcement": {
+        "similarity < 0.7": "BLOCKING - MUST synchronize (update architecture or fix implementation) before proceeding to D-07",
+        "similarity 0.7-0.95": "BLOCKING - MUST review, decide, and document before proceeding",
+        "similarity >= 0.95": "NON-BLOCKING - document minimal drift and proceed"
+      },
+      "bypass_not_allowed": "This gate enforces architectural discipline - cannot be bypassed",
+      "success_message": "Architecture synchronized with implementation (similarity >= 0.95)"
+    }
+  ],
+  "typical_time": {
+    "minimal_drift (>= 0.95)": "15-30 minutes (analysis and documentation only)",
+    "moderate_drift (0.7-0.95)": "1-3 hours (review, decision, update, re-validate)",
+    "major_drift (< 0.7)": "3-6 hours (comprehensive synchronization, may require multiple iterations)"
+  },
+  "iteration_expected": true,
+  "max_iterations": 3,
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "This step is the KEY to keeping architecture synchronized with implementation",
+      "DO NOT skip this step even if drift seems acceptable - documentation is important",
+      "For similarity < 0.7: Synchronization is MANDATORY, not optional",
+      "Always version architecture changes using version_architecture.py tool",
+      "Re-validate architecture after updates (D-06.5-A05 is critical)",
+      "Re-generate artifacts after architecture updates (D-06.5-A06)",
+      "Verify synchronization with new as-built comparison (D-06.5-A07)"
+    ],
+    "decision_making_guidance": {
+      "developer_mistake": "ALWAYS fix implementation, never update architecture",
+      "performance_optimization": "Usually update architecture IF validated by testing",
+      "requirements_creep": "Update architecture IF new requirements validated by stakeholders",
+      "technical_constraints": "Update architecture IF constraints are real and documented",
+      "when_in_doubt": "Ask user via user_prompt in D-06.5-A03"
+    },
+    "common_pitfalls": [
+      "Skipping versioning - always use version_architecture.py",
+      "Not re-validating after architecture updates - always run validate_architecture.py",
+      "Not regenerating artifacts - architecture and graphs will be out of sync",
+      "Accepting high drift without synchronization - enforces poor discipline"
+    ]
+  },
+  "templates_used": [
+    "architecture_version_history_template.json",
+    "architecture_drift_root_cause_analysis_template.json",
+    "architecture_update_decision_template.json",
+    "architecture_synchronization_signoff_template.json"
+  ],
+  "tools_used": [
+    "version_architecture.py (NEW)",
+    "validate_architecture.py",
+    "generate_as_built_architecture.py",
+    "system_of_systems_graph_v2.py",
+    "generate_interface_contracts.py",
+    "generate_interface_abc.py",
+    "generate_mermaid_diagrams.py",
+    "generate_human_documentation.py"
+  ],
+  "next_step": "D-07"
+}

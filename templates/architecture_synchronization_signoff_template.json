@@ -1,0 +1,42 @@
+{
+  "_template_metadata": {
+    "template_name": "architecture_synchronization_signoff_template.json",
+    "version": "1.0.0",
+    "description": "Template for final architecture synchronization sign-off",
+    "created": "2025-11-18",
+    "part_of": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+    "usage": "Created during D-06.5-A09 and verified in D-Post-A02"
+  },
+  "signoff_metadata": {
+    "timestamp": "{{TIMESTAMP}}",
+    "workflow_step": "D-06.5-A09",
+    "system_name": "{{SYSTEM_NAME}}",
+    "signed_off_by": "LLM Agent"
+  },
+  "synchronization_complete": true,
+  "initial_similarity": 0.0,
+  "final_similarity": 0.0,
+  "architecture_version": "{{CURRENT_VERSION}}",
+  "triggered_by": "D-06.5 | TO-05-A05.6",
+  "synchronization_actions_taken": [
+    "{{ACTION_1}}",
+    "{{ACTION_2}}"
+  ],
+  "acceptable_remaining_drift": "{{DESCRIPTION_IF_ANY}}",
+  "gate_status": {
+    "G-D-06.5": "PASS | FAIL",
+    "similarity_threshold_met": "true | false (>= 0.95)"
+  },
+  "next_steps": [
+    "Proceed to D-07 (Pre-Deployment Validation)",
+    "Or if in testing: Proceed to TO-05-A06 (Create OTE artifacts)"
+  ],
+  "_field_descriptions": {
+    "synchronization_complete": "Boolean - true if architecture and implementation are synchronized (similarity >= 0.95)",
+    "initial_similarity": "Similarity score from D-06-A02 before synchronization loop",
+    "final_similarity": "Similarity score from D-06.5-A07 after synchronization loop",
+    "architecture_version": "Current architecture version after synchronization (e.g., 'v1.1.0')",
+    "triggered_by": "Workflow step that triggered synchronization (D-06.5 during development, TO-05-A05.6 during testing)",
+    "acceptable_remaining_drift": "Description of any remaining minor differences that are acceptable (e.g., 'Internal refactorings, no functional differences')"
+  }
+}

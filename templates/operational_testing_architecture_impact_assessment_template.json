@@ -1,0 +1,83 @@
+{
+  "_template_metadata": {
+    "template_name": "operational_testing_architecture_impact_assessment_template.json",
+    "version": "1.0.0",
+    "description": "Template for assessing if operational test failures are due to architectural issues",
+    "created": "2025-11-18",
+    "part_of": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+    "usage": "Created during TO-05-A05.5 (Operational Testing Architecture Impact Assessment)"
+  },
+  "assessment_metadata": {
+    "timestamp": "{{TIMESTAMP}}",
+    "workflow_step": "TO-05-A05.5",
+    "system_name": "{{SYSTEM_NAME}}",
+    "assessed_by": "LLM Agent"
+  },
+  "test_failures": [
+    {
+      "test_type": "E2E | UAT | performance | security | disaster_recovery",
+      "test_name": "{{TEST_NAME}}",
+      "failure_description": "{{WHAT_FAILED}}",
+      "evidence": "{{LINK_TO_TEST_RESULTS}}",
+      "severity": "critical | high | medium | low"
+    }
+  ],
+  "root_cause_classification": {
+    "classification": "implementation_bug | architectural_flaw | requirements_changed",
+    "confidence": "high | medium | low",
+    "rationale": "{{WHY_THIS_CLASSIFICATION}}",
+    "indicators": [
+      "{{INDICATOR_1}}",
+      "{{INDICATOR_2}}"
+    ]
+  },
+  "recommended_action": {
+    "action": "fix_implementation | trigger_architecture_update_loop | update_requirements_and_architecture",
+    "justification": "{{WHY_THIS_ACTION}}",
+    "estimated_effort": "{{TIME_ESTIMATE}}",
+    "requires_stakeholder_approval": false
+  },
+  "architecture_impact_if_applicable": {
+    "affected_components": [
+      "{{SERVICE_OR_COMPONENT_NAME}}"
+    ],
+    "proposed_architectural_changes": [
+      "{{DESCRIPTION_OF_CHANGE}}"
+    ],
+    "breaking_changes_expected": false
+  },
+  "_classification_criteria": {
+    "implementation_bug": {
+      "description": "Bug in code, not architectural issue",
+      "indicators": [
+        "Logic error in code",
+        "Missing error handling",
+        "Data validation issue",
+        "Race condition",
+        "Configuration error"
+      ],
+      "action": "Fix code, re-test, DO NOT update architecture"
+    },
+    "architectural_flaw": {
+      "description": "Original architecture cannot meet requirements",
+      "indicators": [
+        "Performance requirements not met (e.g., latency too high)",
+        "Scalability issues (e.g., cannot handle load)",
+        "Resilience issues (e.g., single point of failure)",
+        "Security architecture inadequate",
+        "Fundamental design flaw preventing functionality"
+      ],
+      "action": "Trigger architecture update loop (TO-05-A05.6)"
+    },
+    "requirements_changed": {
+      "description": "Requirements evolved during development/testing",
+      "indicators": [
+        "Stakeholders added new requirements",
+        "Use cases discovered during testing",
+        "Compliance requirements discovered",
+        "Business priorities changed"
+      ],
+      "action": "Update requirements AND architecture, then trigger update loop"
+    }
+  }
+}

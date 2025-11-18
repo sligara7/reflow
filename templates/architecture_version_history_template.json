@@ -1,0 +1,44 @@
+{
+  "_template_metadata": {
+    "template_name": "architecture_version_history_template.json",
+    "version": "1.0.0",
+    "description": "Template for tracking architecture version history with rationale and traceability",
+    "created": "2025-11-18",
+    "part_of": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+    "usage": "Created and updated by tools/version_architecture.py during D-06.5 and TO-05-A05.6"
+  },
+  "system_name": "{{SYSTEM_NAME}}",
+  "version_history": [
+    {
+      "version": "v1.0.0",
+      "timestamp": "2025-01-01T00:00:00Z",
+      "change_type": "initial_design",
+      "rationale": "Initial architecture design from SE-02 Systems Engineering Workflow",
+      "similarity_score_before": null,
+      "similarity_score_after": 1.0,
+      "changed_files": [
+        "specs/machine/service_arch/service_architecture.json",
+        "specs/machine/functional/functional_architecture.json"
+      ],
+      "triggered_by": "SE-02 Systems Engineering Workflow",
+      "test_evidence": null,
+      "breaking_changes": false,
+      "migration_notes": null
+    }
+  ],
+  "current_version": "v1.0.0",
+  "total_versions": 1,
+  "_field_descriptions": {
+    "version": "Semantic version (v{major}.{minor}.{patch}) - major for breaking changes, minor for additions, patch for internal changes",
+    "timestamp": "ISO 8601 timestamp of when architecture was versioned",
+    "change_type": "Root cause category: requirements_creep, performance_optimization, technical_constraints, security_hardening, operational_reality, developer_mistake_fix, or initial_design",
+    "rationale": "Human-readable explanation of WHY architecture changed - link to test failures, performance issues, requirements changes",
+    "similarity_score_before": "Jaccard similarity between as-designed and as-built BEFORE architecture update (0.0-1.0, null for initial)",
+    "similarity_score_after": "Jaccard similarity AFTER architecture update (should be >= 0.95 for successful synchronization)",
+    "changed_files": "Array of architecture files that were versioned (relative paths from system_root)",
+    "triggered_by": "Workflow step that triggered versioning (e.g., 'D-06.5', 'TO-05-A05.6')",
+    "test_evidence": "Path to test results or evidence that triggered change (e.g., 'specs/machine/ote_artifacts.json'), null if not applicable",
+    "breaking_changes": "Boolean - true if interface contracts changed, services removed, or other breaking changes",
+    "migration_notes": "Optional human-readable notes for migrating from previous version, null if not needed"
+  }
+}

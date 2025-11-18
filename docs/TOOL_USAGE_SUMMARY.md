@@ -1,9 +1,9 @@
 # Reflow Tools - Usage Summary
 
-**Last Updated**: 2025-10-27
-**Total Tools**: 22 (up from 19 - added 3 pre-deployment validation tools)
+**Last Updated**: 2025-11-18
+**Total Tools**: 23 (up from 22 - added version_architecture.py for architecture synchronization)
 **Security Version**: v3.4.0 (Path Traversal Protection Added)
-**Latest Feature**: v3.6.0 (Early Testing Integration - Pre-Deployment Validation)
+**Latest Feature**: v3.15.0 (Architecture Synchronization Loop - Iterative drift resolution)
 
 ---
 
@@ -397,9 +397,57 @@ python3 compare_architectures.py \
 
 ---
 
+### 9. `version_architecture.py` 🆕
+**Purpose**: Version architecture changes with rationale, timestamp, and traceability
+**Used In**: D-06.5 (Architecture Synchronization Loop), TO-05-A05.6 (Operational Architecture Update Loop)
+**Created**: 2025-11-18 (v3.15.0 - Architecture Synchronization Loop feature)
+**New in Version**: Reflow v3.15.0
+**Method**: Semantic versioning + version history tracking
+
+**What It Does**:
+- Creates versioned copies of architecture files (e.g., `service_architecture_v1.2.3.json`)
+- Tracks version history with rationale in `architecture_version_history.json`
+- Links architecture changes to test failures, performance issues, requirements changes
+- Supports semantic versioning: major (breaking), minor (additions), patch (internal)
+
+**Usage**:
+```bash
+python3 version_architecture.py \
+  --system-root /path/to/system \
+  --change-type "performance_optimization" \
+  --rationale "Redesigned for async processing due to 45s latency in operational testing" \
+  --similarity-score 0.62 \
+  --changed-files "service_architecture.json,functional_architecture.json" \
+  --triggered-by "D-06.5 Architecture Synchronization Loop" \
+  --test-evidence "specs/machine/ote_artifacts.json"
+```
+
+**Change Types**:
+- `requirements_creep` - New requirements discovered
+- `performance_optimization` - Design couldn't meet performance SLOs
+- `technical_constraints` - Design was impractical to implement
+- `security_hardening` - Security requirements added
+- `operational_reality` - Deployment constraints changed design
+- `developer_mistake_fix` - Fixing unintentional deviations
+- `initial_design` - First architecture version
+
+**Output**:
+- Versioned architecture files: `service_architecture_v{version}.json`
+- Updated `specs/machine/architecture_version_history.json` (complete change history)
+- Updated symlinks: `service_architecture.json` → `service_architecture_v{latest}.json`
+
+**Why This Tool Exists**:
+During development and testing, implementations diverge from designed architectures due to requirements creep, performance issues, and operational realities. This tool provides systematic versioning and traceability, ensuring architecture documents always reflect implementation reality.
+
+**Integration**:
+- **D-06.5**: After detecting architectural drift (similarity < 0.95), versions updated architecture
+- **TO-05-A05.6**: When operational tests fail due to architectural issues, versions architecture fixes
+
+---
+
 ## Validation & Quality Assurance Tools
 
-### 9. `validate_directory_structure.py`
+### 10. `validate_directory_structure.py`
 **Purpose**: Validate system directory structure matches Reflow requirements
 **Used In**: S-02 (Setup)
 **Validates**: specs/, docs/, context/, services/ directories exist

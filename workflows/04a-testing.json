@@ -200,6 +200,51 @@
           "purpose": "Validate backup and recovery procedures"
         },
         {
+          "action_id": "TO-05-A05.5",
+          "name": "Operational Testing Architecture Impact Assessment",
+          "description": "When operational tests fail, determine if root cause is architectural vs implementation bug",
+          "conditional": "If any TO-05 tests fail (E2E, UAT, performance, security, DR)",
+          "new_in_version": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+          "purpose": "Prevent architecture drift during operational testing iterations",
+          "decision_tree": {
+            "implementation_bug": "Bug in code, not architectural - fix code and re-test, do NOT update architecture",
+            "architectural_flaw": "Architecture cannot meet requirements - trigger architecture update loop (TO-05-A05.6)",
+            "requirements_changed": "Requirements evolved during testing - update requirements AND architecture"
+          },
+          "output": "context/operational_testing_architecture_impact_assessment.json"
+        },
+        {
+          "action_id": "TO-05-A05.6",
+          "name": "Operational Architecture Update Loop",
+          "description": "Iterative loop to update architecture based on operational testing learnings",
+          "conditional": "If TO-05-A05.5 identified architectural issues",
+          "new_in_version": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+          "process": [
+            "1. Document operational issue with evidence (test failures, performance metrics)",
+            "2. Classify root cause (performance_optimization, requirements_creep, etc.)",
+            "3. Design architecture fix (update functional_architecture.json, service_architecture.json)",
+            "4. Version architecture update using version_architecture.py",
+            "5. Re-validate updated architecture using validate_architecture.py",
+            "6. Update implementation to match new architecture",
+            "7. Re-run failed operational tests",
+            "8. Re-run D-06 as-built comparison",
+            "9. Loop until: tests pass AND architecture synchronized (similarity >= 0.95)"
+          ],
+          "max_iterations": 5,
+          "on_max_iterations": "Escalate to human review - may require fundamental redesign",
+          "tools_used": [
+            "version_architecture.py",
+            "validate_architecture.py",
+            "generate_as_built_architecture.py"
+          ],
+          "outputs": [
+            "Updated architecture files (versioned)",
+            "Updated implementation",
+            "Passing operational test results",
+            "specs/machine/architecture_version_history.json (with operational testing rationale)"
+          ]
+        },
+        {
           "action_id": "TO-05-A06",
           "description": "Create OTE artifacts",
           "template": "ote_artifacts_template.json",

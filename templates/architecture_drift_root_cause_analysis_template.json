@@ -1,0 +1,47 @@
+{
+  "_template_metadata": {
+    "template_name": "architecture_drift_root_cause_analysis_template.json",
+    "version": "1.0.0",
+    "description": "Template for analyzing why architecture diverged from design",
+    "created": "2025-11-18",
+    "part_of": "Reflow v3.15.0 - Architecture Synchronization Loop feature",
+    "usage": "Created during D-06.5-A02 (Root Cause Classification)"
+  },
+  "analysis_metadata": {
+    "timestamp": "{{TIMESTAMP}}",
+    "workflow_step": "D-06.5-A02",
+    "system_name": "{{SYSTEM_NAME}}",
+    "analyzed_by": "LLM Agent"
+  },
+  "summary": {
+    "similarity_score": 0.0,
+    "total_changes": 0,
+    "breaking_changes_count": 0,
+    "non_breaking_changes_count": 0,
+    "drift_severity": "MINIMAL | MODERATE | MAJOR"
+  },
+  "root_causes": [
+    {
+      "category": "{{CATEGORY}}",
+      "confidence": "high | medium | low",
+      "rationale": "{{WHY_THIS_ROOT_CAUSE}}",
+      "affected_changes": [
+        "{{SPECIFIC_CHANGE_FROM_DELTA_REPORT}}"
+      ],
+      "evidence": "{{LINK_TO_TEST_RESULTS_OR_DOCS}}"
+    }
+  ],
+  "_root_cause_categories": {
+    "requirements_creep": "New or changed requirements discovered during implementation/testing",
+    "performance_optimization": "Original design could not meet performance requirements",
+    "technical_constraints": "Design was impossible or impractical to implement due to technical limitations",
+    "security_hardening": "Security requirements not fully addressed in original design",
+    "operational_reality": "Deployment/operational constraints changed architecture",
+    "developer_mistake": "Implementation deviated from design unintentionally (oversight or misunderstanding)"
+  },
+  "_confidence_levels": {
+    "high": "Clear evidence linking delta changes to this root cause",
+    "medium": "Probable root cause based on available evidence",
+    "low": "Possible root cause, needs further investigation"
+  }
+}
