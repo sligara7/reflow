@@ -1,0 +1,260 @@
+{
+  "_metadata": {
+    "version": "1.0.0",
+    "created": "2025-11-18",
+    "system_name": "microservices_basic",
+    "framework": "functional_analysis",
+    "description": "Expected functional architecture for microservices basic test case"
+  },
+  "functions": [
+    {
+      "function_id": "F-01",
+      "name": "RegisterUser",
+      "description": "Register new user with email/password",
+      "inputs": ["email", "password"],
+      "outputs": ["user_id", "registration_status"],
+      "dependencies": [],
+      "category": "user_authentication"
+    },
+    {
+      "function_id": "F-02",
+      "name": "LoginUser",
+      "description": "Authenticate user and issue JWT token",
+      "inputs": ["email", "password"],
+      "outputs": ["jwt_token", "user_id"],
+      "dependencies": [],
+      "category": "user_authentication"
+    },
+    {
+      "function_id": "F-03",
+      "name": "LogoutUser",
+      "description": "Invalidate user session token",
+      "inputs": ["jwt_token"],
+      "outputs": ["logout_status"],
+      "dependencies": [],
+      "category": "user_authentication"
+    },
+    {
+      "function_id": "F-04",
+      "name": "BrowseProducts",
+      "description": "Browse products by category",
+      "inputs": ["category_id"],
+      "outputs": ["product_list"],
+      "dependencies": [],
+      "category": "product_catalog"
+    },
+    {
+      "function_id": "F-05",
+      "name": "SearchProducts",
+      "description": "Search products by name or description",
+      "inputs": ["search_query"],
+      "outputs": ["product_list"],
+      "dependencies": [],
+      "category": "product_catalog"
+    },
+    {
+      "function_id": "F-06",
+      "name": "ViewProductDetails",
+      "description": "View detailed product information",
+      "inputs": ["product_id"],
+      "outputs": ["product_details"],
+      "dependencies": [],
+      "category": "product_catalog"
+    },
+    {
+      "function_id": "F-07",
+      "name": "AddToCart",
+      "description": "Add product to shopping cart",
+      "inputs": ["user_id", "product_id", "quantity"],
+      "outputs": ["cart_status"],
+      "dependencies": ["F-06"],
+      "category": "shopping_cart"
+    },
+    {
+      "function_id": "F-08",
+      "name": "UpdateCartQuantity",
+      "description": "Update product quantity in cart",
+      "inputs": ["user_id", "product_id", "new_quantity"],
+      "outputs": ["cart_status"],
+      "dependencies": [],
+      "category": "shopping_cart"
+    },
+    {
+      "function_id": "F-09",
+      "name": "RemoveFromCart",
+      "description": "Remove product from cart",
+      "inputs": ["user_id", "product_id"],
+      "outputs": ["cart_status"],
+      "dependencies": [],
+      "category": "shopping_cart"
+    },
+    {
+      "function_id": "F-10",
+      "name": "ViewCart",
+      "description": "View shopping cart contents and total",
+      "inputs": ["user_id"],
+      "outputs": ["cart_contents", "cart_total"],
+      "dependencies": ["F-06"],
+      "category": "shopping_cart"
+    },
+    {
+      "function_id": "F-11",
+      "name": "PlaceOrder",
+      "description": "Create order from cart contents",
+      "inputs": ["user_id", "cart_id", "shipping_address"],
+      "outputs": ["order_id", "order_status"],
+      "dependencies": ["F-12", "F-13", "F-14", "F-16"],
+      "category": "order_processing"
+    },
+    {
+      "function_id": "F-12",
+      "name": "ValidateProductAvailability",
+      "description": "Verify products are in stock",
+      "inputs": ["product_list"],
+      "outputs": ["availability_status"],
+      "dependencies": [],
+      "category": "order_processing"
+    },
+    {
+      "function_id": "F-13",
+      "name": "CalculateOrderTotal",
+      "description": "Calculate order total with tax",
+      "inputs": ["cart_contents", "shipping_address"],
+      "outputs": ["order_total"],
+      "dependencies": [],
+      "category": "order_processing"
+    },
+    {
+      "function_id": "F-14",
+      "name": "ProcessPayment",
+      "description": "Process payment via external gateway",
+      "inputs": ["order_total", "payment_info"],
+      "outputs": ["payment_status", "transaction_id"],
+      "dependencies": ["F-15"],
+      "category": "payment_processing"
+    },
+    {
+      "function_id": "F-15",
+      "name": "ValidatePaymentInfo",
+      "description": "Validate payment information format",
+      "inputs": ["payment_info"],
+      "outputs": ["validation_status"],
+      "dependencies": [],
+      "category": "payment_processing"
+    },
+    {
+      "function_id": "F-16",
+      "name": "SendOrderConfirmation",
+      "description": "Send order confirmation email",
+      "inputs": ["user_id", "order_id"],
+      "outputs": ["notification_status"],
+      "dependencies": [],
+      "category": "notifications"
+    },
+    {
+      "function_id": "F-17",
+      "name": "ViewPendingOrders",
+      "description": "View orders pending shipment",
+      "inputs": ["warehouse_id"],
+      "outputs": ["pending_orders_list"],
+      "dependencies": [],
+      "category": "order_fulfillment"
+    },
+    {
+      "function_id": "F-18",
+      "name": "MarkOrderShipped",
+      "description": "Mark order as shipped",
+      "inputs": ["order_id", "tracking_number"],
+      "outputs": ["shipment_status"],
+      "dependencies": ["F-19"],
+      "category": "order_fulfillment"
+    },
+    {
+      "function_id": "F-19",
+      "name": "SendShipmentNotification",
+      "description": "Send shipment notification email",
+      "inputs": ["user_id", "order_id", "tracking_number"],
+      "outputs": ["notification_status"],
+      "dependencies": [],
+      "category": "notifications"
+    }
+  ],
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-01",
+      "name": "User Registration Flow",
+      "entry_point": "F-01",
+      "functions": ["F-01"],
+      "description": "User creates new account"
+    },
+    {
+      "flow_id": "FLOW-02",
+      "name": "User Login Flow",
+      "entry_point": "F-02",
+      "functions": ["F-02"],
+      "description": "User authenticates and receives token"
+    },
+    {
+      "flow_id": "FLOW-03",
+      "name": "Product Browsing Flow",
+      "entry_point": "F-04",
+      "functions": ["F-04", "F-06"],
+      "description": "User browses and views products"
+    },
+    {
+      "flow_id": "FLOW-04",
+      "name": "Shopping Cart Flow",
+      "entry_point": "F-07",
+      "functions": ["F-06", "F-07", "F-08", "F-09", "F-10"],
+      "description": "User manages shopping cart"
+    },
+    {
+      "flow_id": "FLOW-05",
+      "name": "Order Placement Flow",
+      "entry_point": "F-11",
+      "functions": ["F-11", "F-12", "F-13", "F-14", "F-15", "F-16"],
+      "description": "User places order with payment"
+    },
+    {
+      "flow_id": "FLOW-06",
+      "name": "Order Fulfillment Flow",
+      "entry_point": "F-17",
+      "functions": ["F-17", "F-18", "F-19"],
+      "description": "Warehouse ships order"
+    }
+  ],
+  "functional_dependencies": [
+    {"from": "F-07", "to": "F-06", "type": "data_dependency"},
+    {"from": "F-10", "to": "F-06", "type": "data_dependency"},
+    {"from": "F-11", "to": "F-12", "type": "sequential_dependency"},
+    {"from": "F-11", "to": "F-13", "type": "sequential_dependency"},
+    {"from": "F-11", "to": "F-14", "type": "sequential_dependency"},
+    {"from": "F-11", "to": "F-16", "type": "sequential_dependency"},
+    {"from": "F-14", "to": "F-15", "type": "sequential_dependency"},
+    {"from": "F-18", "to": "F-19", "type": "sequential_dependency"}
+  ],
+  "entry_points": [
+    "F-01",
+    "F-02",
+    "F-03",
+    "F-04",
+    "F-05",
+    "F-17"
+  ],
+  "exit_points": [
+    "F-01",
+    "F-02",
+    "F-03",
+    "F-06",
+    "F-08",
+    "F-09",
+    "F-16",
+    "F-19"
+  ],
+  "validation": {
+    "functional_gaps": [],
+    "orphaned_functions": [],
+    "unreachable_functions": [],
+    "dead_end_functions": []
+  }
+}

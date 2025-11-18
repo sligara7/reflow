@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.15.0
+**Version**: 3.16.0
 **Last Updated**: 2025-11-18
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.16.0**: **Testing Framework** - GAN-inspired automated testing infrastructure for Reflow workflows. Separate agent architecture (Generator vs Discriminator) validates workflow outputs against ground truth, avoiding "conflict of interests."
 
 **NEW in v3.15.0**: **Architecture Synchronization Loop** - Systematic iterative loop that keeps architecture synchronized with implementation during development and testing. Detects drift, versions changes with rationale, and enforces synchronization gates.
 
@@ -385,6 +387,57 @@ service_architecture.json                     ← Symlink to current
 
 ## New Features Summary
 
+### v3.16.0 - Testing Framework
+**Problem Solved**: Need automated validation that Reflow workflows produce correct outputs. Manual testing doesn't scale.
+
+**Key Features**:
+- **GAN-Inspired Architecture**: Separate Generator (Agent A) and Discriminator (Agent B) agents
+- **Test Runner**: Orchestrates workflow execution on test systems
+- **Test Validator**: Compares actual outputs against ground truth with similarity scoring
+- **Test Cases**: Pre-defined test systems with requirements and expected outputs
+- **No Conflict of Interests**: Agent A builds blind (no access to expected outputs), Agent B evaluates with ground truth
+
+**Components**:
+1. `tests/test_runner.py` - Workflow orchestration (Agent A controller)
+2. `tests/test_validator.py` - Output validation (Agent B - discriminator)
+3. `tests/test_systems/` - Test cases with requirements and expected outputs
+4. First test case: `microservices_basic` (e-commerce, 19 functions, 7 services)
+
+**Usage**:
+```bash
+# List test cases
+python3 tests/test_runner.py --list-tests
+
+# Validate outputs
+python3 tests/test_validator.py --test-case microservices_basic
+```
+
+**Impact**: Enables regression testing, workflow validation, and continuous quality improvement for Reflow itself
+
+**📖 Full Documentation**: See `docs/TESTING_GUIDE.md` and `tests/README.md`
+
+### v3.15.0 - Architecture Synchronization Loop
+**Problem Solved**: Implementations diverge from designed architectures during development/testing due to requirements creep, performance optimization, and operational realities. Architecture documents become stale.
+
+**Key Features**:
+- **NEW TOOL**: `version_architecture.py` - Systematic architecture versioning with semantic versioning
+- **NEW WORKFLOW STEP**: `D-06.5` Architecture Synchronization & Versioning Loop
+  - Detects drift after D-06 as-built comparison
+  - Enforces MANDATORY synchronization when similarity < 0.7
+  - Classifies root causes (requirements_creep, performance_optimization, etc.)
+  - Versions architecture changes with complete history
+  - Iterates until architecture matches implementation (similarity >= 0.95)
+- **ENHANCED**: `D-Post-A02` Final Architecture Synchronization Verification (BLOCKING gate)
+- **NEW ACTIONS**: `TO-05-A05.5` and `TO-05-A05.6` - Operational testing architecture update loop
+- **NEW TEMPLATES**: 5 templates for version history, root cause analysis, decisions, signoffs
+
+**Root Cause Categories**:
+- requirements_creep, performance_optimization, technical_constraints, security_hardening, operational_reality, developer_mistake
+
+**Impact**: Prevents stale architecture docs, provides complete audit trail of why architecture changed, systematic synchronization during development and operational testing
+
+**📖 Full Documentation**: See `docs/changes/CHANGE_PROPOSAL_ARCHITECTURE_SYNC_LOOP.md`
+
 ### v3.6.0 - Early Testing Integration
 **Problem Solved**: Prevents "toss it over the fence" between development and operational testing.
 
@@ -427,6 +480,7 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 ## Getting Help
 
 **Documentation**:
+- `docs/TESTING_GUIDE.md` - Testing framework (v3.16.0) - GAN-inspired automated testing
 - `docs/TOOL_USAGE_SUMMARY.md` - All 32 tools
 - `docs/IT_SYSTEM_REQUIREMENTS.md` - IT system requirements
 - `docs/NETWORKX_ANALYSIS_GUIDE.md` - NetworkX analysis (400+ lines)
@@ -434,6 +488,7 @@ Python, Java, TypeScript, Go, Rust - system-agnostic architecture patterns, lang
 - `docs/GIT_AUTOMATION_GUIDE.md` - Git automation
 - `docs/META_ANALYSIS_GUIDE.md` - Meta-analysis guide
 - `docs/RELEASE_NOTES_v3.6.0.md` - v3.6.0 release notes
+- `tests/README.md` - Quick start for testing framework
 - `README.md` - Overview and quick start
 
 ## Summary for LLM Agents
