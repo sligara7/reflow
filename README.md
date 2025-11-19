@@ -1,16 +1,18 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.12.0** | LLM-driven systems engineering with self-sharpening architecture
+**Version 3.16.0** | LLM-driven systems engineering with GAN-inspired automated testing
 
 ## What is Reflow?
 
 Reflow guides LLM agents through designing, architecting, and building complex systems. It provides structured workflows, automated validation, and comprehensive tooling for creating production-ready architectures.
 
 **Key capabilities:**
-- Framework-agnostic: Software (UAF), biology, social networks, ecosystems, workflows, custom frameworks
-- Automatic approach detection: Bottom-up (existing components) or top-down (greenfield)
-- Production-ready from day one: Security, deployment, monitoring, testing built-in
-- Self-sharpening: Analyzes and optimizes its own implementation after each update
+- **GAN-inspired testing**: Separate Generator/Discriminator agents validate workflow outputs (v3.16.0)
+- **Architecture sync loop**: Keeps architecture aligned with implementation during development (v3.15.0)
+- **Framework-agnostic**: Software (UAF), biology, social networks, ecosystems, workflows, custom frameworks
+- **Automatic approach detection**: Bottom-up (existing components) or top-down (greenfield)
+- **Production-ready from day one**: Security, deployment, monitoring, testing built-in
+- **Self-sharpening**: Analyzes and optimizes its own implementation after each update
 
 ## Quick Start
 
@@ -48,6 +50,11 @@ Create codespace → clone reflow → "Implement workflow in /workspaces/reflow/
 00a-basic_setup → 01a-approach_detection → 01b-bottom_up_integration → 02-artifacts → 03a-development → 03b-validation → 04a-testing → 04b-operations
 ```
 
+### Functional Analysis Only
+```
+00a-basic_setup → 01d-functional_analysis → (stakeholder validation) → STOP or continue to 01b/01c
+```
+
 ### Feature Updates
 ```
 # For other systems
@@ -65,6 +72,32 @@ feature_update.json
 # Manual (comprehensive quarterly health check)
 99-meta_analysis.json (steps META-01 through META-08)
 ```
+
+## Testing Reflow Workflows (NEW in v3.16.0)
+
+Automated testing infrastructure using GAN-inspired architecture:
+
+**Agent A (Generator)**: Executes workflows blind (no access to expected outputs)
+**Agent B (Discriminator)**: Validates outputs against ground truth
+
+```bash
+# List available test cases
+python3 tests/test_runner.py --list-tests
+
+# Validate workflow outputs
+python3 tests/test_validator.py --test-case microservices_basic
+
+# Validate all test cases (strict mode)
+python3 tests/test_validator.py --test-case all --strict
+```
+
+**Benefits:**
+- Regression testing for workflow changes
+- Objective evaluation (separate generation from validation)
+- No "conflict of interests" - agents have different information access
+- Foundation for adversarial training loop
+
+See [tests/README.md](tests/README.md) and [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) for details.
 
 ## What You Get
 
@@ -86,19 +119,7 @@ feature_update.json
 **Quality assurance:**
 - 10 quality gates (7 blocking)
 - Automated validation and contract compliance
-
-## Self-Sharpening Architecture (NEW in v3.12.0)
-
-Reflow analyzes and improves itself after each update:
-
-1. **Functional architecture analysis** - Detects context bottlenecks, gaps, inefficiencies
-2. **Implementation refinement** - Fixes workflows, tools, schemas based on analysis
-3. **Continuous improvement** - Every Reflow update triggers automatic optimization
-
-**Tools:**
-- `analyze_functional_architecture.py` - Analyze functional flows and context consumption
-- `98-reflow_feature_update.json` - Feature update with automatic meta-analysis
-- `99-meta_analysis.json` - Comprehensive meta-analysis workflow
+- Architecture synchronization enforcement (v3.15.0)
 
 ## Requirements
 
@@ -138,14 +159,42 @@ python3 tools/<tool_name>.py <args>
 
 ## Documentation
 
+**Core Guides:**
+- [CLAUDE.md](CLAUDE.md) - Complete LLM agent guide (v3.16.0)
+- [TESTING_GUIDE.md](docs/TESTING_GUIDE.md) - GAN-inspired testing framework ⭐ NEW
 - [TOOL_USAGE_SUMMARY.md](docs/TOOL_USAGE_SUMMARY.md) - All 32+ tools
 - [META_ANALYSIS_GUIDE.md](docs/META_ANALYSIS_GUIDE.md) - Self-sharpening workflow guide
+
+**Framework-Specific:**
 - [NETWORKX_ANALYSIS_GUIDE.md](docs/NETWORKX_ANALYSIS_GUIDE.md) - Framework-specific analysis
 - [DECISION_FLOW_FRAMEWORK.md](docs/DECISION_FLOW_FRAMEWORK.md) - Decision flow documentation
+
+**Integration & Workflows:**
 - [BOTTOM_UP_INTEGRATION_DESIGN.md](docs/BOTTOM_UP_INTEGRATION_DESIGN.md) - Bottom-up integration
 - [GIT_AUTOMATION_GUIDE.md](docs/GIT_AUTOMATION_GUIDE.md) - Automatic git commits
+- [IT_SYSTEM_REQUIREMENTS.md](docs/IT_SYSTEM_REQUIREMENTS.md) - IT system requirements
+
+**Testing:**
+- [tests/README.md](tests/README.md) - Quick start for testing framework ⭐ NEW
 
 ## Recent Updates
+
+**v3.16.0 (2025-11-18)** - GAN-Inspired Testing Framework ⭐ NEW
+- Automated workflow validation using Generator/Discriminator architecture
+- Test runner (`test_runner.py`) orchestrates workflow execution
+- Test validator (`test_validator.py`) compares outputs against ground truth
+- Similarity scoring (0.0-1.0) with strict/relaxed modes
+- First test case: `microservices_basic` (e-commerce, 19 functions, 7 services)
+- Foundation for adversarial training loop (future)
+- **Impact**: Regression testing, objective validation, continuous quality improvement
+
+**v3.15.0 (2025-11-18)** - Architecture Synchronization Loop
+- Architecture versioning tool (`version_architecture.py`) with semantic versioning
+- D-06.5 workflow step: Iterative architecture synchronization during development
+- Enforces MANDATORY sync when similarity < 0.7
+- Root cause classification (requirements_creep, performance_optimization, etc.)
+- Operational testing architecture update loop (TO-05-A05.5, TO-05-A05.6)
+- **Impact**: Prevents stale architecture docs, complete audit trail
 
 **v3.12.0 (2025-11-04)** - Self-Sharpening Architecture
 - Meta-analysis workflow (99-meta_analysis.json) with META-05B implementation refinement
@@ -171,12 +220,21 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 Contributions welcome. For major changes, open an issue first.
 
+**Adding Test Cases:**
+1. Create directory in `tests/test_systems/your_test_name/`
+2. Add `requirements.md` with functional requirements
+3. Create `expected_outputs/` with ground truth artifacts
+4. Test with `test_validator.py`
+5. Submit PR
+
+See [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md#contributing-test-cases) for details.
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Version 3.12.0** - LLM-driven systems engineering with self-sharpening architecture
+**Version 3.16.0** - LLM-driven systems engineering with GAN-inspired automated testing
 
-[Documentation](docs/) • [Meta-Analysis Guide](docs/META_ANALYSIS_GUIDE.md) • [Issues](https://github.com/sligara7/reflow/issues)
+[Documentation](docs/) • [Testing Guide](docs/TESTING_GUIDE.md) • [Meta-Analysis Guide](docs/META_ANALYSIS_GUIDE.md) • [Issues](https://github.com/sligara7/reflow/issues)
