@@ -601,7 +601,10 @@ def detect_knowledge_gaps(G: nx.DiGraph, component_data: Dict[str, Dict]) -> Dic
     # 2. Detect unmet dependencies
     all_provided_capabilities = set()
     for node_id in G.nodes():
+        # Check both 'functions' and 'allocated_functions' fields
         functions = G.nodes[node_id].get('functions', [])
+        if not functions:
+            functions = G.nodes[node_id].get('allocated_functions', [])
         all_provided_capabilities.update(functions)
 
     for node_id in G.nodes():
@@ -648,7 +651,10 @@ def detect_knowledge_gaps(G: nx.DiGraph, component_data: Dict[str, Dict]) -> Dic
     for node_id in G.nodes():
         node_data = G.nodes[node_id]
         interfaces = node_data.get('interfaces', [])
+        # Check both 'functions' and 'allocated_functions' fields
         functions = node_data.get('functions', [])
+        if not functions:
+            functions = node_data.get('allocated_functions', [])
 
         for iface in interfaces:
             if not isinstance(iface, dict):
