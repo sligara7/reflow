@@ -389,6 +389,41 @@ service_architecture.json                     ← Symlink to current
 
 ## New Features Summary
 
+### v3.18.0 - Protocol-Based Interfaces, Dependency Injection & Service Organization Strategies
+**Problem Solved**: ABCs cause metaclass conflicts with frameworks (FastAPI, SQLAlchemy, Pydantic). Need flexible service organization strategies (domain-based vs workflow-based). Single implementation model limits multi-facility deployments.
+
+**Key Features**:
+- **Protocol-Based Interfaces**: Use Python Protocols instead of ABCs - no metaclass conflicts, structural typing, multiple implementations without inheritance
+- **Dependency Injection**: Services declare dependencies via Protocol type hints, startup code provides implementations - easy testing, different impls per facility
+- **Behavior Mixins**: Reusable components (HasLifecycle, HasLogging, RequiresAuth, TracksMetrics) - wide inheritance pattern (depth=1) instead of deep hierarchies
+- **Service Organization Strategies**: LLM analyzes system and recommends domain-based, workflow-based, or hybrid organization based on coordination complexity, workflow span, operation types
+
+**New Tools**:
+1. `generate_interface_protocols.py` - Generate Protocols + DI infrastructure (alternative to `generate_interface_abc.py`)
+2. `analyze_service_organization.py` - Analyze system and recommend organization strategy
+
+**Workflow Integration**:
+- **D-01-A04.5**: CHOICE - Protocol-based (recommended) vs ABC-based vs Skip
+- **SE-02-A00** (NEW): Analyze coordination/workflows → Recommend strategy → User chooses domain/workflow/hybrid
+
+**Generated Artifacts** (Protocol-based):
+```
+services/common/protocols/*.py     # Protocol definitions (CanExecutePlans, ProvidesDeviceRegistry)
+services/common/mixins/*.py        # Behavior mixins (HasLifecycle, HasLogging, RequiresAuth, TracksMetrics)
+services/common/di/container.py    # DI container template
+services/common/di/dependencies.py # FastAPI dependencies template
+```
+
+**Benefits**:
+- No metaclass conflicts: Works with FastAPI, SQLAlchemy, Pydantic, domain frameworks
+- Multi-facility: Different implementations per facility without code changes
+- Testability: Inject mocks easily for testing
+- Optimal organization: Choose domain/workflow/hybrid based on system characteristics (5-10 days saved via reduced distributed state complexity)
+
+**Migration Path**: ABCs and Protocols can coexist - add Protocols alongside ABCs, gradually migrate type hints
+
+**📖 Full Documentation**: See `docs/ARCHITECTURAL_PATTERNS_PROTOCOLS_DI.md` and `docs/changes/CHANGE_PROPOSAL_20251119_PROTOCOLS_DI_ARCHITECTURE.md`
+
 ### v3.17.0 - Service Interface Contracts (Embedded Architectural Hooks)
 **Problem Solved**: LLMs can unknowingly modify service functions or interfaces without realizing the downstream impact on dependent services. Current architecture synchronization (v3.15.0) detects drift **after it happens**. Need **proactive** prevention.
 
