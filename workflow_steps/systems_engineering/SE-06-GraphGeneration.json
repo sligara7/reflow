@@ -71,7 +71,14 @@
         "All required fields present"
       ],
 
-      "llm_agent_guidance": "This index is the entry point for all graph generation and validation tools. Ensure paths use SYMLINKS not versioned files, so tools automatically use latest versions."
+      "llm_agent_guidance": [
+        "This index is the entry point for all graph generation and validation tools.",
+        "⚠️ CRITICAL: Paths MUST include 'specs/machine/' prefix (e.g., 'specs/machine/service_arch/auth_service/service_architecture.json')",
+        "Paths without this prefix will cause 'file not found' errors in system_of_systems_graph_v2.py",
+        "Use SYMLINKS not versioned files, so tools automatically use latest versions",
+        "Example CORRECT path: 'specs/machine/service_arch/user_service/service_architecture.json'",
+        "Example INCORRECT path: 'service_arch/user_service/service_architecture.json' (missing specs/machine/)"
+      ]
     },
 
     {

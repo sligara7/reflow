@@ -31,7 +31,91 @@
     { "id": "D1.2", "description": "Create context/dev trackers (dev_progress_tracker.json, dev_current_focus.md)", "tool": "manual", "outputs": ["context/dev_progress_tracker.json", "context/dev_current_focus.md", "context/dev_process_log.md"] },
     { "id": "D1.3", "description": "Validate required runtimes, toolchains, lint/test frameworks for selected languages", "tool": "bash", "input": "development_language_configuration.json", "validation": "All required language runtimes and tools must be available" },
     { "id": "D1.4", "description": "Setup language-specific development environments", "tool": "manual", "input": "development_language_configuration.json", "outputs": ["Language-specific project structures", "Framework initialization", "Development tooling setup"] },
-    { "id": "D1.4.5", "description": "Generate language-native interface contracts (ABC, traits, etc.)", "tool": "generate_interface_abc.py", "command": "python3 {reflow_root}/tools/generate_interface_abc.py {system_root}", "input": ["specs/machine/graphs/system_of_systems_graph.json", "specs/machine/development_language_configuration.json", "specs/machine/interfaces/*_icd.json"], "outputs": ["services/{consumer}/interfaces/{provider}_interface.{ext}"], "purpose": "Generate strongly-typed interface contracts for compile-time/runtime validation", "language_support": {"Python": ".py (ABC abstract classes)", "TypeScript": ".ts (interface declarations)", "Rust": ".rs (trait definitions)", "C++": ".hpp (abstract base classes)", "Java": ".java (interface declarations)", "Go": ".go (interface types)"}, "usage": ["Provider services: Implement the interface (class MyService(ProviderInterface))", "Consumer services: Import the interface for type hints", "Tests: Mock using the interface for contract testing"] },
+    {
+      "id": "D1.4.5",
+      "description": "Generate interface contracts (CHOICE: Protocol-based or ABC-based)",
+      "new_in_version": "v3.18.0 - Protocol-based interfaces + Dependency Injection",
+      "user_prompt": {
+        "ask": "Which interface contract strategy would you like to use?",
+        "options": [
+          "1. Protocol-based with Dependency Injection (RECOMMENDED) - Modern, flexible, no metaclass conflicts, supports multiple implementations",
+          "2. Abstract Base Classes (ABC) - Traditional inheritance-based contracts",
+          "3. Skip interface generation - Manual implementation"
+        ],
+        "default": "1",
+        "recommendation": "Protocol-based is recommended for multi-facility deployments, framework integration (FastAPI, SQLAlchemy), and high testability. Avoids metaclass conflicts.",
+        "learn_more": "See docs/ARCHITECTURAL_PATTERNS_PROTOCOLS_DI.md for detailed comparison"
+      },
+      "if_choice_1_protocol_based": {
+        "tool": "generate_interface_protocols.py",
+        "command": "python3 {reflow_root}/tools/generate_interface_protocols.py {system_root}",
+        "input": [
+          "specs/machine/graphs/system_of_systems_graph.json",
+          "specs/machine/development_language_configuration.json",
+          "specs/machine/interfaces/*_icd.json"
+        ],
+        "outputs": [
+          "services/common/protocols/*.py (Protocol definitions)",
+          "services/common/mixins/*.py (Behavior mixins: HasLifecycle, HasLogging, RequiresAuth, TracksMetrics)",
+          "services/common/di/container.py (DI container template)",
+          "services/common/di/dependencies.py (FastAPI dependencies template)"
+        ],
+        "purpose": "Generate Protocol-based interfaces with dependency injection infrastructure",
+        "benefits": [
+          "No metaclass conflicts with frameworks (FastAPI, SQLAlchemy, Pydantic)",
+          "Multiple implementations without inheritance coupling",
+          "Easy testing with mock implementations",
+          "Different implementations per facility/environment",
+          "Behavior mixins for code reuse (wide inheritance pattern)"
+        ],
+        "next_steps": [
+          "1. Review generated Protocols in services/common/protocols/",
+          "2. Update services/common/di/container.py with your service implementations",
+          "3. Implement services using Protocols and mixins"
+        ]
+      },
+      "if_choice_2_abc_based": {
+        "tool": "generate_interface_abc.py",
+        "command": "python3 {reflow_root}/tools/generate_interface_abc.py {system_root}",
+        "input": [
+          "specs/machine/graphs/system_of_systems_graph.json",
+          "specs/machine/development_language_configuration.json",
+          "specs/machine/interfaces/*_icd.json"
+        ],
+        "outputs": [
+          "services/{consumer}/interfaces/{provider}_interface.{ext}"
+        ],
+        "purpose": "Generate Abstract Base Class interfaces for compile-time/runtime validation",
+        "language_support": {
+          "Python": ".py (ABC abstract classes)",
+          "TypeScript": ".ts (interface declarations)",
+          "Rust": ".rs (trait definitions)",
+          "C++": ".hpp (abstract base classes)",
+          "Java": ".java (interface declarations)",
+          "Go": ".go (interface types)"
+        },
+        "usage": [
+          "Provider services: Implement the interface (class MyService(ProviderInterface))",
+          "Consumer services: Import the interface for type hints",
+          "Tests: Mock using the interface for contract testing"
+        ],
+        "limitations": [
+          "Metaclass conflicts with some frameworks",
+          "All implementations must inherit from ABC",
+          "No built-in dependency injection support"
+        ]
+      },
+      "if_choice_3_skip": {
+        "action": "Skip interface generation",
+        "note": "User will manually implement interfaces",
+        "recommendation": "Not recommended - interface generation provides type safety and documentation"
+      },
+      "record_choice": {
+        "file": "specs/machine/development_language_configuration.json",
+        "field": "interface_contract_strategy",
+        "values": ["protocol_based", "abc_based", "manual"]
+      }
+    },
     { "id": "D1.5", "description": "Confirm mission artifacts present and aligned", "tool": "manual", "inputs": ["specs/human/SYSTEM_MISSION_STATEMENT.md", "specs/human/USER_SCENARIOS.md", "specs/human/SUCCESS_CRITERIA.md"] }
   ],
   "artifact_routing": {

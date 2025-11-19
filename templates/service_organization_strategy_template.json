@@ -1,0 +1,135 @@
+{
+  "$schema": "./schemas/service_organization_strategy_schema.json",
+  "strategy_metadata": {
+    "decision_date": "YYYY-MM-DD",
+    "workflow_version": "3.18.0",
+    "analysis_tool_version": "3.18.0"
+  },
+  "chosen_strategy": "domain_based | workflow_based | hybrid",
+  "user_rationale": "Brief explanation of why user chose this strategy (2-3 sentences)",
+  "analysis_recommendation": "domain_based | workflow_based | hybrid",
+  "analysis_results": {
+    "coordination_complexity": {
+      "level": "LOW | MEDIUM | HIGH",
+      "coordination_functions": 0,
+      "total_functions": 0,
+      "ratio": 0.0,
+      "examples": [
+        {
+          "name": "Example function requiring coordination",
+          "keywords": ["lock", "coordinate"],
+          "description": "Function description"
+        }
+      ]
+    },
+    "workflow_span": {
+      "span_type": "SINGLE_DOMAIN | CROSS_DOMAIN",
+      "total_flows": 0,
+      "cross_domain_flows": 0,
+      "ratio": 0.0,
+      "examples": [
+        {
+          "name": "Example cross-domain workflow",
+          "domains": ["Domain1", "Domain2"],
+          "steps": 5
+        }
+      ]
+    },
+    "operation_types": {
+      "type": "CRUD_HEAVY | WORKFLOW_HEAVY | BALANCED",
+      "crud_operations": 0,
+      "workflow_operations": 0,
+      "other_operations": 0,
+      "crud_ratio": 0.0,
+      "workflow_ratio": 0.0
+    }
+  },
+  "strategy_description": {
+    "domain_based": {
+      "description": "Services organized by business domain/capability",
+      "example_services": ["UserService", "ProductService", "OrderService", "PaymentService"],
+      "when_to_use": "Clear domain boundaries, low coordination requirements, CRUD-heavy operations",
+      "pros": [
+        "Aligns with business domains",
+        "Clear ownership boundaries",
+        "Easy to understand for domain experts"
+      ],
+      "cons": [
+        "Cross-domain workflows span multiple services",
+        "Coordination logic becomes distributed state management",
+        "More service-to-service calls for workflows"
+      ]
+    },
+    "workflow_based": {
+      "description": "Services organized by user workflows/operations",
+      "example_services": [
+        "ExperimentExecutionService (workflow: submit → coordinate → execute → release)",
+        "DeviceMonitoringService (workflow: subscribe → stream updates)",
+        "DirectControlService (workflow: check coordination → command device)",
+        "ConfigurationService (shared: device registry, plan discovery)"
+      ],
+      "when_to_use": "High coordination requirements, cross-domain workflows, workflow-heavy operations",
+      "pros": [
+        "Coordination logic is local (not distributed)",
+        "Common workflows self-contained in one service",
+        "Fewer service-to-service calls for common operations",
+        "Easier to reason about workflow state"
+      ],
+      "cons": [
+        "May duplicate some domain logic across services",
+        "Less obvious domain boundaries",
+        "Requires careful workflow analysis"
+      ]
+    },
+    "hybrid": {
+      "description": "Mix of workflow services and domain services",
+      "example_services": {
+        "workflow_services": [
+          "ExperimentExecutionService (complex coordination)",
+          "BatchProcessingService (multi-step workflow)"
+        ],
+        "domain_services": [
+          "UserManagementService (shared user domain)",
+          "DeviceRegistryService (shared device catalog)"
+        ]
+      },
+      "when_to_use": "Large, complex systems with both complex workflows and clear shared domains",
+      "pros": [
+        "Best of both strategies",
+        "Workflow services handle coordination",
+        "Domain services provide shared capabilities",
+        "Flexible - choose best pattern per service"
+      ],
+      "cons": [
+        "More complex to design initially",
+        "Need to carefully decide which pattern per service",
+        "Requires more architectural discipline"
+      ]
+    }
+  },
+  "implementation_guidance": {
+    "domain_based": {
+      "service_decomposition": "Group functions by business domain (User, Product, Order, Payment)",
+      "coordination_pattern": "Distributed - services coordinate via events, sagas, or orchestration",
+      "state_management": "Each service owns its domain state",
+      "integration_pattern": "API composition, event-driven architecture"
+    },
+    "workflow_based": {
+      "service_decomposition": "Group functions by user workflow (Checkout, Inventory, Fulfillment)",
+      "coordination_pattern": "Local - coordination state managed within workflow service",
+      "state_management": "Workflow services own workflow state, may access shared domain state",
+      "integration_pattern": "Workflow orchestration, command-query separation"
+    },
+    "hybrid": {
+      "service_decomposition": "Identify workflow services (complex coordination) and domain services (shared capabilities)",
+      "coordination_pattern": "Hybrid - local within workflow services, distributed between domain services",
+      "state_management": "Workflow services own workflow state, domain services own domain state",
+      "integration_pattern": "Mixed - orchestration for workflows, events for domain services"
+    }
+  },
+  "references": {
+    "architectural_patterns_guide": "docs/ARCHITECTURAL_PATTERNS_PROTOCOLS_DI.md",
+    "section": "Section 3: Service Organization Strategies",
+    "examples": "See Bluesky remote access example in docs/"
+  }
+}

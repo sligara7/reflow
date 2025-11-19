@@ -12,8 +12,80 @@
 
   "actions": [
     {
+      "action_id": "SE-02-A00",
+      "description": "Analyze and choose service organization strategy (NEW v3.18.0)",
+      "new_in_version": "v3.18.0 - Service Organization Strategies",
+      "when": "Before creating service architectures - organization strategy affects service design",
+      "purpose": "Choose optimal service organization based on system characteristics",
+      "tool": "analyze_service_organization.py",
+      "command": "python3 {reflow_root}/tools/analyze_service_organization.py {system_root}",
+      "inputs": [
+        "specs/functional/functional_architecture.json (required)",
+        "specs/machine/service_arch/ (optional - for brownfield analysis)"
+      ],
+      "outputs": [
+        "specs/machine/service_organization_analysis.json (analysis results)",
+        "Console output with recommendation"
+      ],
+      "analysis_factors": {
+        "coordination_complexity": "LOW | MEDIUM | HIGH - How much cross-service coordination?",
+        "workflow_span": "SINGLE_DOMAIN | CROSS_DOMAIN - Do workflows span multiple domains?",
+        "operation_types": "CRUD_HEAVY | WORKFLOW_HEAVY | BALANCED - What types of operations?",
+        "state_management": "Distributed state requirements"
+      },
+      "user_prompt": {
+        "ask": "Based on the analysis, which service organization strategy would you like to use?",
+        "context": "Analysis tool will present system characteristics and recommendation",
+        "options": [
+          "1. Domain-Based Organization - Services by business domain (UserService, ProductService, OrderService)",
+          "2. Workflow-Based Organization - Services by user workflows (CheckoutWorkflowService, InventoryManagementService)",
+          "3. Hybrid - Workflow services for coordination + Domain services for shared capabilities"
+        ],
+        "recommendation_logic": {
+          "domain_based": "LOW coordination + SINGLE_DOMAIN + CRUD_HEAVY → Clear domains, simple operations",
+          "workflow_based": "HIGH coordination + CROSS_DOMAIN + WORKFLOW_HEAVY → Keep coordination local",
+          "hybrid": "Mixed characteristics → Balance both approaches"
+        },
+        "learn_more": "See docs/ARCHITECTURAL_PATTERNS_PROTOCOLS_DI.md section 3 for detailed guidance"
+      },
+      "record_choice": {
+        "file": "specs/machine/service_organization_strategy.json",
+        "template": "templates/service_organization_strategy_template.json",
+        "fields": {
+          "chosen_strategy": "domain_based | workflow_based | hybrid",
+          "user_rationale": "Why user chose this strategy",
+          "analysis_recommendation": "What the tool recommended",
+          "system_characteristics": {
+            "coordination_complexity": "from analysis",
+            "workflow_span": "from analysis",
+            "operation_types": "from analysis"
+          }
+        }
+      },
+      "llm_agent_instructions": [
+        "1. Run analyze_service_organization.py to analyze system characteristics",
+        "2. Review analysis output (coordination, workflow span, operation types)",
+        "3. Present recommendation and three options to user",
+        "4. Record user choice in service_organization_strategy.json",
+        "5. Use chosen strategy to guide service decomposition in SE-02-A01",
+        "6. For DOMAIN_BASED: Group functions by business domain",
+        "7. For WORKFLOW_BASED: Group functions by user workflows",
+        "8. For HYBRID: Identify workflow services AND domain services"
+      ],
+      "impact_on_subsequent_steps": {
+        "SE-02-A01": "Service creation follows chosen organization strategy",
+        "SE-02-A02": "Component specifications reflect organization choice",
+        "D-01": "DI container design aligns with organization (workflow services need more coordination logic)"
+      },
+      "benefits": {
+        "domain_based": "Clear ownership, aligns with business domains, simple CRUD operations",
+        "workflow_based": "Coordination is local (not distributed), workflows self-contained, fewer service calls",
+        "hybrid": "Best of both - workflow services for coordination, domain services for shared capabilities"
+      }
+    },
+    {
       "action_id": "SE-02-A01",
-      "description": "For each service, create VERSIONED service_architecture.json",
+      "description": "For each service, create VERSIONED service_architecture.json (guided by SE-02-A00 strategy)",
       "template": "service_architecture_template.json",
       "versioning": {
         "filename_format": "service_architecture_v{major}.{minor}.{patch}-{YYYYMMDD}.json",
@@ -350,15 +422,70 @@
     },
     {
       "action_id": "SE-02-A03",
-      "description": "Define interface registry",
+      "description": "Generate interface registry (AUTOMATED)",
+      "tool": "generate_interface_registry.py",
+      "command": "python3 {reflow_root}/tools/generate_interface_registry.py {system_root}",
       "template": "interface_registry_enhanced_template.json",
       "location": "specs/machine/interface_registry.json",
-      "purpose": "Catalog all interfaces between services and external systems",
+      "purpose": "Automatically extract and catalog all interfaces from service_architecture.json files",
+      "automation_benefits": {
+        "prevents_manual_errors": "Manual creation led to 56 'interface_missing' errors and 17 'interface_mismatch' field inconsistencies",
+        "ensures_consistency": "Field values extracted directly from service architectures - guaranteed to match",
+        "saves_time": "Automated extraction from all service_architecture.json files in seconds",
+        "single_source_of_truth": "Service architectures are source of truth, registry is derived artifact"
+      },
+      "inputs": [
+        "specs/machine/service_arch/*/service_architecture.json (all services)",
+        "specs/machine/index.json (optional - for service catalog)"
+      ],
+      "outputs": [
+        "specs/machine/interface_registry.json",
+        "Console output with extraction summary and statistics"
+      ],
+      "extraction_details": {
+        "interfaces_extracted_from": "service_architecture.json -> interfaces array",
+        "internal_only_services": "Extracted from deployment.internal_only field",
+        "field_mapping": {
+          "interface_type": "from interfaces[].interface_type or type (default: service_dependency)",
+          "communication_pattern": "from interfaces[].communication_pattern or pattern (default: synchronous)",
+          "auth_required": "from interfaces[].auth_required or authentication_required (default: false)",
+          "async_details": "from interfaces[] if communication_pattern == asynchronous"
+        }
+      },
+      "validation": {
+        "post_generation": "Run validate_architecture.py to ensure all interfaces correctly extracted",
+        "expected_result": "Zero 'interface_missing' errors, zero 'interface_mismatch' errors"
+      },
+      "llm_agent_instructions": [
+        "1. Ensure ALL service_architecture.json files created in SE-02-A01 (and symlinks exist)",
+        "2. Run generate_interface_registry.py to extract interfaces automatically",
+        "3. Review console output - verify interface count matches expectations",
+        "4. Check specs/machine/interface_registry.json was created",
+        "5. Run validate_architecture.py to verify extraction correctness",
+        "6. If validation finds interface_mismatch errors, check service_architecture.json format",
+        "7. DO NOT manually edit interface_registry.json - regenerate from service architectures instead"
+      ],
+      "troubleshooting": {
+        "interface_missing_errors": "Service architecture missing 'interfaces' array - add to service_architecture.json",
+        "interface_mismatch_errors": "Field name mismatch in service_architecture.json - use interface_type, communication_pattern, auth_required",
+        "no_interfaces_extracted": "Check service_architecture.json files exist and have 'interfaces' arrays",
+        "internal_only_not_detected": "Add deployment.internal_only: true to service_architecture.json"
+      },
+      "regeneration": {
+        "when_to_regenerate": [
+          "After adding new services (new service_architecture.json files)",
+          "After modifying interfaces in existing service architectures",
+          "After architecture synchronization (D-06.5) that changes interfaces",
+          "After validation errors suggest interface registry is stale"
+        ],
+        "safe_to_regenerate": "Yes - interface_registry.json is derived artifact, can always be regenerated from service architectures"
+      },
       "includes": [
-        "Interface definitions",
-        "Data contracts",
-        "Protocol specifications",
-        "Authentication requirements"
+        "Interface definitions (extracted from service architectures)",
+        "Data contracts (from interface specifications)",
+        "Protocol specifications (REST, gRPC, messaging)",
+        "Authentication requirements (auth_required field)",
+        "Internal-only service catalog (deployment.internal_only)"
       ]
     },
     {
