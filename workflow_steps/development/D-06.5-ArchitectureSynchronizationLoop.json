@@ -201,13 +201,151 @@
     },
     {
       "action_id": "D-06.5-A03",
-      "name": "Architecture Update Decision",
-      "description": "Decide whether to update architecture or fix implementation based on root cause analysis",
+      "name": "Architecture Update Decision (with Workflow Branching)",
+      "description": "Decide whether to update architecture, fix implementation, OR re-run upstream workflows based on drift magnitude and root cause",
+      "new_in_version": "v3.17.0 - Added workflow branching logic for major drift",
       "inputs": [
         "context/architecture_drift_root_cause_analysis.json (from D-06.5-A02)",
-        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json"
+        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json",
+        "specs/machine/validation/service_contracts_validation_report.json (from D-06-A02.5, if available)"
       ],
+      "drift_based_branching": {
+        "catastrophic_drift": {
+          "similarity_threshold": "< 0.5",
+          "severity": "CATASTROPHIC",
+          "interpretation": "Architecture and implementation diverged completely (< 50% match)",
+          "action": "HALT - Manual intervention required",
+          "blocking": true,
+          "user_prompt": {
+            "message": "⛔ CATASTROPHIC DRIFT DETECTED (similarity: {score})\n\nThe implementation has diverged so severely from the designed architecture that direct reconciliation is not advisable.\n\nThis usually indicates:\n- Fundamental misunderstanding of requirements\n- Major pivot during implementation\n- Wrong architecture designed initially\n- Implementation ignored architecture entirely\n\nHow would you like to proceed?",
+            "options": [
+              "Re-run functional analysis (01d-functional_analysis.json) to properly architect from current implementation",
+              "Re-run systems engineering (01b-bottom_up_integration.json) to create proper service allocation",
+              "Manual intervention - I'll fix this myself",
+              "Continue with direct architecture update (NOT RECOMMENDED - drift too large)"
+            ],
+            "recommendation": "Re-run functional analysis to create proper architecture that matches reality",
+            "warning": "Direct architecture updates for this level of drift will likely create technical debt"
+          },
+          "workflow_triggers": {
+            "option_1": {
+              "workflow": "workflows/01d-functional_analysis.json",
+              "entry_point": "FA-01 (Extract functional requirements from implementation)",
+              "rationale": "Start from scratch with proper functional decomposition",
+              "preserves": "Implementation code (as source of truth)",
+              "replaces": "Entire functional and service architecture"
+            },
+            "option_2": {
+              "workflow": "workflows/01b-bottom_up_integration.json",
+              "entry_point": "SE-01 (Reverse-engineer system model from implementation)",
+              "rationale": "Build proper service architecture from existing code",
+              "preserves": "Implementation code and functional architecture",
+              "replaces": "Service architecture and allocation"
+            },
+            "option_3": {
+              "action": "Escalate to human - architecture review session needed",
+              "next_step": "Manual architecture redesign"
+            },
+            "option_4": {
+              "action": "Proceed to standard decision_matrix below",
+              "warning_message": "⚠️ You chose direct updates for catastrophic drift. This is risky and may create significant technical debt."
+            }
+          }
+        },
+        "major_drift": {
+          "similarity_threshold": "0.5-0.7",
+          "severity": "MAJOR",
+          "interpretation": "Significant drift (50-70% match) - implementation substantially different",
+          "action": "BRANCH - Offer workflow re-run OR direct update",
+          "blocking": true,
+          "user_prompt": {
+            "message": "⚠️ MAJOR DRIFT DETECTED (similarity: {score})\n\nRoot cause analysis: {root_causes_summary}\n\nThe implementation has diverged significantly from the design. You have several options:",
+            "options": [
+              "Re-run functional analysis (01d-functional_analysis.json) - if functions changed significantly",
+              "Re-run systems engineering (01b/01c) - if service allocation changed",
+              "Use feature_update.json workflow - if drift represents intentional feature evolution",
+              "Direct architecture update via version_architecture.py - if drift is well-understood and localized"
+            ],
+            "decision_guidance": {
+              "choose_functional_analysis_if": [
+                "New functions added or removed",
+                "Function flows changed significantly",
+                "Functional decomposition no longer matches implementation",
+                "Want to validate functional completeness before updating service architecture"
+              ],
+              "choose_systems_engineering_if": [
+                "Services added or removed",
+                "Service boundaries changed",
+                "Function-to-service allocation changed significantly",
+                "New interfaces between services"
+              ],
+              "choose_feature_update_if": [
+                "Drift represents deliberate feature addition/change",
+                "Want full workflow including stakeholder validation",
+                "Changes span functional + service architecture + implementation"
+              ],
+              "choose_direct_update_if": [
+                "Root cause is well-understood (performance_optimization, technical_constraints)",
+                "Changes are localized to specific services",
+                "Functional architecture still valid, only service architecture changed",
+                "Confident in making precise architecture updates"
+              ]
+            }
+          },
+          "workflow_triggers": {
+            "option_1": {
+              "workflow": "workflows/01d-functional_analysis.json",
+              "entry_point": "FA-01",
+              "note": "Will regenerate functional architecture from requirements/implementation",
+              "continue_to": "01b or 01c for service allocation"
+            },
+            "option_2": {
+              "workflow": "workflows/01b-bottom_up_integration.json OR workflows/01c-top_down_design.json",
+              "entry_point": "SE-01",
+              "note": "Will regenerate service architecture and allocation",
+              "preserves": "Functional architecture (if still valid)"
+            },
+            "option_3": {
+              "workflow": "workflows/feature_update.json",
+              "entry_point": "FU-01 (Change proposal)",
+              "note": "Full feature update workflow with stakeholder validation",
+              "includes": "FU-01A (functional analysis) + FU-02 (systems engineering)"
+            },
+            "option_4": {
+              "action": "Proceed to standard decision_matrix below",
+              "tool": "version_architecture.py",
+              "note": "Direct architecture file updates"
+            }
+          }
+        },
+        "moderate_drift": {
+          "similarity_threshold": "0.7-0.95",
+          "severity": "MODERATE",
+          "interpretation": "Noticeable drift (70-95% match) - requires review but likely reconcilable",
+          "action": "Direct architecture update acceptable (with review)",
+          "blocking": true,
+          "user_prompt": {
+            "message": "ℹ️ MODERATE DRIFT DETECTED (similarity: {score})\n\nRoot cause analysis: {root_causes_summary}\n\nDirect architecture updates are likely sufficient for this level of drift.\n\nHow would you like to proceed?",
+            "options": [
+              "Direct architecture update via version_architecture.py (RECOMMENDED)",
+              "Fix implementation to match architecture (if root cause is developer_mistake)",
+              "Hybrid approach (update some aspects, fix others)",
+              "Re-run workflows anyway (01d/01b/01c) - for thoroughness"
+            ]
+          },
+          "default_action": "Proceed to standard decision_matrix below"
+        },
+        "minimal_drift": {
+          "similarity_threshold": ">= 0.95",
+          "severity": "MINIMAL",
+          "interpretation": "Implementation matches design very closely (95%+ match)",
+          "action": "Document minor differences and proceed",
+          "blocking": false,
+          "skip_to": "D-06.5-A09 (document and complete)"
+        }
+      },
       "decision_matrix": {
+        "note": "This matrix is used when NOT branching to upstream workflows (catastrophic/major drift options 4, or moderate drift)",
         "update_architecture_if": [
           "Root cause is requirements_creep AND new requirements are validated by stakeholders",
           "Root cause is performance_optimization AND optimization is validated through testing",

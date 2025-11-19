@@ -380,7 +380,21 @@
         },
         {
           "action_id": "D-06.5-A03",
-          "description": "Decide whether to update architecture or fix implementation"
+          "description": "Decide whether to update architecture, fix implementation, OR re-run upstream workflows",
+          "new_in_version": "v3.17.0 - Added workflow branching logic",
+          "drift_based_branching": {
+            "catastrophic_drift_lt_0.5": "HALT - Offer to re-run 01d-functional_analysis.json or 01b-bottom_up_integration.json",
+            "major_drift_0.5_to_0.7": "BRANCH - Offer choice: re-run 01d/01b/01c, use feature_update.json, OR direct update",
+            "moderate_drift_0.7_to_0.95": "Direct architecture update acceptable (with review)",
+            "minimal_drift_gte_0.95": "Document and proceed"
+          },
+          "workflow_triggers": {
+            "01d-functional_analysis.json": "If functions changed significantly",
+            "01b-bottom_up_integration.json": "If service allocation changed",
+            "01c-top_down_design.json": "If greenfield redesign needed",
+            "feature_update.json": "If drift represents intentional feature evolution"
+          },
+          "note": "See workflow_steps/development/D-06.5-ArchitectureSynchronizationLoop.json for complete branching logic"
         },
         {
           "action_id": "D-06.5-A04",

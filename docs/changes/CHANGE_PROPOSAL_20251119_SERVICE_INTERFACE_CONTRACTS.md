@@ -449,11 +449,90 @@ LLM: "I see UserService has 2 contracted functions and provides 1 interface
 
 **Why Rejected**: Out of scope - this is architecture validation, not runtime validation
 
+## Enhancement: Drift-Based Workflow Branching (Added 2025-11-19)
+
+### Problem
+
+The original implementation provided **warnings** about drift but didn't **enforce** proper re-architecture for major drift scenarios. D-06.5-A03 would proceed with direct architecture updates even for catastrophic drift (similarity < 0.5).
+
+### Solution
+
+Enhanced D-06.5-A03 with **drift-based workflow branching logic**:
+
+#### Drift Severity Thresholds
+
+1. **Catastrophic Drift** (similarity < 0.5)
+   - **Action**: HALT - Manual intervention required
+   - **Options**:
+     - Re-run functional analysis (01d-functional_analysis.json)
+     - Re-run systems engineering (01b-bottom_up_integration.json)
+     - Manual intervention
+     - Continue with direct update (NOT RECOMMENDED)
+   - **Recommendation**: Re-run functional analysis to create proper architecture
+
+2. **Major Drift** (similarity 0.5-0.7)
+   - **Action**: BRANCH - Offer choice to user
+   - **Options**:
+     - Re-run functional analysis (if functions changed)
+     - Re-run systems engineering (if service allocation changed)
+     - Use feature_update.json (if intentional feature evolution)
+     - Direct architecture update (if localized and well-understood)
+   - **Decision Guidance**: Provides criteria for choosing each option
+
+3. **Moderate Drift** (similarity 0.7-0.95)
+   - **Action**: Direct updates acceptable with review
+   - **Options**:
+     - Direct architecture update (RECOMMENDED)
+     - Fix implementation
+     - Hybrid approach
+     - Re-run workflows anyway (for thoroughness)
+
+4. **Minimal Drift** (similarity >= 0.95)
+   - **Action**: Document and proceed
+   - **Skip to**: D-06.5-A09 (completion)
+
+### Integration Points
+
+**Files Modified**:
+- `workflow_steps/development/D-06.5-ArchitectureSynchronizationLoop.json` - Added `drift_based_branching` section to D-06.5-A03
+- `workflows/03b-development_validation.json` - Updated D-06.5-A03 description with branching summary
+
+### Impact
+
+- **Prevents technical debt**: Major drift now triggers proper re-architecture instead of quick fixes
+- **Provides guidance**: Decision guidance helps LLMs choose the right workflow
+- **Preserves flexibility**: Users can still choose direct updates if confident
+- **Completes the loop**: Answers "when should drift trigger re-running workflows?"
+
+### User Experience
+
+**Before**:
+```
+Drift detected (similarity: 0.45)
+→ Proceeds to version_architecture.py
+→ Direct JSON updates for catastrophic drift
+→ Creates technical debt
+```
+
+**After**:
+```
+Drift detected (similarity: 0.45)
+→ ⛔ CATASTROPHIC DRIFT DETECTED
+→ Options:
+   1. Re-run functional analysis (RECOMMENDED)
+   2. Re-run systems engineering
+   3. Manual intervention
+   4. Direct update (NOT RECOMMENDED)
+→ User makes informed decision
+```
+
 ## Conclusion
 
 Service Interface Contracts provide a lightweight, LLM-friendly mechanism for **proactive** architectural drift prevention. By embedding contracts directly in service directories, we create visible "hooks" that warn LLMs before they make breaking changes.
 
-**Key Value Proposition**: **Prevent drift before it happens, not after.**
+Combined with **drift-based workflow branching**, the system now provides both **prevention** (contracts warn before changes) and **remediation** (branching logic routes to proper re-architecture when drift occurs).
+
+**Key Value Proposition**: **Prevent drift before it happens, and properly fix it when it does.**
 
 ## References
 
