@@ -2,10 +2,10 @@
   "workflow_metadata": {
     "workflow_id": "03a-development_implementation",
     "name": "Development Implementation Workflow",
-    "version": "3.7.0",
+    "version": "3.17.0",
     "description": "Research, implement core functionality, and integrate APIs/security",
     "created_from": "03-development.json v1.0.0 - D-01, D-02, D-04 extracted",
-    "last_updated": "2025-10-27",
+    "last_updated": "2025-11-19",
     "purpose": "Implement service functionality (setup + coding + integration)",
     "context_reduction": "Reduced from 1,061 lines to ~450 lines (58% reduction)"
   },
@@ -389,6 +389,22 @@
           "location_pattern": "services/{service_name}/tests/unit/"
         },
         {
+          "action_id": "D-02-A05",
+          "description": "Generate service interface contract",
+          "tool": "generate_service_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_service_contracts.py {system_root} --service {service_name}",
+          "purpose": "Embed architectural contract to warn LLMs before making breaking changes",
+          "new_in_version": "v3.17.0 - Service Interface Contracts",
+          "outputs": ["services/{service_name}/SERVICE_CONTRACT.json"],
+          "rationale": "Generate contract early (after domain model, before integration) so it's visible during integration surface implementation",
+          "contract_includes": [
+            "Contracted functions (from service_architecture.json)",
+            "Contracted interfaces (from system_of_systems_graph.json)",
+            "Architecture reference pointers",
+            "LLM warnings about architectural impact"
+          ]
+        },
+        {
           "action_id": "D-02-A99",
           "description": "Prove It Works - Validate service runs with domain model implementation",
           "when": "After all D-02 actions complete, before proceeding to D-03",
@@ -483,6 +499,22 @@
           "tool": "verify_component_contract.py",
           "command_pattern": "python3 {reflow_root}/tools/verify_component_contract.py {system_root} --service {service_name}",
           "purpose": "Ensure implementations satisfy ICDs"
+        },
+        {
+          "action_id": "D-04-A06.5",
+          "description": "Validate service contract after integration surfaces implementation",
+          "tool": "validate_service_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_service_contracts.py {system_root} --service {service_name}",
+          "purpose": "Detect contract violations introduced during integration surfaces (APIs, clients, security)",
+          "new_in_version": "v3.17.0 - Service Interface Contracts",
+          "blocking": false,
+          "enforcement": "STRONGLY RECOMMENDED to fix violations before proceeding",
+          "validates": [
+            "Contracted functions are implemented",
+            "Contracted interfaces have valid ICDs",
+            "Contract is up-to-date with architecture"
+          ],
+          "benefit": "Early warning if integration work violated architectural contracts"
         },
         {
           "action_id": "D-04-A07",

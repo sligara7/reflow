@@ -2,10 +2,10 @@
   "workflow_metadata": {
     "workflow_id": "03b-development_validation",
     "name": "Development Validation Workflow",
-    "version": "3.7.0",
+    "version": "3.17.0",
     "description": "Testing, observability, pre-deployment validation, and review",
     "created_from": "03-development.json v1.0.0 - D-03, D-05, D-06, D-07, D-Post extracted",
-    "last_updated": "2025-10-27",
+    "last_updated": "2025-11-19",
     "purpose": "Validate implementation (testing + observability + pre-deployment checks)",
     "context_reduction": "Reduced from 1,061 lines to ~600 lines (43% reduction)",
     "contains_v3_6_0_feature": "D-07 Pre-Deployment Validation"
@@ -281,6 +281,24 @@
           ]
         },
         {
+          "action_id": "D-06-A02.5",
+          "description": "Validate service contracts against as-built architecture",
+          "tool": "validate_service_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_service_contracts.py {system_root}",
+          "purpose": "Detect contract drift revealed by as-built architecture analysis",
+          "new_in_version": "v3.17.0 - Service Interface Contracts",
+          "when": "After as-built comparison (D-06-A02), before delta review (D-06-A03)",
+          "validates": [
+            "All service contracts exist",
+            "Contracts match as-built architecture",
+            "No missing functions or interfaces"
+          ],
+          "outputs": [
+            "specs/machine/validation/service_contracts_validation_report.json"
+          ],
+          "benefit": "Identifies contract violations before delta review, provides complete picture of drift"
+        },
+        {
           "action_id": "D-06-A03",
           "description": "Review delta report and document rationale",
           "purpose": "Understand why implementation differs from design",
@@ -367,6 +385,19 @@
         {
           "action_id": "D-06.5-A04",
           "description": "Version and update architecture specifications using version_architecture.py tool"
+        },
+        {
+          "action_id": "D-06.5-A04.5",
+          "description": "Regenerate service contracts after architecture update",
+          "tool": "generate_service_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_service_contracts.py {system_root}",
+          "purpose": "Update embedded contracts to match updated architecture",
+          "new_in_version": "v3.17.0 - Service Interface Contracts",
+          "when": "After architecture versioning (D-06.5-A04), before re-validation (D-06.5-A05)",
+          "rationale": "When architecture changes, contracts must be regenerated to reflect new reality",
+          "outputs": [
+            "services/{service}/SERVICE_CONTRACT.json (regenerated for all services)"
+          ]
         },
         {
           "action_id": "D-06.5-A05",
@@ -470,13 +501,34 @@
           "description": "Contract validation - implementations match ICDs",
           "tool": "verify_component_contract.py --strict",
           "validates": "API contract compliance"
+        },
+        {
+          "action_id": "D-07-A07.5",
+          "description": "Final service contract validation before deployment",
+          "tool": "validate_service_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_service_contracts.py {system_root}",
+          "purpose": "Final pre-deployment check that all service contracts are satisfied",
+          "new_in_version": "v3.17.0 - Service Interface Contracts",
+          "blocking": true,
+          "enforcement": "MUST PASS before proceeding to operational testing",
+          "validates": [
+            "All service contracts exist",
+            "All contracted functions are implemented",
+            "All contracted interfaces are valid",
+            "Contracts are synchronized with architecture"
+          ],
+          "outputs": [
+            "specs/machine/validation/service_contracts_validation_report.json"
+          ],
+          "benefit": "Ensures architectural contracts are satisfied before deployment - prevents runtime failures due to missing functions or interfaces"
         }
       ],
       "tools_used": [
-        "validate_dependencies.py (NEW)",
-        "validate_module_structure.py (NEW)",
-        "validate_configuration_consistency.py (NEW)",
+        "validate_dependencies.py (NEW v3.6.0)",
+        "validate_module_structure.py (NEW v3.6.0)",
+        "validate_configuration_consistency.py (NEW v3.6.0)",
         "verify_component_contract.py (EXISTING)",
+        "validate_service_contracts.py (NEW v3.17.0)",
         "Docker",
         "Docker Compose"
       ],
