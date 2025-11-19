@@ -1,12 +1,13 @@
 # Reflow - Systems Engineering Workflow
 
-**Version 3.16.0** | LLM-driven systems engineering with GAN-inspired automated testing
+**Version 3.17.0** | LLM-driven systems engineering with proactive drift prevention
 
 ## What is Reflow?
 
 Reflow guides LLM agents through designing, architecting, and building complex systems. It provides structured workflows, automated validation, and comprehensive tooling for creating production-ready architectures.
 
 **Key capabilities:**
+- **Service interface contracts**: Embedded hooks warn LLMs before breaking changes (v3.17.0)
 - **GAN-inspired testing**: Separate Generator/Discriminator agents validate workflow outputs (v3.16.0)
 - **Architecture sync loop**: Keeps architecture aligned with implementation during development (v3.15.0)
 - **Framework-agnostic**: Software (UAF), biology, social networks, ecosystems, workflows, custom frameworks
