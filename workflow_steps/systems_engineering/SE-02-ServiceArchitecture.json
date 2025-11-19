@@ -422,15 +422,70 @@
     },
     {
       "action_id": "SE-02-A03",
-      "description": "Define interface registry",
+      "description": "Generate interface registry (AUTOMATED)",
+      "tool": "generate_interface_registry.py",
+      "command": "python3 {reflow_root}/tools/generate_interface_registry.py {system_root}",
       "template": "interface_registry_enhanced_template.json",
       "location": "specs/machine/interface_registry.json",
-      "purpose": "Catalog all interfaces between services and external systems",
+      "purpose": "Automatically extract and catalog all interfaces from service_architecture.json files",
+      "automation_benefits": {
+        "prevents_manual_errors": "Manual creation led to 56 'interface_missing' errors and 17 'interface_mismatch' field inconsistencies",
+        "ensures_consistency": "Field values extracted directly from service architectures - guaranteed to match",
+        "saves_time": "Automated extraction from all service_architecture.json files in seconds",
+        "single_source_of_truth": "Service architectures are source of truth, registry is derived artifact"
+      },
+      "inputs": [
+        "specs/machine/service_arch/*/service_architecture.json (all services)",
+        "specs/machine/index.json (optional - for service catalog)"
+      ],
+      "outputs": [
+        "specs/machine/interface_registry.json",
+        "Console output with extraction summary and statistics"
+      ],
+      "extraction_details": {
+        "interfaces_extracted_from": "service_architecture.json -> interfaces array",
+        "internal_only_services": "Extracted from deployment.internal_only field",
+        "field_mapping": {
+          "interface_type": "from interfaces[].interface_type or type (default: service_dependency)",
+          "communication_pattern": "from interfaces[].communication_pattern or pattern (default: synchronous)",
+          "auth_required": "from interfaces[].auth_required or authentication_required (default: false)",
+          "async_details": "from interfaces[] if communication_pattern == asynchronous"
+        }
+      },
+      "validation": {
+        "post_generation": "Run validate_architecture.py to ensure all interfaces correctly extracted",
+        "expected_result": "Zero 'interface_missing' errors, zero 'interface_mismatch' errors"
+      },
+      "llm_agent_instructions": [
+        "1. Ensure ALL service_architecture.json files created in SE-02-A01 (and symlinks exist)",
+        "2. Run generate_interface_registry.py to extract interfaces automatically",
+        "3. Review console output - verify interface count matches expectations",
+        "4. Check specs/machine/interface_registry.json was created",
+        "5. Run validate_architecture.py to verify extraction correctness",
+        "6. If validation finds interface_mismatch errors, check service_architecture.json format",
+        "7. DO NOT manually edit interface_registry.json - regenerate from service architectures instead"
+      ],
+      "troubleshooting": {
+        "interface_missing_errors": "Service architecture missing 'interfaces' array - add to service_architecture.json",
+        "interface_mismatch_errors": "Field name mismatch in service_architecture.json - use interface_type, communication_pattern, auth_required",
+        "no_interfaces_extracted": "Check service_architecture.json files exist and have 'interfaces' arrays",
+        "internal_only_not_detected": "Add deployment.internal_only: true to service_architecture.json"
+      },
+      "regeneration": {
+        "when_to_regenerate": [
+          "After adding new services (new service_architecture.json files)",
+          "After modifying interfaces in existing service architectures",
+          "After architecture synchronization (D-06.5) that changes interfaces",
+          "After validation errors suggest interface registry is stale"
+        ],
+        "safe_to_regenerate": "Yes - interface_registry.json is derived artifact, can always be regenerated from service architectures"
+      },
       "includes": [
-        "Interface definitions",
-        "Data contracts",
-        "Protocol specifications",
-        "Authentication requirements"
+        "Interface definitions (extracted from service architectures)",
+        "Data contracts (from interface specifications)",
+        "Protocol specifications (REST, gRPC, messaging)",
+        "Authentication requirements (auth_required field)",
+        "Internal-only service catalog (deployment.internal_only)"
       ]
     },
     {
