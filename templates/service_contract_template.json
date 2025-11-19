@@ -1,0 +1,76 @@
+{
+  "_metadata": {
+    "template_name": "service_contract_template.json",
+    "version": "3.17.0",
+    "description": "Service Interface Contract - Embedded architectural contract that warns LLMs before making breaking changes",
+    "created_date": "2025-11-19",
+    "purpose": "Proactive drift prevention by declaring contracted functions and interfaces within each service"
+  },
+  "_instructions": {
+    "usage": "This template generates SERVICE_CONTRACT.json files for each service",
+    "location": "services/{service_name}/SERVICE_CONTRACT.json (root of service directory)",
+    "generation_tool": "tools/generate_service_contracts.py",
+    "validation_tool": "tools/validate_service_contracts.py",
+    "when_to_generate": "D-02-A05 (after domain model implementation, before integration surfaces)",
+    "when_to_validate": "D-04-A06.5, D-06-A02.5, D-07-A07.5",
+    "when_to_update": "D-06.5-A04.5 (when architecture changes during synchronization loop)"
+  },
+  "service_name": "{SERVICE_NAME}",
+  "contract_version": "1.0.0",
+  "contract_date": "{GENERATION_DATE}",
+  "architecture_reference": {
+    "description": "Pointer to the authoritative system architecture that defines this service",
+    "service_architecture_file": "specs/machine/service_arch/{SERVICE_NAME}/service_architecture_v{VERSION}.json",
+    "graph_node_id": "{SERVICE_NAME}",
+    "graph_file": "specs/machine/graphs/system_of_systems_graph.json",
+    "last_architecture_sync": "{LAST_SYNC_DATE}",
+    "architecture_version": "{ARCH_VERSION}"
+  },
+  "contracted_functions": {
+    "description": "Functions this service MUST implement (from functional architecture)",
+    "functions": [
+      {
+        "function_id": "{FUNCTION_ID}",
+        "function_name": "{FUNCTION_NAME}",
+        "description": "{FUNCTION_DESCRIPTION}",
+        "source": "Derived from service_architecture.json → components → functions"
+      }
+    ],
+    "warning": "DO NOT add, remove, or substantially modify these functions without updating the functional architecture (specs/machine/service_arch/) and regenerating the system of systems graph. Changes to contracted functions may break dependent services."
+  },
+  "contracted_interfaces": {
+    "description": "Interfaces this service MUST provide and consume",
+    "provides": [
+      {
+        "interface_id": "{INTERFACE_ID}",
+        "interface_name": "{INTERFACE_NAME}",
+        "icd_file": "specs/machine/interfaces/{INTERFACE_NAME}_icd.json",
+        "consumers": ["{CONSUMER_SERVICE_1}", "{CONSUMER_SERVICE_2}"],
+        "breaking_change_impact": "Modifying this interface affects {N} consumer services"
+      }
+    ],
+    "consumes": [
+      {
+        "interface_id": "{INTERFACE_ID}",
+        "interface_name": "{INTERFACE_NAME}",
+        "provider_service": "{PROVIDER_SERVICE}",
+        "icd_file": "specs/machine/interfaces/{INTERFACE_NAME}_icd.json"
+      }
+    ],
+    "warning": "DO NOT modify provided interfaces without updating ICDs and notifying consumer services. DO NOT modify consumed interfaces - contact the provider service owner instead. All interface changes require re-running systems engineering workflows (01b or 01c)."
+  },
+  "llm_warnings": {
+    "before_modifying_functions": "⚠️  WARNING: This service has {N} contracted functions. Adding, removing, or substantially changing function behavior requires updating the functional architecture. Run workflow 01d-functional_analysis or 01b/01c to update architecture first, then regenerate this contract.",
+    "before_modifying_interfaces": "⚠️  WARNING: This service provides {N} interfaces consumed by {M} services. Interface changes are BREAKING changes. Update ICDs (specs/machine/interfaces/), notify consumers, and re-run systems engineering workflows before making changes.",
+    "before_adding_dependencies": "⚠️  WARNING: Adding new service dependencies (consuming new interfaces) changes the system architecture. Update the system of systems graph and interface registry before adding imports or API clients.",
+    "drift_detection": "If you see differences between this contract and the actual implementation, run D-06 (As-Built Architecture Generation) and D-06.5 (Architecture Synchronization Loop) to reconcile the drift."
+  },
+  "validation_status": {
+    "last_validated": "{LAST_VALIDATION_DATE}",
+    "validation_tool": "tools/validate_service_contracts.py",
+    "validation_result": "pending",
+    "deviations_detected": false,
+    "deviations": []
+  },
+  "_usage_note": "This contract is generated from service_architecture.json and system_of_systems_graph.json. It serves as an architectural 'hook' to prevent LLMs from making breaking changes without updating the system architecture. If this contract is out of sync with reality, run D-06.5 Architecture Synchronization Loop to reconcile."
+}

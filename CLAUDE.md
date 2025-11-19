@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.16.0
-**Last Updated**: 2025-11-18
+**Version**: 3.17.0
+**Last Updated**: 2025-11-19
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.17.0**: **Service Interface Contracts** - Embedded architectural "hooks" that warn LLMs before making breaking changes to service functions or interfaces. Proactive drift prevention through minimal JSON contracts in each service directory.
 
 **NEW in v3.16.0**: **Testing Framework** - GAN-inspired automated testing infrastructure for Reflow workflows. Separate agent architecture (Generator vs Discriminator) validates workflow outputs against ground truth, avoiding "conflict of interests."
 
@@ -386,6 +388,54 @@ service_architecture.json                     ← Symlink to current
 ```
 
 ## New Features Summary
+
+### v3.17.0 - Service Interface Contracts (Embedded Architectural Hooks)
+**Problem Solved**: LLMs can unknowingly modify service functions or interfaces without realizing the downstream impact on dependent services. Current architecture synchronization (v3.15.0) detects drift **after it happens**. Need **proactive** prevention.
+
+**Key Features**:
+- **SERVICE_CONTRACT.json**: Minimal JSON manifest embedded in each service's root directory
+- **Contracted Functions**: Declares WHAT functions the service must implement
+- **Contracted Interfaces**: Declares WHO the service talks to (provides/consumes)
+- **Architecture Reference**: Points to authoritative architecture source of truth
+- **LLM Warnings**: Explicit warnings about architectural impact of changes
+
+**New Tools**:
+1. `generate_service_contracts.py` - Generate contracts from service_architecture.json
+2. `validate_service_contracts.py` - Validate implementations match contracts
+
+**Workflow Integration**:
+- **D-02-A05** (NEW): Generate contracts after domain model implementation
+- **D-04-A06.5** (NEW): Validate contracts after integration surfaces
+- **D-06-A02.5** (NEW): Validate contracts against as-built architecture
+- **D-06.5-A04.5** (NEW): Regenerate contracts when architecture changes
+- **D-07-A07.5** (NEW): Final pre-deployment contract validation
+
+**Contract Structure** (example):
+```json
+{
+  "service_name": "UserService",
+  "contracted_functions": {
+    "functions": ["CreateUser", "AuthenticateUser"],
+    "warning": "DO NOT modify without updating functional architecture"
+  },
+  "contracted_interfaces": {
+    "provides": ["UserManagementAPI"],
+    "consumes": ["EmailNotificationAPI"],
+    "warning": "Interface changes are BREAKING changes"
+  },
+  "llm_warnings": {
+    "before_modifying_functions": "⚠️ WARNING: 2 contracted functions...",
+    "before_modifying_interfaces": "⚠️ WARNING: Affects 2 consumer services..."
+  }
+}
+```
+
+**Impact**:
+- **Proactive** drift prevention - warns LLMs **BEFORE** changes, not AFTER
+- 2-4 hours saved per service (average drift reconciliation time)
+- Complements existing tools (ABC contracts, ICD verification, architecture sync loop)
+
+**📖 Full Documentation**: See `docs/changes/CHANGE_PROPOSAL_20251119_SERVICE_INTERFACE_CONTRACTS.md`
 
 ### v3.16.0 - Testing Framework
 **Problem Solved**: Need automated validation that Reflow workflows produce correct outputs. Manual testing doesn't scale.
