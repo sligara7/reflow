@@ -1,0 +1,122 @@
+{
+  "interface_id": "provides_checkout_workflow",
+  "interface_name": "ProvidesCheckoutWorkflow",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:45:00Z",
+  "description": "Checkout workflow orchestration API",
+  "provider": "CheckoutWorkflowService",
+  "consumers": ["External"],
+  "protocol": "HTTP/REST",
+  "base_url": "/api/v1/checkout",
+  "operations": [
+    {
+      "operation_id": "initiate_checkout",
+      "operation_name": "initiateCheckout",
+      "description": "Start checkout process and initialize session",
+      "http_method": "POST",
+      "endpoint": "/initiate",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "cartId": {"type": "string"},
+          "userId": {"type": "string"}
+        },
+        "required": ["cartId", "userId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "checkoutSessionId": {"type": "string"},
+          "sessionStatus": {"type": "string"}
+        },
+        "required": ["checkoutSessionId", "sessionStatus"]
+      }
+    },
+    {
+      "operation_id": "validate_cart",
+      "operation_name": "validateCart",
+      "description": "Validate cart contents, pricing, and business rules",
+      "http_method": "POST",
+      "endpoint": "/validate",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "cartId": {"type": "string"}
+        },
+        "required": ["cartId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "validationResult": {"type": "boolean"},
+          "cartSummary": {"type": "object"}
+        },
+        "required": ["validationResult", "cartSummary"]
+      }
+    },
+    {
+      "operation_id": "process_checkout",
+      "operation_name": "processCheckout",
+      "description": "Orchestrate full checkout workflow",
+      "http_method": "POST",
+      "endpoint": "/process",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "cartId": {"type": "string"},
+          "paymentMethodId": {"type": "string"}
+        },
+        "required": ["cartId", "paymentMethodId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "checkoutResult": {"type": "string"},
+          "orderId": {"type": "string"},
+          "transactionId": {"type": "string"}
+        },
+        "required": ["checkoutResult", "orderId", "transactionId"]
+      }
+    },
+    {
+      "operation_id": "handle_checkout_failure",
+      "operation_name": "handleCheckoutFailure",
+      "description": "Handle checkout failures with compensation",
+      "http_method": "POST",
+      "endpoint": "/failure",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "checkoutSessionId": {"type": "string"},
+          "failureReason": {"type": "string"}
+        },
+        "required": ["checkoutSessionId", "failureReason"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "compensationResult": {"type": "string"}
+        },
+        "required": ["compensationResult"]
+      }
+    },
+    {
+      "operation_id": "get_checkout_status",
+      "operation_name": "getCheckoutStatus",
+      "description": "Query checkout progress and current state",
+      "http_method": "GET",
+      "endpoint": "/{checkoutSessionId}",
+      "path_parameters": {
+        "checkoutSessionId": {"type": "string"}
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "checkoutStatus": {"type": "string"},
+          "currentStep": {"type": "string"}
+        },
+        "required": ["checkoutStatus", "currentStep"]
+      }
+    }
+  ]
+}

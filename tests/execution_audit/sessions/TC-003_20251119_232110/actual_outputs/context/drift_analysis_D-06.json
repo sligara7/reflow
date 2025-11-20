@@ -1,0 +1,19 @@
+{
+  "comparison_date": "2025-11-19",
+  "designed_functions_count": 6,
+  "implemented_functions_count": 4,
+  "obsolete_functions": [
+    "CalculateTax",
+    "ValidatePaymentCard"
+  ],
+  "added_functions": [],
+  "matching_functions": [
+    "GetPaymentStatus",
+    "ProcessPayment",
+    "SendPaymentConfirmation",
+    "RefundPayment"
+  ],
+  "similarity_score": 0.6666666666666666,
+  "drift_detected": true,
+  "drift_type": "removals"
+}

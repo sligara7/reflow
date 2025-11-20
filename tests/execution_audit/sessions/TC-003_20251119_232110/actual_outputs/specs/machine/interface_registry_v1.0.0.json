@@ -1,0 +1,10 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-11-19",
+    "framework": "UAF",
+    "system_name": "Payment Processing Service",
+    "description": "Registry of all service-to-service interfaces"
+  },
+  "interfaces": []
+}

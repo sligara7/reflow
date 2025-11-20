@@ -181,6 +181,83 @@
         "Artifact cleanup for test files",
         "Artifact cleanup for deployment configs"
       ]
+    },
+    {
+      "test_id": "TC-004",
+      "name": "typescript_workflow_patterns",
+      "description": "E-commerce checkout system in TypeScript - validates v3.18.0 architectural patterns (workflow-based organization, interfaces, DI, wide inheritance) in non-Python language",
+      "complexity": "medium",
+      "language": "TypeScript",
+      "directory": "tests/execution_audit/typescript_workflow_patterns",
+      "requirements_file": "requirements.md",
+      "expected_workflow_path": [
+        "00a-basic_setup",
+        "01d-functional_analysis",
+        "SE-02-A00-service-organization-analysis",
+        "01c-top_down_design",
+        "02-artifacts_visualization",
+        "D-01-A04.5-interface-generation",
+        "03a-development_implementation",
+        "03b-development_validation"
+      ],
+      "expected_duration_minutes": 120,
+      "expected_functions": 14,
+      "expected_services": 4,
+      "expected_interfaces": 4,
+      "service_organization": {
+        "strategy": "workflow_based",
+        "orchestrator_service": "CheckoutWorkflowService",
+        "supporting_services": ["InventoryAvailabilityService", "PaymentProcessingService", "OrderFulfillmentService"],
+        "coordination_complexity": "HIGH",
+        "workflow_span": "CROSS_DOMAIN",
+        "operation_types": "WORKFLOW_HEAVY"
+      },
+      "test_objectives": [
+        "Validate SE-02-A00 service organization analysis recommends WORKFLOW_BASED for high coordination systems",
+        "Verify Agent B explains WHY workflow-based is better (coordination local vs distributed)",
+        "Validate services organized by workflow (NOT domain-based like ProductService, OrderService)",
+        "Ensure D1.4.5 generates TypeScript interfaces (NOT Python Protocols or ABCs)",
+        "Verify interfaces use capability-based naming (CanManageInventory, CanProcessPayments)",
+        "Validate dependency injection via constructor with interface types",
+        "Ensure wide inheritance pattern (3-4 capabilities per service, depth=1, width=3-4)",
+        "Verify workflow coordination stays local in CheckoutWorkflowService (not distributed)",
+        "Validate compensation logic (release inventory, refund payment on failure)",
+        "Ensure TypeScript idioms (async/await, Promise<T>, proper typing, @Injectable)"
+      ],
+      "validation_checkpoints": [
+        "Checkpoint 1: SE-02-A00 analysis identifies HIGH coordination, CROSS_DOMAIN workflows, WORKFLOW_HEAVY operations",
+        "Checkpoint 2: Recommendation = WORKFLOW_BASED, user chooses workflow-based",
+        "Checkpoint 3: 4 services created (CheckoutWorkflowService + 3 supporting)",
+        "Checkpoint 4: TypeScript interfaces generated (4 .interface.ts files)",
+        "Checkpoint 5: Trait interfaces generated (3 .trait.ts files)",
+        "Checkpoint 6: Dependency injection via constructor (interface types)",
+        "Checkpoint 7: Wide inheritance (services implement 3-4 interfaces)",
+        "Checkpoint 8: Workflow coordination local (compensation logic in orchestrator)",
+        "Checkpoint 9: TypeScript idioms (async/await, Promise<T>, @Injectable)",
+        "Checkpoint 10: As-built matches architecture (similarity >= 0.95)"
+      ],
+      "architectural_patterns_validation": {
+        "service_organization_strategy": "workflow_based (not domain_based)",
+        "interface_generation": "TypeScript interfaces (not Python Protocols)",
+        "dependency_injection": "Constructor injection with interface types",
+        "wide_inheritance": "3-4 capabilities per service (HasLogging, TracksMetrics, RequiresAuth)",
+        "workflow_coordination": "Local in CheckoutWorkflowService (not distributed)",
+        "compensation_logic": "Release inventory, refund payment on failure"
+      },
+      "known_issues": [],
+      "enabled": true,
+      "priority": "critical",
+      "category": "multi_language_patterns",
+      "validates_features": [
+        "v3.18.0: Service Organization Strategies (SE-02-A00)",
+        "v3.18.0: Protocol-based Interfaces (TypeScript equivalent)",
+        "v3.18.0: Dependency Injection patterns",
+        "v3.18.0: Wide Inheritance Pattern (behavior mixins/traits)",
+        "Workflow-based vs Domain-based organization decision",
+        "Language-agnostic architectural principles",
+        "generate_interface_abc.py TypeScript support",
+        "analyze_service_organization.py language-agnostic analysis"
+      ]
     }
   ],
   "test_categories": {
@@ -207,6 +284,11 @@
     "development_validation": {
       "description": "Development and validation phase testing with drift scenarios",
       "purpose": "Validate architecture synchronization, service contracts, and quality gates",
+      "test_count": 2
+    },
+    "multi_language_patterns": {
+      "description": "Multi-language architectural pattern validation (TypeScript, Rust, Java, etc.)",
+      "purpose": "Validate that v3.18.0 architectural principles (interfaces, DI, service organization, wide inheritance) are language-agnostic",
       "test_count": 1
     }
   },

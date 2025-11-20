@@ -1,0 +1,50 @@
+{
+  "service_name": "OrderFulfillmentService",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:40:00Z",
+  "language": "typescript",
+  "framework": "NestJS",
+  "service_type": "domain_capability",
+  "description": "Creates orders and sends notifications",
+  "allocated_functions": [
+    {
+      "function_id": "F-012",
+      "name": "CreateOrder",
+      "description": "Create order record in database",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-013",
+      "name": "SendOrderConfirmation",
+      "description": "Send email confirmation to customer",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-014",
+      "name": "CancelOrder",
+      "description": "Cancel order (on failure or customer request)",
+      "implementation_status": "planned"
+    }
+  ],
+  "dependencies": {
+    "provides": ["CanFulfillOrders"],
+    "consumes": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_name": "CanFulfillOrders",
+        "operations": [
+          "createOrder",
+          "sendOrderConfirmation",
+          "cancelOrder"
+        ]
+      }
+    ],
+    "consumed": []
+  },
+  "implementation_capabilities": [
+    "HasLogging",
+    "TracksMetrics"
+  ]
+}

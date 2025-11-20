@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-11-20T02:27:17.017506",
+  "strict_mode": false,
+  "test_cases": [
+    "microservices_basic"
+  ],
+  "results": [
+    {
+      "test_case": "microservices_basic",
+      "timestamp": "2025-11-20T02:27:17.017575",
+      "strict_mode": false,
+      "file_comparisons": [
+        {
+          "file": "functional_architecture.json",
+          "match": false,
+          "differences": [
+            "root.functions: Length mismatch (expected 19, got 16)",
+            "root.functions[1].name: Value mismatch (expected 'LoginUser', got 'AuthenticateUser')",
+            "root.functions[7].dependencies: Length mismatch (expected 0, got 1)"
+          ],
+          "similarity_score": 0.9319628569759972,
+          "error": null
+        }
+      ],
+      "overall_pass": false,
+      "errors": []
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1
+  }
+}

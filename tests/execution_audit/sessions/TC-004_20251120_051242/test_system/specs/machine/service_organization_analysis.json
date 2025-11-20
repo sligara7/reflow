@@ -1,0 +1,67 @@
+{
+  "system_name": "E-commerce Checkout System",
+  "analysis_date": "2025-11-20T08:35:00Z",
+  "system_characteristics": {
+    "coordination_complexity": "HIGH",
+    "coordination_details": {
+      "coordination_functions": 6,
+      "total_functions": 14,
+      "ratio": 0.429,
+      "examples": [
+        "InitiateCheckout: checkout",
+        "ProcessCheckout: orchestrate, checkout",
+        "HandleCheckoutFailure: release, checkout"
+      ]
+    },
+    "workflow_span": "CROSS_DOMAIN",
+    "workflow_details": {
+      "total_flows": 2,
+      "cross_domain_flows": 2,
+      "ratio": 1.0,
+      "examples": [
+        {
+          "name": "Standard Checkout Flow",
+          "domains": ["InitiateCheckout", "ValidateCart", "CheckStockAvailability", "ReserveInventory", "ValidatePaymentMethod", "ProcessPayment", "CreateOrder", "SendOrderConfirmation"],
+          "steps": 8
+        },
+        {
+          "name": "Checkout Failure Flow",
+          "domains": ["InitiateCheckout", "ValidateCart", "CheckStockAvailability", "ReserveInventory", "ProcessPayment", "HandleCheckoutFailure", "ReleaseInventoryReservation", "RefundPayment", "CancelOrder"],
+          "steps": 9
+        }
+      ]
+    },
+    "operation_types": "BALANCED",
+    "operation_details": {
+      "crud_operations": 2,
+      "workflow_operations": 3,
+      "other_operations": 9,
+      "total_functions": 14,
+      "crud_ratio": 0.143,
+      "workflow_ratio": 0.214
+    }
+  },
+  "recommendation": "WORKFLOW_BASED",
+  "rationale": "Workflow-based organization recommended due to:\n  - HIGH coordination complexity (HIGH)\n  - workflows span multiple domains",
+  "evidence": {
+    "coordination_evidence": [
+      "Checkout process spans 4 distinct service boundaries",
+      "Requires distributed transaction management (reserve → charge → create → notify)",
+      "5-step orchestration with compensation logic on failure",
+      "Checkout state must be coordinated across inventory, payment, order services"
+    ],
+    "workflow_evidence": [
+      "Checkout workflow touches 4 domains: cart validation, inventory, payment, order",
+      "Primary workflow (ProcessCheckout) coordinates across all domains",
+      "Failure handling requires compensation across multiple domains",
+      "100% of flows (2/2) are cross-domain"
+    ],
+    "operation_evidence": [
+      "Orchestration logic: 5-step workflow with compensation",
+      "State management: checkout progress tracking",
+      "Error handling: distributed rollback/compensation",
+      "NOT simple CRUD: complex business logic with cross-service coordination"
+    ]
+  },
+  "anti_pattern_warning": "Domain-based organization (UserService, ProductService, OrderService) would scatter checkout logic across services, creating distributed state management problems and complex cross-service error handling."
+}

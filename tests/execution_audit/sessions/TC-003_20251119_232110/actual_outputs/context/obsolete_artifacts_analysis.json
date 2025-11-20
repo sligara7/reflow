@@ -1,0 +1,68 @@
+{
+  "analysis_date": "2025-11-19",
+  "drift_similarity": 0.6666666666666666,
+  "obsolete_functions": [
+    {
+      "function_name": "CalculateTax",
+      "root_cause": "superseded_by_external",
+      "rationale": "Now using Avalara Tax API for more accurate tax calculations",
+      "affected_artifacts": {
+        "architecture_files": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/functional/functional_architecture_v1.0.0.json",
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/service_arch/PaymentService/service_architecture_v1.0.0.json",
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/interface_registry_v1.0.0.json"
+        ],
+        "service_contracts": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/services/PaymentService/SERVICE_CONTRACT.json"
+        ],
+        "interface_contracts": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/interfaces/tax_calculation_icd.json"
+        ],
+        "tests": [
+          "tests/test_payment_service.py::test_calculate_tax"
+        ],
+        "docker_configs": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/docker-compose.yml"
+        ],
+        "documentation": []
+      }
+    },
+    {
+      "function_name": "ValidatePaymentCard",
+      "root_cause": "redundant_functionality",
+      "rationale": "Stripe API validates cards automatically during payment processing",
+      "affected_artifacts": {
+        "architecture_files": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/functional/functional_architecture_v1.0.0.json",
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/service_arch/PaymentService/service_architecture_v1.0.0.json"
+        ],
+        "service_contracts": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/services/PaymentService/SERVICE_CONTRACT.json"
+        ],
+        "interface_contracts": [],
+        "tests": [
+          "tests/test_payment_service.py::test_validate_payment_card"
+        ],
+        "docker_configs": [],
+        "documentation": []
+      }
+    }
+  ],
+  "obsolete_interfaces": [
+    {
+      "interface_name": "tax_calculation",
+      "reason": "No longer needed - CalculateTax function removed",
+      "affected_artifacts": {
+        "interface_contracts": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/interfaces/tax_calculation_icd.json"
+        ],
+        "interface_registry": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/specs/machine/interface_registry_v1.0.0.json"
+        ],
+        "docker_configs": [
+          "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system/docker-compose.yml"
+        ]
+      }
+    }
+  ]
+}

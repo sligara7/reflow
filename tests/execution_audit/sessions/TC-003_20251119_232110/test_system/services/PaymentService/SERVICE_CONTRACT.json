@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "generated": "2025-11-19",
+    "service_name": "PaymentService",
+    "previous_version": "1.0.0",
+    "updated": "2025-11-19",
+    "change_summary": "Removed ValidatePaymentCard (redundant) and CalculateTax (superseded by Avalara)"
+  },
+  "service_name": "PaymentService",
+  "contracted_functions": {
+    "functions": [
+      "ProcessPayment",
+      "GetPaymentStatus",
+      "RefundPayment",
+      "SendPaymentConfirmation"
+    ],
+    "warning": "DO NOT modify contracted functions without updating functional architecture (specs/machine/functional/functional_architecture.json). Changes to this list require architecture synchronization."
+  },
+  "contracted_interfaces": {
+    "provides": [
+      "PaymentAPI"
+    ],
+    "consumes": [],
+    "warning": "Interface changes are BREAKING changes. If you add, remove, or modify interfaces, you MUST:\n1. Update interface_registry.json\n2. Update dependent service contracts\n3. Regenerate ICD files\n4. Notify all consumer/provider services"
+  },
+  "architecture_reference": {
+    "functional_architecture": "specs/machine/functional/functional_architecture.json",
+    "service_architecture": "specs/machine/service_arch/PaymentService/service_architecture.json",
+    "interface_registry": "specs/machine/interface_registry.json"
+  },
+  "llm_warnings": {
+    "before_modifying_functions": "\u26a0\ufe0f WARNING: This service has 4 contracted functions. Modifying function signatures or removing functions affects:\n- Functional architecture (specs/machine/functional/functional_architecture.json)\n- Service architecture (specs/machine/service_arch/PaymentService/service_architecture.json)\n- API contracts and documentation\n- Integration tests\n\nBefore making changes:\n1. Review architecture reference files\n2. Identify downstream impacts\n3. Plan architecture synchronization (D-06.5)\n4. Version the architecture after changes",
+    "before_modifying_interfaces": "\u26a0\ufe0f WARNING: This service provides 1 interface and consumes 0 interfaces. Interface changes are BREAKING changes that affect:\n\nProvided Interfaces (1):\n- PaymentAPI: Used by external clients\n\nConsumed Interfaces (0):\n- None\n\nBefore making changes:\n1. Check interface_registry.json for all consumers/providers\n2. Update ICD files (specs/machine/interfaces/)\n3. Coordinate with affected services\n4. Plan migration strategy for breaking changes"
+  }
+}

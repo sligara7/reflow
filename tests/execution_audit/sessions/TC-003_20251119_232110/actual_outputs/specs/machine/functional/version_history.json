@@ -1,0 +1,58 @@
+{
+  "version": "1.1.0",
+  "previous_version": "1.0.0",
+  "date": "2025-11-19",
+  "change_type": "minor",
+  "semantic_versioning_rationale": "Minor version - removed obsolete functions (backward-incompatible for removed functions, but intentional deprecation)",
+  "changes": [
+    {
+      "type": "removal",
+      "function_id": "F-002",
+      "function_name": "ValidatePaymentCard",
+      "service": "PaymentService",
+      "rationale": "Redundant - Stripe API validates cards automatically during payment processing",
+      "root_cause": "redundant_functionality",
+      "affected_artifacts": {
+        "architecture": [
+          "specs/machine/functional/functional_architecture.json",
+          "specs/machine/service_arch/PaymentService/service_architecture.json"
+        ],
+        "contracts": ["services/PaymentService/SERVICE_CONTRACT.json"],
+        "tests": ["tests/test_payment_service.py::test_validate_payment_card"],
+        "documentation": ["docs/PAYMENT_PROCESSING.md (card validation section)"]
+      },
+      "migration_notes": "Clients should rely on Stripe API error responses for card validation failures"
+    },
+    {
+      "type": "removal",
+      "function_id": "F-004",
+      "function_name": "CalculateTax",
+      "service": "PaymentService",
+      "rationale": "Superseded - Now using Avalara Tax API for more accurate tax calculations across all jurisdictions",
+      "root_cause": "superseded_by_external",
+      "affected_artifacts": {
+        "architecture": [
+          "specs/machine/functional/functional_architecture.json",
+          "specs/machine/service_arch/PaymentService/service_architecture.json",
+          "specs/machine/interface_registry.json"
+        ],
+        "contracts": ["services/PaymentService/SERVICE_CONTRACT.json"],
+        "interfaces": ["tax_calculation (DELETED)"],
+        "tests": ["tests/test_payment_service.py::test_calculate_tax"],
+        "deployment": ["docker-compose.yml (TaxService removed)"],
+        "documentation": ["docs/TAX_CALCULATION.md (entire document)"]
+      },
+      "migration_notes": "Tax calculations now handled via Avalara Tax API. TaxService container no longer needed - run docker cleanup commands."
+    }
+  ],
+  "summary": {
+    "functions_removed": 2,
+    "interfaces_removed": 1,
+    "services_removed": 1,
+    "functions_before": 6,
+    "functions_after": 4,
+    "drift_corrected": true,
+    "similarity_before_sync": 0.67,
+    "similarity_after_sync": 1.00
+  }
+}

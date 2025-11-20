@@ -1,0 +1,181 @@
+{
+  "system_name": "E-commerce Checkout System",
+  "framework": "UAF",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:30:00Z",
+  "functions": [
+    {
+      "function_id": "F-001",
+      "name": "InitiateCheckout",
+      "category": "checkout_orchestration",
+      "description": "Start checkout process and initialize checkout session",
+      "inputs": ["cart_id", "user_id"],
+      "outputs": ["checkout_session_id", "session_status"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-002",
+      "name": "ValidateCart",
+      "category": "checkout_orchestration",
+      "description": "Validate cart contents, pricing, and business rules",
+      "inputs": ["cart_id"],
+      "outputs": ["validation_result", "cart_summary"],
+      "dependencies": ["F-001"]
+    },
+    {
+      "function_id": "F-003",
+      "name": "ProcessCheckout",
+      "category": "checkout_orchestration",
+      "description": "Orchestrate full checkout workflow (inventory → payment → order)",
+      "inputs": ["cart_id", "payment_method_id"],
+      "outputs": ["checkout_result", "order_id", "transaction_id"],
+      "dependencies": ["F-002", "F-006", "F-009", "F-012"]
+    },
+    {
+      "function_id": "F-004",
+      "name": "HandleCheckoutFailure",
+      "category": "checkout_orchestration",
+      "description": "Handle checkout failures with compensation logic (release inventory, refund payment)",
+      "inputs": ["checkout_session_id", "failure_reason"],
+      "outputs": ["compensation_result"],
+      "dependencies": ["F-008", "F-010"]
+    },
+    {
+      "function_id": "F-005",
+      "name": "GetCheckoutStatus",
+      "category": "checkout_orchestration",
+      "description": "Query checkout progress and current state",
+      "inputs": ["checkout_session_id"],
+      "outputs": ["checkout_status", "current_step"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-006",
+      "name": "CheckStockAvailability",
+      "category": "inventory_management",
+      "description": "Check if requested items are in stock",
+      "inputs": ["items"],
+      "outputs": ["availability_result", "unavailable_items"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-007",
+      "name": "ReserveInventory",
+      "category": "inventory_management",
+      "description": "Reserve items for this order (temporary hold)",
+      "inputs": ["order_id", "items"],
+      "outputs": ["reservation_id", "expires_at"],
+      "dependencies": ["F-006"]
+    },
+    {
+      "function_id": "F-008",
+      "name": "ReleaseInventoryReservation",
+      "category": "inventory_management",
+      "description": "Release reserved items (on failure or timeout)",
+      "inputs": ["reservation_id"],
+      "outputs": ["release_result"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-009",
+      "name": "ProcessPayment",
+      "category": "payment_processing",
+      "description": "Charge payment via Stripe API",
+      "inputs": ["amount", "payment_method_id"],
+      "outputs": ["transaction_id", "payment_status"],
+      "dependencies": ["F-011"]
+    },
+    {
+      "function_id": "F-010",
+      "name": "RefundPayment",
+      "category": "payment_processing",
+      "description": "Refund payment (on failure or cancellation)",
+      "inputs": ["transaction_id"],
+      "outputs": ["refund_result"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-011",
+      "name": "ValidatePaymentMethod",
+      "category": "payment_processing",
+      "description": "Validate card/payment method details",
+      "inputs": ["payment_method_id"],
+      "outputs": ["validation_result"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-012",
+      "name": "CreateOrder",
+      "category": "order_management",
+      "description": "Create order record in database",
+      "inputs": ["cart_id", "items", "total", "payment_id"],
+      "outputs": ["order_id"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-013",
+      "name": "SendOrderConfirmation",
+      "category": "order_management",
+      "description": "Send email confirmation to customer",
+      "inputs": ["order_id"],
+      "outputs": ["email_sent"],
+      "dependencies": ["F-012"]
+    },
+    {
+      "function_id": "F-014",
+      "name": "CancelOrder",
+      "category": "order_management",
+      "description": "Cancel order (on failure or customer request)",
+      "inputs": ["order_id"],
+      "outputs": ["cancellation_result"],
+      "dependencies": []
+    }
+  ],
+  "functional_flows": [
+    {
+      "name": "Standard Checkout Flow",
+      "description": "Happy path: cart → inventory check → payment → order → confirmation",
+      "sequence": [
+        "InitiateCheckout",
+        "ValidateCart",
+        "CheckStockAvailability",
+        "ReserveInventory",
+        "ValidatePaymentMethod",
+        "ProcessPayment",
+        "CreateOrder",
+        "SendOrderConfirmation"
+      ]
+    },
+    {
+      "name": "Checkout Failure Flow",
+      "description": "Error path: compensation logic (release inventory, refund payment)",
+      "sequence": [
+        "InitiateCheckout",
+        "ValidateCart",
+        "CheckStockAvailability",
+        "ReserveInventory",
+        "ProcessPayment",
+        "HandleCheckoutFailure",
+        "ReleaseInventoryReservation",
+        "RefundPayment",
+        "CancelOrder"
+      ]
+    }
+  ],
+  "cross_domain_analysis": {
+    "domains_involved": ["cart_validation", "inventory", "payment", "order", "notification"],
+    "coordination_complexity": "HIGH",
+    "coordination_evidence": [
+      "Checkout process spans 4 distinct service boundaries",
+      "Requires distributed transaction management (reserve → charge → create → notify)",
+      "5-step orchestration with compensation logic on failure",
+      "Checkout state must be coordinated across inventory, payment, order services"
+    ],
+    "workflow_span": "CROSS_DOMAIN",
+    "workflow_evidence": [
+      "Checkout workflow touches 4 domains: cart validation, inventory, payment, order",
+      "Primary workflow (ProcessCheckout) coordinates across all domains",
+      "Failure handling requires compensation across multiple domains"
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "interface_id": "can_fulfill_orders",
+  "interface_name": "CanFulfillOrders",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:45:00Z",
+  "description": "Order fulfillment and notification capabilities",
+  "provider": "OrderFulfillmentService",
+  "consumers": ["CheckoutWorkflowService"],
+  "protocol": "HTTP/REST",
+  "base_url": "/api/v1/orders",
+  "operations": [
+    {
+      "operation_id": "create_order",
+      "operation_name": "createOrder",
+      "description": "Create order record in database",
+      "http_method": "POST",
+      "endpoint": "/",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "cartId": {"type": "string"},
+          "items": {"type": "array"},
+          "total": {"type": "number"},
+          "paymentId": {"type": "string"}
+        },
+        "required": ["cartId", "items", "total", "paymentId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "orderId": {"type": "string"}
+        },
+        "required": ["orderId"]
+      }
+    },
+    {
+      "operation_id": "send_order_confirmation",
+      "operation_name": "sendOrderConfirmation",
+      "description": "Send email confirmation to customer",
+      "http_method": "POST",
+      "endpoint": "/{orderId}/confirmation",
+      "path_parameters": {
+        "orderId": {"type": "string"}
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "emailSent": {"type": "boolean"}
+        },
+        "required": ["emailSent"]
+      }
+    },
+    {
+      "operation_id": "cancel_order",
+      "operation_name": "cancelOrder",
+      "description": "Cancel order (on failure or customer request)",
+      "http_method": "DELETE",
+      "endpoint": "/{orderId}",
+      "path_parameters": {
+        "orderId": {"type": "string"}
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "cancellationResult": {"type": "string", "enum": ["success", "failed"]}
+        },
+        "required": ["cancellationResult"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "service_name": "PaymentProcessingService",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:40:00Z",
+  "language": "typescript",
+  "framework": "NestJS",
+  "service_type": "domain_capability",
+  "description": "Processes payments via Stripe API",
+  "allocated_functions": [
+    {
+      "function_id": "F-009",
+      "name": "ProcessPayment",
+      "description": "Charge payment via Stripe API",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-010",
+      "name": "RefundPayment",
+      "description": "Refund payment (on failure or cancellation)",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-011",
+      "name": "ValidatePaymentMethod",
+      "description": "Validate card/payment method details",
+      "implementation_status": "planned"
+    }
+  ],
+  "dependencies": {
+    "provides": ["CanProcessPayments"],
+    "consumes": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_name": "CanProcessPayments",
+        "operations": [
+          "processPayment",
+          "refundPayment",
+          "validatePaymentMethod"
+        ]
+      }
+    ],
+    "consumed": []
+  },
+  "implementation_capabilities": [
+    "HasLogging",
+    "TracksMetrics",
+    "RequiresAuth"
+  ]
+}

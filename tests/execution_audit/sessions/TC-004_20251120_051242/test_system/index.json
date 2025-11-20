@@ -1,0 +1,19 @@
+{
+  "system_name": "E-commerce Checkout System",
+  "description": "E-commerce checkout system with workflow-based service organization",
+  "last_updated": "2025-11-20",
+  "metadata": {
+    "framework": "UAF",
+    "process_version": "1.0",
+    "generated_by": "Agent B (TC-004)",
+    "total_components": 4,
+    "language": "typescript",
+    "web_framework": "NestJS"
+  },
+  "components": {
+    "CheckoutWorkflowService": "specs/machine/service_arch/CheckoutWorkflowService/service_architecture_v1.0.0.json",
+    "InventoryAvailabilityService": "specs/machine/service_arch/InventoryAvailabilityService/service_architecture_v1.0.0.json",
+    "PaymentProcessingService": "specs/machine/service_arch/PaymentProcessingService/service_architecture_v1.0.0.json",
+    "OrderFulfillmentService": "specs/machine/service_arch/OrderFulfillmentService/service_architecture_v1.0.0.json"
+  }
+}

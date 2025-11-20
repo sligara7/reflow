@@ -1,0 +1,78 @@
+{
+  "interface_id": "can_process_payments",
+  "interface_name": "CanProcessPayments",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:45:00Z",
+  "description": "Payment processing capabilities via Stripe",
+  "provider": "PaymentProcessingService",
+  "consumers": ["CheckoutWorkflowService"],
+  "protocol": "HTTP/REST",
+  "base_url": "/api/v1/payments",
+  "operations": [
+    {
+      "operation_id": "process_payment",
+      "operation_name": "processPayment",
+      "description": "Charge payment via Stripe API",
+      "http_method": "POST",
+      "endpoint": "/process",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "amount": {"type": "number"},
+          "paymentMethodId": {"type": "string"}
+        },
+        "required": ["amount", "paymentMethodId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "transactionId": {"type": "string"},
+          "paymentStatus": {"type": "string", "enum": ["success", "failed", "pending"]}
+        },
+        "required": ["transactionId", "paymentStatus"]
+      }
+    },
+    {
+      "operation_id": "refund_payment",
+      "operation_name": "refundPayment",
+      "description": "Refund payment (on failure or cancellation)",
+      "http_method": "POST",
+      "endpoint": "/refund",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "transactionId": {"type": "string"}
+        },
+        "required": ["transactionId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "refundResult": {"type": "string", "enum": ["success", "failed"]}
+        },
+        "required": ["refundResult"]
+      }
+    },
+    {
+      "operation_id": "validate_payment_method",
+      "operation_name": "validatePaymentMethod",
+      "description": "Validate card/payment method details",
+      "http_method": "POST",
+      "endpoint": "/validate",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "paymentMethodId": {"type": "string"}
+        },
+        "required": ["paymentMethodId"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "validationResult": {"type": "boolean"}
+        },
+        "required": ["validationResult"]
+      }
+    }
+  ]
+}

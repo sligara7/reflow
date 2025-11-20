@@ -1,0 +1,50 @@
+{
+  "service_name": "InventoryAvailabilityService",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:40:00Z",
+  "language": "typescript",
+  "framework": "NestJS",
+  "service_type": "domain_capability",
+  "description": "Manages inventory availability and reservations",
+  "allocated_functions": [
+    {
+      "function_id": "F-006",
+      "name": "CheckStockAvailability",
+      "description": "Check if requested items are in stock",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-007",
+      "name": "ReserveInventory",
+      "description": "Reserve items for this order (temporary hold)",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-008",
+      "name": "ReleaseInventoryReservation",
+      "description": "Release reserved items (on failure or timeout)",
+      "implementation_status": "planned"
+    }
+  ],
+  "dependencies": {
+    "provides": ["CanManageInventory"],
+    "consumes": []
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_name": "CanManageInventory",
+        "operations": [
+          "checkStockAvailability",
+          "reserveInventory",
+          "releaseInventoryReservation"
+        ]
+      }
+    ],
+    "consumed": []
+  },
+  "implementation_capabilities": [
+    "HasLogging",
+    "TracksMetrics"
+  ]
+}

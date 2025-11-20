@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "created": "2025-11-19",
+    "framework": "UAF",
+    "service_name": "PaymentService",
+    "description": "Centralized payment processing service handling all payment operations",
+    "previous_version": "1.0.0",
+    "updated": "2025-11-19"
+  },
+  "service": {
+    "service_id": "SVC-001",
+    "service_name": "PaymentService",
+    "service_type": "core_business_logic",
+    "description": "Handles payment transactions, validation, tax calculation, and confirmations",
+    "allocated_functions": [
+      {
+        "function_id": "F-001",
+        "function_name": "ProcessPayment",
+        "implementation_notes": "Uses Stripe API for payment processing"
+      },
+      {
+        "function_id": "F-003",
+        "function_name": "GetPaymentStatus",
+        "implementation_notes": "Queries transaction database for status"
+      },
+      {
+        "function_id": "F-005",
+        "function_name": "RefundPayment",
+        "implementation_notes": "Processes refunds through Stripe API"
+      },
+      {
+        "function_id": "F-006",
+        "function_name": "SendPaymentConfirmation",
+        "implementation_notes": "Sends confirmation via email service"
+      }
+    ],
+    "interfaces_provided": [
+      {
+        "interface_id": "I-001",
+        "interface_name": "PaymentAPI",
+        "description": "RESTful API for payment operations",
+        "endpoints": [
+          "POST /payments",
+          "GET /payments/{id}",
+          "POST /refunds"
+        ]
+      }
+    ],
+    "interfaces_consumed": [],
+    "technology_stack": {
+      "language": "Python",
+      "framework": "FastAPI",
+      "database": "PostgreSQL",
+      "external_apis": [
+        "Stripe",
+        "SendGrid"
+      ]
+    }
+  }
+}

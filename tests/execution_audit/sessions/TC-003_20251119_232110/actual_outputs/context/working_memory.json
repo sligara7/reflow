@@ -1,0 +1,17 @@
+{
+  "current_workflow": "00a-basic_setup",
+  "current_step": "S-00A",
+  "paths": {
+    "reflow_root": "/home/ajs7/project/reflow",
+    "system_root": "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-003_20251119_232110/test_system",
+    "tools_path": "/home/ajs7/project/reflow/tools",
+    "templates_path": "/home/ajs7/project/reflow/templates",
+    "workflow_steps_path": "/home/ajs7/project/reflow/workflow_steps",
+    "definitions_path": "/home/ajs7/project/reflow/definitions"
+  },
+  "framework": "UAF",
+  "system_name": "Payment Processing Service",
+  "system_description": "E-commerce payment processing with card validation and tax calculation",
+  "operations_since_refresh": 0,
+  "setup_complete": false
+}

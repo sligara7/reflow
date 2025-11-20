@@ -1,0 +1,103 @@
+{
+  "system_name": "E-commerce Checkout System",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:40:00Z",
+  "interfaces": [
+    {
+      "interface_id": "can_manage_inventory",
+      "interface_name": "CanManageInventory",
+      "description": "Inventory management capabilities",
+      "provider": "InventoryAvailabilityService",
+      "consumers": ["CheckoutWorkflowService"],
+      "protocol": "HTTP/REST",
+      "operations": [
+        {
+          "operation_name": "checkStockAvailability",
+          "description": "Check if requested items are in stock"
+        },
+        {
+          "operation_name": "reserveInventory",
+          "description": "Reserve items for this order"
+        },
+        {
+          "operation_name": "releaseInventoryReservation",
+          "description": "Release reserved items"
+        }
+      ]
+    },
+    {
+      "interface_id": "can_process_payments",
+      "interface_name": "CanProcessPayments",
+      "description": "Payment processing capabilities",
+      "provider": "PaymentProcessingService",
+      "consumers": ["CheckoutWorkflowService"],
+      "protocol": "HTTP/REST",
+      "operations": [
+        {
+          "operation_name": "processPayment",
+          "description": "Charge payment via Stripe"
+        },
+        {
+          "operation_name": "refundPayment",
+          "description": "Refund payment"
+        },
+        {
+          "operation_name": "validatePaymentMethod",
+          "description": "Validate payment method"
+        }
+      ]
+    },
+    {
+      "interface_id": "can_fulfill_orders",
+      "interface_name": "CanFulfillOrders",
+      "description": "Order fulfillment capabilities",
+      "provider": "OrderFulfillmentService",
+      "consumers": ["CheckoutWorkflowService"],
+      "protocol": "HTTP/REST",
+      "operations": [
+        {
+          "operation_name": "createOrder",
+          "description": "Create order record"
+        },
+        {
+          "operation_name": "sendOrderConfirmation",
+          "description": "Send confirmation email"
+        },
+        {
+          "operation_name": "cancelOrder",
+          "description": "Cancel order"
+        }
+      ]
+    },
+    {
+      "interface_id": "provides_checkout_workflow",
+      "interface_name": "ProvidesCheckoutWorkflow",
+      "description": "Checkout workflow orchestration",
+      "provider": "CheckoutWorkflowService",
+      "consumers": ["External"],
+      "protocol": "HTTP/REST",
+      "operations": [
+        {
+          "operation_name": "initiateCheckout",
+          "description": "Start checkout process"
+        },
+        {
+          "operation_name": "validateCart",
+          "description": "Validate cart contents"
+        },
+        {
+          "operation_name": "processCheckout",
+          "description": "Orchestrate checkout workflow"
+        },
+        {
+          "operation_name": "handleCheckoutFailure",
+          "description": "Handle checkout failures"
+        },
+        {
+          "operation_name": "getCheckoutStatus",
+          "description": "Query checkout status"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "service_name": "CheckoutWorkflowService",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:40:00Z",
+  "language": "typescript",
+  "framework": "NestJS",
+  "service_type": "workflow_orchestrator",
+  "description": "Orchestrates the entire checkout process by coordinating inventory, payment, and order services",
+  "allocated_functions": [
+    {
+      "function_id": "F-001",
+      "name": "InitiateCheckout",
+      "description": "Start checkout process and initialize checkout session",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-002",
+      "name": "ValidateCart",
+      "description": "Validate cart contents, pricing, and business rules",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-003",
+      "name": "ProcessCheckout",
+      "description": "Orchestrate full checkout workflow (inventory → payment → order)",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-004",
+      "name": "HandleCheckoutFailure",
+      "description": "Handle checkout failures with compensation logic (release inventory, refund payment)",
+      "implementation_status": "planned"
+    },
+    {
+      "function_id": "F-005",
+      "name": "GetCheckoutStatus",
+      "description": "Query checkout progress and current state",
+      "implementation_status": "planned"
+    }
+  ],
+  "dependencies": {
+    "provides": ["ProvidesCheckoutWorkflow"],
+    "consumes": ["CanManageInventory", "CanProcessPayments", "CanFulfillOrders"]
+  },
+  "interfaces": {
+    "provided": [
+      {
+        "interface_name": "ProvidesCheckoutWorkflow",
+        "operations": [
+          "initiateCheckout",
+          "validateCart",
+          "processCheckout",
+          "handleCheckoutFailure",
+          "getCheckoutStatus"
+        ]
+      }
+    ],
+    "consumed": [
+      {
+        "interface_name": "CanManageInventory",
+        "provider": "InventoryAvailabilityService",
+        "operations": ["checkStockAvailability", "reserveInventory", "releaseInventoryReservation"]
+      },
+      {
+        "interface_name": "CanProcessPayments",
+        "provider": "PaymentProcessingService",
+        "operations": ["processPayment", "refundPayment", "validatePaymentMethod"]
+      },
+      {
+        "interface_name": "CanFulfillOrders",
+        "provider": "OrderFulfillmentService",
+        "operations": ["createOrder", "sendOrderConfirmation", "cancelOrder"]
+      }
+    ]
+  },
+  "implementation_capabilities": [
+    "HasLogging",
+    "TracksMetrics",
+    "RequiresAuth"
+  ]
+}

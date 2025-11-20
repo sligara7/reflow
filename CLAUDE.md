@@ -129,11 +129,21 @@ pixi run validate-arch <system_path>  # Shortcuts available
 feature_update.json              → Update existing systems
 ```
 
-**Meta-Analysis** (For Reflow Itself):
+**Meta-Analysis & Testing** (For Reflow Itself):
 ```
+97-GAN-inspired-test.json        → GAN-inspired execution audit testing (RECOMMENDED: run weekly/monthly)
 98-reflow_feature_update.json    → Reflow feature update with AUTO meta-analysis
 99-meta_analysis.json            → Comprehensive Reflow meta-analysis
 ```
+
+**Workflow Chaining** (Automatic Continuous Improvement):
+```
+97 (Test) → 98 (Fix) → 99 (Validate)
+```
+- **97** discovers issues via GAN testing (Agent B executes, Agent A observes)
+- **98** fixes issues (auto-triggered if P0/P1 issues found)
+- **99** validates fixes via meta-analysis
+- **Result**: Continuous self-improvement loop
 
 ## Workflow Progression
 
@@ -192,9 +202,43 @@ FA-07: Finalization → USER DECISION (continue to service allocation OR stop)
 
 **Note**: Proposals require LLM/human review (not auto-applied).
 
+### GAN-Inspired Testing Flow (Self-Testing) NEW v3.17.1
+
+**Purpose**: Continuous automated testing of Reflow workflows to detect friction points, tool/workflow misalignments, and usability issues.
+
+**Method**: GAN-inspired approach - Agent B (Generator/Executor) builds systems following workflows, Agent A (Discriminator/Observer) watches and identifies issues.
+
+**When to Use**: Weekly/monthly or before major releases to benchmark Reflow quality and detect regressions.
+
+**Flow**:
+```
+97-GAN-inspired-test → (if P0/P1 issues) → 98-reflow_feature_update → 99-meta_analysis
+
+GAN-01: Load test cases from tests/execution_audit/test_cases.json
+GAN-02: Agent B executes workflows on each test case (blind to expected outputs)
+GAN-03: Agent A analyzes Agent B's execution, categorizes issues (P0/P1/P2)
+GAN-04: Aggregate metrics, compare to baseline, detect regressions
+GAN-05: Decision gate - auto-trigger fixes if critical issues found
+GAN-06: (Conditional) Trigger 98-reflow_feature_update with fix specification
+GAN-Post: Generate reports, archive results, update baseline
+```
+
+**Deliverables**:
+- Agent B execution transcripts (how workflows were executed)
+- Agent B reports (deviations, friction points discovered)
+- Agent A meta-analysis (root causes, patterns, recommendations)
+- GAN test summary (aggregate metrics, baseline comparison)
+- Fix specification (if auto-triggering 98)
+
+**Benchmarking**: Each run compares to baseline metrics (friction %, deviations, time) to detect regressions or improvements.
+
+**Test Cases**: Defined in `tests/execution_audit/test_cases.json` - can be extended with new test cases over time.
+
+---
+
 ### Reflow Meta-Analysis Flow (Self-Sharpening)
 
-**CRITICAL**: When updating REFLOW ITSELF (not other systems), use `98-reflow_feature_update.json` or `99-meta_analysis.json`
+**CRITICAL**: When updating REFLOW ITSELF (not other systems), use `97-GAN-inspired-test.json`, `98-reflow_feature_update.json`, or `99-meta_analysis.json`
 
 **Purpose**: Reflow analyzes itself, detects context bottlenecks, fixes implementation via META-05B (Self-Sharpening).
 

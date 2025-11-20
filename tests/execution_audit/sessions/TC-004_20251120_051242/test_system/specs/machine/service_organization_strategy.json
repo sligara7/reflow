@@ -1,0 +1,39 @@
+{
+  "system_name": "E-commerce Checkout System",
+  "choice_date": "2025-11-20T08:35:00Z",
+  "chosen_strategy": "WORKFLOW_BASED",
+  "recommendation": "WORKFLOW_BASED",
+  "recommendation_followed": true,
+  "rationale": "Following workflow-based recommendation because:\n\n1. HIGH coordination complexity (42.9% coordination functions)\n   - Checkout orchestration requires coordinating 4+ services\n   - Complex state management across inventory, payment, order\n   - Compensation logic on failure (distributed rollback)\n\n2. CROSS_DOMAIN workflow span (100% cross-domain flows)\n   - All workflows touch multiple domains (cart, inventory, payment, order)\n   - Standard Checkout Flow spans 8 steps across domains\n   - Failure handling requires cross-domain compensation\n\n3. Workflow-heavy operations (not simple CRUD)\n   - Multi-step orchestration with business logic\n   - State tracking and error handling\n   - Distributed transaction management\n\nWorkflow-based organization keeps coordination LOCAL within CheckoutWorkflowService instead of distributed across domain services. This:\n- Reduces distributed state complexity\n- Simplifies error handling and compensation logic\n- Makes workflows easier to understand and maintain\n- Improves testability (mock interfaces instead of multiple services)\n\nAnti-pattern avoided: Domain-based (UserService, ProductService, OrderService) would scatter checkout logic and create distributed state management problems.",
+  "expected_service_organization": {
+    "workflow_services": [
+      {
+        "service_name": "CheckoutWorkflowService",
+        "role": "orchestrator",
+        "responsibility": "Orchestrate entire checkout process (initiate, validate, coordinate inventory/payment/order)",
+        "functions": ["InitiateCheckout", "ValidateCart", "ProcessCheckout", "HandleCheckoutFailure", "GetCheckoutStatus"],
+        "coordination_logic": "All checkout coordination stays LOCAL in this service"
+      }
+    ],
+    "domain_capability_services": [
+      {
+        "service_name": "InventoryAvailabilityService",
+        "role": "supporting",
+        "responsibility": "Provide inventory management capabilities",
+        "functions": ["CheckStockAvailability", "ReserveInventory", "ReleaseInventoryReservation"]
+      },
+      {
+        "service_name": "PaymentProcessingService",
+        "role": "supporting",
+        "responsibility": "Provide payment processing capabilities",
+        "functions": ["ProcessPayment", "RefundPayment", "ValidatePaymentMethod"]
+      },
+      {
+        "service_name": "OrderFulfillmentService",
+        "role": "supporting",
+        "responsibility": "Provide order management and notification capabilities",
+        "functions": ["CreateOrder", "SendOrderConfirmation", "CancelOrder"]
+      }
+    ]
+  }
+}

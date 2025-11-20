@@ -1,0 +1,103 @@
+{
+  "interface_id": "can_manage_inventory",
+  "interface_name": "CanManageInventory",
+  "version": "1.0.0",
+  "timestamp": "2025-11-20T08:45:00Z",
+  "description": "Inventory management capabilities - check availability, reserve, release",
+  "provider": "InventoryAvailabilityService",
+  "consumers": ["CheckoutWorkflowService"],
+  "protocol": "HTTP/REST",
+  "base_url": "/api/v1/inventory",
+  "operations": [
+    {
+      "operation_id": "check_stock_availability",
+      "operation_name": "checkStockAvailability",
+      "description": "Check if requested items are in stock",
+      "http_method": "POST",
+      "endpoint": "/check-availability",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {"type": "string"},
+                "quantity": {"type": "number"}
+              },
+              "required": ["productId", "quantity"]
+            }
+          }
+        },
+        "required": ["items"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "available": {"type": "boolean"},
+          "unavailableItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {"type": "string"},
+                "reason": {"type": "string"}
+              }
+            }
+          }
+        },
+        "required": ["available", "unavailableItems"]
+      }
+    },
+    {
+      "operation_id": "reserve_inventory",
+      "operation_name": "reserveInventory",
+      "description": "Reserve items for this order (temporary hold)",
+      "http_method": "POST",
+      "endpoint": "/reserve",
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "orderId": {"type": "string"},
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {"type": "string"},
+                "quantity": {"type": "number"}
+              }
+            }
+          }
+        },
+        "required": ["orderId", "items"]
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "reservationId": {"type": "string"},
+          "expiresAt": {"type": "string", "format": "date-time"}
+        },
+        "required": ["reservationId", "expiresAt"]
+      }
+    },
+    {
+      "operation_id": "release_inventory_reservation",
+      "operation_name": "releaseInventoryReservation",
+      "description": "Release reserved items (on failure or timeout)",
+      "http_method": "DELETE",
+      "endpoint": "/reservations/{reservationId}",
+      "path_parameters": {
+        "reservationId": {"type": "string", "description": "Reservation ID to release"}
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "released": {"type": "boolean"}
+        },
+        "required": ["released"]
+      }
+    }
+  ]
+}

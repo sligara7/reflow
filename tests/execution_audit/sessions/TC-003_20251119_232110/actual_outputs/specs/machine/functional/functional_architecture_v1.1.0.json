@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "created": "2025-11-19",
+    "framework": "UAF",
+    "system_name": "Payment Processing Service",
+    "description": "E-commerce payment processing with integrated card validation and tax calculation",
+    "previous_version": "1.0.0",
+    "updated": "2025-11-19"
+  },
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "ProcessPayment",
+      "description": "Process a payment transaction with validation and confirmation",
+      "inputs": [
+        "payment_amount",
+        "card_details",
+        "customer_id"
+      ],
+      "outputs": [
+        "transaction_id",
+        "status",
+        "receipt"
+      ],
+      "pre_conditions": [
+        "Valid payment amount > 0",
+        "Valid card details"
+      ],
+      "post_conditions": [
+        "Transaction recorded",
+        "Customer notified"
+      ],
+      "error_conditions": [
+        "Invalid card",
+        "Insufficient funds",
+        "Network timeout"
+      ]
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "GetPaymentStatus",
+      "description": "Retrieve the status of a payment transaction",
+      "inputs": [
+        "transaction_id"
+      ],
+      "outputs": [
+        "status",
+        "timestamp",
+        "details"
+      ],
+      "pre_conditions": [
+        "Transaction ID exists"
+      ],
+      "post_conditions": [
+        "Status retrieved"
+      ],
+      "error_conditions": [
+        "Transaction not found"
+      ]
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "RefundPayment",
+      "description": "Process a refund for a previous transaction",
+      "inputs": [
+        "transaction_id",
+        "refund_amount",
+        "reason"
+      ],
+      "outputs": [
+        "refund_id",
+        "status"
+      ],
+      "pre_conditions": [
+        "Transaction exists",
+        "Refund amount <= original amount"
+      ],
+      "post_conditions": [
+        "Refund processed",
+        "Customer notified"
+      ],
+      "error_conditions": [
+        "Transaction not found",
+        "Refund exceeds original"
+      ]
+    },
+    {
+      "function_id": "F-006",
+      "function_name": "SendPaymentConfirmation",
+      "description": "Send payment confirmation email to customer",
+      "inputs": [
+        "transaction_id",
+        "customer_email"
+      ],
+      "outputs": [
+        "confirmation_sent",
+        "timestamp"
+      ],
+      "pre_conditions": [
+        "Valid email address",
+        "Transaction exists"
+      ],
+      "post_conditions": [
+        "Email sent"
+      ],
+      "error_conditions": [
+        "Email service unavailable",
+        "Invalid email"
+      ]
+    }
+  ],
+  "functional_flows": [
+    {
+      "flow_name": "Standard Payment Flow",
+      "steps": [
+        "ValidatePaymentCard",
+        "CalculateTax",
+        "ProcessPayment",
+        "SendPaymentConfirmation"
+      ]
+    },
+    {
+      "flow_name": "Refund Flow",
+      "steps": [
+        "GetPaymentStatus",
+        "RefundPayment",
+        "SendPaymentConfirmation"
+      ]
+    }
+  ]
+}
