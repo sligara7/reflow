@@ -1,0 +1,91 @@
+{
+  "delta_metadata": {
+    "report_id": "DELTA-20251119-unknown-as_built",
+    "comparison_date": "2025-11-19",
+    "from_architecture": {
+      "file_path": "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-002_20251119_224038/test_system/specs/machine/graphs/system_of_systems_graph.json",
+      "architecture_type": "unknown",
+      "generation_date": "unknown"
+    },
+    "to_architecture": {
+      "file_path": "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-002_20251119_224038/test_system/specs/machine/graphs/as_built_graph.json",
+      "architecture_type": "as_built",
+      "generation_date": "2025-11-19"
+    },
+    "comparison_tool": "compare_architectures.py v1.0.0"
+  },
+  "similarity_score": {
+    "overall": 0.0,
+    "breakdown": {
+      "nodes": 0.0,
+      "edges": 0.0,
+      "properties": 0.0
+    },
+    "interpretation": "LOW"
+  },
+  "node_deltas": {
+    "added": [
+      {
+        "node_id": "OrderService",
+        "id": "OrderService",
+        "node_type": "service",
+        "name": "Orderservice",
+        "endpoints": [],
+        "capabilities": [],
+        "dependencies": [
+          "datetime",
+          "typing",
+          "uuid"
+        ],
+        "database_connections": [],
+        "message_queues": [],
+        "source": "code_analysis"
+      },
+      {
+        "node_id": "PaymentService",
+        "id": "PaymentService",
+        "node_type": "service",
+        "name": "Paymentservice",
+        "endpoints": [],
+        "capabilities": [],
+        "dependencies": [
+          "datetime",
+          "typing",
+          "uuid"
+        ],
+        "database_connections": [],
+        "message_queues": [],
+        "source": "code_analysis"
+      }
+    ],
+    "removed": [],
+    "modified": []
+  },
+  "edge_deltas": {
+    "added": [],
+    "removed": [],
+    "modified": []
+  },
+  "change_classification": {
+    "breaking_changes": [],
+    "non_breaking_changes": [
+      {
+        "change_id": "NBC-NODE-OrderService",
+        "type": "added_node",
+        "description": "Node 'OrderService' was added",
+        "impact": "Backward compatible addition"
+      },
+      {
+        "change_id": "NBC-NODE-PaymentService",
+        "type": "added_node",
+        "description": "Node 'PaymentService' was added",
+        "impact": "Backward compatible addition"
+      }
+    ]
+  },
+  "recommendations": [
+    "LOW similarity (0.0%) - significant drift, investigate causes",
+    "No breaking changes detected - architectures are compatible",
+    "2 non-breaking additions - consider incorporating into as-designed architecture"
+  ]
+}

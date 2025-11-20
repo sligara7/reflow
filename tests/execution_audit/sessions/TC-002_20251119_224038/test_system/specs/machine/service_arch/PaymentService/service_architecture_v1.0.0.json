@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "service_name": "PaymentService",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Payment processing service handling payments and confirmations",
+    "framework": "UAF 1.2"
+  },
+  "allocated_functions": [
+    {
+      "function_id": "F-004",
+      "function_name": "ProcessPayment",
+      "description": "Process payment for an order",
+      "inputs": ["order_id", "payment_details"],
+      "outputs": ["payment_id", "payment_status"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "SendOrderConfirmation",
+      "description": "Send order confirmation to customer",
+      "inputs": ["order_id", "customer_email"],
+      "outputs": ["confirmation_status"],
+      "dependencies": []
+    }
+  ],
+  "interfaces": {
+    "provides": [
+      {
+        "interface_name": "payment_processing",
+        "operations": ["ProcessPayment"]
+      }
+    ],
+    "consumes": []
+  },
+  "data_stores": [
+    {
+      "store_name": "payments_db",
+      "type": "relational",
+      "purpose": "Store payment transactions"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial service architecture",
+      "rationale": "Baseline architecture for payment processing"
+    }
+  ]
+}

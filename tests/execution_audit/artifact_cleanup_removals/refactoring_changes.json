@@ -1,0 +1,238 @@
+{
+  "_metadata": {
+    "purpose": "Simulated refactoring changes that remove obsolete functions",
+    "test_phase": "D-06",
+    "inject_at": "After D-05 implementation complete, before D-06 as-built comparison",
+    "change_type": "removal"
+  },
+  "refactoring_changes": [
+    {
+      "change_id": "REFACTOR-001",
+      "change_type": "function_removal",
+      "function_name": "ValidatePaymentCard",
+      "service": "PaymentService",
+      "status": "REMOVED",
+      "rationale": "Redundant - Stripe API validates payment cards automatically during payment processing",
+      "root_cause_analysis": {
+        "category": "redundant_functionality",
+        "description": "After integrating with Stripe payment gateway, discovered that Stripe validates card numbers, CVV, expiration dates automatically. Our ValidatePaymentCard function duplicates this functionality and adds unnecessary latency.",
+        "evidence": [
+          "Stripe API documentation confirms validation is automatic",
+          "Performance testing shows 50ms latency improvement without duplicate validation",
+          "Code review identified duplicate validation logic"
+        ],
+        "decision": "Remove ValidatePaymentCard function, rely on Stripe's built-in validation"
+      },
+      "implementation_changes": {
+        "code_removed": {
+          "file": "services/PaymentService/src/payment_service.py",
+          "method": "validate_payment_card(card_number, cvv, expiration_date)",
+          "lines_removed": 25
+        },
+        "tests_affected": {
+          "file": "tests/test_payment_service.py",
+          "test_function": "test_validate_payment_card",
+          "action_required": "Delete test (function no longer exists)"
+        },
+        "documentation_affected": [
+          {
+            "file": "docs/PAYMENT_PROCESSING.md",
+            "section": "Card Validation",
+            "action_required": "Remove section or update to note Stripe handles validation"
+          }
+        ],
+        "contracts_affected": [
+          {
+            "file": "services/PaymentService/SERVICE_CONTRACT.json",
+            "field": "contracted_functions.functions",
+            "action_required": "Remove ValidatePaymentCard from list"
+          }
+        ]
+      },
+      "architecture_changes_required": {
+        "functional_architecture": {
+          "file": "specs/functional/functional_architecture.json",
+          "action": "Remove F-002 (ValidatePaymentCard) from functions list",
+          "update_dependencies": "Remove any dependencies on this function"
+        },
+        "service_architecture": {
+          "file": "specs/machine/service_arch/PaymentService/service_architecture.json",
+          "action": "Remove ValidatePaymentCard from allocated_functions"
+        },
+        "interface_registry": {
+          "file": "specs/machine/interface_registry.json",
+          "action": "No changes (function was internal, not part of interface)"
+        }
+      },
+      "expected_drift": {
+        "before_removal": "6 functions in architecture",
+        "after_removal": "6 functions in architecture, 5 functions in implementation",
+        "drift_magnitude": "16.7% (1/6 functions obsolete)"
+      }
+    },
+    {
+      "change_id": "REFACTOR-002",
+      "change_type": "function_removal_and_interface_removal",
+      "function_name": "CalculateTax",
+      "interface_name": "tax_calculation",
+      "service": "PaymentService",
+      "status": "REMOVED",
+      "rationale": "Superseded by external Avalara Tax API - more accurate, handles all tax jurisdictions",
+      "root_cause_analysis": {
+        "category": "superseded_by_external",
+        "description": "Our in-house tax calculation logic only handled US sales tax and was inaccurate for complex jurisdictions. Avalara Tax API provides comprehensive, up-to-date tax calculations for all US and international jurisdictions.",
+        "evidence": [
+          "Tax calculation errors identified in 3 states with complex jurisdiction rules",
+          "Avalara provides real-time tax rates for 11,000+ jurisdictions",
+          "Cost-benefit analysis shows Avalara is cheaper than maintaining in-house tax logic",
+          "Legal compliance requires accurate tax calculations - Avalara reduces liability"
+        ],
+        "decision": "Remove CalculateTax function, integrate with Avalara Tax API, remove TaxService entirely"
+      },
+      "implementation_changes": {
+        "code_removed": {
+          "file": "services/PaymentService/src/payment_service.py",
+          "method": "calculate_tax(amount, state, zip_code)",
+          "lines_removed": 45,
+          "replaced_with": "External Avalara API call via HTTP"
+        },
+        "service_removed": {
+          "service_name": "TaxService",
+          "reason": "No longer needed - Avalara handles all tax calculations",
+          "docker_compose_impact": true
+        },
+        "tests_affected": {
+          "file": "tests/test_payment_service.py",
+          "test_function": "test_calculate_tax",
+          "action_required": "Delete test (function no longer exists) or replace with Avalara integration test"
+        },
+        "documentation_affected": [
+          {
+            "file": "docs/TAX_CALCULATION.md",
+            "action_required": "Delete entire document (feature removed) or replace with Avalara integration guide"
+          },
+          {
+            "file": "README.md",
+            "section": "Tax Calculation Feature",
+            "action_required": "Remove or update to mention Avalara integration"
+          }
+        },
+        "contracts_affected": [
+          {
+            "file": "services/PaymentService/SERVICE_CONTRACT.json",
+            "field": "contracted_functions.functions",
+            "action_required": "Remove CalculateTax from list"
+          },
+          {
+            "file": "services/PaymentService/SERVICE_CONTRACT.json",
+            "field": "contracted_interfaces.consumes",
+            "action_required": "Remove tax_calculation interface (if present)"
+          }
+        ],
+        "deployment_affected": [
+          {
+            "file": "docker-compose.yml",
+            "service": "TaxService",
+            "action_required": "Remove TaxService definition entirely"
+          },
+          {
+            "file": "docker-compose.yml",
+            "environment_variables": ["TAX_SERVICE_URL", "TAX_DB_CONNECTION"],
+            "action_required": "Remove environment variables for TaxService"
+          },
+          {
+            "file": "docker-compose.yml",
+            "volumes": ["tax_service_data"],
+            "action_required": "Remove volume mounts for TaxService"
+          }
+        ]
+      },
+      "architecture_changes_required": {
+        "functional_architecture": {
+          "file": "specs/functional/functional_architecture.json",
+          "action": "Remove F-004 (CalculateTax) from functions list",
+          "update_dependencies": "Remove dependencies on this function from ProcessPayment flow"
+        },
+        "service_architecture": {
+          "file": "specs/machine/service_arch/PaymentService/service_architecture.json",
+          "action": "Remove CalculateTax from allocated_functions"
+        },
+        "interface_registry": {
+          "file": "specs/machine/interface_registry.json",
+          "action": "Remove tax_calculation interface entirely (no longer exists)"
+        },
+        "interface_contracts": {
+          "file": "specs/machine/interfaces/tax_calculation_icd.json",
+          "action": "DELETE FILE - interface no longer exists"
+        }
+      },
+      "expected_drift": {
+        "before_removal": "6 functions in architecture, 1 interface",
+        "after_removal": "6 functions in architecture, 4 functions in implementation, 1 interface in architecture, 0 interfaces in implementation",
+        "drift_magnitude": "33.3% (2/6 functions obsolete, 1/1 interfaces obsolete)"
+      }
+    }
+  ],
+  "combined_drift_summary": {
+    "functions_removed": 2,
+    "interfaces_removed": 1,
+    "services_removed": 1,
+    "expected_similarity_before_sync": "0.67-0.75 (significant drift due to removals)",
+    "expected_similarity_after_sync": "1.00 (perfect match after cleanup)"
+  },
+  "cleanup_expectations": {
+    "P0_critical": {
+      "architecture_files": [
+        "Remove F-002 (ValidatePaymentCard) from functional_architecture.json",
+        "Remove F-004 (CalculateTax) from functional_architecture.json",
+        "Remove ValidatePaymentCard from PaymentService/service_architecture.json",
+        "Remove CalculateTax from PaymentService/service_architecture.json",
+        "Remove tax_calculation from interface_registry.json"
+      ],
+      "service_contracts": [
+        "Update PaymentService/SERVICE_CONTRACT.json: 6 functions → 4 functions",
+        "Remove ValidatePaymentCard and CalculateTax from contracted_functions list",
+        "Update LLM warnings to reflect new function count"
+      ],
+      "interface_contracts": [
+        "DELETE specs/machine/interfaces/tax_calculation_icd.json"
+      ]
+    },
+    "P1_high_priority": {
+      "tests": [
+        "Delete or comment out tests/test_payment_service.py::test_validate_payment_card",
+        "Delete or comment out tests/test_payment_service.py::test_calculate_tax",
+        "Update integration tests that reference removed functions"
+      ],
+      "docker_deployment": [
+        "Remove TaxService from docker-compose.yml",
+        "Remove TAX_SERVICE_URL, TAX_DB_CONNECTION environment variables",
+        "Remove tax_service_data volume mount",
+        "Provide docker cleanup commands to remove old TaxService images"
+      ],
+      "build_scripts": [
+        "Remove TaxService build steps from Makefile/build.sh (if applicable)"
+      ]
+    },
+    "P2_documentation": {
+      "markdown_docs": [
+        "Update docs/PAYMENT_PROCESSING.md (remove card validation section)",
+        "Delete docs/TAX_CALCULATION.md (entire feature removed)",
+        "Update README.md if it references removed features"
+      ]
+    }
+  },
+  "docker_cleanup_commands": [
+    "docker-compose down",
+    "docker-compose rm -f tax_service",
+    "docker rmi tax_service:latest",
+    "docker-compose build --no-cache payment_service",
+    "docker-compose up -d"
+  ],
+  "instructions_for_agent_b": {
+    "when_to_inject": "After completing D-05 (service implementation), before starting D-06 (as-built comparison)",
+    "how_to_inject": "Simulate refactoring by removing the 2 functions from implementation. This creates drift where ARCHITECTURE > IMPLEMENTATION (obsolete entries in architecture).",
+    "critical": "After removing functions, D-06.5-A02.5 should detect the removals, and D-06.5-A03.5 should clean up ALL references (architecture, contracts, tests, docker configs).",
+    "user_pain_point": "Emphasize docker cleanup - 'The container is running an old image' problem must be addressed with explicit cleanup commands."
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Interface registry for e-commerce order system"
+  },
+  "interfaces": [
+    {
+      "interface_id": "IFC-001",
+      "interface_name": "payment_processing",
+      "description": "Interface for order service to request payment processing",
+      "provider": "PaymentService",
+      "consumers": ["OrderService"],
+      "operations": [
+        {
+          "operation_name": "ProcessPayment",
+          "description": "Process payment for an order",
+          "inputs": ["order_id", "payment_details"],
+          "outputs": ["payment_id", "payment_status"]
+        }
+      ],
+      "protocol": "REST",
+      "data_format": "JSON"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial interface registry",
+      "rationale": "Baseline interfaces for order system"
+    }
+  ]
+}

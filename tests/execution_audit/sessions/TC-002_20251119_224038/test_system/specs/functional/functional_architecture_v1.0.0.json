@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Functional architecture for e-commerce order processing system",
+    "framework": "UAF 1.2"
+  },
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "CreateOrder",
+      "description": "Create a new order with customer and product information",
+      "inputs": [
+        "customer_id",
+        "product_list",
+        "shipping_address"
+      ],
+      "outputs": [
+        "order_id",
+        "order_status"
+      ],
+      "dependencies": [
+        "ProcessPayment",
+        "SendOrderConfirmation"
+      ],
+      "flow_type": "synchronous",
+      "criticality": "high"
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GetOrderStatus",
+      "description": "Retrieve current status of an order",
+      "inputs": [
+        "order_id"
+      ],
+      "outputs": [
+        "order_status",
+        "order_details"
+      ],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "medium"
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "CancelOrder",
+      "description": "Cancel an existing order",
+      "inputs": [
+        "order_id"
+      ],
+      "outputs": [
+        "cancellation_status"
+      ],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "high"
+    },
+    {
+      "function_id": "F-004",
+      "function_name": "ProcessPayment",
+      "description": "Process payment for an order",
+      "inputs": [
+        "order_id",
+        "payment_details"
+      ],
+      "outputs": [
+        "payment_id",
+        "payment_status"
+      ],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "critical"
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "SendOrderConfirmation",
+      "description": "Send order confirmation to customer",
+      "inputs": [
+        "order_id",
+        "customer_email"
+      ],
+      "outputs": [
+        "confirmation_status"
+      ],
+      "dependencies": [],
+      "flow_type": "asynchronous",
+      "criticality": "low"
+    }
+  ],
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "Order Creation Flow",
+      "description": "Complete order creation including payment and confirmation",
+      "sequence": [
+        {
+          "step": 1,
+          "function": "CreateOrder",
+          "next": "ProcessPayment"
+        },
+        {
+          "step": 2,
+          "function": "ProcessPayment",
+          "next": "SendOrderConfirmation"
+        },
+        {
+          "step": 3,
+          "function": "SendOrderConfirmation",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-002",
+      "flow_name": "Order Status Query",
+      "description": "Retrieve order status",
+      "sequence": [
+        {
+          "step": 1,
+          "function": "GetOrderStatus",
+          "next": "end"
+        }
+      ]
+    },
+    {
+      "flow_id": "FLOW-003",
+      "flow_name": "Order Cancellation",
+      "description": "Cancel an order",
+      "sequence": [
+        {
+          "step": 1,
+          "function": "CancelOrder",
+          "next": "end"
+        }
+      ]
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial functional architecture design",
+      "rationale": "Baseline architecture for e-commerce order system"
+    }
+  ]
+}

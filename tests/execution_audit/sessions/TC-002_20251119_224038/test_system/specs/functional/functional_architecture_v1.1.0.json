@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "1.1.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Functional architecture for e-commerce order processing system - Updated to match implementation after drift resolution",
+    "framework": "UAF 1.2",
+    "synchronized_with_implementation": true,
+    "synchronization_date": "2025-11-19"
+  },
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "CreateOrder",
+      "description": "Create a new order with customer and product information",
+      "inputs": ["customer_id", "product_list", "shipping_address"],
+      "outputs": ["order_id", "order_status"],
+      "dependencies": ["ValidateOrderUniqueness", "ProcessPayment", "SendOrderConfirmation"],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "changes_from_v1.0.0": "Added ValidateOrderUniqueness dependency"
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GetOrderStatus",
+      "description": "Retrieve current status of an order",
+      "inputs": ["order_id"],
+      "outputs": ["order_status", "order_details", "payment_status"],
+      "dependencies": ["GetPaymentStatus"],
+      "flow_type": "synchronous",
+      "criticality": "medium",
+      "changes_from_v1.0.0": "Added GetPaymentStatus dependency, added payment_status output"
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "CancelOrder",
+      "description": "Cancel an existing order",
+      "inputs": ["order_id"],
+      "outputs": ["cancellation_status"],
+      "dependencies": ["RefundPayment"],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "changes_from_v1.0.0": "Added RefundPayment dependency"
+    },
+    {
+      "function_id": "F-004",
+      "function_name": "ProcessPayment",
+      "description": "Process payment for an order",
+      "inputs": ["order_id", "payment_details"],
+      "outputs": ["payment_id", "payment_status"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "critical"
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "SendOrderConfirmation",
+      "description": "Send order confirmation to customer",
+      "inputs": ["order_id", "customer_email"],
+      "outputs": ["confirmation_status"],
+      "dependencies": [],
+      "flow_type": "asynchronous",
+      "criticality": "low"
+    },
+    {
+      "function_id": "F-006",
+      "function_name": "RefundPayment",
+      "description": "Process payment refund for cancelled order",
+      "inputs": ["payment_id", "amount"],
+      "outputs": ["refund_status", "refund_transaction_id"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "added_in_version": "1.1.0",
+      "reason": "TEST-001 fix - operational_reality"
+    },
+    {
+      "function_id": "F-007",
+      "function_name": "GetPaymentStatus",
+      "description": "Get payment status by payment ID",
+      "inputs": ["payment_id"],
+      "outputs": ["payment_id", "payment_status", "amount"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "medium",
+      "added_in_version": "1.1.0",
+      "reason": "TEST-002 fix - requirements_creep"
+    },
+    {
+      "function_id": "F-008",
+      "function_name": "ValidateOrderUniqueness",
+      "description": "Atomic check to ensure order_id is unique before creation",
+      "inputs": ["proposed_order_id"],
+      "outputs": ["is_unique"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "added_in_version": "1.1.0",
+      "reason": "TEST-003 fix - technical_constraints"
+    }
+  ],
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "Order Creation Flow",
+      "description": "Complete order creation including uniqueness validation, payment, and confirmation",
+      "sequence": [
+        {"step": 1, "function": "ValidateOrderUniqueness", "next": "CreateOrder"},
+        {"step": 2, "function": "CreateOrder", "next": "ProcessPayment"},
+        {"step": 3, "function": "ProcessPayment", "next": "SendOrderConfirmation"},
+        {"step": 4, "function": "SendOrderConfirmation", "next": "end"}
+      ],
+      "changes_from_v1.0.0": "Added ValidateOrderUniqueness as step 1"
+    },
+    {
+      "flow_id": "FLOW-002",
+      "flow_name": "Order Status Query",
+      "description": "Retrieve order status with payment information",
+      "sequence": [
+        {"step": 1, "function": "GetOrderStatus", "next": "GetPaymentStatus"},
+        {"step": 2, "function": "GetPaymentStatus", "next": "end"}
+      ],
+      "changes_from_v1.0.0": "Added GetPaymentStatus step"
+    },
+    {
+      "flow_id": "FLOW-003",
+      "flow_name": "Order Cancellation",
+      "description": "Cancel an order with automatic payment refund",
+      "sequence": [
+        {"step": 1, "function": "CancelOrder", "next": "RefundPayment"},
+        {"step": 2, "function": "RefundPayment", "next": "end"}
+      ],
+      "changes_from_v1.0.0": "Added RefundPayment step"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial functional architecture design",
+      "rationale": "Baseline architecture for e-commerce order system"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Added 3 new functions (RefundPayment, GetPaymentStatus, ValidateOrderUniqueness), updated 3 existing functions and all 3 flows",
+      "rationale": "D-06.5 Architecture Synchronization - Resolved drift after test failures revealed missing functionality",
+      "root_causes": {
+        "operational_reality": "RefundPayment - customers must be refunded when orders cancelled",
+        "requirements_creep": "GetPaymentStatus - order status must include payment information",
+        "technical_constraints": "ValidateOrderUniqueness - prevent race conditions under concurrent load"
+      },
+      "test_failures_addressed": ["TEST-001", "TEST-002", "TEST-003"]
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "template_metadata": {
+    "template_name": "Functional Requirements Template",
+    "template_version": "1.0.0",
+    "created": "2025-11-19",
+    "description": "Functional requirements for TODO API Service",
+    "usage": "Extracted from requirements.md and foundational documents",
+    "workflow_step": "FA-01"
+  },
+  "system_info": {
+    "system_name": "TODO API Service",
+    "mission_statement_source": "docs/SYSTEM_MISSION_STATEMENT.md",
+    "user_scenarios_source": "docs/USER_SCENARIOS.md",
+    "success_criteria_source": "docs/SUCCESS_CRITERIA.md"
+  },
+  "functional_requirements": [
+    {
+      "requirement_id": "FR-001",
+      "requirement_name": "Create TODO Item",
+      "description": "System shall create a new TODO item with title, description, optional due date and priority",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-1"],
+        "success_criteria": ["FR-1"]
+      },
+      "acceptance_criteria": [
+        "TODO created with unique ID",
+        "Creation timestamp automatically generated",
+        "Required fields (title, description) validated",
+        "Optional fields (due_date, priority) supported",
+        "Returns complete TODO object"
+      ],
+      "notes": "Core CRUD operation"
+    },
+    {
+      "requirement_id": "FR-002",
+      "requirement_name": "List TODO Items",
+      "description": "System shall retrieve and return all TODO items with optional filtering by status and priority",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-2", "UC-7"],
+        "success_criteria": ["FR-2"]
+      },
+      "acceptance_criteria": [
+        "All TODOs returned when no filter applied",
+        "Filter by status (pending/completed) supported",
+        "Filter by priority (low/medium/high) supported",
+        "Returns array of TODO objects",
+        "Performance < 100ms for up to 1000 items"
+      ],
+      "notes": "Must support efficient filtering"
+    },
+    {
+      "requirement_id": "FR-003",
+      "requirement_name": "Get TODO by ID",
+      "description": "System shall retrieve a specific TODO item by its unique identifier",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-3"],
+        "success_criteria": ["NFR-2.1"]
+      },
+      "acceptance_criteria": [
+        "TODO retrieved by unique ID",
+        "Returns 404 if TODO not found",
+        "Returns complete TODO object if found",
+        "Performance < 100ms"
+      ],
+      "notes": "Required for update and delete operations"
+    },
+    {
+      "requirement_id": "FR-004",
+      "requirement_name": "Update TODO Item",
+      "description": "System shall update TODO fields (title, description, due_date, priority)",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-3"],
+        "success_criteria": ["FR-3"]
+      },
+      "acceptance_criteria": [
+        "Specified fields updated",
+        "Unspecified fields unchanged",
+        "Validation performed on updated fields",
+        "Returns updated TODO object",
+        "Returns 404 if TODO not found"
+      ],
+      "notes": "Partial updates supported"
+    },
+    {
+      "requirement_id": "FR-005",
+      "requirement_name": "Mark TODO Complete",
+      "description": "System shall mark a TODO item as completed",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-4"],
+        "success_criteria": ["FR-3"]
+      },
+      "acceptance_criteria": [
+        "Status changed to 'completed'",
+        "Completion timestamp recorded",
+        "Returns updated TODO object",
+        "Returns 404 if TODO not found"
+      ],
+      "notes": "Special case of update operation"
+    },
+    {
+      "requirement_id": "FR-006",
+      "requirement_name": "Delete TODO Item",
+      "description": "System shall remove a TODO item from storage",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-6"],
+        "success_criteria": ["FR-4"]
+      },
+      "acceptance_criteria": [
+        "TODO removed from database",
+        "Subsequent queries for TODO return 404",
+        "Returns deletion confirmation",
+        "Returns 404 if TODO not found"
+      ],
+      "notes": "Permanent deletion (no soft delete)"
+    },
+    {
+      "requirement_id": "FR-007",
+      "requirement_name": "Search TODO Items",
+      "description": "System shall search TODO items by title or description keyword",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-5"],
+        "success_criteria": ["FR-5"]
+      },
+      "acceptance_criteria": [
+        "Search by title substring",
+        "Search by description substring",
+        "Case-insensitive search",
+        "Returns matching TODO objects only",
+        "Empty result if no matches"
+      ],
+      "notes": "Simple substring search (not full-text)"
+    },
+    {
+      "requirement_id": "FR-008",
+      "requirement_name": "Input Validation",
+      "description": "System shall validate all input data before processing",
+      "category": "validation",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": ["UC-1", "UC-3"],
+        "success_criteria": ["DQ-2"]
+      },
+      "acceptance_criteria": [
+        "Required fields checked",
+        "Data types validated",
+        "Empty/null values rejected",
+        "Returns 400 with error message for invalid input"
+      ],
+      "notes": "Prevents data corruption"
+    },
+    {
+      "requirement_id": "FR-009",
+      "requirement_name": "Error Handling",
+      "description": "System shall handle errors gracefully and return structured error responses",
+      "category": "other",
+      "priority": "medium",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": [],
+        "success_criteria": ["OP-2"]
+      },
+      "acceptance_criteria": [
+        "All errors return JSON responses",
+        "Proper HTTP status codes used",
+        "Error messages are clear and actionable",
+        "Service does not crash on errors"
+      ],
+      "notes": "Improves debugging and reliability"
+    },
+    {
+      "requirement_id": "FR-010",
+      "requirement_name": "Data Persistence",
+      "description": "System shall persist TODO items to SQLite database",
+      "category": "data_processing",
+      "priority": "high",
+      "source": {
+        "mission_statement": true,
+        "user_scenarios": [],
+        "success_criteria": ["DQ-1"]
+      },
+      "acceptance_criteria": [
+        "All TODOs stored in SQLite database",
+        "Data survives service restart",
+        "Database file maintained",
+        "Transactions used for data integrity"
+      ],
+      "notes": "SQLite chosen for simplicity"
+    }
+  ],
+  "traceability_matrix": {
+    "user_scenario_coverage": {
+      "total_scenarios": 7,
+      "covered_scenarios": 7,
+      "coverage_percentage": "100%",
+      "uncovered_scenarios": []
+    },
+    "success_criteria_coverage": {
+      "total_criteria": 10,
+      "covered_criteria": 10,
+      "coverage_percentage": "100%",
+      "uncovered_criteria": []
+    }
+  },
+  "validation_status": {
+    "validated_by_tool": "validate_foundational_alignment.py",
+    "validation_result": "PENDING",
+    "validation_timestamp": "",
+    "issues_found": []
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "created_by": "Claude Sonnet 4.5",
+    "review_status": "draft"
+  }
+}

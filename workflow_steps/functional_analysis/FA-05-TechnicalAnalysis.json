@@ -11,10 +11,11 @@
     "primary_tool": "system_of_systems_graph_v2.py",
     "mode": "--functional-mode (analyze functional architecture, not service architecture)",
     "command_sequence": [
-      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode",
-      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode --detect-gaps",
-      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root} --functional-mode --analyze-context (optional - AI workflows only)"
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/functional/functional_architecture.json --system-root {system_root} --functional-mode",
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/functional/functional_architecture.json --system-root {system_root} --functional-mode --detect-gaps",
+      "python3 {reflow_root}/tools/system_of_systems_graph_v2.py {system_root}/specs/functional/functional_architecture.json --system-root {system_root} --functional-mode --analyze-context (optional - AI workflows only)"
     ],
+    "note": "The --system-root parameter is REQUIRED when multiple working_memory.json files exist (e.g., when system_root differs from reflow_root). It tells the tool which working_memory.json to use for path resolution.",
     "inputs": "specs/functional/functional_architecture.json",
     "outputs": [
       "specs/functional/graphs/functional_architecture_graph.json (graph representation)",

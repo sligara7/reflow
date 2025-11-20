@@ -1,0 +1,135 @@
+{
+  "_metadata": {
+    "purpose": "Simulated test failures to inject architecture drift",
+    "test_phase": "D-06",
+    "inject_at": "After D-05 implementation complete, before D-06 as-built comparison"
+  },
+  "test_failures": [
+    {
+      "test_id": "TEST-001",
+      "test_name": "test_cancel_order_refunds_payment",
+      "test_file": "tests/test_order_service.py::test_cancel_order_refunds_payment",
+      "status": "FAILED",
+      "error_type": "AssertionError",
+      "error_message": "Payment not refunded after order cancellation",
+      "test_code": "assert payment_service.get_payment_status(order.payment_id) == 'REFUNDED'",
+      "expected_behavior": "When order is cancelled, payment should be automatically refunded",
+      "actual_behavior": "Order status changed to CANCELLED but payment remains COMPLETED (charged)",
+      "root_cause_analysis": {
+        "category": "operational_reality",
+        "description": "During testing, discovered that order cancellation doesn't trigger payment refund. This wasn't considered in initial design but is required for business logic.",
+        "impact": "HIGH - Users charged for cancelled orders",
+        "urgency": "CRITICAL"
+      },
+      "required_architectural_changes": {
+        "new_functions": [
+          {
+            "function_name": "RefundPayment",
+            "service": "PaymentService",
+            "description": "Process payment refund for cancelled order",
+            "inputs": ["payment_id", "amount"],
+            "outputs": ["refund_status", "refund_transaction_id"]
+          }
+        ],
+        "modified_functions": [
+          {
+            "function_name": "CancelOrder",
+            "service": "OrderService",
+            "change": "Add dependency on RefundPayment function",
+            "new_flow": "CancelOrder → RefundPayment → SendCancellationConfirmation"
+          }
+        ],
+        "new_interfaces": []
+      },
+      "implementation_fix": "Added RefundPayment function to PaymentService, updated CancelOrder to call it"
+    },
+    {
+      "test_id": "TEST-002",
+      "test_name": "test_get_order_status_includes_payment",
+      "test_file": "tests/test_order_service.py::test_get_order_status_includes_payment",
+      "status": "FAILED",
+      "error_type": "AssertionError",
+      "error_message": "Order status response missing 'payment_status' field",
+      "test_code": "assert 'payment_status' in response.json() and response.json()['payment_status'] == 'COMPLETED'",
+      "expected_behavior": "GetOrderStatus returns complete order information including payment status",
+      "actual_behavior": "GetOrderStatus only returns order fields (order_id, status, items) but not payment information",
+      "root_cause_analysis": {
+        "category": "requirements_creep",
+        "description": "Initial requirements didn't specify that order status should include payment information. During testing/stakeholder review, this was identified as necessary for customer service and user experience.",
+        "impact": "MEDIUM - Incomplete information to users/customer service",
+        "urgency": "HIGH"
+      },
+      "required_architectural_changes": {
+        "new_functions": [],
+        "modified_functions": [
+          {
+            "function_name": "GetOrderStatus",
+            "service": "OrderService",
+            "change": "Add dependency on GetPaymentStatus from PaymentService",
+            "new_flow": "GetOrderStatus → QueryPaymentStatus → AggregateOrderAndPaymentInfo"
+          }
+        ],
+        "new_interfaces": [
+          {
+            "interface_name": "payment_status_query",
+            "provider": "PaymentService",
+            "consumer": "OrderService",
+            "purpose": "OrderService queries PaymentService for payment status to include in order status response",
+            "operations": ["GetPaymentStatus"]
+          }
+        ]
+      },
+      "implementation_fix": "Added payment_status_query interface, OrderService.GetOrderStatus now queries PaymentService"
+    },
+    {
+      "test_id": "TEST-003",
+      "test_name": "test_concurrent_order_creation",
+      "test_file": "tests/test_order_service.py::test_concurrent_order_creation",
+      "status": "FAILED",
+      "error_type": "IntegrityError",
+      "error_message": "duplicate key value violates unique constraint 'orders_order_id_key'",
+      "test_code": "with ThreadPoolExecutor() as executor: futures = [executor.submit(create_order, user_id=1) for _ in range(10)]",
+      "expected_behavior": "Concurrent order creation requests create unique orders",
+      "actual_behavior": "Race condition causes duplicate order_ids to be generated, database constraint violation",
+      "root_cause_analysis": {
+        "category": "technical_constraints",
+        "description": "Order ID generation uses timestamp-based approach which fails under concurrent load. Need atomic uniqueness validation before order creation.",
+        "impact": "HIGH - System crashes under concurrent load",
+        "urgency": "CRITICAL"
+      },
+      "required_architectural_changes": {
+        "new_functions": [
+          {
+            "function_name": "ValidateOrderUniqueness",
+            "service": "OrderService",
+            "description": "Atomic check to ensure order_id is unique before creation",
+            "inputs": ["proposed_order_id"],
+            "outputs": ["is_unique (boolean)"]
+          }
+        ],
+        "modified_functions": [
+          {
+            "function_name": "CreateOrder",
+            "service": "OrderService",
+            "change": "Add ValidateOrderUniqueness as prerequisite step",
+            "new_flow": "ValidateOrderUniqueness → CreateOrder → ProcessPayment → SendOrderConfirmation"
+          }
+        ],
+        "new_interfaces": []
+      },
+      "implementation_fix": "Added ValidateOrderUniqueness function with database lock, CreateOrder calls it first"
+    }
+  ],
+  "drift_summary": {
+    "functions_added": 2,
+    "functions_modified": 3,
+    "interfaces_added": 1,
+    "expected_similarity_before_sync": "0.65-0.75 (significant drift)",
+    "expected_similarity_after_sync": ">= 0.95"
+  },
+  "instructions_for_agent_b": {
+    "when_to_inject": "After completing D-05 (service implementation), before starting D-06 (as-built comparison)",
+    "how_to_inject": "Present these test failures as if they came from running integration tests. Agent B should implement the fixes (adding new functions/interfaces) to make tests pass.",
+    "critical": "After implementing fixes, Agent B's implementation will NOT match the original architecture. This creates the drift that D-06.5 should detect and resolve."
+  }
+}

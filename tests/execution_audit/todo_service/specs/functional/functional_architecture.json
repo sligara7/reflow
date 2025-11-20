@@ -1,0 +1,430 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "template_metadata": {
+    "template_name": "Functional Architecture Template",
+    "template_version": "1.1.0",
+    "created": "2025-11-19",
+    "description": "Functional architecture for TODO API Service",
+    "workflow_step": "FA-02"
+  },
+  "system_info": {
+    "system_name": "TODO API Service",
+    "functional_requirements_source": "specs/functional/functional_requirements.json",
+    "user_scenarios_source": "docs/USER_SCENARIOS.md"
+  },
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "Create TODO Flow",
+      "flow_type": "process_flow",
+      "description": "Create a new TODO item with validation and persistence",
+      "user_scenarios": ["UC-1"],
+      "entry_functions": ["F-001"],
+      "exit_functions": ["F-003"],
+      "execution_time_estimate": "0.05 seconds"
+    },
+    {
+      "flow_id": "FLOW-002",
+      "flow_name": "List TODOs Flow",
+      "flow_type": "process_flow",
+      "description": "Retrieve all TODOs with optional filtering",
+      "user_scenarios": ["UC-2", "UC-7"],
+      "entry_functions": ["F-004"],
+      "exit_functions": ["F-004"],
+      "execution_time_estimate": "0.08 seconds"
+    },
+    {
+      "flow_id": "FLOW-003",
+      "flow_name": "Get TODO by ID Flow",
+      "flow_type": "process_flow",
+      "description": "Retrieve a specific TODO by its ID",
+      "user_scenarios": ["UC-3"],
+      "entry_functions": ["F-005"],
+      "exit_functions": ["F-005"],
+      "execution_time_estimate": "0.03 seconds"
+    },
+    {
+      "flow_id": "FLOW-004",
+      "flow_name": "Update TODO Flow",
+      "flow_type": "process_flow",
+      "description": "Update TODO fields with validation",
+      "user_scenarios": ["UC-3"],
+      "entry_functions": ["F-006"],
+      "exit_functions": ["F-003"],
+      "execution_time_estimate": "0.05 seconds"
+    },
+    {
+      "flow_id": "FLOW-005",
+      "flow_name": "Mark Complete Flow",
+      "flow_type": "process_flow",
+      "description": "Mark a TODO as completed",
+      "user_scenarios": ["UC-4"],
+      "entry_functions": ["F-007"],
+      "exit_functions": ["F-003"],
+      "execution_time_estimate": "0.04 seconds"
+    },
+    {
+      "flow_id": "FLOW-006",
+      "flow_name": "Delete TODO Flow",
+      "flow_type": "process_flow",
+      "description": "Remove a TODO from storage",
+      "user_scenarios": ["UC-6"],
+      "entry_functions": ["F-008"],
+      "exit_functions": ["F-009"],
+      "execution_time_estimate": "0.04 seconds"
+    },
+    {
+      "flow_id": "FLOW-007",
+      "flow_name": "Search TODOs Flow",
+      "flow_type": "process_flow",
+      "description": "Search TODOs by keyword",
+      "user_scenarios": ["UC-5"],
+      "entry_functions": ["F-010"],
+      "exit_functions": ["F-010"],
+      "execution_time_estimate": "0.09 seconds"
+    }
+  ],
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "ValidateTODOInput",
+      "function_type": "validate",
+      "description": "Validates TODO input data (required fields, data types, constraints)",
+      "inputs": [
+        {
+          "input_name": "todo_data",
+          "input_type": "object",
+          "input_source": "API request body",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "validated_data",
+          "output_type": "object",
+          "output_destination": "F-002"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["MissingRequiredFieldError", "InvalidDataTypeError", "EmptyValueError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.01 seconds",
+      "requirements_satisfied": ["FR-008"]
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GenerateTODOID",
+      "function_type": "generate",
+      "description": "Generates unique identifier and timestamp for new TODO",
+      "inputs": [
+        {
+          "input_name": "validated_data",
+          "input_type": "object",
+          "input_source": "F-001",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "complete_todo",
+          "output_type": "object",
+          "output_destination": "F-003"
+        }
+      ],
+      "error_handling": {
+        "error_types": [],
+        "error_handler_function": null
+      },
+      "execution_time": "0.001 seconds",
+      "requirements_satisfied": ["FR-001"]
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "PersistTODO",
+      "function_type": "write",
+      "description": "Saves TODO to SQLite database",
+      "inputs": [
+        {
+          "input_name": "todo_object",
+          "input_type": "object",
+          "input_source": "F-002, F-006, F-007",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "saved_todo",
+          "output_type": "object",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["DatabaseConnectionError", "ConstraintViolationError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.02 seconds",
+      "requirements_satisfied": ["FR-010"]
+    },
+    {
+      "function_id": "F-004",
+      "function_name": "RetrieveTODOs",
+      "function_type": "read",
+      "description": "Retrieves all TODOs from database with optional filtering",
+      "inputs": [
+        {
+          "input_name": "filter_params",
+          "input_type": "object",
+          "input_source": "API query parameters",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "todo_list",
+          "output_type": "array",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["DatabaseConnectionError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.05 seconds",
+      "requirements_satisfied": ["FR-002"]
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "RetrieveTODOByID",
+      "function_type": "read",
+      "description": "Retrieves a specific TODO by unique identifier",
+      "inputs": [
+        {
+          "input_name": "todo_id",
+          "input_type": "string",
+          "input_source": "API path parameter",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "todo_object",
+          "output_type": "object",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["TODONotFoundError", "DatabaseConnectionError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.02 seconds",
+      "requirements_satisfied": ["FR-003"]
+    },
+    {
+      "function_id": "F-006",
+      "function_name": "UpdateTODO",
+      "function_type": "process",
+      "description": "Updates TODO fields with validation",
+      "inputs": [
+        {
+          "input_name": "todo_id",
+          "input_type": "string",
+          "input_source": "API path parameter",
+          "required": true
+        },
+        {
+          "input_name": "update_data",
+          "input_type": "object",
+          "input_source": "API request body",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "updated_todo",
+          "output_type": "object",
+          "output_destination": "F-003"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["TODONotFoundError", "InvalidDataError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.03 seconds",
+      "requirements_satisfied": ["FR-004"]
+    },
+    {
+      "function_id": "F-007",
+      "function_name": "MarkTODOComplete",
+      "function_type": "process",
+      "description": "Marks TODO as completed with timestamp",
+      "inputs": [
+        {
+          "input_name": "todo_id",
+          "input_type": "string",
+          "input_source": "API path parameter",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "completed_todo",
+          "output_type": "object",
+          "output_destination": "F-003"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["TODONotFoundError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.02 seconds",
+      "requirements_satisfied": ["FR-005"]
+    },
+    {
+      "function_id": "F-008",
+      "function_name": "ValidateTODOExists",
+      "function_type": "validate",
+      "description": "Checks if TODO exists before deletion",
+      "inputs": [
+        {
+          "input_name": "todo_id",
+          "input_type": "string",
+          "input_source": "API path parameter",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "todo_id",
+          "output_type": "string",
+          "output_destination": "F-009"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["TODONotFoundError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.02 seconds",
+      "requirements_satisfied": ["FR-006"]
+    },
+    {
+      "function_id": "F-009",
+      "function_name": "DeleteTODO",
+      "function_type": "write",
+      "description": "Removes TODO from database",
+      "inputs": [
+        {
+          "input_name": "todo_id",
+          "input_type": "string",
+          "input_source": "F-008",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "deletion_confirmation",
+          "output_type": "object",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["DatabaseConnectionError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.02 seconds",
+      "requirements_satisfied": ["FR-006"]
+    },
+    {
+      "function_id": "F-010",
+      "function_name": "SearchTODOs",
+      "function_type": "read",
+      "description": "Searches TODOs by title or description keyword",
+      "inputs": [
+        {
+          "input_name": "search_query",
+          "input_type": "string",
+          "input_source": "API query parameter",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "matching_todos",
+          "output_type": "array",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": ["DatabaseConnectionError"],
+        "error_handler_function": "F-011"
+      },
+      "execution_time": "0.06 seconds",
+      "requirements_satisfied": ["FR-007"]
+    },
+    {
+      "function_id": "F-011",
+      "function_name": "HandleError",
+      "function_type": "process",
+      "description": "Formats and returns structured error responses",
+      "inputs": [
+        {
+          "input_name": "error_object",
+          "input_type": "object",
+          "input_source": "Any function",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "output_name": "error_response",
+          "output_type": "object",
+          "output_destination": "API response"
+        }
+      ],
+      "error_handling": {
+        "error_types": [],
+        "error_handler_function": null
+      },
+      "execution_time": "0.001 seconds",
+      "requirements_satisfied": ["FR-009"]
+    }
+  ],
+  "dependencies": [
+    {
+      "source_function": "F-001",
+      "target_function": "F-002",
+      "dependency_type": "control_flow",
+      "description": "After validation succeeds, generate ID"
+    },
+    {
+      "source_function": "F-002",
+      "target_function": "F-003",
+      "dependency_type": "data_flow",
+      "description": "Pass complete TODO to persistence"
+    },
+    {
+      "source_function": "F-006",
+      "target_function": "F-003",
+      "dependency_type": "data_flow",
+      "description": "Pass updated TODO to persistence"
+    },
+    {
+      "source_function": "F-007",
+      "target_function": "F-003",
+      "dependency_type": "data_flow",
+      "description": "Pass completed TODO to persistence"
+    },
+    {
+      "source_function": "F-008",
+      "target_function": "F-009",
+      "dependency_type": "control_flow",
+      "description": "After validation, proceed to deletion"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "created_by": "Claude Sonnet 4.5"
+  }
+}

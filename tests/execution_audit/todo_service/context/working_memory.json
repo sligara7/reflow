@@ -1,0 +1,132 @@
+{
+  "template_version": "2.0",
+  "system_name": "TODO API Service",
+  "current_workflow": "00a-basic_setup",
+  "current_step": "S-03",
+  "current_substep": "S-03-A04",
+  "paths": {
+    "reflow_root": "/home/ajs7/project/reflow",
+    "system_root": "/home/ajs7/project/reflow/tests/execution_audit/todo_service",
+    "tools_path": "/home/ajs7/project/reflow/tools",
+    "templates_path": "/home/ajs7/project/reflow/templates",
+    "workflow_steps_path": "/home/ajs7/project/reflow/workflow_steps",
+    "definitions_path": "/home/ajs7/project/reflow/definitions"
+  },
+  "user_preferences": {
+    "stakeholder_approval_required": false,
+    "stakeholder_approval_rationale": "Execution audit test - no stakeholder approval needed"
+  },
+  "framework_configuration": {
+    "framework_id": "uaf",
+    "framework_name": "Unified Architecture Framework 1.2",
+    "component_term": "service",
+    "connection_term": "interface",
+    "architecture_file_type": "service_architecture.json",
+    "selected_framework_rationale": "UAF selected for engineered IT system with REST API",
+    "user_confirmed": true,
+    "confirmation_timestamp": "2025-11-19 21:37:00"
+  },
+  "framework_analysis": {
+    "system_characteristics": {
+      "primary_entities": "REST API service",
+      "connections": "Internal function calls",
+      "has_decision_points": false,
+      "has_conditional_routing": false,
+      "cycles_expected": "NO",
+      "needs_flow_analysis": false,
+      "domain": "engineered"
+    },
+    "frameworks_evaluated": ["uaf"],
+    "recommended_analyses": ["properties", "connectivity"],
+    "alternatives_rejected": {},
+    "analysis_timestamp": "2025-11-19 21:37:00"
+  },
+  "analysis_configuration": {
+    "selected_analyses": {
+      "centrality": false,
+      "paths": false,
+      "connectivity": true,
+      "clustering": false,
+      "properties": true,
+      "community": false,
+      "cycles": false,
+      "scc": false,
+      "dag": false,
+      "flow": false
+    },
+    "analysis_rationale": "Simple single-service system - basic connectivity and properties only",
+    "edge_weights_included": false,
+    "edge_weight_semantic": "",
+    "knowledge_gap_detection_enabled": false,
+    "architectural_issues_detection_enabled": false
+  },
+  "context_management": {
+    "operations_since_refresh": 0,
+    "refresh_threshold": 5,
+    "last_refresh_timestamp": "2025-11-19 21:37:00",
+    "total_refreshes_this_workflow": 0,
+    "refresh_triggers": {
+      "threshold_triggered": 0,
+      "degradation_triggered": 0,
+      "manual_triggered": 0,
+      "context_flow_triggered": 0
+    },
+    "degradation_signals_detected": [],
+    "last_degradation_signal": null,
+    "context_health": "HEALTHY",
+    "cumulative_context_tokens": 0,
+    "llm_capabilities": {
+      "model_name": "Claude Sonnet 4.5",
+      "context_window_tokens": 200000,
+      "recommended_threshold": 160000,
+      "safety_margin_percent": 80,
+      "refresh_strategy": "conservative",
+      "auto_detected": true,
+      "detection_timestamp": "2025-11-19 21:37:00",
+      "detection_method": "manual"
+    },
+    "context_flow_analysis": {
+      "enabled": false,
+      "current_step": "S-03",
+      "next_step": "S-04-decision",
+      "predicted_cumulative": 0,
+      "threshold": 40000,
+      "refresh_recommended": false,
+      "refresh_reason": null,
+      "recommended_refresh_before": null
+    }
+  },
+  "hierarchy_level": "LEVEL_0",
+  "component_list": [],
+  "external_systems": [],
+  "global_constraints": {},
+  "progress_summary": {
+    "completed_steps": ["S-01", "S-02"],
+    "current_focus": "Initializing working memory and foundational documents",
+    "next_action": "Complete setup workflow, then proceed to functional analysis",
+    "validation_status": "PENDING"
+  },
+  "artifact_status": {
+    "service_architectures_created": 0,
+    "interfaces_deduced": 0,
+    "icds_generated": false,
+    "index_json_updated": false,
+    "interface_registry_created": false,
+    "validation_passed": false
+  },
+  "workflow_metrics": {
+    "workflow_start_time": "2025-11-19 21:36:00",
+    "current_step_start_time": "2025-11-19 21:37:00",
+    "total_operations": 3,
+    "total_tool_invocations": 1,
+    "total_validations": 1,
+    "validation_failures": 0,
+    "rework_cycles": 0
+  },
+  "context_metadata": {
+    "working_directory": "/home/ajs7/project/reflow/tests/execution_audit/todo_service",
+    "last_validation_timestamp": null,
+    "pwd_verified_timestamp": "2025-11-19 21:37:00",
+    "pwd_verification_count": 1
+  }
+}

@@ -1,0 +1,271 @@
+{
+  "_metadata": {
+    "version": "1.0.0",
+    "description": "Registry of execution audit test cases for GAN-inspired testing",
+    "created": "2025-11-19",
+    "last_updated": "2025-11-19"
+  },
+  "test_cases": [
+    {
+      "test_id": "TC-001",
+      "name": "todo_service",
+      "description": "Simple TODO API service - 7 functions, single service, no external integrations",
+      "complexity": "simple",
+      "directory": "tests/execution_audit/todo_service",
+      "requirements_file": "requirements.md",
+      "expected_workflow_path": ["00a-basic_setup", "01d-functional_analysis", "01c-top_down_design"],
+      "expected_duration_minutes": 60,
+      "expected_functions": 7,
+      "expected_services": 1,
+      "expected_interfaces": 0,
+      "test_objectives": [
+        "Validate basic setup workflow works end-to-end",
+        "Test functional analysis on simple system",
+        "Verify tool/workflow alignment on greenfield project",
+        "Ensure no critical friction points in happy path"
+      ],
+      "known_issues": [],
+      "enabled": true,
+      "priority": "high",
+      "category": "greenfield_simple"
+    },
+    {
+      "test_id": "TC-002",
+      "name": "architecture_drift_sync",
+      "description": "E-commerce order system with injected test failures causing architecture drift - validates D-06.5 synchronization loop and service contracts",
+      "complexity": "medium",
+      "directory": "tests/execution_audit/architecture_drift_sync",
+      "requirements_file": "requirements.md",
+      "expected_workflow_path": [
+        "00a-basic_setup",
+        "01d-functional_analysis",
+        "01c-top_down_design",
+        "02-artifacts_visualization",
+        "03a-development_implementation",
+        "03b-development_validation",
+        "D-06.5-architecture-sync-loop"
+      ],
+      "expected_duration_minutes": 110,
+      "expected_functions_initial": 5,
+      "expected_functions_final": 8,
+      "expected_services": 2,
+      "expected_interfaces_initial": 1,
+      "expected_interfaces_final": 2,
+      "drift_injection": {
+        "test_failures": 3,
+        "functions_added": 3,
+        "interfaces_added": 1,
+        "expected_similarity_before_sync": 0.70,
+        "expected_similarity_after_sync": 0.95
+      },
+      "test_objectives": [
+        "Validate Agent B detects architecture drift at D-06 (similarity < 0.95)",
+        "Verify Agent B triggers D-06.5 Architecture Synchronization Loop (not skips to D-07)",
+        "Ensure Agent B generates service contracts (D-02-A05) and validates them throughout development",
+        "Verify service contracts warn Agent B before making breaking changes to functions/interfaces",
+        "Validate Agent B uses version_architecture.py tool (not manual versioning)",
+        "Ensure Agent B classifies root causes of drift (operational_reality, requirements_creep, technical_constraints)",
+        "Verify Agent B updates functional architecture, service architecture, and interface registry consistently",
+        "Validate Agent B iterates D-06.5 loop until similarity >= 0.95",
+        "Ensure version history documents WHY changes were made (not just WHAT changed)",
+        "Verify final D-Post-A02 quality gate passes with synchronized architecture"
+      ],
+      "validation_checkpoints": [
+        "Checkpoint 1: Drift detected at D-06 (similarity < 0.95)",
+        "Checkpoint 2: D-06.5 synchronization loop triggered",
+        "Checkpoint 3: Root causes classified for all changes",
+        "Checkpoint 4: Functional architecture updated (v1.1.0)",
+        "Checkpoint 5: Service architectures updated (OrderService, PaymentService)",
+        "Checkpoint 6: version_architecture.py tool used",
+        "Checkpoint 7: Similarity re-validated (>= 0.95)",
+        "Checkpoint 8: D-Post-A02 final gate passed",
+        "Checkpoint 9: Service contracts generated and validated",
+        "Checkpoint 10: Contract warnings triggered before breaking changes"
+      ],
+      "service_contracts_validation": {
+        "contracts_generated": true,
+        "contracts_location": "services/*/SERVICE_CONTRACT.json",
+        "validates_functions": true,
+        "validates_interfaces": true,
+        "llm_warnings_present": true,
+        "contract_validation_steps": [
+          "D-02-A05: Generate contracts after domain model",
+          "D-04-A06.5: Validate contracts after integration surfaces",
+          "D-06-A02.5: Validate contracts against as-built",
+          "D-06.5-A04.5: Regenerate contracts when architecture changes",
+          "D-07-A07.5: Final pre-deployment contract validation"
+        ]
+      },
+      "known_issues": [],
+      "enabled": true,
+      "priority": "critical",
+      "category": "development_validation",
+      "validates_features": [
+        "v3.15.0: Architecture Synchronization Loop (D-06.5)",
+        "v3.17.0: Service Interface Contracts (proactive drift prevention)",
+        "version_architecture.py tool",
+        "Semantic versioning with root cause classification",
+        "Iterative synchronization until similarity threshold met"
+      ]
+    },
+    {
+      "test_id": "TC-003",
+      "name": "artifact_cleanup_removals",
+      "description": "E-commerce payment service with function removals (redundant, superseded by external) - validates D-06.5-A02.5 & D-06.5-A03.5 artifact cleanup",
+      "complexity": "medium",
+      "directory": "tests/execution_audit/artifact_cleanup_removals",
+      "requirements_file": "requirements.md",
+      "expected_workflow_path": [
+        "00a-basic_setup",
+        "01d-functional_analysis",
+        "01c-top_down_design",
+        "02-artifacts_visualization",
+        "03a-development_implementation",
+        "03b-development_validation",
+        "D-06.5-A02.5-identify-obsolete",
+        "D-06.5-A03.5-remove-obsolete"
+      ],
+      "expected_duration_minutes": 110,
+      "expected_functions_initial": 6,
+      "expected_functions_final": 4,
+      "expected_services": 1,
+      "expected_interfaces_initial": 1,
+      "expected_interfaces_final": 0,
+      "removal_scenario": {
+        "functions_removed": 2,
+        "interfaces_removed": 1,
+        "services_removed": 1,
+        "expected_similarity_before_cleanup": 0.70,
+        "expected_similarity_after_cleanup": 1.00
+      },
+      "test_objectives": [
+        "Validate Agent B detects REMOVALS at D-06 (architecture > implementation)",
+        "Verify Agent B executes D-06.5-A02.5 (Identify Obsolete Artifacts)",
+        "Verify Agent B executes D-06.5-A03.5 (Remove Obsolete Artifacts)",
+        "Ensure Agent B removes obsolete functions from architecture files",
+        "Ensure Agent B updates service contracts (6→4 functions)",
+        "Ensure Agent B deletes obsolete ICD files",
+        "Ensure Agent B cleans up tests referencing removed functions",
+        "Ensure Agent B updates docker-compose.yml (removes TaxService)",
+        "Ensure Agent B provides docker cleanup commands (USER PAIN POINT)",
+        "Verify version history documents removals with rationale (not just additions)",
+        "Validate similarity >= 0.95 after cleanup (ideally 1.00)"
+      ],
+      "validation_checkpoints": [
+        "Checkpoint 1: Drift detected (removals)",
+        "Checkpoint 2: Obsolete artifacts identified (D-06.5-A02.5)",
+        "Checkpoint 3: Architecture cleaned (P0)",
+        "Checkpoint 4: Contracts cleaned (P0)",
+        "Checkpoint 5: Tests cleaned (P1)",
+        "Checkpoint 6: Docker cleaned (P1) - USER PAIN POINT",
+        "Checkpoint 7: Docs cleaned (P2)",
+        "Checkpoint 8: Versioning with removals documented",
+        "Checkpoint 9: Cleanup report generated",
+        "Checkpoint 10: Final sync verified (similarity >= 0.95)"
+      ],
+      "user_pain_points_addressed": [
+        "Tests still try to use old/obsolete methods",
+        "Container running old image - need to recreate it",
+        "Documentation references removed functionality",
+        "Architecture files have obsolete entries"
+      ],
+      "known_issues": [],
+      "enabled": true,
+      "priority": "critical",
+      "category": "development_validation",
+      "validates_features": [
+        "v3.18.1: D-06.5-A02.5 (Identify Obsolete Artifacts)",
+        "v3.18.1: D-06.5-A03.5 (Remove Obsolete Artifacts)",
+        "v3.18.1: Versioning with removal rationale",
+        "v3.18.1: Docker cleanup commands",
+        "Artifact cleanup for test files",
+        "Artifact cleanup for deployment configs"
+      ]
+    }
+  ],
+  "test_categories": {
+    "greenfield_simple": {
+      "description": "Simple greenfield projects (1-3 services, <10 functions)",
+      "purpose": "Validate core workflow functionality without complexity",
+      "test_count": 1
+    },
+    "greenfield_complex": {
+      "description": "Complex greenfield projects (5+ services, 20+ functions)",
+      "purpose": "Validate workflow scalability and gap detection",
+      "test_count": 0
+    },
+    "bottom_up": {
+      "description": "Bottom-up integration from existing code",
+      "purpose": "Validate bottom-up workflow and code analysis",
+      "test_count": 0
+    },
+    "feature_update": {
+      "description": "Feature updates to existing systems",
+      "purpose": "Validate feature update workflow and delta analysis",
+      "test_count": 0
+    },
+    "development_validation": {
+      "description": "Development and validation phase testing with drift scenarios",
+      "purpose": "Validate architecture synchronization, service contracts, and quality gates",
+      "test_count": 1
+    }
+  },
+  "benchmarking": {
+    "baseline_run": {
+      "date": "2025-11-19",
+      "version": "v3.17.0",
+      "results": {
+        "TC-001": {
+          "friction_overhead_percent": 33,
+          "deviations_required": 3,
+          "friction_points": 7,
+          "total_time_minutes": 101,
+          "productive_time_minutes": 61,
+          "wasted_time_minutes": 20,
+          "manual_workaround_minutes": 13
+        },
+        "TC-002": {
+          "note": "First run will establish baseline - no prior metrics",
+          "expected_total_time_minutes": 110,
+          "expected_drift_iterations": 1,
+          "expected_similarity_before_sync": 0.70,
+          "expected_similarity_after_sync": 0.95,
+          "validates_d_06_5_loop": true,
+          "validates_service_contracts": true
+        }
+      }
+    },
+    "target_metrics": {
+      "friction_overhead_percent": 5,
+      "deviations_required": 0,
+      "friction_points": 2,
+      "description": "Target state after all P0/P1/P2 fixes applied"
+    }
+  },
+  "future_test_cases": [
+    {
+      "name": "simple_rest_api",
+      "description": "Simple REST API (3-5 services)",
+      "status": "planned",
+      "priority": "high"
+    },
+    {
+      "name": "microservices_complex",
+      "description": "Complex microservices (8+ services, event-driven)",
+      "status": "planned",
+      "priority": "medium"
+    },
+    {
+      "name": "bottom_up_flask_app",
+      "description": "Existing Flask application (bottom-up)",
+      "status": "planned",
+      "priority": "high"
+    },
+    {
+      "name": "feature_add_authentication",
+      "description": "Add authentication to existing system",
+      "status": "planned",
+      "priority": "medium"
+    }
+  ]
+}

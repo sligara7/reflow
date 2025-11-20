@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "service_name": "PaymentService",
+    "version": "1.1.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Payment processing service handling payments, refunds, and confirmations - Updated after drift resolution",
+    "framework": "UAF 1.2",
+    "synchronized_with_implementation": true,
+    "synchronization_date": "2025-11-19"
+  },
+  "allocated_functions": [
+    {
+      "function_id": "F-004",
+      "function_name": "ProcessPayment",
+      "description": "Process payment for an order",
+      "inputs": ["order_id", "payment_details"],
+      "outputs": ["payment_id", "payment_status"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "SendOrderConfirmation",
+      "description": "Send order confirmation to customer",
+      "inputs": ["order_id", "customer_email"],
+      "outputs": ["confirmation_status"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-006",
+      "function_name": "RefundPayment",
+      "description": "Process payment refund for cancelled order",
+      "inputs": ["payment_id", "amount"],
+      "outputs": ["refund_status", "refund_transaction_id"],
+      "dependencies": [],
+      "added_in_version": "1.1.0",
+      "reason": "TEST-001 fix - operational_reality"
+    },
+    {
+      "function_id": "F-007",
+      "function_name": "GetPaymentStatus",
+      "description": "Get payment status by payment ID",
+      "inputs": ["payment_id"],
+      "outputs": ["payment_id", "payment_status", "amount"],
+      "dependencies": [],
+      "added_in_version": "1.1.0",
+      "reason": "TEST-002 fix - requirements_creep"
+    }
+  ],
+  "interfaces": {
+    "provides": [
+      {
+        "interface_name": "payment_processing",
+        "operations": ["ProcessPayment"]
+      },
+      {
+        "interface_name": "payment_status_query",
+        "operations": ["GetPaymentStatus"],
+        "added_in_version": "1.1.0",
+        "reason": "TEST-002 fix - requirements_creep"
+      }
+    ],
+    "consumes": []
+  },
+  "data_stores": [
+    {
+      "store_name": "payments_db",
+      "type": "relational",
+      "purpose": "Store payment transactions"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial service architecture",
+      "rationale": "Baseline architecture for payment processing"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Added RefundPayment and GetPaymentStatus functions, added payment_status_query interface",
+      "rationale": "D-06.5 Architecture Synchronization - Aligned with implementation after test failures",
+      "drift_addressed": {
+        "new_functions": ["RefundPayment", "GetPaymentStatus"],
+        "new_interfaces": ["payment_status_query"],
+        "modified_functions": []
+      }
+    }
+  ]
+}

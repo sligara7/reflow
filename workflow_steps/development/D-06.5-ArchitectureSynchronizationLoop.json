@@ -200,6 +200,146 @@
       ]
     },
     {
+      "action_id": "D-06.5-A02.5",
+      "name": "Identify Obsolete Artifacts",
+      "description": "Identify functions, interfaces, and services that exist in DESIGNED architecture but NOT in AS-BUILT implementation (removals/obsolete artifacts)",
+      "new_in_version": "v3.18.1 - Artifact cleanup for removals",
+      "purpose": "Systematically identify what was removed from implementation so it can be cleaned up from architecture and related artifacts",
+      "rationale": "When testing reveals functions are not needed (redundant, wrong approach, superseded), they get removed from implementation but often remain in architecture docs, tests, and contracts. This creates confusion and technical debt.",
+      "inputs": [
+        "specs/machine/graphs/architecture_delta_designed_to_built_{date}.json (from D-06-A02)",
+        "specs/functional/functional_architecture.json (designed)",
+        "specs/functional/functional_architecture_as_built.json (as-built)",
+        "specs/machine/service_arch/*/service_architecture.json (designed)",
+        "specs/machine/interface_registry.json (designed)"
+      ],
+      "process": [
+        {
+          "step": "1. Identify removed functions",
+          "method": "Compare designed functional_architecture.json vs as-built",
+          "find": "Functions in designed architecture that are NOT in as-built implementation",
+          "output": "List of removed function IDs and names"
+        },
+        {
+          "step": "2. Identify removed interfaces",
+          "method": "Compare designed interface_registry.json vs as-built interfaces",
+          "find": "Interfaces in designed architecture that are NOT in as-built implementation",
+          "output": "List of removed interface names"
+        },
+        {
+          "step": "3. Identify removed services",
+          "method": "Compare designed service architectures vs as-built services",
+          "find": "Services in designed architecture that are NOT in as-built implementation",
+          "output": "List of removed service names"
+        },
+        {
+          "step": "4. Classify removal root causes",
+          "categories": {
+            "redundant_functionality": {
+              "description": "Function duplicates existing capability or is no longer needed",
+              "examples": [
+                "ValidatePaymentCard removed - payment provider API does validation",
+                "CacheUser removed - caching handled by infrastructure layer",
+                "LogEvent removed - consolidated into centralized logging service"
+              ],
+              "action": "Remove from architecture, document rationale"
+            },
+            "design_mistake": {
+              "description": "Function should not have been in original design",
+              "examples": [
+                "CalculateTax removed - tax calculation is external service's responsibility",
+                "GenerateReport removed - not part of core domain",
+                "SendEmail removed - cross-cutting concern, moved to separate service"
+              ],
+              "action": "Remove from architecture, document as design correction"
+            },
+            "superseded_by_external": {
+              "description": "External service now provides this capability",
+              "examples": [
+                "AuthenticateUser removed - using Auth0 instead",
+                "ProcessPayment removed - using Stripe API",
+                "SendSMS removed - using Twilio"
+              ],
+              "action": "Remove from architecture, document external dependency"
+            },
+            "requirements_changed": {
+              "description": "Stakeholder no longer needs this feature",
+              "examples": [
+                "ExportToPDF removed - feature cancelled by stakeholder",
+                "SocialShare removed - not in MVP scope anymore",
+                "AdvancedSearch removed - postponed to v2"
+              ],
+              "action": "Remove from architecture, document requirements change"
+            },
+            "consolidated_elsewhere": {
+              "description": "Functionality merged into other function/service",
+              "examples": [
+                "ValidateEmail removed - merged into ValidateUser",
+                "FormatAddress removed - merged into GetUserProfile",
+                "ParseJSON removed - merged into DeserializeRequest"
+              ],
+              "action": "Remove from architecture, document consolidation"
+            }
+          }
+        },
+        {
+          "step": "5. Identify affected artifacts",
+          "search_for_references_in": [
+            "Tests (tests/**/*.py, tests/**/*.ts, tests/**/*.java, etc.)",
+            "Documentation (docs/**/*.md)",
+            "Service contracts (services/*/SERVICE_CONTRACT.json)",
+            "Interface contracts (specs/machine/interfaces/*_icd.json)",
+            "Mermaid diagrams (specs/human/visualizations/*.mmd)",
+            "Human documentation (docs/ARCHITECTURE_CONTEXT_SUMMARY.md)"
+          ],
+          "purpose": "Find all places that reference removed functions/interfaces/services"
+        }
+      ],
+      "output_file": "context/obsolete_artifacts_analysis.json",
+      "output_format": {
+        "removed_functions": [
+          {
+            "function_id": "F-005",
+            "function_name": "ValidatePaymentCard",
+            "service": "PaymentService",
+            "root_cause": "redundant_functionality",
+            "rationale": "Payment validation now handled by Stripe API",
+            "removed_in_implementation": true,
+            "still_in_architecture": true,
+            "affected_artifacts": {
+              "tests": ["tests/test_payment_service.py::test_validate_payment_card"],
+              "docs": ["docs/PAYMENT_PROCESSING.md"],
+              "contracts": ["services/PaymentService/SERVICE_CONTRACT.json"],
+              "icds": []
+            }
+          }
+        ],
+        "removed_interfaces": [
+          {
+            "interface_name": "payment_validation",
+            "provider": "PaymentService",
+            "consumers": ["OrderService"],
+            "root_cause": "superseded_by_external",
+            "rationale": "Stripe API handles validation",
+            "affected_artifacts": {
+              "interface_registry": ["specs/machine/interface_registry.json"],
+              "icds": ["specs/machine/interfaces/payment_validation_icd.json"],
+              "contracts": ["services/PaymentService/SERVICE_CONTRACT.json", "services/OrderService/SERVICE_CONTRACT.json"]
+            }
+          }
+        ],
+        "removed_services": [],
+        "cleanup_required": true
+      },
+      "llm_instructions": [
+        "Compare designed vs as-built architectures systematically",
+        "For each removed item, determine WHY it was removed (root cause)",
+        "Search codebase for references to removed items (use Grep tool)",
+        "Document all affected artifacts that need cleanup",
+        "Prioritize cleanup: architecture files (P0), contracts (P0), tests (P1), docs (P2)"
+      ]
+    },
+    {
       "action_id": "D-06.5-A03",
       "name": "Architecture Update Decision (with Workflow Branching)",
       "description": "Decide whether to update architecture, fix implementation, OR re-run upstream workflows based on drift magnitude and root cause",
@@ -405,6 +545,290 @@
           }
         ]
       }
+    },
+    {
+      "action_id": "D-06.5-A03.5",
+      "name": "Remove Obsolete Artifacts",
+      "description": "Systematically remove or update all artifacts that reference removed functions/interfaces/services",
+      "new_in_version": "v3.18.1 - Artifact cleanup for removals",
+      "purpose": "Clean up architecture files, tests, documentation, containers, and deployment configs to remove references to obsolete functionality",
+      "rationale": "Leaving obsolete artifacts creates confusion, technical debt, and operational issues (old container images running, tests failing, docs lying about capabilities)",
+      "conditional": "Only if D-06.5-A02.5 identified obsolete artifacts (cleanup_required: true)",
+      "inputs": [
+        "context/obsolete_artifacts_analysis.json (from D-06.5-A02.5)"
+      ],
+      "cleanup_categories": {
+        "P0_critical_cleanup": {
+          "description": "Must be cleaned up immediately - causes blocking issues",
+          "artifacts": [
+            {
+              "artifact": "Architecture files",
+              "files": [
+                "specs/functional/functional_architecture.json",
+                "specs/machine/service_arch/*/service_architecture.json",
+                "specs/machine/interface_registry.json"
+              ],
+              "action": "Remove obsolete functions, services, interfaces",
+              "method": "Use Edit tool to remove entries, or regenerate from scratch",
+              "blocking": true
+            },
+            {
+              "artifact": "Service contracts",
+              "files": ["services/*/SERVICE_CONTRACT.json"],
+              "action": "Remove obsolete functions/interfaces from contracted lists",
+              "method": "Use Edit tool or regenerate using generate_service_contracts.py",
+              "blocking": true
+            },
+            {
+              "artifact": "Interface contracts (ICDs)",
+              "files": ["specs/machine/interfaces/*_icd.json"],
+              "action": "Remove obsolete interface ICDs",
+              "method": "Delete ICD files for removed interfaces",
+              "blocking": true
+            }
+          ]
+        },
+        "P1_high_priority_cleanup": {
+          "description": "Should be cleaned up soon - causes confusion/failures",
+          "artifacts": [
+            {
+              "artifact": "Tests",
+              "files": ["tests/**/*.py", "tests/**/*.ts", "tests/**/*.java"],
+              "action": "Remove or update tests that reference removed functions/services",
+              "method": "Search for references using Grep, delete or update test files",
+              "options": [
+                "Delete entire test file if testing removed function",
+                "Update test to remove references to removed function",
+                "Comment out test with explanation if temporarily keeping"
+              ]
+            },
+            {
+              "artifact": "Docker Compose files",
+              "files": ["docker-compose.yml", "docker-compose.*.yml"],
+              "action": "Remove services from compose files if service removed",
+              "method": "Use Edit tool to remove service definitions",
+              "critical_note": "USER FEEDBACK: 'The container is running an old image! I need to recreate it.' - Must update compose files to prevent old images running",
+              "cleanup_steps": [
+                "Remove service definition from docker-compose.yml",
+                "Remove volume mounts for removed service",
+                "Remove environment variables for removed service",
+                "Remove networks specific to removed service (if applicable)",
+                "Update depends_on in other services if they depended on removed service"
+              ]
+            },
+            {
+              "artifact": "Dockerfiles",
+              "files": ["services/*/Dockerfile", "Dockerfile.*"],
+              "action": "Delete Dockerfiles for removed services",
+              "method": "Delete file if entire service removed"
+            },
+            {
+              "artifact": "Build scripts",
+              "files": ["build.sh", "Makefile", ".github/workflows/*.yml", "scripts/build_*.sh"],
+              "action": "Remove build steps for removed services",
+              "method": "Use Edit tool to remove build commands, or Grep to find references"
+            },
+            {
+              "artifact": "Container images",
+              "action": "Remove old container images to force rebuild",
+              "method": "Document docker commands to clean up",
+              "commands": [
+                "docker-compose down (stop containers)",
+                "docker-compose rm -f {service} (remove stopped containers)",
+                "docker rmi {image_name} (remove old images)",
+                "docker-compose build --no-cache {service} (rebuild fresh)",
+                "docker-compose up -d (start with new images)"
+              ],
+              "critical_note": "USER FEEDBACK: Old images cause confusion - clean up to ensure new code runs"
+            }
+          ]
+        },
+        "P2_documentation_cleanup": {
+          "description": "Should be cleaned up for clarity - causes confusion",
+          "artifacts": [
+            {
+              "artifact": "Markdown documentation",
+              "files": ["docs/**/*.md", "README.md"],
+              "action": "Remove or update documentation mentioning removed functionality",
+              "method": "Search for references using Grep, update or delete sections",
+              "approach": "Add deprecation notice or remove section entirely"
+            },
+            {
+              "artifact": "Mermaid diagrams",
+              "files": ["specs/human/visualizations/*.mmd"],
+              "action": "Regenerate diagrams without removed components",
+              "method": "Use generate_mermaid_diagrams.py to regenerate",
+              "note": "Will be regenerated in D-06.5-A06 anyway"
+            },
+            {
+              "artifact": "Architecture summary docs",
+              "files": ["docs/ARCHITECTURE_CONTEXT_SUMMARY.md"],
+              "action": "Regenerate architecture documentation",
+              "method": "Use generate_human_documentation.py to regenerate",
+              "note": "Will be regenerated in D-06.5-A06 anyway"
+            }
+          ]
+        },
+        "P3_optional_cleanup": {
+          "description": "Nice to have - can be cleaned up later",
+          "artifacts": [
+            {
+              "artifact": "Implementation code",
+              "files": ["services/*/src/*.py", "services/*/src/*.ts"],
+              "action": "OPTIONAL - Remove obsolete function implementations or mark as deprecated",
+              "method": "Use Edit tool to remove or add @deprecated decorator",
+              "note": "Often implementation is already removed (that's why it's obsolete). If still present, mark as deprecated or remove.",
+              "options": [
+                "Remove function entirely",
+                "Add @deprecated decorator with removal date",
+                "Add comment explaining why function is obsolete"
+              ]
+            },
+            {
+              "artifact": "Migration scripts",
+              "files": ["migrations/*.sql", "alembic/versions/*.py"],
+              "action": "OPTIONAL - Document that migrations reference removed functionality",
+              "method": "Add comment to migration file",
+              "note": "Don't delete migrations (historical record), just document"
+            }
+          ]
+        }
+      },
+      "cleanup_process": [
+        {
+          "step": "1. Load obsolete artifacts analysis",
+          "file": "context/obsolete_artifacts_analysis.json",
+          "extract": "List of removed functions, interfaces, services"
+        },
+        {
+          "step": "2. P0 Cleanup - Architecture files",
+          "actions": [
+            "Remove obsolete functions from functional_architecture.json",
+            "Remove obsolete services from service architectures",
+            "Remove obsolete interfaces from interface_registry.json",
+            "Update service contracts to remove obsolete functions/interfaces",
+            "Delete obsolete ICD files"
+          ],
+          "method": "Use Edit tool for JSON updates, or regenerate from scratch",
+          "verify": "Run validate_architecture.py to ensure no orphaned references"
+        },
+        {
+          "step": "3. P1 Cleanup - Tests and deployment",
+          "actions": [
+            "Search for test files referencing removed functions (use Grep)",
+            "Delete or update test files",
+            "Remove services from docker-compose.yml",
+            "Remove Dockerfiles for removed services",
+            "Update build scripts to skip removed services",
+            "Document docker cleanup commands for old images"
+          ],
+          "method": "Use Grep to find references, Edit to remove, or delete files",
+          "critical": "USER FEEDBACK - Container cleanup is critical to prevent old images running"
+        },
+        {
+          "step": "4. P2 Cleanup - Documentation",
+          "actions": [
+            "Search for documentation referencing removed functionality (use Grep)",
+            "Update or remove documentation sections",
+            "Mark diagrams for regeneration (will happen in D-06.5-A06)"
+          ],
+          "method": "Use Grep + Edit, or regenerate docs"
+        },
+        {
+          "step": "5. Generate cleanup report",
+          "output": "context/obsolete_artifacts_cleanup_report.json",
+          "include": [
+            "What was cleaned up (files modified/deleted)",
+            "What still needs manual review",
+            "Docker commands to run for container cleanup",
+            "Test files that need updating",
+            "Documentation that needs review"
+          ]
+        }
+      ],
+      "docker_cleanup_commands": {
+        "purpose": "USER FEEDBACK: Old container images cause issues - provide clear cleanup commands",
+        "commands": [
+          {
+            "command": "docker-compose down",
+            "description": "Stop all containers",
+            "when": "Before removing services"
+          },
+          {
+            "command": "docker-compose rm -f {removed_service}",
+            "description": "Remove stopped containers for removed service",
+            "when": "After stopping containers"
+          },
+          {
+            "command": "docker rmi $(docker images -q {removed_service_image})",
+            "description": "Remove old images for removed service",
+            "when": "After removing containers",
+            "note": "Force rebuild by removing cached images"
+          },
+          {
+            "command": "docker system prune -a",
+            "description": "OPTIONAL: Remove all unused images, containers, networks",
+            "when": "If you want comprehensive cleanup",
+            "warning": "This removes ALL unused images, not just removed service"
+          },
+          {
+            "command": "docker-compose build --no-cache",
+            "description": "Rebuild all services from scratch",
+            "when": "After cleanup, before starting",
+            "note": "Ensures fresh images, no cache reuse"
+          },
+          {
+            "command": "docker-compose up -d",
+            "description": "Start containers with fresh images",
+            "when": "After rebuild"
+          }
+        ],
+        "llm_instructions": "Include these commands in cleanup report so user can run them"
+      },
+      "output_file": "context/obsolete_artifacts_cleanup_report.json",
+      "output_format": {
+        "cleanup_summary": {
+          "removed_from_architecture": ["F-005 (ValidatePaymentCard)"],
+          "removed_from_contracts": ["services/PaymentService/SERVICE_CONTRACT.json"],
+          "tests_deleted": ["tests/test_payment_service.py::test_validate_payment_card"],
+          "tests_updated": ["tests/test_order_service.py::test_place_order"],
+          "docker_compose_updated": true,
+          "dockerfiles_deleted": [],
+          "docs_updated": ["docs/PAYMENT_PROCESSING.md"]
+        },
+        "manual_review_needed": [
+          {
+            "file": "tests/integration/test_payment_flow.py",
+            "reason": "References removed function indirectly - review to determine if test still valid",
+            "line_numbers": [45, 67]
+          }
+        ],
+        "docker_cleanup_commands": [
+          "docker-compose down",
+          "docker rmi payment_service:latest",
+          "docker-compose build --no-cache",
+          "docker-compose up -d"
+        ]
+      },
+      "llm_instructions": [
+        "Work through P0, P1, P2 priorities in order",
+        "For P0 (architecture): Must complete before proceeding",
+        "For P1 (tests/docker): Best effort - document if manual review needed",
+        "For P2 (docs): Can be handled by regeneration in D-06.5-A06",
+        "CRITICAL: Update docker-compose.yml to remove obsolete services (USER FEEDBACK)",
+        "CRITICAL: Provide docker cleanup commands in report (USER FEEDBACK)",
+        "Use Grep tool extensively to find references",
+        "Document anything requiring manual review",
+        "Create comprehensive cleanup report for user"
+      ],
+      "blocking": true,
+      "success_criteria": [
+        "All obsolete entries removed from architecture files",
+        "All obsolete entries removed from service contracts",
+        "Obsolete ICDs deleted",
+        "Docker-compose.yml updated (if services removed)",
+        "Cleanup report generated with docker commands"
+      ]
     },
     {
       "action_id": "D-06.5-A04",
@@ -689,10 +1113,12 @@
   ],
   "outputs": [
     "context/architecture_drift_root_cause_analysis.json (root cause classification)",
+    "context/obsolete_artifacts_analysis.json (NEW v3.18.1 - analysis of removed artifacts)",
     "context/architecture_update_decision.json (decision record)",
-    "specs/machine/architecture_version_history.json (complete version history)",
+    "context/obsolete_artifacts_cleanup_report.json (NEW v3.18.1 - cleanup summary with docker commands)",
+    "specs/machine/architecture_version_history.json (complete version history including removals)",
     "Versioned architecture files (service_architecture_v{version}.json, etc.)",
-    "Updated architecture files (current version)",
+    "Updated architecture files (current version, with removals applied)",
     "Regenerated artifacts (graphs, diagrams, docs)",
     "docs/ARCHITECTURE_SYNCHRONIZATION_REPORT.md (synchronization report)",
     "context/architecture_synchronization_signoff.json (signoff for D-Post-A02)"

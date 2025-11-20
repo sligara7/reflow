@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "framework": "UAF 1.2"
+  },
+  "services": [
+    {
+      "service_name": "OrderService",
+      "functions": ["CreateOrder", "GetOrderStatus", "CancelOrder"]
+    },
+    {
+      "service_name": "PaymentService",
+      "functions": ["ProcessPayment", "SendOrderConfirmation"]
+    }
+  ],
+  "interfaces": [
+    {
+      "interface_name": "payment_processing",
+      "provider": "PaymentService",
+      "consumer": "OrderService"
+    }
+  ]
+}

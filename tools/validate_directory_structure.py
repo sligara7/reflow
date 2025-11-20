@@ -466,12 +466,17 @@ def main():
         if args.auto_clean:
             print("\n🔄 Executing automatic cleanup...")
             executed_actions, failed_actions = execute_cleanup(system_path, cleanup_plan, auto_confirm=True)
-        else:
+        elif sys.stdin.isatty():
+            # Only prompt if running in interactive mode (stdin is a TTY)
             response = input("\nExecute cleanup interactively? [y/N]: ")
             if response.lower() == 'y':
                 executed_actions, failed_actions = execute_cleanup(system_path, cleanup_plan, auto_confirm=False)
             else:
                 executed_actions, failed_actions = [], []
+        else:
+            # Non-interactive mode (CI/CD, piped input, etc.) - skip cleanup by default
+            print("\n⚠️  Non-interactive environment detected. Skipping cleanup (use --auto-clean to enable).")
+            executed_actions, failed_actions = [], []
         
         if executed_actions or failed_actions:
             print(f"\n📋 Cleanup Results:")

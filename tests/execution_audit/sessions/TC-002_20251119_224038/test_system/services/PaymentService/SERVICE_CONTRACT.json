@@ -1,0 +1,94 @@
+{
+  "service_name": "PaymentService",
+  "contract_version": "1.1.0",
+  "contract_date": "2025-11-19",
+  "regenerated_at": "D-06.5-A04.5",
+  "architecture_reference": {
+    "description": "Pointer to the authoritative system architecture that defines this service",
+    "service_architecture_file": "specs/machine/service_arch/PaymentService/service_architecture_v1.1.0.json",
+    "graph_node_id": "PaymentService",
+    "graph_file": "specs/machine/graphs/system_of_systems_graph.json",
+    "last_architecture_sync": "2025-11-19",
+    "architecture_version": "1.1.0"
+  },
+  "contracted_functions": {
+    "description": "Functions this service MUST implement (from functional architecture)",
+    "functions": [
+      {
+        "function_id": "F-004",
+        "function_name": "ProcessPayment",
+        "description": "Process payment for an order",
+        "source": "Derived from service_architecture.json"
+      },
+      {
+        "function_id": "F-005",
+        "function_name": "SendOrderConfirmation",
+        "description": "Send order confirmation to customer",
+        "source": "Derived from service_architecture.json"
+      },
+      {
+        "function_id": "F-006",
+        "function_name": "RefundPayment",
+        "description": "Process payment refund for cancelled order",
+        "source": "Derived from service_architecture.json",
+        "added_in_version": "1.1.0"
+      },
+      {
+        "function_id": "F-007",
+        "function_name": "GetPaymentStatus",
+        "description": "Get payment status by payment ID",
+        "source": "Derived from service_architecture.json",
+        "added_in_version": "1.1.0"
+      }
+    ],
+    "warning": "DO NOT add, remove, or substantially modify these functions without updating the functional architecture (specs/machine/service_arch/) and regenerating the system of systems graph. Changes to contracted functions may break dependent services."
+  },
+  "contracted_interfaces": {
+    "description": "Interfaces this service MUST provide and consume",
+    "provides": [
+      {
+        "interface_id": "IFC-001",
+        "interface_name": "payment_processing",
+        "icd_file": "specs/machine/interfaces/payment_processing_icd.json",
+        "consumers": ["OrderService"],
+        "breaking_change_impact": "Modifying this interface affects 1 consumer service"
+      },
+      {
+        "interface_id": "IFC-002",
+        "interface_name": "payment_status_query",
+        "icd_file": "specs/machine/interfaces/payment_status_query_icd.json",
+        "consumers": ["OrderService"],
+        "breaking_change_impact": "Modifying this interface affects 1 consumer service",
+        "added_in_version": "1.1.0"
+      }
+    ],
+    "consumes": [],
+    "warning": "DO NOT modify provided interfaces without updating ICDs and notifying consumer services. DO NOT modify consumed interfaces - contact the provider service owner instead. All interface changes require re-running systems engineering workflows (01b or 01c)."
+  },
+  "llm_warnings": {
+    "before_modifying_functions": "⚠️  WARNING: This service has 4 contracted functions. Adding, removing, or substantially changing function behavior requires updating the functional architecture. Run workflow 01d-functional_analysis or 01b/01c to update architecture first, then regenerate this contract.",
+    "before_modifying_interfaces": "⚠️  WARNING: This service provides 2 interfaces consumed by 1 service. Interface changes are BREAKING changes. Update ICDs (specs/machine/interfaces/), notify consumers, and re-run systems engineering workflows before making changes.",
+    "before_adding_dependencies": "⚠️  WARNING: Adding new service dependencies (consuming new interfaces) changes the system architecture. Update the system of systems graph and interface registry before adding imports or API clients.",
+    "drift_detection": "If you see differences between this contract and the actual implementation, run D-06 (As-Built Architecture Generation) and D-06.5 (Architecture Synchronization Loop) to reconcile the drift."
+  },
+  "validation_status": {
+    "last_validated": "2025-11-19",
+    "validation_tool": "tools/validate_service_contracts.py",
+    "validation_result": "pending",
+    "deviations_detected": false,
+    "deviations": []
+  },
+  "contract_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "changes": "Initial contract generation"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "changes": "Added RefundPayment and GetPaymentStatus functions, added payment_status_query interface",
+      "reason": "D-06.5 architecture synchronization after drift resolution"
+    }
+  ]
+}

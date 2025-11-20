@@ -1,0 +1,481 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "97-GAN-inspired-test",
+    "name": "GAN-Inspired Execution Audit Test Workflow",
+    "version": "1.0.0",
+    "description": "Automated execution audit testing using GAN-inspired approach (Agent A observes Agent B) with automatic fix triggering",
+    "created": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "purpose": "Continuously test Reflow workflows for friction points, tool/workflow misalignments, and usability issues by having Agent B execute workflows while Agent A observes and documents issues",
+    "key_innovation": "Separates execution (Agent B - Generator) from evaluation (Agent A - Discriminator) to identify real-world friction points, then auto-triggers fixes via 98-reflow_feature_update if critical issues found",
+    "when_to_use": "Periodically (weekly/monthly) or before major releases to benchmark Reflow quality and identify regressions",
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/97-GAN-inspired-test.json on system /path/to/reflow",
+    "auto_chains_to": ["98-reflow_feature_update.json (if critical issues found)", "99-meta_analysis.json (after fixes)"]
+  },
+  "prerequisites": {
+    "required_conditions": [
+      "Reflow repository exists and is accessible",
+      "Test cases defined in tests/execution_audit/test_cases.json",
+      "Python 3.x installed",
+      "Sufficient disk space for test system outputs"
+    ],
+    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root) and spawns sub-agents for testing"
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Run all enabled test cases with full observation",
+      "first_step": "GAN-01"
+    },
+    "quick": {
+      "id": "quick",
+      "description": "Run only high-priority test cases",
+      "first_step": "GAN-01",
+      "filter": "priority=high"
+    },
+    "single_test": {
+      "id": "single_test",
+      "description": "Run a single test case by ID",
+      "first_step": "GAN-02",
+      "parameter": "test_id"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "GAN-01",
+      "name": "Setup & Test Case Discovery",
+      "description": "Load test case registry, prepare environment, set baseline metrics",
+      "phase": "setup",
+      "actions": [
+        {
+          "action_id": "GAN-01-A01",
+          "description": "Read test case registry",
+          "file": "tests/execution_audit/test_cases.json",
+          "purpose": "Load list of test cases to execute"
+        },
+        {
+          "action_id": "GAN-01-A02",
+          "description": "Filter test cases based on entry point",
+          "logic": {
+            "standard": "All enabled test cases",
+            "quick": "Only priority=high test cases",
+            "single_test": "Only specified test_id"
+          }
+        },
+        {
+          "action_id": "GAN-01-A03",
+          "description": "Create GAN test session directory",
+          "directory": "tests/execution_audit/sessions/{timestamp}/",
+          "purpose": "Store all test results, reports, and comparisons for this run"
+        },
+        {
+          "action_id": "GAN-01-A04",
+          "description": "Load previous baseline metrics (if available)",
+          "file": "tests/execution_audit/test_cases.json -> benchmarking.baseline_run",
+          "purpose": "Compare current run against previous runs to detect regressions"
+        },
+        {
+          "action_id": "GAN-01-A05",
+          "description": "Initialize GAN test report",
+          "creates": "tests/execution_audit/sessions/{timestamp}/GAN_TEST_REPORT.md",
+          "template": "templates/gan_test_report_template.md"
+        }
+      ],
+      "outputs": [
+        "List of test cases to execute",
+        "Session directory created",
+        "Baseline metrics loaded",
+        "GAN test report initialized"
+      ],
+      "typical_time": "2 minutes",
+      "next_step": "GAN-02"
+    },
+    {
+      "step_id": "GAN-02",
+      "name": "Agent B Execution (Generator)",
+      "description": "Spawn Agent B to execute Reflow workflows on each test case, following workflows strictly",
+      "phase": "execution",
+      "agent_role": "Agent B (Executor/Generator)",
+      "actions": [
+        {
+          "action_id": "GAN-02-A01",
+          "description": "FOR EACH test case in filtered list",
+          "loop": "test_cases",
+          "actions": [
+            {
+              "action_id": "GAN-02-A01.1",
+              "description": "Clean test case actual_outputs directory",
+              "command": "rm -rf {test_case.directory}/actual_outputs/* && mkdir -p {test_case.directory}/actual_outputs"
+            },
+            {
+              "action_id": "GAN-02-A01.2",
+              "description": "Spawn Agent B (Executor) via Task tool",
+              "tool": "Task tool with subagent_type='general-purpose'",
+              "agent_instructions": "You are Agent B (Executor) in a GAN-inspired execution audit. Execute Reflow workflows STRICTLY following workflow instructions. Report ALL deviations, confusion, friction points, and tool failures. DO NOT take shortcuts. Document EVERYTHING.",
+              "task": "Build system at {test_case.directory} following workflow path: {test_case.expected_workflow_path}",
+              "isolation": "Agent B does NOT have access to expected_outputs (blind execution)",
+              "output_capture": "Save Agent B's full transcript to tests/execution_audit/sessions/{timestamp}/{test_case.name}_agent_b_transcript.md"
+            },
+            {
+              "action_id": "GAN-02-A01.3",
+              "description": "Extract Agent B's execution report",
+              "reads": "Agent B should generate EXECUTION_AUDIT_REPORT.md in test case directory",
+              "validates": "Report contains: deviations, friction points, time metrics, recommendations"
+            },
+            {
+              "action_id": "GAN-02-A01.4",
+              "description": "Copy Agent B's report to session directory",
+              "command": "cp {test_case.directory}/EXECUTION_AUDIT_REPORT.md tests/execution_audit/sessions/{timestamp}/{test_case.name}_AGENT_B_REPORT.md"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        "Agent B execution transcripts for each test case",
+        "EXECUTION_AUDIT_REPORT.md for each test case",
+        "actual_outputs/ populated with generated artifacts"
+      ],
+      "typical_time": "30-120 minutes per test case (depends on complexity)",
+      "llm_agent_guidance": {
+        "spawning_agent_b": "Use Task tool to spawn separate agent instance. Provide STRICT instructions to follow workflows exactly and report all issues. Agent B should be 'blind' to expected outputs.",
+        "capturing_output": "Save Agent B's full conversation to transcript file for later analysis by Agent A",
+        "handling_failures": "If Agent B cannot complete workflow, capture the failure point and reason. This is valuable data."
+      },
+      "next_step": "GAN-03"
+    },
+    {
+      "step_id": "GAN-03",
+      "name": "Agent A Observation & Meta-Analysis (Discriminator)",
+      "description": "Agent A (you, the current agent) analyzes Agent B's execution, identifies patterns, root causes, and systemic issues",
+      "phase": "observation",
+      "agent_role": "Agent A (Observer/Discriminator)",
+      "actions": [
+        {
+          "action_id": "GAN-03-A01",
+          "description": "FOR EACH test case executed",
+          "loop": "test_cases",
+          "actions": [
+            {
+              "action_id": "GAN-03-A01.1",
+              "description": "Read Agent B's execution report",
+              "file": "tests/execution_audit/sessions/{timestamp}/{test_case.name}_AGENT_B_REPORT.md"
+            },
+            {
+              "action_id": "GAN-03-A01.2",
+              "description": "Read Agent B's transcript",
+              "file": "tests/execution_audit/sessions/{timestamp}/{test_case.name}_agent_b_transcript.md",
+              "purpose": "Understand HOW Agent B encountered issues, not just WHAT issues"
+            },
+            {
+              "action_id": "GAN-03-A01.3",
+              "description": "Categorize findings by type",
+              "categories": {
+                "tool_workflow_misalignment": "Tool output doesn't match workflow documentation",
+                "missing_documentation": "Required parameters or steps not documented",
+                "automation_incompatibility": "Tool requires human interaction, fails in automation",
+                "missing_tools": "Workflow references non-existent tools",
+                "ambiguous_instructions": "Workflow steps unclear or multiple interpretations",
+                "template_issues": "Template missing, broken, or doesn't match usage",
+                "path_resolution_issues": "Path conflicts or incorrect path assumptions"
+              }
+            },
+            {
+              "action_id": "GAN-03-A01.4",
+              "description": "Identify root causes (not just symptoms)",
+              "analysis": [
+                "Why did this issue occur? (technical root cause)",
+                "How did it manifest? (symptom)",
+                "How frequently does it occur? (every time, edge case, etc.)",
+                "What's the fix effort? (minutes, hours, days)"
+              ]
+            },
+            {
+              "action_id": "GAN-03-A01.5",
+              "description": "Prioritize issues (P0/P1/P2)",
+              "priority_criteria": {
+                "P0": "BLOCKING - Workflow cannot proceed without manual intervention or workaround",
+                "P1": "HIGH VALUE - Causes significant friction (5+ minutes wasted) or happens frequently",
+                "P2": "POLISH - Minor annoyance, low impact"
+              }
+            },
+            {
+              "action_id": "GAN-03-A01.6",
+              "description": "Generate Agent A meta-analysis report",
+              "creates": "tests/execution_audit/sessions/{timestamp}/{test_case.name}_AGENT_A_META_ANALYSIS.md",
+              "template": "templates/agent_a_meta_analysis_template.md",
+              "includes": [
+                "Agent B performance assessment",
+                "Root cause analysis of all issues",
+                "Issue categorization and prioritization",
+                "Pattern detection across test cases",
+                "Comparison to previous runs (regression detection)",
+                "Recommended fixes with estimated effort"
+              ]
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-03-A02",
+          "description": "Cross-test-case pattern analysis",
+          "purpose": "Identify systemic issues that appear across multiple test cases",
+          "analysis": [
+            "Which issues appear in multiple test cases? (systemic)",
+            "Which issues are test-case specific? (edge cases)",
+            "Are there common root causes?",
+            "Are there workflow-specific vs tool-specific issues?"
+          ]
+        }
+      ],
+      "outputs": [
+        "AGENT_A_META_ANALYSIS.md for each test case",
+        "Cross-test-case pattern analysis"
+      ],
+      "typical_time": "30-60 minutes total",
+      "next_step": "GAN-04"
+    },
+    {
+      "step_id": "GAN-04",
+      "name": "Results Aggregation & Benchmarking",
+      "description": "Compile all findings, calculate metrics, compare to baseline, generate comprehensive report",
+      "phase": "aggregation",
+      "actions": [
+        {
+          "action_id": "GAN-04-A01",
+          "description": "Calculate aggregate metrics across all test cases",
+          "metrics": {
+            "total_friction_points": "Sum of friction points across all test cases",
+            "total_deviations": "Sum of deviations required across all test cases",
+            "average_friction_overhead_percent": "Average % of time spent on friction vs productive work",
+            "p0_issues_count": "Number of P0 blocking issues",
+            "p1_issues_count": "Number of P1 high-value issues",
+            "p2_issues_count": "Number of P2 polish issues",
+            "total_test_time_minutes": "Total execution time across all test cases",
+            "successful_test_cases": "Number of test cases that completed successfully",
+            "failed_test_cases": "Number of test cases that could not complete"
+          }
+        },
+        {
+          "action_id": "GAN-04-A02",
+          "description": "Compare to baseline metrics",
+          "comparison": {
+            "friction_overhead_delta": "Current - Baseline friction %",
+            "deviations_delta": "Current - Baseline deviations",
+            "regression_detected": "friction_overhead_delta > 0 OR deviations_delta > 0",
+            "improvement_detected": "friction_overhead_delta < 0 OR deviations_delta < 0"
+          }
+        },
+        {
+          "action_id": "GAN-04-A03",
+          "description": "Generate comprehensive GAN test summary report",
+          "creates": "tests/execution_audit/sessions/{timestamp}/GAN_TEST_SUMMARY_REPORT.md",
+          "includes": [
+            "Executive summary (pass/fail, key findings)",
+            "Aggregate metrics with baseline comparison",
+            "Per-test-case results",
+            "All P0 issues (CRITICAL)",
+            "All P1 issues (HIGH VALUE)",
+            "Regression analysis (if baseline exists)",
+            "Recommended actions",
+            "Auto-trigger decision (98-reflow_feature_update needed?)"
+          ]
+        },
+        {
+          "action_id": "GAN-04-A04",
+          "description": "Update test_cases.json with new baseline (optional)",
+          "condition": "If this run is successful and improves on baseline",
+          "updates": "tests/execution_audit/test_cases.json -> benchmarking.latest_run"
+        }
+      ],
+      "outputs": [
+        "GAN_TEST_SUMMARY_REPORT.md",
+        "Aggregate metrics",
+        "Baseline comparison",
+        "Updated test_cases.json (if baseline update)"
+      ],
+      "typical_time": "10 minutes",
+      "next_step": "GAN-05"
+    },
+    {
+      "step_id": "GAN-05",
+      "name": "Decision Gate - Auto-Trigger Fixes",
+      "description": "Determine if critical issues require immediate fixes via 98-reflow_feature_update workflow",
+      "phase": "decision",
+      "decision_logic": {
+        "trigger_98_reflow_feature_update": {
+          "condition": "p0_issues_count > 0 OR (p1_issues_count > 3 AND friction_overhead > 15%)",
+          "rationale": "P0 issues are BLOCKING, or too many P1 issues with high friction",
+          "action": "Proceed to GAN-06 (auto-trigger 98)",
+          "user_notification": "⚠️  CRITICAL ISSUES DETECTED - Auto-triggering 98-reflow_feature_update workflow"
+        },
+        "no_trigger_needed": {
+          "condition": "p0_issues_count == 0 AND p1_issues_count <= 3 AND friction_overhead <= 15%",
+          "action": "Skip to GAN-Post (cleanup and report)",
+          "user_notification": "✅ No critical issues - Reflow quality acceptable"
+        }
+      },
+      "actions": [
+        {
+          "action_id": "GAN-05-A01",
+          "description": "Evaluate trigger conditions",
+          "reads": "GAN_TEST_SUMMARY_REPORT.md metrics"
+        },
+        {
+          "action_id": "GAN-05-A02",
+          "description": "Log decision and rationale",
+          "appends_to": "GAN_TEST_SUMMARY_REPORT.md",
+          "section": "Auto-Trigger Decision"
+        }
+      ],
+      "outputs": [
+        "Decision: trigger_98 or no_trigger",
+        "Rationale logged"
+      ],
+      "typical_time": "1 minute",
+      "next_step": "GAN-06 (if trigger_98) OR GAN-Post (if no_trigger)"
+    },
+    {
+      "step_id": "GAN-06",
+      "name": "Auto-Trigger 98-reflow_feature_update",
+      "description": "Automatically spawn 98-reflow_feature_update workflow to fix critical issues",
+      "phase": "auto_remediation",
+      "conditional": "Only if GAN-05 decision is trigger_98",
+      "actions": [
+        {
+          "action_id": "GAN-06-A01",
+          "description": "Prepare fix specification for workflow 98",
+          "creates": "tests/execution_audit/sessions/{timestamp}/FIX_SPECIFICATION.md",
+          "includes": [
+            "All P0 issues with root causes and recommended fixes",
+            "All P1 issues with estimated effort",
+            "Reference to GAN test session for context"
+          ]
+        },
+        {
+          "action_id": "GAN-06-A02",
+          "description": "Update working_memory.json for 98 workflow",
+          "updates": {
+            "current_workflow": "98-reflow_feature_update",
+            "current_step": "RFU-01",
+            "reflow_feature_description": "v3.X.X GAN Test Fixes - Fix P0/P1 issues discovered in GAN test run {timestamp}. Problem: [summary of P0 issues]. Solution: [summary of fixes]. Benefits: [expected friction reduction]",
+            "gan_test_session": "tests/execution_audit/sessions/{timestamp}/"
+          }
+        },
+        {
+          "action_id": "GAN-06-A03",
+          "description": "Hand off to 98-reflow_feature_update workflow",
+          "instruction": "User should now execute: Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow",
+          "note": "Workflow 98 will automatically trigger 99-meta_analysis when complete"
+        }
+      ],
+      "outputs": [
+        "FIX_SPECIFICATION.md",
+        "working_memory.json updated for 98 workflow",
+        "User instruction to execute workflow 98"
+      ],
+      "typical_time": "5 minutes",
+      "llm_agent_guidance": {
+        "auto_triggering": "Don't actually execute workflow 98 from within this workflow. Instead, provide clear instructions to the user to execute it. This maintains workflow boundaries and user control.",
+        "context_preservation": "Ensure working_memory.json contains reference to GAN test session so workflow 98 can access all context"
+      },
+      "next_step": "GAN-Post"
+    },
+    {
+      "step_id": "GAN-Post",
+      "name": "Cleanup & Reporting",
+      "description": "Final cleanup, generate user-facing summary, archive results",
+      "phase": "completion",
+      "actions": [
+        {
+          "action_id": "GAN-Post-A01",
+          "description": "Generate user-friendly summary",
+          "creates": "tests/execution_audit/sessions/{timestamp}/SUMMARY_FOR_USER.md",
+          "format": "Concise, actionable summary with key findings and next steps"
+        },
+        {
+          "action_id": "GAN-Post-A02",
+          "description": "Create symlink to latest session",
+          "command": "ln -sf tests/execution_audit/sessions/{timestamp} tests/execution_audit/latest"
+        },
+        {
+          "action_id": "GAN-Post-A03",
+          "description": "Print summary to console",
+          "outputs": [
+            "Test cases executed: {count}",
+            "Total friction overhead: {percent}%",
+            "P0 issues: {count}",
+            "P1 issues: {count}",
+            "Decision: {trigger_98 or no_trigger}",
+            "Full report: tests/execution_audit/latest/GAN_TEST_SUMMARY_REPORT.md"
+          ]
+        }
+      ],
+      "outputs": [
+        "SUMMARY_FOR_USER.md",
+        "Symlink to latest session",
+        "Console summary"
+      ],
+      "typical_time": "2 minutes",
+      "workflow_complete": true
+    }
+  ],
+  "quality_gates": [
+    {
+      "gate_id": "G-GAN-02",
+      "name": "Agent B Execution Complete",
+      "checks": [
+        "All enabled test cases executed by Agent B",
+        "Agent B reports generated for each test case",
+        "actual_outputs populated"
+      ],
+      "blocking": true,
+      "step": "GAN-02"
+    },
+    {
+      "gate_id": "G-GAN-03",
+      "name": "Agent A Meta-Analysis Complete",
+      "checks": [
+        "All Agent B reports analyzed",
+        "Issues categorized and prioritized",
+        "Root causes identified",
+        "Agent A meta-analysis reports generated"
+      ],
+      "blocking": true,
+      "step": "GAN-03"
+    },
+    {
+      "gate_id": "G-GAN-04",
+      "name": "Benchmarking Complete",
+      "checks": [
+        "Aggregate metrics calculated",
+        "Baseline comparison performed (if baseline exists)",
+        "GAN_TEST_SUMMARY_REPORT.md generated"
+      ],
+      "blocking": true,
+      "step": "GAN-04"
+    }
+  ],
+  "success_criteria": {
+    "workflow_execution": "All test cases executed without workflow crashes",
+    "agent_b_reporting": "Agent B generates execution reports for all test cases",
+    "agent_a_analysis": "Agent A generates meta-analysis for all test cases",
+    "benchmarking": "Metrics calculated and compared to baseline",
+    "decision_made": "Clear decision on whether to trigger workflow 98"
+  },
+  "typical_time": "1-4 hours (depends on number and complexity of test cases)",
+  "llm_agent_guidance": {
+    "workflow_purpose": "This workflow is Reflow testing itself - a continuous improvement loop. Agent B executes workflows as a user would, Agent A (you) observes and identifies issues.",
+    "agent_separation": "CRITICAL: Agent B must be spawned as separate agent via Task tool. Agent B should NOT see expected outputs (blind execution). Agent A analyzes Agent B's execution afterward.",
+    "test_case_execution": "For each test case, Agent B should start fresh, follow workflows strictly, and report everything. Don't skip test cases that failed before - failures are valuable data.",
+    "issue_prioritization": "Focus on P0 (BLOCKING) and P1 (HIGH VALUE) issues. P2 issues are nice-to-have but don't trigger auto-fixes.",
+    "benchmarking": "Always compare to baseline if available. Regression detection is critical - if new version performs worse than baseline, that's a P0 issue.",
+    "auto_trigger_discipline": "Only trigger workflow 98 for genuine critical issues. Don't auto-trigger for minor polish items."
+  },
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "changes": "Initial creation of GAN-inspired test workflow",
+      "author": "Claude Sonnet 4.5 with user collaboration"
+    }
+  ]
+}

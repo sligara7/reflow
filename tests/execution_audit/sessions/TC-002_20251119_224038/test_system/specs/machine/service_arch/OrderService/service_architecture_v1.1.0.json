@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "service_name": "OrderService",
+    "version": "1.1.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Order management service handling order creation, status, and cancellation - Updated after drift resolution",
+    "framework": "UAF 1.2",
+    "synchronized_with_implementation": true,
+    "synchronization_date": "2025-11-19"
+  },
+  "allocated_functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "CreateOrder",
+      "description": "Create a new order with customer and product information",
+      "inputs": ["customer_id", "product_list", "shipping_address"],
+      "outputs": ["order_id", "order_status"],
+      "dependencies": ["ValidateOrderUniqueness", "ProcessPayment", "SendOrderConfirmation"],
+      "changes_from_v1.0.0": "Added ValidateOrderUniqueness dependency"
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GetOrderStatus",
+      "description": "Retrieve current status of an order",
+      "inputs": ["order_id"],
+      "outputs": ["order_status", "order_details", "payment_status"],
+      "dependencies": ["GetPaymentStatus"],
+      "changes_from_v1.0.0": "Added GetPaymentStatus dependency and payment_status output"
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "CancelOrder",
+      "description": "Cancel an existing order",
+      "inputs": ["order_id"],
+      "outputs": ["cancellation_status"],
+      "dependencies": ["RefundPayment"],
+      "changes_from_v1.0.0": "Added RefundPayment dependency"
+    },
+    {
+      "function_id": "F-008",
+      "function_name": "ValidateOrderUniqueness",
+      "description": "Atomic check to ensure order_id uniqueness before creation",
+      "inputs": ["proposed_order_id"],
+      "outputs": ["is_unique"],
+      "dependencies": [],
+      "added_in_version": "1.1.0",
+      "reason": "TEST-003 fix - technical_constraints"
+    }
+  ],
+  "interfaces": {
+    "provides": [],
+    "consumes": [
+      {
+        "interface_name": "payment_processing",
+        "provider_service": "PaymentService",
+        "operations": ["ProcessPayment"]
+      },
+      {
+        "interface_name": "payment_status_query",
+        "provider_service": "PaymentService",
+        "operations": ["GetPaymentStatus"],
+        "added_in_version": "1.1.0",
+        "reason": "TEST-002 fix - requirements_creep"
+      }
+    ]
+  },
+  "data_stores": [
+    {
+      "store_name": "orders_db",
+      "type": "relational",
+      "purpose": "Store order information"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial service architecture",
+      "rationale": "Baseline architecture for order management"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Added ValidateOrderUniqueness function, added payment_status_query interface, updated 3 existing functions",
+      "rationale": "D-06.5 Architecture Synchronization - Aligned with implementation after test failures",
+      "drift_addressed": {
+        "new_functions": ["ValidateOrderUniqueness"],
+        "new_interfaces": ["payment_status_query"],
+        "modified_functions": ["CreateOrder", "GetOrderStatus", "CancelOrder"]
+      }
+    }
+  ]
+}

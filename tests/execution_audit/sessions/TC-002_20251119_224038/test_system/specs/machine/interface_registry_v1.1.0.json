@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "1.1.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Interface registry for e-commerce order system - Updated after drift resolution",
+    "synchronized_with_implementation": true,
+    "synchronization_date": "2025-11-19"
+  },
+  "interfaces": [
+    {
+      "interface_id": "IFC-001",
+      "interface_name": "payment_processing",
+      "description": "Interface for order service to request payment processing",
+      "provider": "PaymentService",
+      "consumers": ["OrderService"],
+      "operations": [
+        {
+          "operation_name": "ProcessPayment",
+          "description": "Process payment for an order",
+          "inputs": ["order_id", "payment_details"],
+          "outputs": ["payment_id", "payment_status"]
+        }
+      ],
+      "protocol": "REST",
+      "data_format": "JSON"
+    },
+    {
+      "interface_id": "IFC-002",
+      "interface_name": "payment_status_query",
+      "description": "Interface for order service to query payment status",
+      "provider": "PaymentService",
+      "consumers": ["OrderService"],
+      "operations": [
+        {
+          "operation_name": "GetPaymentStatus",
+          "description": "Get payment status by payment ID",
+          "inputs": ["payment_id"],
+          "outputs": ["payment_id", "payment_status", "amount"]
+        }
+      ],
+      "protocol": "REST",
+      "data_format": "JSON",
+      "added_in_version": "1.1.0",
+      "reason": "TEST-002 fix - requirements_creep"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial interface registry",
+      "rationale": "Baseline interfaces for order system"
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Added payment_status_query interface",
+      "rationale": "D-06.5 Architecture Synchronization - OrderService needs to query payment status for complete order information",
+      "drift_addressed": {
+        "new_interfaces": ["payment_status_query"],
+        "modified_interfaces": [],
+        "removed_interfaces": []
+      }
+    }
+  ]
+}

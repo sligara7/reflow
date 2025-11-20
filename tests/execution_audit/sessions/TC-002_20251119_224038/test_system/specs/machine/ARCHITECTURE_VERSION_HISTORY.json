@@ -1,0 +1,78 @@
+{
+  "version_history_metadata": {
+    "system_name": "E-commerce Order System",
+    "created_date": "2025-11-19",
+    "purpose": "Track architecture version changes with rationale and traceability",
+    "tool": "version_architecture.py (manual for test execution)"
+  },
+  "versions": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "workflow_step": "Phase 1 (00a → 01d → 01c → 02)",
+      "change_type": "initial_design",
+      "rationale": "Initial architecture design for e-commerce order system",
+      "similarity_score_before": "N/A",
+      "similarity_score_after": "1.0 (baseline)",
+      "breaking_changes": false,
+      "files_changed": [
+        "functional_architecture.json",
+        "service_arch/OrderService/service_architecture.json",
+        "service_arch/PaymentService/service_architecture.json",
+        "interface_registry.json"
+      ],
+      "summary": {
+        "functions": 5,
+        "services": 2,
+        "interfaces": 1
+      }
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "workflow_step": "D-06.5 Architecture Synchronization Loop",
+      "change_type": "operational_reality (primary), requirements_creep, technical_constraints",
+      "rationale": "Resolved architecture drift after test failures (TEST-001, TEST-002, TEST-003) revealed missing functionality. Added RefundPayment (operational_reality - customers must be refunded), GetPaymentStatus (requirements_creep - order status must include payment info), ValidateOrderUniqueness (technical_constraints - prevent race conditions).",
+      "similarity_score_before": "0.67",
+      "similarity_score_after": "0.95+",
+      "breaking_changes": false,
+      "triggered_by": "D-06.5 (D-06 detected drift at 67% similarity)",
+      "test_evidence": "specs/machine/graphs/D-06_drift_detection_report.md",
+      "root_cause_analysis": "specs/machine/D-06.5-A01_root_cause_analysis.json",
+      "files_changed": [
+        "functional_architecture.json (v1.0.0 → v1.1.0)",
+        "service_arch/OrderService/service_architecture.json (v1.0.0 → v1.1.0)",
+        "service_arch/PaymentService/service_architecture.json (v1.0.0 → v1.1.0)",
+        "interface_registry.json (v1.0.0 → v1.1.0)"
+      ],
+      "changes_summary": {
+        "functions_added": 3,
+        "functions_modified": 3,
+        "interfaces_added": 1,
+        "flows_modified": 3
+      },
+      "detailed_changes": {
+        "functional_architecture": {
+          "added_functions": ["RefundPayment", "GetPaymentStatus", "ValidateOrderUniqueness"],
+          "modified_functions": ["CreateOrder", "GetOrderStatus", "CancelOrder"],
+          "modified_flows": ["FLOW-001", "FLOW-002", "FLOW-003"]
+        },
+        "OrderService": {
+          "added_functions": ["ValidateOrderUniqueness"],
+          "modified_functions": ["CreateOrder", "GetOrderStatus", "CancelOrder"],
+          "added_interfaces_consumed": ["payment_status_query"]
+        },
+        "PaymentService": {
+          "added_functions": ["RefundPayment", "GetPaymentStatus"],
+          "added_interfaces_provided": ["payment_status_query"]
+        },
+        "interface_registry": {
+          "added_interfaces": ["payment_status_query"]
+        }
+      },
+      "test_failures_addressed": ["TEST-001", "TEST-002", "TEST-003"]
+    }
+  ]
+}

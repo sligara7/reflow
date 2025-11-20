@@ -1,0 +1,46 @@
+{
+  "system_metadata": {
+    "system_name": "E-commerce Order System",
+    "system_type": "microservices",
+    "description": "Simple e-commerce order service with payment processing",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19"
+  },
+  "current_workflow": "00a-basic_setup",
+  "current_step": "S-03",
+  "current_phase": "initialization",
+  "paths": {
+    "reflow_root": "/home/ajs7/project/reflow",
+    "system_root": "/home/ajs7/project/reflow/tests/execution_audit/sessions/TC-002_20251119_224038/test_system",
+    "tools_path": "/home/ajs7/project/reflow/tools",
+    "templates_path": "/home/ajs7/project/reflow/templates",
+    "workflow_steps_path": "/home/ajs7/project/reflow/workflow_steps",
+    "definitions_path": "/home/ajs7/project/reflow/definitions"
+  },
+  "framework": {
+    "selected_framework": "UAF 1.2",
+    "framework_rationale": "Standard framework for microservices architecture"
+  },
+  "llm_capabilities": {
+    "model_name": "Claude Sonnet 4.5",
+    "context_window": 200000,
+    "context_threshold": 160000,
+    "context_refresh_threshold": 150000
+  },
+  "user_preferences": {
+    "stakeholder_approval_required": false,
+    "stakeholder_approval_rationale": "Test case execution - no real stakeholders"
+  },
+  "git_automation_enabled": false,
+  "operations_since_refresh": 0,
+  "context_management": {
+    "last_refresh": "2025-11-19T22:40:00Z",
+    "refresh_recommended": false
+  },
+  "workflow_progress": {
+    "completed_steps": ["S-01", "S-02"],
+    "current_action": "S-03-A01",
+    "next_step": "S-03"
+  }
+}

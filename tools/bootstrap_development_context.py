@@ -42,22 +42,33 @@ def load_template(template_name):
         with open(template_path) as f:
             return f.read()
 
-def bootstrap_development_context(system_name, system_path):
+def bootstrap_development_context(system_name, system_path, setup_mode=False):
     """
     Bootstrap development context for a system.
 
     Args:
         system_name: Name of the system
         system_path: Pre-validated Path object to system directory
+        setup_mode: If True, creates setup files in context/ (working_memory.json, etc.)
+                   If False, creates dev files in system root (dev_working_memory.json, etc.)
     """
     system_dir = system_path
     system_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().isoformat()
-    created_files = []
-
-    print(f"🔧 Bootstrapping development context for system: {system_name}")
-    print(f"📁 System directory: {system_dir}")
+    # Create context directory if in setup mode
+    if setup_mode:
+        context_dir = system_dir / "context"
+        context_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = context_dir
+        file_prefix = ""
+        print(f"🔧 Bootstrapping setup context for system: {system_name}")
+        print(f"📁 System directory: {system_dir}")
+        print(f"📁 Context directory: {context_dir}")
+    else:
+        output_dir = system_dir
+        file_prefix = "dev_"
+        print(f"🔧 Bootstrapping development context for system: {system_name}")
+        print(f"📁 System directory: {system_dir}")
 
     # Check for build_ready_index.json
     # Security: Sanitize build_ready_index path (v3.4.0 fix - SV-01)
@@ -73,84 +84,110 @@ def bootstrap_development_context(system_name, system_path):
     except PathSecurityError as e:
         print(f"⚠️  Warning: Could not check for build_ready_index.json: {e}")
     
-    # Create dev_progress_tracker.json
+    # Create progress_tracker.json (setup) or dev_progress_tracker.json (dev)
     try:
-        dev_tracker_template = load_template("dev_progress_tracker_template.json")
-        dev_tracker_template["system_name"] = system_name
-        dev_tracker_template["started_timestamp"] = timestamp
-        dev_tracker_template["last_updated"] = timestamp
+        if setup_mode:
+            tracker_template = load_template("step_progress_tracker_template.json")
+            tracker_filename = "step_progress_tracker.json"
+        else:
+            tracker_template = load_template("dev_progress_tracker_template.json")
+            tracker_filename = "dev_progress_tracker.json"
 
-        # Security: Sanitize dev_progress_tracker path (v3.4.0 fix - SV-01)
-        dev_tracker_path = sanitize_path(
-            "dev_progress_tracker.json",
-            system_dir,
+        tracker_template["system_name"] = system_name
+        if "started_timestamp" in tracker_template:
+            tracker_template["started_timestamp"] = timestamp
+        if "last_updated" in tracker_template:
+            tracker_template["last_updated"] = timestamp
+
+        # Security: Sanitize progress_tracker path (v3.4.0 fix - SV-01)
+        tracker_path = sanitize_path(
+            tracker_filename,
+            output_dir,
             must_exist=False
         )
-        with open(dev_tracker_path, 'w') as f:
-            json.dump(dev_tracker_template, f, indent=2)
-        created_files.append(dev_tracker_path)
-        print(f"✅ Created: {dev_tracker_path}")
+        with open(tracker_path, 'w') as f:
+            json.dump(tracker_template, f, indent=2)
+        created_files.append(tracker_path)
+        print(f"✅ Created: {tracker_path}")
     except PathSecurityError as e:
-        print(f"❌ Failed to create dev_progress_tracker.json: Path security violation: {e}")
+        print(f"❌ Failed to create {tracker_filename}: Path security violation: {e}")
     except Exception as e:
-        print(f"❌ Failed to create dev_progress_tracker.json: {e}")
+        print(f"❌ Failed to create {tracker_filename}: {e}")
     
-    # Create dev_current_focus.md
+    # Create current_focus.md (setup) or dev_current_focus.md (dev)
     try:
-        dev_focus_template = load_template("dev_current_focus_template.md")
-        dev_focus_content = dev_focus_template.replace("REPLACE_WITH_SYSTEM_NAME", system_name)
-        dev_focus_content = dev_focus_content.replace("YYYY-MM-DD HH:MM:SS",
-                                                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        dev_focus_content = dev_focus_content.replace("CURRENT_STAGE_ID", "D1")
-        dev_focus_content = dev_focus_content.replace("STAGE_NAME", "Initialization & Environment Bootstrap")
-        dev_focus_content = dev_focus_content.replace("CURRENT_SERVICE_ID", "TBD")
-        dev_focus_content = dev_focus_content.replace("DESCRIPTION_OF_NEXT_ACTION",
-                                                     "Parse build_ready_index.json and enumerate dependency layers")
-        dev_focus_content = dev_focus_content.replace("DETAILED_DESCRIPTION_OF_CURRENT_TASK",
-                                                     "Establish reproducible development environment per service dependency groups")
+        if setup_mode:
+            focus_template = load_template("current_focus_template.md")
+            focus_filename = "current_focus.md"
+        else:
+            focus_template = load_template("dev_current_focus_template.md")
+            focus_filename = "dev_current_focus.md"
 
-        # Security: Sanitize dev_current_focus path (v3.4.0 fix - SV-01)
-        dev_focus_path = sanitize_path(
-            "dev_current_focus.md",
-            system_dir,
+        focus_content = focus_template.replace("REPLACE_WITH_SYSTEM_NAME", system_name)
+        focus_content = focus_content.replace("YYYY-MM-DD HH:MM:SS",
+                                             datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        if not setup_mode:
+            focus_content = focus_content.replace("CURRENT_STAGE_ID", "D1")
+            focus_content = focus_content.replace("STAGE_NAME", "Initialization & Environment Bootstrap")
+            focus_content = focus_content.replace("CURRENT_SERVICE_ID", "TBD")
+            focus_content = focus_content.replace("DESCRIPTION_OF_NEXT_ACTION",
+                                                 "Parse build_ready_index.json and enumerate dependency layers")
+            focus_content = focus_content.replace("DETAILED_DESCRIPTION_OF_CURRENT_TASK",
+                                                 "Establish reproducible development environment per service dependency groups")
+
+        # Security: Sanitize current_focus path (v3.4.0 fix - SV-01)
+        focus_path = sanitize_path(
+            focus_filename,
+            output_dir,
             must_exist=False
         )
-        with open(dev_focus_path, 'w') as f:
-            f.write(dev_focus_content)
-        created_files.append(dev_focus_path)
-        print(f"✅ Created: {dev_focus_path}")
+        with open(focus_path, 'w') as f:
+            f.write(focus_content)
+        created_files.append(focus_path)
+        print(f"✅ Created: {focus_path}")
     except PathSecurityError as e:
-        print(f"❌ Failed to create dev_current_focus.md: Path security violation: {e}")
+        print(f"❌ Failed to create {focus_filename}: Path security violation: {e}")
     except Exception as e:
-        print(f"❌ Failed to create dev_current_focus.md: {e}")
+        print(f"❌ Failed to create {focus_filename}: {e}")
     
-    # Create dev_working_memory.json
+    # Create working_memory.json (setup) or dev_working_memory.json (dev)
     try:
-        dev_memory_template = load_template("dev_working_memory_template.json")
-        dev_memory_template["system_name"] = system_name
-        dev_memory_template["last_refresh_timestamp"] = timestamp
-        dev_memory_template["next_action"] = "Parse build_ready_index.json to enumerate dependency layers"
-        dev_memory_template["snapshot_management"]["last_snapshot_timestamp"] = timestamp
-        dev_memory_template["development_metrics"]["stage_start_time"] = timestamp
+        if setup_mode:
+            memory_template = load_template("working_memory_template.json")
+            memory_filename = "working_memory.json"
+        else:
+            memory_template = load_template("dev_working_memory_template.json")
+            memory_filename = "dev_working_memory.json"
 
-        # Security: Sanitize dev_working_memory path (v3.4.0 fix - SV-01)
-        dev_memory_path = sanitize_path(
-            "dev_working_memory.json",
-            system_dir,
+        memory_template["system_name"] = system_name
+        if "last_refresh_timestamp" in memory_template:
+            memory_template["last_refresh_timestamp"] = timestamp
+        if "next_action" in memory_template and not setup_mode:
+            memory_template["next_action"] = "Parse build_ready_index.json to enumerate dependency layers"
+        if "snapshot_management" in memory_template and not setup_mode:
+            memory_template["snapshot_management"]["last_snapshot_timestamp"] = timestamp
+        if "development_metrics" in memory_template and not setup_mode:
+            memory_template["development_metrics"]["stage_start_time"] = timestamp
+
+        # Security: Sanitize working_memory path (v3.4.0 fix - SV-01)
+        memory_path = sanitize_path(
+            memory_filename,
+            output_dir,
             must_exist=False
         )
-        with open(dev_memory_path, 'w') as f:
-            json.dump(dev_memory_template, f, indent=2)
-        created_files.append(dev_memory_path)
-        print(f"✅ Created: {dev_memory_path}")
+        with open(memory_path, 'w') as f:
+            json.dump(memory_template, f, indent=2)
+        created_files.append(memory_path)
+        print(f"✅ Created: {memory_path}")
     except PathSecurityError as e:
-        print(f"❌ Failed to create dev_working_memory.json: Path security violation: {e}")
+        print(f"❌ Failed to create {memory_filename}: Path security violation: {e}")
     except Exception as e:
-        print(f"❌ Failed to create dev_working_memory.json: {e}")
+        print(f"❌ Failed to create {memory_filename}: {e}")
     
-    # Create dev_process_log.md
-    try:
-        log_content = f"""# Development Process Log
+    # Create dev_process_log.md (only in dev mode)
+    if not setup_mode:
+        try:
+            log_content = f"""# Development Process Log
 
 **System:** {system_name}
 **Started:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -167,24 +204,25 @@ def bootstrap_development_context(system_name, system_path):
 *This log tracks the development process for {system_name}. Each stage transition, quality gate, and significant decision should be recorded here.*
 """
 
-        # Security: Sanitize dev_process_log path (v3.4.0 fix - SV-01)
-        dev_log_path = sanitize_path(
-            "dev_process_log.md",
-            system_dir,
-            must_exist=False
-        )
-        with open(dev_log_path, 'w') as f:
-            f.write(log_content)
-        created_files.append(dev_log_path)
-        print(f"✅ Created: {dev_log_path}")
-    except PathSecurityError as e:
-        print(f"❌ Failed to create dev_process_log.md: Path security violation: {e}")
-    except Exception as e:
-        print(f"❌ Failed to create dev_process_log.md: {e}")
+            # Security: Sanitize dev_process_log path (v3.4.0 fix - SV-01)
+            dev_log_path = sanitize_path(
+                "dev_process_log.md",
+                system_dir,
+                must_exist=False
+            )
+            with open(dev_log_path, 'w') as f:
+                f.write(log_content)
+            created_files.append(dev_log_path)
+            print(f"✅ Created: {dev_log_path}")
+        except PathSecurityError as e:
+            print(f"❌ Failed to create dev_process_log.md: Path security violation: {e}")
+        except Exception as e:
+            print(f"❌ Failed to create dev_process_log.md: {e}")
     
-    # Create dev_context_checkpoint.md
-    try:
-        checkpoint_content = f"""# Context Checkpoint
+    # Create dev_context_checkpoint.md (only in dev mode)
+    if not setup_mode:
+        try:
+            checkpoint_content = f"""# Context Checkpoint
 
 **System:** {system_name}
 **Timestamp:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
@@ -218,20 +256,20 @@ None identified at bootstrap
 - dev_context_checkpoint.md (this file)
 """
 
-        # Security: Sanitize dev_context_checkpoint path (v3.4.0 fix - SV-01)
-        checkpoint_path = sanitize_path(
-            "dev_context_checkpoint.md",
-            system_dir,
-            must_exist=False
-        )
-        with open(checkpoint_path, 'w') as f:
-            f.write(checkpoint_content)
-        created_files.append(checkpoint_path)
-        print(f"✅ Created: {checkpoint_path}")
-    except PathSecurityError as e:
-        print(f"❌ Failed to create dev_context_checkpoint.md: Path security violation: {e}")
-    except Exception as e:
-        print(f"❌ Failed to create dev_context_checkpoint.md: {e}")
+            # Security: Sanitize dev_context_checkpoint path (v3.4.0 fix - SV-01)
+            checkpoint_path = sanitize_path(
+                "dev_context_checkpoint.md",
+                system_dir,
+                must_exist=False
+            )
+            with open(checkpoint_path, 'w') as f:
+                f.write(checkpoint_content)
+            created_files.append(checkpoint_path)
+            print(f"✅ Created: {checkpoint_path}")
+        except PathSecurityError as e:
+            print(f"❌ Failed to create dev_context_checkpoint.md: Path security violation: {e}")
+        except Exception as e:
+            print(f"❌ Failed to create dev_context_checkpoint.md: {e}")
     
     # Summary
     print(f"\n🎉 Bootstrap complete!")
@@ -252,6 +290,8 @@ def main():
     parser.add_argument("system_name", help="Name of the system being developed, or path to system directory")
     parser.add_argument("--system-path", default=None,
                        help="Path to system directory (default: systems/<system_name>, or uses system_name if it's a path)")
+    parser.add_argument("--setup", action="store_true",
+                       help="Setup mode: creates files in context/ directory (working_memory.json, etc.) instead of dev_* files in system root")
     parser.add_argument("--force", action="store_true",
                        help="Overwrite existing files if they exist")
 
@@ -292,24 +332,35 @@ def main():
 
     # Check if files already exist
     existing_files = []
-    tracking_files = [
-        "dev_progress_tracker.json",
-        "dev_current_focus.md",
-        "dev_working_memory.json",
-        "dev_process_log.md",
-        "dev_context_checkpoint.md"
-    ]
 
-    for file_name in tracking_files:
-        # Security: Sanitize file path (v3.4.0 fix - SV-01)
-        try:
-            if system_path.exists():
-                file_path = sanitize_path(file_name, system_path, must_exist=False)
+    # Define tracking files based on mode
+    if args.setup:
+        output_check_dir = system_path / "context" if system_path.exists() else None
+        tracking_files = [
+            "working_memory.json",
+            "step_progress_tracker.json",
+            "current_focus.md"
+        ]
+    else:
+        output_check_dir = system_path
+        tracking_files = [
+            "dev_progress_tracker.json",
+            "dev_current_focus.md",
+            "dev_working_memory.json",
+            "dev_process_log.md",
+            "dev_context_checkpoint.md"
+        ]
+
+    if output_check_dir and output_check_dir.exists():
+        for file_name in tracking_files:
+            # Security: Sanitize file path (v3.4.0 fix - SV-01)
+            try:
+                file_path = sanitize_path(file_name, output_check_dir, must_exist=False)
                 if file_path.exists():
                     existing_files.append(file_name)
-        except PathSecurityError:
-            # Ignore security errors during existence check - will be caught during creation
-            pass
+            except PathSecurityError:
+                # Ignore security errors during existence check - will be caught during creation
+                pass
 
     if existing_files and not args.force:
         print(f"❌ Error: The following files already exist in {system_path}:")
@@ -319,8 +370,8 @@ def main():
         sys.exit(1)
     
     try:
-        created_files = bootstrap_development_context(args.system_name, system_path)
-        print(f"\n✅ Development context bootstrap successful!")
+        created_files = bootstrap_development_context(args.system_name, system_path, setup_mode=args.setup)
+        print(f"\n✅ {'Setup' if args.setup else 'Development'} context bootstrap successful!")
     except Exception as e:
         print(f"❌ Bootstrap failed: {e}")
         sys.exit(1)

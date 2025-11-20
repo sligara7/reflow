@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "system_name": "E-commerce Order System",
+    "version": "as_built",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "As-built functional architecture extracted from implementation",
+    "framework": "UAF 1.2",
+    "source": "code_analysis"
+  },
+  "functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "CreateOrder",
+      "description": "Create a new order with customer and product information",
+      "inputs": ["customer_id", "product_list", "shipping_address"],
+      "outputs": ["order_id", "order_status"],
+      "dependencies": ["ValidateOrderUniqueness", "ProcessPayment", "SendOrderConfirmation"],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "source": "OrderService.create_order()"
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GetOrderStatus",
+      "description": "Retrieve current status of an order",
+      "inputs": ["order_id"],
+      "outputs": ["order_status", "order_details", "payment_status"],
+      "dependencies": ["GetPaymentStatus"],
+      "flow_type": "synchronous",
+      "criticality": "medium",
+      "source": "OrderService.get_order_status()"
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "CancelOrder",
+      "description": "Cancel an existing order",
+      "inputs": ["order_id"],
+      "outputs": ["cancellation_status"],
+      "dependencies": ["RefundPayment"],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "source": "OrderService.cancel_order()"
+    },
+    {
+      "function_id": "F-004",
+      "function_name": "ProcessPayment",
+      "description": "Process payment for an order",
+      "inputs": ["order_id", "payment_details"],
+      "outputs": ["payment_id", "payment_status"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "critical",
+      "source": "PaymentService.process_payment()"
+    },
+    {
+      "function_id": "F-005",
+      "function_name": "SendOrderConfirmation",
+      "description": "Send order confirmation to customer",
+      "inputs": ["order_id", "customer_email"],
+      "outputs": ["confirmation_status"],
+      "dependencies": [],
+      "flow_type": "asynchronous",
+      "criticality": "low",
+      "source": "PaymentService.send_order_confirmation()"
+    },
+    {
+      "function_id": "F-006",
+      "function_name": "RefundPayment",
+      "description": "Process payment refund for cancelled order",
+      "inputs": ["payment_id", "amount"],
+      "outputs": ["refund_status", "refund_transaction_id"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "source": "PaymentService.refund_payment()",
+      "added_by": "TEST-001 fix"
+    },
+    {
+      "function_id": "F-007",
+      "function_name": "GetPaymentStatus",
+      "description": "Get payment status by payment ID",
+      "inputs": ["payment_id"],
+      "outputs": ["payment_id", "payment_status", "amount"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "medium",
+      "source": "PaymentService.get_payment_status()",
+      "added_by": "TEST-002 fix"
+    },
+    {
+      "function_id": "F-008",
+      "function_name": "ValidateOrderUniqueness",
+      "description": "Atomic check to ensure order_id is unique before creation",
+      "inputs": ["proposed_order_id"],
+      "outputs": ["is_unique"],
+      "dependencies": [],
+      "flow_type": "synchronous",
+      "criticality": "high",
+      "source": "OrderService.validate_order_uniqueness()",
+      "added_by": "TEST-003 fix"
+    }
+  ],
+  "functional_flows": [
+    {
+      "flow_id": "FLOW-001",
+      "flow_name": "Order Creation Flow",
+      "description": "Complete order creation including uniqueness validation, payment, and confirmation",
+      "sequence": [
+        {"step": 1, "function": "ValidateOrderUniqueness", "next": "CreateOrder"},
+        {"step": 2, "function": "CreateOrder", "next": "ProcessPayment"},
+        {"step": 3, "function": "ProcessPayment", "next": "SendOrderConfirmation"},
+        {"step": 4, "function": "SendOrderConfirmation", "next": "end"}
+      ]
+    },
+    {
+      "flow_id": "FLOW-002",
+      "flow_name": "Order Status Query",
+      "description": "Retrieve order status with payment information",
+      "sequence": [
+        {"step": 1, "function": "GetOrderStatus", "next": "GetPaymentStatus"},
+        {"step": 2, "function": "GetPaymentStatus", "next": "end"}
+      ]
+    },
+    {
+      "flow_id": "FLOW-003",
+      "flow_name": "Order Cancellation",
+      "description": "Cancel an order with automatic payment refund",
+      "sequence": [
+        {"step": 1, "function": "CancelOrder", "next": "RefundPayment"},
+        {"step": 2, "function": "RefundPayment", "next": "end"}
+      ]
+    }
+  ],
+  "drift_summary": {
+    "functions_added": 3,
+    "functions_modified": 3,
+    "functions_removed": 0,
+    "new_functions": ["RefundPayment", "GetPaymentStatus", "ValidateOrderUniqueness"],
+    "modified_functions": ["CreateOrder", "GetOrderStatus", "CancelOrder"]
+  }
+}

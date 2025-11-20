@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "service_name": "OrderService",
+    "version": "1.0.0",
+    "created_date": "2025-11-19",
+    "last_updated": "2025-11-19",
+    "description": "Order management service handling order creation, status, and cancellation",
+    "framework": "UAF 1.2"
+  },
+  "allocated_functions": [
+    {
+      "function_id": "F-001",
+      "function_name": "CreateOrder",
+      "description": "Create a new order with customer and product information",
+      "inputs": ["customer_id", "product_list", "shipping_address"],
+      "outputs": ["order_id", "order_status"],
+      "dependencies": ["ProcessPayment", "SendOrderConfirmation"]
+    },
+    {
+      "function_id": "F-002",
+      "function_name": "GetOrderStatus",
+      "description": "Retrieve current status of an order",
+      "inputs": ["order_id"],
+      "outputs": ["order_status", "order_details"],
+      "dependencies": []
+    },
+    {
+      "function_id": "F-003",
+      "function_name": "CancelOrder",
+      "description": "Cancel an existing order",
+      "inputs": ["order_id"],
+      "outputs": ["cancellation_status"],
+      "dependencies": []
+    }
+  ],
+  "interfaces": {
+    "provides": [],
+    "consumes": [
+      {
+        "interface_name": "payment_processing",
+        "provider_service": "PaymentService",
+        "operations": ["ProcessPayment"]
+      }
+    ]
+  },
+  "data_stores": [
+    {
+      "store_name": "orders_db",
+      "type": "relational",
+      "purpose": "Store order information"
+    }
+  ],
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-19",
+      "author": "Agent B (Test Execution)",
+      "changes": "Initial service architecture",
+      "rationale": "Baseline architecture for order management"
+    }
+  ]
+}

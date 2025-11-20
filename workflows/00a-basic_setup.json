@@ -280,7 +280,8 @@
           "action_id": "S-03-A04",
           "description": "Initialize working_memory.json",
           "tool": "bootstrap_development_context.py",
-          "command_pattern": "python3 {reflow_root}/tools/bootstrap_development_context.py {system_root}",
+          "command_pattern": "python3 {reflow_root}/tools/bootstrap_development_context.py {system_root} --setup",
+          "note": "The --setup flag creates files in context/ directory (working_memory.json, step_progress_tracker.json, current_focus.md) instead of dev_* files in system root",
           "creates": [
             "context/working_memory.json",
             "context/step_progress_tracker.json",
