@@ -181,19 +181,31 @@ class ServiceContractGenerator:
         """
         functions = []
 
-        # Extract from components
+        # Read from top-level allocated_functions (standard location)
+        # Fallback to functions for backward compatibility
+        allocated_functions = service_arch.get("allocated_functions") or service_arch.get("functions", [])
+
+        for func in allocated_functions:
+            functions.append({
+                "function_id": func.get("function_id", func.get("id", "unknown")),
+                "function_name": func.get("function_name", func.get("name", "Unknown")),
+                "description": func.get("description", "No description"),
+                "source": "Derived from service_architecture.json → allocated_functions"
+            })
+
+        # Legacy support: also check system_view.components if exists
         system_view = service_arch.get("system_view", {})
         components = system_view.get("components", [])
-
-        for component in components:
-            component_functions = component.get("functions", [])
-            for func in component_functions:
-                functions.append({
-                    "function_id": func.get("id", "unknown"),
-                    "function_name": func.get("name", "Unknown"),
-                    "description": func.get("description", "No description"),
-                    "source": "Derived from service_architecture.json → components → functions"
-                })
+        if components and not allocated_functions:
+            for component in components:
+                component_functions = component.get("functions", [])
+                for func in component_functions:
+                    functions.append({
+                        "function_id": func.get("id", "unknown"),
+                        "function_name": func.get("name", "Unknown"),
+                        "description": func.get("description", "No description"),
+                        "source": "Derived from service_architecture.json → components → functions (legacy)"
+                    })
 
         return functions
 

@@ -99,7 +99,7 @@ def load_framework_registry(framework_id: str) -> Dict[str, Any]:
                     "id_field": "service_id",
                     "name_field": "service_name",
                     "type_field": "classification",
-                    "functions_field": "functions",
+                    "functions_field": "allocated_functions",
                     "interfaces_field": "interfaces",
                     "dependencies_field": "dependencies"
                 },
@@ -136,11 +136,17 @@ def adapt_component_to_universal(component_data: Dict, framework_schema: Dict) -
     node_schema = framework_schema['node_schema']
 
     # Extract universal properties using framework-specific field names
+    # Backward compatibility: try allocated_functions first, fallback to functions
+    functions_field = node_schema['functions_field']
+    functions = component_data.get(functions_field, [])
+    if not functions and functions_field == 'allocated_functions':
+        functions = component_data.get('functions', [])
+
     universal = {
         'node_id': component_data.get(node_schema['id_field']),
         'node_name': component_data.get(node_schema['name_field']),
         'node_type': component_data.get(node_schema['type_field']),
-        'functions': component_data.get(node_schema['functions_field'], []),
+        'functions': functions,
         'interfaces': component_data.get(node_schema['interfaces_field'], []),
         'dependencies': component_data.get(node_schema.get('dependencies_field', 'dependencies'), []),
         'raw': component_data  # Preserve full framework-specific data

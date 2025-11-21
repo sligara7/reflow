@@ -25,7 +25,7 @@
         "id_field": "service_id",
         "name_field": "service_name",
         "type_field": "classification",
-        "functions_field": "functions",
+        "functions_field": "allocated_functions",
         "interfaces_field": "interfaces",
         "dependencies_field": "dependencies"
       },
