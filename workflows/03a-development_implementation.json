@@ -2,12 +2,13 @@
   "workflow_metadata": {
     "workflow_id": "03a-development_implementation",
     "name": "Development Implementation Workflow",
-    "version": "3.17.0",
-    "description": "Research, implement core functionality, and integrate APIs/security",
+    "version": "3.19.1",
+    "description": "Research, implement core functionality, and integrate APIs/security - with architectural context refresh",
     "created_from": "03-development.json v1.0.0 - D-01, D-02, D-04 extracted",
-    "last_updated": "2025-11-19",
+    "last_updated": "2025-11-21",
     "purpose": "Implement service functionality (setup + coding + integration)",
-    "context_reduction": "Reduced from 1,061 lines to ~450 lines (58% reduction)"
+    "context_reduction": "Reduced from 1,061 lines to ~450 lines (58% reduction)",
+    "new_in_v3.19.1": "Architectural Context Refresh - Periodic re-grounding in system architecture during development"
   },
   "prerequisites": {
     "required_workflows": [
@@ -31,6 +32,91 @@
       "step_file": "workflow_steps/development/D-01-InitBootstrap.json",
       "maps_from": "Dev-01: Initialization & Environment Bootstrap",
       "actions": [
+        {
+          "action_id": "D-01-A00_ARCH_CONTEXT",
+          "name": "Architectural Context Refresh",
+          "description": "Re-ground in system architecture before starting development on this service",
+          "new_in_version": "v3.19.1 - Architectural Context Refresh",
+          "when": "FIRST action when starting development on ANY service",
+          "mandatory": true,
+          "time_budget": "2-3 minutes",
+          "purpose": "Maintain architectural awareness during long development phases - prevent tunnel vision",
+          "rationale": "During long development, LLMs can forget the bigger picture. This refresh keeps the system-of-systems context alive.",
+          "read_and_summarize": [
+            {
+              "file": "specs/machine/graphs/system_of_systems_graph.json",
+              "extract": [
+                "Services that CALL this service (upstream consumers - who depends on me?)",
+                "Services this service CALLS (downstream dependencies - who do I depend on?)",
+                "Critical data flows involving this service",
+                "This service's position in the overall architecture"
+              ]
+            },
+            {
+              "file": "specs/machine/service_arch/{service_name}/service_architecture.json",
+              "extract": [
+                "Service purpose and key responsibilities",
+                "Allocated functions (what must this service do?)",
+                "Data models and their relationships",
+                "External interfaces (APIs to implement)",
+                "Internal interfaces (component contracts)"
+              ]
+            },
+            {
+              "file": "specs/machine/interface_registry.json",
+              "extract": [
+                "Interfaces this service PROVIDES (contracts I must fulfill)",
+                "Interfaces this service CONSUMES (contracts I must call correctly)",
+                "Interface versions and compatibility requirements"
+              ]
+            },
+            {
+              "file": "specs/deployment/deployment_environment_spec.json",
+              "extract": [
+                "Target deployment platform (informs technology choices)",
+                "Containerization strategy",
+                "Security constraints that affect implementation",
+                "Infrastructure dependencies"
+              ],
+              "note": "New in v3.19.0 - if exists"
+            }
+          ],
+          "generate_context_summary": {
+            "format": "Brief mental model (not written to file, kept in LLM context)",
+            "template": [
+              "## Architectural Context for {service_name}",
+              "",
+              "**This Service**: {one_sentence_purpose}",
+              "",
+              "**Who Depends on Me (Consumers)**:",
+              "- {list_of_upstream_services_and_what_they_need}",
+              "",
+              "**Who I Depend On (Dependencies)**:",
+              "- {list_of_downstream_services_and_what_I_call}",
+              "",
+              "**Key Interfaces to Implement**:",
+              "- {list_of_provided_interfaces}",
+              "",
+              "**Deployment Context**:",
+              "- Platform: {target_platform}",
+              "- Containerization: {strategy}",
+              "",
+              "**Keep in Mind**: {any_critical_constraints_or_decisions}"
+            ]
+          },
+          "llm_instructions": [
+            "READ the specified files and EXTRACT the key information",
+            "GENERATE a brief context summary in your working memory",
+            "KEEP this context in mind for ALL implementation decisions in this step",
+            "If any file doesn't exist, note it and proceed with available context",
+            "This is NOT optional - architectural awareness prevents costly rework"
+          ],
+          "success_criteria": [
+            "LLM has read and internalized architectural context",
+            "LLM can articulate how this service fits in the bigger picture",
+            "Implementation decisions will consider system-wide implications"
+          ]
+        },
         {
           "action_id": "D-01-A00",
           "description": "Research current development best practices and industry standards (OPTIONAL)",
@@ -342,6 +428,40 @@
       "maps_from": "Dev-02: Core & Domain Model Realization",
       "actions": [
         {
+          "action_id": "D-02-A00_ARCH_CONTEXT",
+          "name": "Architectural Context Refresh - Domain Model Focus",
+          "description": "Re-ground in architecture with focus on domain model, data structures, and internal interfaces",
+          "new_in_version": "v3.19.1 - Architectural Context Refresh",
+          "mandatory": true,
+          "time_budget": "2-3 minutes",
+          "purpose": "Before implementing domain models, understand how they relate to system-wide data flows",
+          "read_and_summarize": [
+            {
+              "file": "specs/machine/graphs/system_of_systems_graph.json",
+              "focus": "Data flows - what data enters/exits this service?"
+            },
+            {
+              "file": "specs/machine/service_arch/{service_name}/service_architecture.json",
+              "focus": "data_models section - entities, relationships, constraints"
+            },
+            {
+              "file": "specs/machine/interfaces/{service_name}_*.json",
+              "focus": "Data types in interface contracts - must domain models support these?"
+            }
+          ],
+          "key_questions": [
+            "What entities does this service own vs reference from other services?",
+            "What data validation rules apply?",
+            "How do domain models map to interface contracts?",
+            "Are there shared data types across services?"
+          ],
+          "llm_instructions": [
+            "REFRESH architectural context before implementing domain models",
+            "ENSURE domain models align with system-wide data contracts",
+            "CONSIDER how other services will consume/produce this data"
+          ]
+        },
+        {
           "action_id": "D-02-A01",
           "description": "Implement domain models (greenfield) OR analyze existing implementation (meta-analysis/brownfield)",
           "conditional_execution": {
@@ -452,6 +572,47 @@
       "step_file": "workflow_steps/development/D-04-IntegrationAndSecurity.json",
       "maps_from": "Dev-04: Integration Surfaces & Security Hardening",
       "actions": [
+        {
+          "action_id": "D-04-A00_ARCH_CONTEXT",
+          "name": "Architectural Context Refresh - Integration Focus",
+          "description": "Re-ground in architecture with focus on external interfaces, consumers, and dependencies",
+          "new_in_version": "v3.19.1 - Architectural Context Refresh",
+          "mandatory": true,
+          "time_budget": "2-3 minutes",
+          "purpose": "Before implementing integration surfaces, understand ALL services that will call or be called by this service",
+          "critical_note": "Integration is where architectural drift is most likely - consumers depend on YOUR interfaces",
+          "read_and_summarize": [
+            {
+              "file": "specs/machine/graphs/system_of_systems_graph.json",
+              "focus": "Interface edges - who provides what to whom?"
+            },
+            {
+              "file": "specs/machine/interface_registry.json",
+              "focus": "ALL interfaces involving this service (provided AND consumed)"
+            },
+            {
+              "file": "specs/machine/interfaces/*_icd.json",
+              "focus": "Contract details - request/response schemas, error codes, versioning"
+            },
+            {
+              "file": "specs/deployment/deployment_environment_spec.json",
+              "focus": "Security requirements, network policies, auth mechanisms"
+            }
+          ],
+          "key_questions": [
+            "What services will CALL my APIs? What do they expect?",
+            "What services do I CALL? What contracts must I follow?",
+            "What authentication/authorization is required?",
+            "Are there rate limits, retry policies, or circuit breakers to implement?",
+            "How do errors propagate through the system?"
+          ],
+          "llm_instructions": [
+            "CRITICAL: Integration surfaces affect OTHER services - refresh context thoroughly",
+            "READ all relevant ICDs before implementing any API",
+            "CONSIDER consumer expectations - they're building against YOUR interface",
+            "VERIFY security requirements before implementation"
+          ]
+        },
         {
           "action_id": "D-04-A01",
           "description": "Implement API endpoints",
