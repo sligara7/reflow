@@ -18,7 +18,8 @@
     { "id": "D2.6", "description": "Initial lint & type pass", "tool": "bash" },
     { "id": "D3.1", "description": "Rank use cases and implement domain services (pure logic first)", "tool": "manual" },
     { "id": "D3.2", "description": "Wire API handlers to domain services per api_contracts.json", "tool": "manual" },
-    { "id": "D3.3", "description": "Enforce validation and auth policies per compliance.json", "tool": "manual" }
+    { "id": "D3.3", "description": "Enforce validation and auth policies per compliance.json", "tool": "manual" },
+    { "id": "D3.4", "action_id": "D-02-A05", "description": "Generate service interface contracts", "tool": "generate_service_contracts.py", "command_pattern": "python3 {reflow_root}/tools/generate_service_contracts.py {system_root} --service {service_name}", "purpose": "Embed architectural contract within service to prevent LLM drift", "output": "services/{service_name}/SERVICE_CONTRACT.json", "new_in_version": "v3.17.0", "when": "After domain model implementation, before integration surfaces" }
   ],
   "artifact_routing": {
     "code": "code/<service>/",

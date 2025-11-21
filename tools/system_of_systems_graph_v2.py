@@ -142,10 +142,28 @@ def adapt_component_to_universal(component_data: Dict, framework_schema: Dict) -
     if not functions and functions_field == 'allocated_functions':
         functions = component_data.get('functions', [])
 
+    # Extract node_id with fallback to service_name (modern format compatibility)
+    node_id = component_data.get(node_schema['id_field'])
+    if not node_id and node_schema['id_field'] == 'service_id':
+        # Modern format uses service_name instead of service_id
+        node_id = component_data.get('service_name')
+
+    # Extract node_name with fallback
+    node_name = component_data.get(node_schema['name_field'])
+    if not node_name and node_schema['name_field'] == 'service_name':
+        # Try service_id as fallback
+        node_name = component_data.get('service_id')
+
+    # Extract node_type with fallback to service_type (modern format compatibility)
+    node_type = component_data.get(node_schema['type_field'])
+    if not node_type and node_schema['type_field'] == 'classification':
+        # Modern format uses service_type instead of classification
+        node_type = component_data.get('service_type')
+
     universal = {
-        'node_id': component_data.get(node_schema['id_field']),
-        'node_name': component_data.get(node_schema['name_field']),
-        'node_type': component_data.get(node_schema['type_field']),
+        'node_id': node_id,
+        'node_name': node_name,
+        'node_type': node_type,
         'functions': functions,
         'interfaces': component_data.get(node_schema['interfaces_field'], []),
         'dependencies': component_data.get(node_schema.get('dependencies_field', 'dependencies'), []),
@@ -154,7 +172,7 @@ def adapt_component_to_universal(component_data: Dict, framework_schema: Dict) -
 
     # Handle missing required fields
     if not universal['node_id']:
-        raise ValueError(f"Missing required field '{node_schema['id_field']}' in component data")
+        raise ValueError(f"Missing required field '{node_schema['id_field']}' (or 'service_name' fallback) in component data")
     if not universal['node_name']:
         universal['node_name'] = universal['node_id']  # Fallback to ID
 
@@ -253,24 +271,65 @@ def build_universal_graph(index: Dict[str, str], framework_schema: Dict, system_
     print(f"Added {G.number_of_nodes()} nodes to graph")
 
     # Pass 2: Add edges based on dependencies and interfaces
+    # ISSUE-001 FIX (2025-11-21): Support both legacy and modern dependency/interface formats
+    # - Legacy: dependencies=["service_id"], interfaces=[{connects_to: "service_id"}]
+    # - Modern: dependencies={provides: [...], consumes: [...]}, interfaces={provided: [...], consumed: [{provider: "service_id"}]}
     print("Building edges from dependencies and interfaces...")
     for component_id, universal_node in component_data_cache.items():
         if component_id not in G:
             continue
 
         # Add edges from dependencies
-        for dep in universal_node['dependencies']:
+        # Handle both legacy format (array of strings) and modern format (object with provides/consumes)
+        dependencies_raw = universal_node['dependencies']
+        dependencies_list = []
+
+        if isinstance(dependencies_raw, list):
+            # Legacy format: ["service_id_1", "service_id_2"]
+            dependencies_list = dependencies_raw
+        elif isinstance(dependencies_raw, dict):
+            # Modern format: {"provides": [...], "consumes": [...]}
+            # Extract consumes as these are the actual dependencies
+            dependencies_list = dependencies_raw.get('consumes', [])
+            # Also handle 'requires' as an alias for 'consumes'
+            if not dependencies_list:
+                dependencies_list = dependencies_raw.get('requires', [])
+
+        for dep in dependencies_list:
             # Try to match dependency to component_id
             dep_id = match_dependency_to_component(dep, component_data_cache)
             if dep_id and dep_id in G:
                 G.add_edge(component_id, dep_id, type='dependency', interaction_type='requires')
 
         # Add edges from interfaces
-        for interface in universal_node['interfaces']:
+        # Handle both legacy format (flat array) and modern format (object with provided/consumed)
+        interfaces_raw = universal_node['interfaces']
+        interfaces_list = []
+
+        if isinstance(interfaces_raw, list):
+            # Legacy format: array of interface objects
+            interfaces_list = interfaces_raw
+        elif isinstance(interfaces_raw, dict):
+            # Modern format: {"provided": [...], "consumed": [...]}
+            # Process both provided and consumed interfaces
+            interfaces_list = interfaces_raw.get('provided', []) + interfaces_raw.get('consumed', [])
+
+        for interface in interfaces_list:
             if not isinstance(interface, dict):
                 continue
 
-            # Check for explicit connections in interface
+            # Modern format: consumed interface has 'provider' field pointing to service dependency
+            if 'provider' in interface:
+                provider_id = match_dependency_to_component(interface['provider'], component_data_cache)
+                if provider_id and provider_id in G:
+                    interface_name = interface.get('interface_name', interface.get('name', 'unknown'))
+                    G.add_edge(component_id, provider_id,
+                              type='interface',
+                              interaction_type='consumes',
+                              interface_name=interface_name)
+                continue
+
+            # Legacy format: Check for explicit connections in interface
             connected_to = interface.get('connects_to', interface.get('connected_services',
                                         interface.get('target_components', [])))
 

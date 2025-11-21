@@ -14,6 +14,7 @@
     { "id": "D5.2", "description": "Implement client adapters / message producers per ICDs", "tool": "manual" },
     { "id": "D5.3", "description": "Add retries/circuit breakers/timeouts per resiliency policies", "tool": "manual" },
     { "id": "D5.4", "description": "Create contract tests verifying shape & error conditions", "tool": "manual" },
+    { "id": "D5.5", "action_id": "D-04-A06.5", "description": "Validate service contracts after integration implementation", "tool": "validate_service_contracts.py", "command_pattern": "python3 {reflow_root}/tools/validate_service_contracts.py {system_root} --service {service_name}", "purpose": "Detect contract violations introduced during integration surfaces implementation", "output": "specs/machine/validation/service_contracts_validation_report.json", "new_in_version": "v3.17.0", "when": "After integration surfaces (D5.1-D5.4), before security hardening (D6.x)", "blocking": false, "enforcement": "STRONGLY RECOMMENDED to fix violations before proceeding" },
     { "id": "D6.1", "description": "Map compliance requirements to code artifacts", "tool": "manual" },
     { "id": "D6.2", "description": "Add input sanitization, quotas, permission scopes", "tool": "manual" },
     { "id": "D6.3", "description": "Integrate audit/event logging for security actions", "tool": "manual" },
