@@ -9,6 +9,8 @@ Reflow is a **framework-agnostic systems engineering workflow** designed for LLM
 
 **NEW in v3.19.0**: **Deployment Environment Specification** - Define WHERE and HOW the system will be deployed BEFORE development begins. New workflow (02b-deployment_environment.json) captures deployment context upfront: target platforms, containerization strategy, scaling requirements, security constraints, observability needs, and infrastructure dependencies. Prevents late-stage deployment surprises.
 
+**NEW in v3.19.1**: **Architectural Context Refresh** - Periodic re-grounding in system architecture during development. Each development step (D-01, D-02, D-04) now starts with a mandatory architectural context refresh that reads system_of_systems_graph.json, service_architecture.json, and interface_registry.json. Prevents "tunnel vision" during long development phases.
+
 **NEW in v3.17.0**: **Service Interface Contracts** - Embedded architectural "hooks" that warn LLMs before making breaking changes to service functions or interfaces. Proactive drift prevention through minimal JSON contracts in each service directory.
 
 **NEW in v3.16.0**: **Testing Framework** - GAN-inspired automated testing infrastructure for Reflow workflows. Separate agent architecture (Generator vs Discriminator) validates workflow outputs against ground truth, avoiding "conflict of interests."
