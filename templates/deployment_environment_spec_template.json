@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "template_metadata": {
+    "template_id": "deployment_environment_spec",
+    "name": "Deployment Environment Specification Template",
+    "version": "1.0.0",
+    "description": "Template for defining WHERE and HOW a system will be deployed",
+    "created": "2025-11-21",
+    "usage": "Copy to specs/deployment/deployment_environment_spec.json and fill in values"
+  },
+  "spec_version": "1.0.0",
+  "system_name": "<SYSTEM_NAME>",
+  "created_date": "<YYYY-MM-DD>",
+  "last_updated": "<YYYY-MM-DD>",
+  "target_platforms": {
+    "primary": "<cloud|on_premises|hybrid|edge>",
+    "secondary": [],
+    "cloud_provider": "<aws|gcp|azure|digitalocean|other|none>",
+    "cloud_services": {
+      "compute": "<eks|ecs|gke|cloud_run|aks|ec2|gce|other>",
+      "notes": "<additional service details>"
+    },
+    "environments": [
+      {
+        "name": "development",
+        "description": "Local development environment",
+        "platform": "<docker_compose|minikube|kind|local>"
+      },
+      {
+        "name": "staging",
+        "description": "Pre-production testing environment",
+        "platform": "<same_as_production_but_smaller>"
+      },
+      {
+        "name": "production",
+        "description": "Production environment",
+        "platform": "<primary_platform>"
+      }
+    ],
+    "regions": {
+      "primary": "<region>",
+      "secondary": [],
+      "data_residency_requirements": "<none|specific_regions|compliance_driven>"
+    },
+    "network_restrictions": {
+      "air_gapped": false,
+      "vpn_required": false,
+      "private_subnets_only": false,
+      "notes": "<additional network constraints>"
+    },
+    "rationale": "<why this platform was chosen>"
+  },
+  "containerization": {
+    "strategy": "<docker|containerd|none|serverless>",
+    "orchestration": {
+      "platform": "<kubernetes|ecs|docker_compose|docker_swarm|none>",
+      "version": "<version_if_applicable>",
+      "managed": "<true|false>",
+      "notes": "<eks, gke, aks, self-managed, etc.>"
+    },
+    "base_images": {
+      "default": "<alpine|debian|ubuntu|distroless|custom>",
+      "language_specific": {
+        "python": "<python:3.11-slim|custom>",
+        "node": "<node:20-alpine|custom>",
+        "java": "<eclipse-temurin:21-jre|custom>",
+        "go": "<scratch|alpine|custom>"
+      }
+    },
+    "registry": {
+      "type": "<ecr|gcr|dockerhub|harbor|private>",
+      "url": "<registry_url>",
+      "auth_method": "<iam|token|basic>"
+    },
+    "build_strategy": {
+      "approach": "<multi_stage|single_stage|buildpacks>",
+      "ci_cd_integration": "<github_actions|gitlab_ci|jenkins|circleci|other>",
+      "caching": "<layer_caching|buildkit|none>"
+    },
+    "rationale": "<why this containerization approach>"
+  },
+  "scaling": {
+    "strategy": "<horizontal|vertical|both|none>",
+    "load_patterns": {
+      "type": "<steady|bursty|seasonal|event_driven>",
+      "peak_times": "<description or cron pattern>",
+      "expected_rps": "<requests_per_second_estimate>"
+    },
+    "horizontal_scaling": {
+      "enabled": true,
+      "min_replicas": 1,
+      "max_replicas": 10,
+      "target_utilization": {
+        "cpu": 80,
+        "memory": 80
+      },
+      "custom_metrics": []
+    },
+    "vertical_scaling": {
+      "enabled": false,
+      "min_resources": {
+        "cpu": "100m",
+        "memory": "128Mi"
+      },
+      "max_resources": {
+        "cpu": "2000m",
+        "memory": "4Gi"
+      }
+    },
+    "auto_scaling_triggers": [
+      {
+        "metric": "cpu_utilization",
+        "threshold": 80,
+        "action": "scale_up"
+      },
+      {
+        "metric": "cpu_utilization",
+        "threshold": 20,
+        "action": "scale_down"
+      }
+    ],
+    "cooldown_periods": {
+      "scale_up": "60s",
+      "scale_down": "300s"
+    },
+    "singleton_services": [],
+    "cost_constraints": {
+      "max_monthly_budget": "<budget_or_none>",
+      "spot_instances_allowed": false
+    },
+    "rationale": "<why this scaling approach>"
+  },
+  "security": {
+    "network_policies": {
+      "ingress": {
+        "allowed_sources": ["<cidr_or_label>"],
+        "ports": ["<port_numbers>"]
+      },
+      "egress": {
+        "allowed_destinations": ["<cidr_or_label>"],
+        "ports": ["<port_numbers>"]
+      },
+      "service_mesh": {
+        "enabled": false,
+        "provider": "<istio|linkerd|consul|none>",
+        "mtls_mode": "<strict|permissive|disabled>"
+      },
+      "network_policy_enforcement": "<kubernetes|cloud_native|firewall>"
+    },
+    "secrets_management": {
+      "provider": "<vault|aws_secrets_manager|gcp_secret_manager|azure_key_vault|kubernetes_secrets>",
+      "rotation_policy": {
+        "enabled": false,
+        "frequency": "<30d|90d|custom>"
+      },
+      "encryption_at_rest": true,
+      "access_method": "<sidecar|env_injection|api_call>"
+    },
+    "tls_config": {
+      "tls_required": true,
+      "min_version": "TLS1.2",
+      "mtls_between_services": false,
+      "certificate_management": "<cert_manager|acm|lets_encrypt|manual>",
+      "certificate_rotation": "automatic"
+    },
+    "authentication": {
+      "external_users": {
+        "method": "<oauth2|oidc|saml|api_key|basic|none>",
+        "provider": "<auth0|okta|cognito|keycloak|custom>"
+      },
+      "service_to_service": {
+        "method": "<mtls|jwt|api_key|none>",
+        "token_issuer": "<identity_provider>"
+      }
+    },
+    "authorization": {
+      "model": "<rbac|abac|acl|none>",
+      "enforcement": "<application|gateway|service_mesh>"
+    },
+    "compliance_frameworks": [],
+    "data_residency": {
+      "requirements": "<none|gdpr|hipaa|pci|custom>",
+      "allowed_regions": [],
+      "encryption_requirements": "<at_rest|in_transit|both>"
+    },
+    "audit_logging": {
+      "enabled": true,
+      "events_captured": ["authentication", "authorization", "data_access", "admin_actions"],
+      "retention": "90d",
+      "tamper_proof": false
+    },
+    "rationale": "<security design decisions and why>"
+  },
+  "observability": {
+    "logging": {
+      "format": "<json|structured|plain>",
+      "levels": ["debug", "info", "warn", "error"],
+      "aggregator": {
+        "provider": "<elasticsearch|cloudwatch|datadog|splunk|loki|none>",
+        "retention": "30d"
+      },
+      "structured_fields": ["timestamp", "level", "service", "trace_id", "message"],
+      "sensitive_data_masking": true
+    },
+    "metrics": {
+      "provider": "<prometheus|cloudwatch|datadog|newrelic|none>",
+      "scrape_interval": "15s",
+      "standard_metrics": ["request_count", "request_latency", "error_rate", "cpu", "memory"],
+      "custom_metrics": [],
+      "retention": "15d",
+      "dashboards": {
+        "provider": "<grafana|cloudwatch|datadog|none>",
+        "standard_dashboards": ["service_health", "resource_utilization", "error_rates"]
+      }
+    },
+    "tracing": {
+      "enabled": false,
+      "provider": "<jaeger|zipkin|xray|datadog|honeycomb|none>",
+      "sample_rate": 0.1,
+      "propagation_format": "<w3c|b3|xray>",
+      "retention": "7d"
+    },
+    "alerting": {
+      "provider": "<pagerduty|opsgenie|slack|email|none>",
+      "channels": [
+        {
+          "name": "critical",
+          "destination": "<pagerduty_service_or_slack_channel>",
+          "severity": ["critical"]
+        },
+        {
+          "name": "warnings",
+          "destination": "<slack_channel_or_email>",
+          "severity": ["warning"]
+        }
+      ],
+      "escalation_policy": "<description>"
+    },
+    "slis_slos": {
+      "defined": false,
+      "targets": [
+        {
+          "name": "availability",
+          "target": "99.9%",
+          "measurement": "successful_requests / total_requests"
+        },
+        {
+          "name": "latency_p99",
+          "target": "500ms",
+          "measurement": "99th percentile response time"
+        }
+      ]
+    },
+    "rationale": "<observability strategy decisions>"
+  },
+  "infrastructure_dependencies": {
+    "databases": [
+      {
+        "name": "<database_name>",
+        "type": "<postgresql|mysql|mongodb|dynamodb|redis|other>",
+        "version": "<version>",
+        "managed": "<true|false>",
+        "provider": "<rds|cloud_sql|documentdb|self_hosted>",
+        "ha_configuration": "<primary_replica|multi_az|none>",
+        "backup_strategy": "<daily_snapshots|point_in_time|none>",
+        "size_estimate": "<small|medium|large|xlarge>",
+        "connection_pooling": "<pgbouncer|rds_proxy|none>"
+      }
+    ],
+    "caches": [
+      {
+        "name": "<cache_name>",
+        "type": "<redis|memcached|cdn>",
+        "managed": "<true|false>",
+        "provider": "<elasticache|memorystore|cloudflare|self_hosted>",
+        "cluster_mode": "<true|false>",
+        "eviction_policy": "<lru|lfu|none>",
+        "size_estimate": "<small|medium|large>"
+      }
+    ],
+    "message_queues": [
+      {
+        "name": "<queue_name>",
+        "type": "<kafka|rabbitmq|sqs|pubsub|nats>",
+        "managed": "<true|false>",
+        "provider": "<msk|amazon_mq|sqs|self_hosted>",
+        "durability": "<persistent|transient>",
+        "ordering": "<fifo|best_effort>",
+        "throughput_estimate": "<messages_per_second>"
+      }
+    ],
+    "external_apis": [
+      {
+        "name": "<api_name>",
+        "provider": "<provider_name>",
+        "endpoint": "<base_url>",
+        "auth_method": "<api_key|oauth|none>",
+        "rate_limits": "<requests_per_minute>",
+        "sla": "<availability_sla>",
+        "fallback_strategy": "<circuit_breaker|cache|none>"
+      }
+    ],
+    "file_storage": [
+      {
+        "name": "<storage_name>",
+        "type": "<s3|gcs|azure_blob|nfs|efs>",
+        "access_pattern": "<read_heavy|write_heavy|balanced>",
+        "encryption": "<sse_s3|sse_kms|client_side>",
+        "lifecycle_rules": "<archive_after_30d|delete_after_90d|none>",
+        "size_estimate": "<gb_or_tb>"
+      }
+    ],
+    "service_discovery": {
+      "method": "<kubernetes_dns|consul|cloud_map|none>",
+      "health_check_interval": "10s"
+    },
+    "load_balancers": [
+      {
+        "name": "<lb_name>",
+        "type": "<alb|nlb|cloud_lb|nginx|traefik>",
+        "layer": "<L4|L7>",
+        "ssl_termination": true,
+        "health_check_path": "/health"
+      }
+    ]
+  },
+  "development_implications": {
+    "language_framework_recommendations": {
+      "notes": "Based on deployment environment, consider:",
+      "recommendations": []
+    },
+    "configuration_management": {
+      "approach": "<env_vars|config_files|secrets_manager|feature_flags>",
+      "per_environment": true
+    },
+    "local_development": {
+      "approach": "<docker_compose|minikube|kind|native>",
+      "parity_with_production": "<high|medium|low>",
+      "notes": "<how to run locally>"
+    }
+  },
+  "notes": {
+    "assumptions": [],
+    "open_questions": [],
+    "future_considerations": []
+  }
+}

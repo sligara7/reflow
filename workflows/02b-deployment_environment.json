@@ -1,0 +1,354 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "02b-deployment_environment",
+    "name": "Deployment Environment Specification",
+    "version": "1.0.0",
+    "description": "Define operational/deployment environment BEFORE development begins - understand WHERE and HOW the system will run",
+    "created": "2025-11-21",
+    "last_updated": "2025-11-21",
+    "purpose": "Capture deployment environment requirements upfront to inform development decisions and prevent late-stage deployment surprises",
+    "when_to_use": "After architecture/visualization (02) and BEFORE development implementation (03a)",
+    "key_insight": "Understanding the deployment environment (containerization, scaling, security, observability) should inform development decisions, not be discovered during deployment",
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/02b-deployment_environment.json on system in /path/to/your_system",
+    "typical_duration": "1-2 hours for initial spec, 30 min for updates"
+  },
+  "prerequisites": {
+    "required_conditions": [
+      "Basic setup complete (00a-basic_setup.json)",
+      "Architecture defined (01b, 01c, or 01d workflows complete)",
+      "Artifacts/visualizations created (02-artifacts_visualization.json complete OR skipped)",
+      "Intent to develop (not architecture-only handoff)"
+    ],
+    "required_artifacts": [
+      "context/working_memory.json - workflow context",
+      "specs/machine/service_arch/ - service architecture files (if exists)",
+      "specs/functional/functional_architecture.json - functional architecture (if exists)"
+    ],
+    "optional_artifacts": [
+      "docs/foundational/ - requirements, constraints documents",
+      "Existing Dockerfiles, docker-compose.yml, kubernetes manifests"
+    ]
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Full deployment environment specification",
+      "first_step": "DE-01"
+    },
+    "quick": {
+      "id": "quick",
+      "description": "Minimal deployment spec for simple systems",
+      "first_step": "DE-01",
+      "skip_actions": ["DE-01-A04", "DE-01-A05"]
+    },
+    "update": {
+      "id": "update",
+      "description": "Update existing deployment environment spec",
+      "first_step": "DE-02"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "DE-01",
+      "name": "Deployment Environment Specification",
+      "description": "Define the operational/deployment context for the system - WHERE and HOW it will run",
+      "phase": "specification",
+      "step_file": "workflow_steps/deployment/DE-01-DeploymentEnvironmentSpecification.json",
+      "rationale": "Understanding deployment environment upfront prevents costly rework when deployment constraints are discovered late",
+      "actions": [
+        {
+          "action_id": "DE-01-A01",
+          "description": "Identify target deployment platforms",
+          "purpose": "Know WHERE the system will run before writing code",
+          "questions": [
+            "What is the primary deployment target? (cloud provider, on-premises, hybrid, edge)",
+            "Which cloud provider(s)? (AWS, GCP, Azure, etc.)",
+            "What environments are needed? (dev, staging, production)",
+            "Are there geographic/regional requirements?",
+            "Any air-gapped or restricted network requirements?"
+          ],
+          "outputs": ["target_platforms section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A02",
+          "description": "Define containerization strategy",
+          "purpose": "Inform service packaging and dependency management decisions",
+          "questions": [
+            "Will services be containerized? (Docker, containerd, etc.)",
+            "What orchestration platform? (Kubernetes, ECS, Docker Swarm, none)",
+            "Serverless components? (Lambda, Cloud Functions, etc.)",
+            "Bare metal requirements? (high-performance, specialized hardware)",
+            "Base image standards? (alpine, distroless, custom)",
+            "Container registry? (ECR, GCR, DockerHub, private)"
+          ],
+          "outputs": ["containerization section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A03",
+          "description": "Specify scaling requirements",
+          "purpose": "Design for scale from the start, not as an afterthought",
+          "questions": [
+            "Expected load patterns? (steady, bursty, time-of-day)",
+            "Scaling strategy? (horizontal, vertical, both)",
+            "Auto-scaling triggers? (CPU, memory, queue depth, custom metrics)",
+            "Minimum/maximum replicas per service?",
+            "Any services that must be singleton?",
+            "Cost constraints on scaling?"
+          ],
+          "outputs": ["scaling section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A04",
+          "description": "Document security constraints",
+          "purpose": "Design security in, not bolt it on later",
+          "questions": [
+            "Network policies required? (ingress/egress rules, service mesh)",
+            "Secrets management approach? (Vault, AWS Secrets Manager, K8s secrets)",
+            "TLS requirements? (mTLS between services, certificate management)",
+            "Authentication/authorization? (OAuth, OIDC, API keys, mTLS)",
+            "Compliance frameworks? (SOC2, HIPAA, PCI-DSS, GDPR)",
+            "Data residency requirements?",
+            "Audit logging requirements?"
+          ],
+          "outputs": ["security section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A05",
+          "description": "Define observability requirements",
+          "purpose": "Plan for operations from the start - logging, metrics, tracing, alerting",
+          "questions": [
+            "Logging format and aggregation? (JSON, structured, ELK, CloudWatch, Datadog)",
+            "Metrics collection? (Prometheus, CloudWatch, custom)",
+            "Distributed tracing? (Jaeger, Zipkin, X-Ray, Datadog)",
+            "Alerting requirements? (PagerDuty, OpsGenie, Slack)",
+            "SLIs/SLOs defined? (latency, availability, error rate)",
+            "Retention requirements for logs/metrics?"
+          ],
+          "outputs": ["observability section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A06",
+          "description": "List infrastructure dependencies",
+          "purpose": "Identify all external systems the service depends on",
+          "questions": [
+            "Databases required? (type, managed vs self-hosted, HA requirements)",
+            "Caching layers? (Redis, Memcached, CDN)",
+            "Message queues? (Kafka, RabbitMQ, SQS, Pub/Sub)",
+            "External APIs? (third-party services, internal services)",
+            "File/object storage? (S3, GCS, NFS)",
+            "DNS/service discovery?",
+            "Load balancers?"
+          ],
+          "outputs": ["infrastructure_dependencies section of deployment_environment_spec.json"]
+        },
+        {
+          "action_id": "DE-01-A07",
+          "description": "Generate deployment_environment_spec.json",
+          "purpose": "Create the machine-readable specification",
+          "template": "templates/deployment_environment_spec_template.json",
+          "output_location": "specs/deployment/deployment_environment_spec.json",
+          "instructions": [
+            "Use template as starting point",
+            "Fill in all sections from A01-A06 analysis",
+            "Mark unknown/TBD items explicitly",
+            "Include rationale for key decisions"
+          ]
+        },
+        {
+          "action_id": "DE-01-A08",
+          "description": "Validate spec completeness and consistency",
+          "purpose": "Ensure spec is actionable before proceeding to development",
+          "validation_checks": [
+            "All required sections populated (no empty objects)",
+            "Infrastructure dependencies match service requirements",
+            "Security requirements compatible with target platform",
+            "Observability requirements achievable with chosen stack",
+            "Scaling requirements match expected load"
+          ],
+          "on_failure": "Return to relevant A01-A06 action to fill gaps"
+        }
+      ],
+      "outputs": [
+        "specs/deployment/deployment_environment_spec.json"
+      ],
+      "typical_time": "1-2 hours",
+      "gates": [
+        {
+          "gate_id": "G-DE-01",
+          "name": "Deployment Environment Specified",
+          "checks": [
+            "deployment_environment_spec.json exists and is valid JSON",
+            "All required sections have content (not empty/TBD)",
+            "Target platform is clearly identified",
+            "Containerization strategy is defined OR explicitly marked as 'none'",
+            "At least basic scaling requirements documented",
+            "Infrastructure dependencies listed"
+          ],
+          "blocking": true,
+          "failure_action": "Cannot proceed to development without deployment environment spec"
+        }
+      ],
+      "next_step": "DE-02"
+    },
+    {
+      "step_id": "DE-02",
+      "name": "Deployment Environment Validation & Integration",
+      "description": "Validate deployment spec against architecture and update relevant files",
+      "phase": "validation",
+      "step_file": "workflow_steps/deployment/DE-02-DeploymentEnvironmentValidation.json",
+      "actions": [
+        {
+          "action_id": "DE-02-A01",
+          "description": "Cross-reference with service_architecture.json",
+          "purpose": "Ensure deployment spec aligns with service architecture",
+          "checks": [
+            "All services in architecture have deployment considerations",
+            "Infrastructure dependencies support service requirements",
+            "Security model compatible with service communication patterns"
+          ]
+        },
+        {
+          "action_id": "DE-02-A02",
+          "description": "Validate infrastructure dependencies are complete",
+          "purpose": "No missing dependencies that will block development",
+          "checks": [
+            "All databases/caches required by services are listed",
+            "All external APIs are documented with connection details",
+            "All message queues/event buses are specified"
+          ]
+        },
+        {
+          "action_id": "DE-02-A03",
+          "description": "Check security requirements against compliance frameworks",
+          "purpose": "Ensure security approach meets compliance needs",
+          "conditional": "Only if compliance_frameworks specified in DE-01-A04",
+          "checks": [
+            "Data encryption requirements met",
+            "Audit logging sufficient for compliance",
+            "Access control model supports compliance requirements"
+          ]
+        },
+        {
+          "action_id": "DE-02-A04",
+          "description": "Update service_architecture.json with deployment_architecture section",
+          "purpose": "Ensure architecture files reflect deployment decisions",
+          "updates": [
+            "Add/update deployment_architecture section in each service_architecture.json",
+            "Cross-reference deployment_environment_spec.json"
+          ],
+          "output": "Updated specs/machine/service_arch/*/service_architecture.json files"
+        },
+        {
+          "action_id": "DE-02-A05",
+          "description": "Update working_memory.json",
+          "purpose": "Record deployment environment completion",
+          "updates": {
+            "deployment_environment_specified": true,
+            "deployment_spec_location": "specs/deployment/deployment_environment_spec.json"
+          }
+        }
+      ],
+      "outputs": [
+        "Updated service_architecture.json files",
+        "Updated working_memory.json"
+      ],
+      "typical_time": "30 minutes",
+      "gates": [
+        {
+          "gate_id": "G-DE-02",
+          "name": "Deployment Environment Validated",
+          "checks": [
+            "Deployment spec consistent with service architecture",
+            "No missing infrastructure dependencies",
+            "Security requirements validated (if compliance required)",
+            "service_architecture.json files updated with deployment_architecture"
+          ],
+          "blocking": true,
+          "failure_action": "Fix inconsistencies before proceeding"
+        }
+      ],
+      "next_step": "COMPLETE"
+    }
+  ],
+  "completion_criteria": {
+    "required": [
+      "deployment_environment_spec.json created with all required sections",
+      "Spec validated against service architecture",
+      "service_architecture.json files updated with deployment_architecture",
+      "working_memory.json updated with deployment_environment_specified: true"
+    ],
+    "optional": [
+      "Compliance validation completed (if applicable)",
+      "Infrastructure provisioning started (parallel track)"
+    ]
+  },
+  "success_criteria": {
+    "primary": "Development team knows WHERE and HOW the system will run before writing code",
+    "secondary": "Infrastructure team can begin provisioning while development proceeds",
+    "tertiary": "No deployment surprises during implementation or testing phases"
+  },
+  "workflow_outputs": {
+    "primary": [
+      {
+        "file": "specs/deployment/deployment_environment_spec.json",
+        "description": "Machine-readable deployment environment specification",
+        "consumed_by": ["03a-development_implementation", "04a-testing", "04b-operations"]
+      }
+    ],
+    "secondary": [
+      {
+        "file": "specs/machine/service_arch/*/service_architecture.json (updated)",
+        "description": "Service architectures with deployment_architecture sections"
+      }
+    ]
+  },
+  "integration_with_other_workflows": {
+    "predecessor": "02-artifacts_visualization.json (AV-04 or completion)",
+    "successor": "03a-development_implementation.json (D-01)",
+    "references": {
+      "03a-development_implementation": "D-01-A01 should reference deployment_environment_spec.json for language/framework decisions",
+      "D-06_5-PreDeploymentValidation": "Validates against deployment_environment_spec.json",
+      "04a-testing": "Uses deployment spec for test environment setup",
+      "04b-operations": "Uses deployment spec for production deployment"
+    }
+  },
+  "llm_agent_guidance": {
+    "key_questions": [
+      "Ask the user early: 'Where will this system be deployed?' before making any development decisions",
+      "If user says 'I don't know yet', prompt for at least: cloud vs on-prem, containerized vs not, any compliance requirements",
+      "Don't assume Docker/Kubernetes - some systems run bare metal, serverless, or on edge devices"
+    ],
+    "common_patterns": {
+      "startup_saas": {
+        "platforms": ["AWS", "GCP"],
+        "containerization": "Kubernetes",
+        "scaling": "horizontal auto-scaling",
+        "observability": "Datadog or similar"
+      },
+      "enterprise_on_prem": {
+        "platforms": ["on-premises", "VMware"],
+        "containerization": "Docker Compose or bare metal",
+        "scaling": "vertical, manual",
+        "security": "air-gapped, strict compliance"
+      },
+      "edge_iot": {
+        "platforms": ["edge devices", "ARM"],
+        "containerization": "lightweight containers or native",
+        "scaling": "device count",
+        "observability": "local with periodic sync"
+      },
+      "serverless": {
+        "platforms": ["AWS Lambda", "Cloud Functions"],
+        "containerization": "none or container images",
+        "scaling": "automatic, event-driven",
+        "observability": "cloud-native"
+      }
+    },
+    "anti_patterns": [
+      "Don't skip this workflow assuming 'we'll figure out deployment later'",
+      "Don't assume all services have the same deployment requirements",
+      "Don't over-engineer for scale you don't need yet (but document growth path)",
+      "Don't ignore security/compliance until the end"
+    ]
+  }
+}
