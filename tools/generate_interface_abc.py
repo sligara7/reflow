@@ -123,7 +123,7 @@ class InterfaceABCGenerator:
             self.graph_file = sanitize_path(
                 "specs/machine/graphs/system_of_systems_graph.json",
                 self.system_path,
-                must_exist=True
+                must_exist=False  # Don't require - will auto-generate if missing
             )
             self.lang_config_file = sanitize_path(
                 "specs/machine/development_language_configuration.json",
@@ -135,15 +135,69 @@ class InterfaceABCGenerator:
                 self.system_path,
                 must_exist=False
             )
-        except (PathSecurityError, FileNotFoundError) as e:
+        except PathSecurityError as e:
             print(f"ERROR: Path security violation: {e}", file=sys.stderr)
             sys.exit(1)
+
+        # Auto-generate graph if missing
+        if not self.graph_file.exists():
+            print(f"\n⚠️  System graph not found: {self.graph_file}")
+            print(f"📊 Auto-generating system graph...")
+            self._auto_generate_graph()
+
+            if not self.graph_file.exists():
+                print(f"\n❌ ERROR: Failed to auto-generate system graph.", file=sys.stderr)
+                print(f"Please run manually:", file=sys.stderr)
+                print(f"  python3 system_of_systems_graph_v2.py {self.system_path}", file=sys.stderr)
+                sys.exit(1)
+            else:
+                print(f"✅ System graph generated successfully")
 
         self.graph_data = None
         self.lang_config = None
         self.generated_count = 0
         self.skipped_count = 0
         self.errors = []
+
+    def _auto_generate_graph(self):
+        """Auto-generate system graph using system_of_systems_graph_v2.py"""
+        import subprocess
+
+        # Find system_of_systems_graph_v2.py in the same directory as this tool
+        tools_dir = Path(__file__).parent
+        graph_tool = tools_dir / "system_of_systems_graph_v2.py"
+
+        if not graph_tool.exists():
+            print(f"⚠️  Graph generation tool not found: {graph_tool}", file=sys.stderr)
+            return
+
+        try:
+            # Run system_of_systems_graph_v2.py with system root
+            # Use index.json as input (standard service mode)
+            index_file = self.system_path / "specs" / "machine" / "index.json"
+
+            if index_file.exists():
+                print(f"Running: python3 {graph_tool} {index_file}")
+                result = subprocess.run(
+                    ["python3", str(graph_tool), str(index_file)],
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+
+                if result.returncode != 0:
+                    print(f"⚠️  Graph generation failed:", file=sys.stderr)
+                    print(result.stderr, file=sys.stderr)
+                else:
+                    print(result.stdout)
+            else:
+                print(f"⚠️  Index file not found: {index_file}", file=sys.stderr)
+                print(f"Cannot auto-generate graph without index.json", file=sys.stderr)
+
+        except subprocess.TimeoutExpired:
+            print(f"⚠️  Graph generation timed out (> 60s)", file=sys.stderr)
+        except Exception as e:
+            print(f"⚠️  Graph generation error: {e}", file=sys.stderr)
 
     def load_data(self):
         """Load system graph and language configuration"""

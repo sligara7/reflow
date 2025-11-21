@@ -1831,7 +1831,10 @@ Supported Frameworks:
                 if wm_path.exists():
                     try:
                         wm_data = safe_load_json(wm_path, file_type_description="working memory")
-                        system_root_str = wm_data.get('path_configuration', {}).get('system_root')
+                        # Try paths.system_root first (standard location), fallback to path_configuration.system_root
+                        system_root_str = wm_data.get('paths', {}).get('system_root')
+                        if not system_root_str:
+                            system_root_str = wm_data.get('path_configuration', {}).get('system_root')
                         if system_root_str:
                             system_root_from_wm = Path(system_root_str).resolve()
                             print(f"System root: {system_root_from_wm} (from working_memory.json)")
