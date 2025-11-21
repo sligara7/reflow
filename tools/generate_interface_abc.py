@@ -259,13 +259,73 @@ class InterfaceABCGenerator:
         return base_type
 
     def extract_method_signature(self, icd: Dict, language: str) -> List[Dict]:
-        """Extract method signatures from ICD"""
+        """Extract method signatures from ICD
+
+        Supports both:
+        - Modern format: operations array with request_schema/response_schema
+        - Legacy format: contract.input_specification/output_specification
+        """
         methods = []
 
         # Get interface name/ID
         interface_id = icd.get('interface_id', 'unknown')
 
-        # Extract input/output specifications
+        # NEW: Check for modern operations array format first
+        operations = icd.get('operations', [])
+        if operations:
+            for op in operations:
+                method = {
+                    'name': op.get('operation_name', op.get('operation_id', 'unknownOperation')),
+                    'description': op.get('description', f"Operation {op.get('operation_name', '')}"),
+                    'params': [],
+                    'returns': 'void',
+                    'raises': []
+                }
+
+                # Extract parameters from request_schema
+                request_schema = op.get('request_schema', {})
+                properties = request_schema.get('properties', {})
+                required = request_schema.get('required', [])
+
+                for param_name, param_spec in properties.items():
+                    param_type = param_spec.get('type', 'any')
+                    # Handle nested objects and arrays
+                    if param_type == 'array':
+                        items_type = param_spec.get('items', {}).get('type', 'any')
+                        lang_type = f"{self.map_json_type_to_language(items_type, language)}[]"
+                    elif param_type == 'object':
+                        lang_type = self.map_json_type_to_language('object', language)
+                    else:
+                        lang_type = self.map_json_type_to_language(param_type, language)
+
+                    method['params'].append({
+                        'name': param_name,
+                        'type': lang_type,
+                        'required': param_name in required,
+                        'description': param_spec.get('description', f"{param_name} parameter")
+                    })
+
+                # Extract return type from response_schema
+                response_schema = op.get('response_schema', {})
+                if response_schema:
+                    method['returns'] = self.map_json_type_to_language('object', language)
+
+                # Handle path parameters (for REST endpoints)
+                path_params = op.get('path_parameters', {})
+                for param_name, param_spec in path_params.items():
+                    lang_type = self.map_json_type_to_language(param_spec.get('type', 'string'), language)
+                    method['params'].append({
+                        'name': param_name,
+                        'type': lang_type,
+                        'required': True,
+                        'description': param_spec.get('description', f"Path parameter: {param_name}")
+                    })
+
+                methods.append(method)
+
+            return methods
+
+        # LEGACY: Fall back to old contract format
         contract = icd.get('contract', {})
         input_spec = contract.get('input_specification', {})
         output_spec = contract.get('output_specification', {})
@@ -295,6 +355,7 @@ class InterfaceABCGenerator:
                 method['params'].append({
                     'name': param_name,
                     'type': lang_type,
+                    'required': True,
                     'description': f"{param_name} parameter"
                 })
 
