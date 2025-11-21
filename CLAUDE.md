@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.17.0
-**Last Updated**: 2025-11-19
+**Version**: 3.19.0
+**Last Updated**: 2025-11-21
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.19.0**: **Deployment Environment Specification** - Define WHERE and HOW the system will be deployed BEFORE development begins. New workflow (02b-deployment_environment.json) captures deployment context upfront: target platforms, containerization strategy, scaling requirements, security constraints, observability needs, and infrastructure dependencies. Prevents late-stage deployment surprises.
 
 **NEW in v3.17.0**: **Service Interface Contracts** - Embedded architectural "hooks" that warn LLMs before making breaking changes to service functions or interfaces. Proactive drift prevention through minimal JSON contracts in each service directory.
 
@@ -122,6 +124,7 @@ pixi run validate-arch <system_path>  # Shortcuts available
 01c-top_down_design.json         → Top-down design (2-4 hours)
 01d-functional_analysis.json     → Functional analysis (2-6 hours)
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
+02b-deployment_environment.json  → Deployment environment spec (1-2 hours) [NEW v3.19.0]
 03a-development_implementation.json → Implementation (days-weeks)
 03b-development_validation.json  → Validation (1-2 days)
 04a-testing.json                 → Testing workflows (1 week)
@@ -158,9 +161,15 @@ feature_update.json              → Update existing systems
 
 3. **Documentation**: `02-artifacts_visualization.json` - ICDs, Mermaid diagrams
 
-4. **Build** (optional): `03a-development_implementation.json` then `03b-development_validation.json`
+4. **Deployment Environment** (NEW v3.19.0): `02b-deployment_environment.json` - Define WHERE/HOW before coding
+   - Target platforms (cloud, on-prem, hybrid, edge)
+   - Containerization strategy (Docker, K8s, serverless)
+   - Scaling, security, observability requirements
+   - Infrastructure dependencies (databases, caches, queues)
 
-5. **Deploy** (optional): `04a-testing.json` then `04b-operations.json`
+5. **Build** (optional): `03a-development_implementation.json` then `03b-development_validation.json`
+
+6. **Deploy** (optional): `04a-testing.json` then `04b-operations.json`
 
 ### Functional Analysis Flow (NEW v3.13.0)
 
@@ -432,6 +441,37 @@ service_architecture.json                     ← Symlink to current
 ```
 
 ## New Features Summary
+
+### v3.19.0 - Deployment Environment Specification Workflow
+**Problem Solved**: Deployment environment is often an afterthought, scattered across multiple workflows (SE-04, AV-02-A04, D-06_5) and discovered late during implementation. Developers make containerization, security, and scaling decisions without knowing the target platform upfront.
+
+**Key Features**:
+- **New Workflow**: `02b-deployment_environment.json` - Define WHERE and HOW before coding
+- **Structured Specification**: Machine-readable `deployment_environment_spec.json` covering all deployment concerns
+- **Six Key Areas**: Target platforms, containerization, scaling, security, observability, infrastructure dependencies
+- **Development Alignment**: Deployment spec informs language/framework decisions in development phase
+
+**New Artifacts**:
+- `specs/deployment/deployment_environment_spec.json` - Complete deployment specification
+- `templates/deployment_environment_spec_template.json` - Template for new systems
+
+**Workflow Integration**:
+- **02b-deployment_environment**: New workflow between artifacts (02) and development (03a)
+- **DE-01**: Deployment Environment Specification (1-2 hours)
+- **DE-02**: Deployment Environment Validation & Integration
+
+**Workflow Position**:
+```
+01b/01c/01d (architecture) → 02 (artifacts) → [NEW] 02b (deployment env) → 03a (development)
+```
+
+**Impact**:
+- Prevents late-stage deployment surprises
+- Informs development decisions upfront (containerization, scaling, security designed in)
+- Enables infrastructure team to provision in parallel with development
+- Reduces 3-5 days rework per service from deployment constraints discovered late
+
+**Full Documentation**: See `docs/changes/CHANGE_PROPOSAL_20251121_DEPLOYMENT_ENVIRONMENT.md`
 
 ### v3.18.0 - Protocol-Based Interfaces, Dependency Injection & Service Organization Strategies
 **Problem Solved**: ABCs cause metaclass conflicts with frameworks (FastAPI, SQLAlchemy, Pydantic). Need flexible service organization strategies (domain-based vs workflow-based). Single implementation model limits multi-facility deployments.

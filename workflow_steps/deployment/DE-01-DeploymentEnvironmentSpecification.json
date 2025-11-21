@@ -1,0 +1,325 @@
+{
+  "step_metadata": {
+    "step_id": "DE-01",
+    "name": "Deployment Environment Specification",
+    "version": "1.0.0",
+    "description": "Define the operational/deployment context for the system - WHERE and HOW it will run",
+    "parent_workflow": "02b-deployment_environment.json",
+    "created": "2025-11-21",
+    "typical_duration": "1-2 hours"
+  },
+  "purpose": {
+    "primary": "Capture deployment environment requirements BEFORE development begins",
+    "secondary": "Inform development decisions (language, framework, packaging)",
+    "tertiary": "Enable infrastructure team to begin provisioning in parallel with development"
+  },
+  "rationale": {
+    "problem": "Deployment environment is often an afterthought, leading to costly rework when constraints are discovered late",
+    "solution": "Ask WHERE and HOW upfront, document in structured spec, use to inform all downstream decisions",
+    "benefit": "3-5 days saved per service by avoiding late-stage deployment constraint discoveries"
+  },
+  "inputs": {
+    "required": [
+      {
+        "name": "working_memory.json",
+        "location": "context/working_memory.json",
+        "purpose": "Workflow context and paths"
+      }
+    ],
+    "optional": [
+      {
+        "name": "service_architecture.json",
+        "location": "specs/machine/service_arch/*/service_architecture.json",
+        "purpose": "Understand services that need deployment"
+      },
+      {
+        "name": "functional_architecture.json",
+        "location": "specs/functional/functional_architecture.json",
+        "purpose": "Understand system capabilities"
+      },
+      {
+        "name": "existing deployment artifacts",
+        "location": "Dockerfiles, docker-compose.yml, kubernetes/, terraform/",
+        "purpose": "Build on existing deployment decisions"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "action_id": "DE-01-A01",
+      "name": "Identify Target Deployment Platforms",
+      "description": "Determine WHERE the system will be deployed",
+      "detailed_instructions": [
+        "1. Ask the user/stakeholder about deployment targets",
+        "2. Determine primary platform (cloud, on-prem, hybrid, edge)",
+        "3. If cloud, identify provider(s) and services",
+        "4. Document environment tiers (dev, staging, prod)",
+        "5. Note any geographic/regional requirements",
+        "6. Check for restricted network requirements (air-gapped, VPN-only)"
+      ],
+      "decision_tree": {
+        "cloud": {
+          "options": ["AWS", "GCP", "Azure", "DigitalOcean", "other"],
+          "follow_up": "Which services? (EKS, ECS, Lambda, GKE, Cloud Run, AKS, etc.)"
+        },
+        "on_premises": {
+          "options": ["bare_metal", "vmware", "openstack", "kubernetes"],
+          "follow_up": "Any hardware constraints? Network restrictions?"
+        },
+        "hybrid": {
+          "follow_up": "Which components cloud vs on-prem? Why?"
+        },
+        "edge": {
+          "options": ["raspberry_pi", "nvidia_jetson", "custom_hardware", "mobile"],
+          "follow_up": "Connectivity model? Update mechanism?"
+        }
+      },
+      "output": {
+        "section": "target_platforms",
+        "fields": ["primary", "secondary", "cloud_provider", "cloud_services", "environments", "regions", "network_restrictions"]
+      }
+    },
+    {
+      "action_id": "DE-01-A02",
+      "name": "Define Containerization Strategy",
+      "description": "Determine HOW services will be packaged and orchestrated",
+      "detailed_instructions": [
+        "1. Determine if containerization is appropriate (not always!)",
+        "2. If containerized, choose runtime (Docker, containerd, etc.)",
+        "3. Select orchestration platform (K8s, ECS, Swarm, none)",
+        "4. Consider serverless components",
+        "5. Define base image standards",
+        "6. Identify container registry"
+      ],
+      "decision_tree": {
+        "containerized": {
+          "orchestration": {
+            "kubernetes": "For complex microservices, need portability",
+            "ecs_fargate": "AWS-native, simpler than K8s",
+            "docker_compose": "Simple deployments, local dev",
+            "none": "Single container deployments"
+          }
+        },
+        "serverless": {
+          "options": ["lambda", "cloud_functions", "cloud_run", "azure_functions"],
+          "when": "Event-driven, variable load, cost optimization"
+        },
+        "bare_metal": {
+          "when": "High performance, specialized hardware, legacy systems",
+          "packaging": "Native binaries, systemd, process managers"
+        }
+      },
+      "output": {
+        "section": "containerization",
+        "fields": ["strategy", "runtime", "orchestration", "base_images", "registry", "build_strategy"]
+      }
+    },
+    {
+      "action_id": "DE-01-A03",
+      "name": "Specify Scaling Requirements",
+      "description": "Define HOW the system will scale to meet demand",
+      "detailed_instructions": [
+        "1. Understand expected load patterns (steady, bursty, seasonal)",
+        "2. Determine scaling strategy (horizontal, vertical, both)",
+        "3. Define auto-scaling triggers and thresholds",
+        "4. Set min/max replicas per service",
+        "5. Identify singleton services (if any)",
+        "6. Consider cost constraints"
+      ],
+      "scaling_patterns": {
+        "horizontal": {
+          "when": "Stateless services, need high availability",
+          "triggers": ["cpu_utilization", "memory_utilization", "request_rate", "queue_depth"]
+        },
+        "vertical": {
+          "when": "Stateful services, database-bound workloads",
+          "approach": "Resize instances, may require downtime"
+        },
+        "event_driven": {
+          "when": "Serverless, message-driven architectures",
+          "triggers": ["queue_messages", "event_rate"]
+        }
+      },
+      "output": {
+        "section": "scaling",
+        "fields": ["strategy", "min_replicas", "max_replicas", "triggers", "cooldown_periods", "cost_limits"]
+      }
+    },
+    {
+      "action_id": "DE-01-A04",
+      "name": "Document Security Constraints",
+      "description": "Define security requirements that affect deployment and development",
+      "detailed_instructions": [
+        "1. Identify network security requirements (policies, service mesh, firewall)",
+        "2. Determine secrets management approach",
+        "3. Define TLS/mTLS requirements",
+        "4. Identify authentication/authorization requirements",
+        "5. Check compliance framework requirements",
+        "6. Document data residency requirements",
+        "7. Define audit logging requirements"
+      ],
+      "security_considerations": {
+        "network": {
+          "ingress_rules": "What traffic can enter?",
+          "egress_rules": "What external systems can services call?",
+          "service_mesh": "Istio, Linkerd, or none?",
+          "network_policies": "Kubernetes NetworkPolicies?"
+        },
+        "secrets": {
+          "options": ["vault", "aws_secrets_manager", "gcp_secret_manager", "kubernetes_secrets", "azure_key_vault"],
+          "rotation": "How often? Automated?"
+        },
+        "compliance": {
+          "frameworks": ["SOC2", "HIPAA", "PCI-DSS", "GDPR", "FedRAMP"],
+          "implications": "Each has specific requirements for logging, encryption, access control"
+        }
+      },
+      "output": {
+        "section": "security",
+        "fields": ["network_policies", "secrets_management", "tls_config", "auth_requirements", "compliance_frameworks", "data_residency", "audit_logging"]
+      }
+    },
+    {
+      "action_id": "DE-01-A05",
+      "name": "Define Observability Requirements",
+      "description": "Plan for operations from the start - logging, metrics, tracing, alerting",
+      "detailed_instructions": [
+        "1. Define logging format and aggregation strategy",
+        "2. Identify metrics to collect and tools",
+        "3. Determine if distributed tracing is needed",
+        "4. Define alerting requirements and channels",
+        "5. Establish SLIs/SLOs if applicable",
+        "6. Determine retention requirements"
+      ],
+      "observability_pillars": {
+        "logging": {
+          "format": ["json", "structured", "plain_text"],
+          "aggregators": ["elasticsearch", "cloudwatch", "datadog", "splunk", "loki"],
+          "levels": ["debug", "info", "warn", "error"]
+        },
+        "metrics": {
+          "collectors": ["prometheus", "cloudwatch", "datadog", "newrelic"],
+          "types": ["counters", "gauges", "histograms", "summaries"],
+          "scrape_interval": "15s typical"
+        },
+        "tracing": {
+          "providers": ["jaeger", "zipkin", "xray", "datadog", "honeycomb"],
+          "sample_rate": "1-10% typical for production",
+          "when": "Microservices, async flows, debugging latency"
+        },
+        "alerting": {
+          "providers": ["pagerduty", "opsgenie", "slack", "email"],
+          "thresholds": "Based on SLOs"
+        }
+      },
+      "output": {
+        "section": "observability",
+        "fields": ["logging", "metrics", "tracing", "alerting", "slis_slos", "retention"]
+      }
+    },
+    {
+      "action_id": "DE-01-A06",
+      "name": "List Infrastructure Dependencies",
+      "description": "Identify all external systems the services depend on",
+      "detailed_instructions": [
+        "1. List all database requirements",
+        "2. Identify caching layers needed",
+        "3. Document message queue/event bus requirements",
+        "4. List external APIs (third-party and internal)",
+        "5. Identify file/object storage needs",
+        "6. Document DNS/service discovery approach",
+        "7. Note load balancer requirements"
+      ],
+      "dependency_types": {
+        "databases": {
+          "types": ["postgresql", "mysql", "mongodb", "dynamodb", "redis"],
+          "considerations": ["managed_vs_self_hosted", "ha_requirements", "backup_strategy", "size_estimates"]
+        },
+        "caches": {
+          "types": ["redis", "memcached", "cdn"],
+          "considerations": ["eviction_policy", "cluster_mode", "persistence"]
+        },
+        "message_queues": {
+          "types": ["kafka", "rabbitmq", "sqs", "pubsub", "nats"],
+          "considerations": ["ordering", "durability", "throughput", "partitioning"]
+        },
+        "external_apis": {
+          "document": ["endpoint", "auth_method", "rate_limits", "sla"]
+        },
+        "storage": {
+          "types": ["s3", "gcs", "nfs", "efs"],
+          "considerations": ["access_patterns", "retention", "encryption"]
+        }
+      },
+      "output": {
+        "section": "infrastructure_dependencies",
+        "fields": ["databases", "caches", "message_queues", "external_apis", "file_storage", "service_discovery", "load_balancers"]
+      }
+    },
+    {
+      "action_id": "DE-01-A07",
+      "name": "Generate deployment_environment_spec.json",
+      "description": "Create the machine-readable specification from gathered information",
+      "detailed_instructions": [
+        "1. Read template from templates/deployment_environment_spec_template.json",
+        "2. Fill in all sections from DE-01-A01 through DE-01-A06",
+        "3. Mark unknown items as 'TBD' with explanation",
+        "4. Include rationale for key decisions",
+        "5. Write to specs/deployment/deployment_environment_spec.json"
+      ],
+      "template_location": "templates/deployment_environment_spec_template.json",
+      "output_location": "specs/deployment/deployment_environment_spec.json",
+      "validation": "Ensure valid JSON, all required sections populated"
+    },
+    {
+      "action_id": "DE-01-A08",
+      "name": "Validate Spec Completeness",
+      "description": "Ensure the spec is actionable before proceeding",
+      "validation_checks": [
+        {
+          "check": "target_platforms.primary is not empty",
+          "failure": "Must specify at least primary deployment target"
+        },
+        {
+          "check": "containerization.strategy is defined",
+          "failure": "Must specify containerization approach (even if 'none')"
+        },
+        {
+          "check": "scaling section has meaningful values",
+          "failure": "Must specify at least basic scaling requirements"
+        },
+        {
+          "check": "infrastructure_dependencies is not empty (unless truly standalone)",
+          "failure": "Most systems have at least one dependency - verify this is intentional"
+        },
+        {
+          "check": "No critical TBD items",
+          "failure": "Resolve TBD items that block development"
+        }
+      ],
+      "on_validation_failure": "Return to relevant action (A01-A06) to fill gaps"
+    }
+  ],
+  "outputs": {
+    "primary": {
+      "file": "specs/deployment/deployment_environment_spec.json",
+      "description": "Complete deployment environment specification",
+      "schema_reference": "templates/deployment_environment_spec_template.json"
+    }
+  },
+  "quality_gate": {
+    "gate_id": "G-DE-01",
+    "name": "Deployment Environment Specified",
+    "blocking": true,
+    "checks": [
+      "deployment_environment_spec.json exists",
+      "File is valid JSON",
+      "target_platforms.primary specified",
+      "containerization.strategy specified",
+      "scaling section populated",
+      "At least one infrastructure dependency documented (or explicitly none)"
+    ],
+    "failure_action": "Cannot proceed to development without deployment environment spec"
+  },
+  "next_step": "DE-02"
+}

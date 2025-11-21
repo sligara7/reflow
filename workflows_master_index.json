@@ -115,10 +115,40 @@
         "01-systems_engineering"
       ],
       "conditional": true,
-      "next_workflow": "03-development",
+      "next_workflow": "02b-deployment_environment OR 03a-development_implementation",
+      "next_workflow_note": "If user intends to develop, go to 02b-deployment_environment to define operational context. If architecture-only, workflow ends.",
       "alternative_next_workflow": null,
       "steps_directory": "workflow_steps/artifacts_visualization",
       "notes": "Conditional workflow - ask user if they plan to develop the system"
+    },
+    "02b-deployment_environment": {
+      "id": "02b-deployment_environment",
+      "name": "Deployment Environment Specification",
+      "file": "workflows/02b-deployment_environment.json",
+      "description": "Define WHERE and HOW the system will be deployed BEFORE development begins - capture deployment environment requirements upfront",
+      "entry_points": [],
+      "prerequisites": [
+        "00a-basic_setup",
+        "01b-bottom_up_integration OR 01c-top_down_design OR 01d-functional_analysis",
+        "02-artifacts_visualization (optional)"
+      ],
+      "next_workflow": "03a-development_implementation",
+      "steps_directory": "workflow_steps/deployment",
+      "context_benefit": "New in v3.19.0 - Prevents late-stage deployment surprises by defining operational context upfront",
+      "key_questions": [
+        "WHERE will the system be deployed? (cloud, on-prem, hybrid, edge)",
+        "HOW will services be containerized/orchestrated? (Docker, K8s, serverless)",
+        "WHAT scaling requirements exist? (horizontal, vertical, triggers)",
+        "WHAT security constraints apply? (compliance, secrets, network policies)",
+        "WHAT observability is needed? (logging, metrics, tracing, alerting)",
+        "WHAT infrastructure dependencies exist? (databases, caches, queues)"
+      ],
+      "benefits": [
+        "Informs development decisions (language, framework, packaging)",
+        "Enables infrastructure provisioning in parallel with development",
+        "Prevents costly rework from deployment constraints discovered late",
+        "Ensures security and compliance requirements are designed in"
+      ]
     },
     "03-development": {
       "id": "03-development",
@@ -263,12 +293,13 @@
     "PATH A (Functional-Only): 01d-functional_analysis → STOP or continue to 01b/01c",
     "PATH B (Standard SE): 01a-approach_detection → 01b-bottom_up_integration OR 01c-top_down_design",
     "02-artifacts_visualization",
+    "02b-deployment_environment (NEW v3.19.0 - define WHERE/HOW before development)",
     "03a-development_implementation",
     "03b-development_validation",
     "04a-testing",
     "04b-operations"
   ],
-  "workflow_order_note": "Two paths available: PATH A for functional-only analysis (can stop after 01d or continue to service allocation), PATH B for standard SE flow (01a routes to 01b or 01c based on detection)",
+  "workflow_order_note": "Two paths available: PATH A for functional-only analysis (can stop after 01d or continue to service allocation), PATH B for standard SE flow (01a routes to 01b or 01c based on detection). NEW in v3.19.0: 02b-deployment_environment captures deployment context BEFORE development begins.",
   "paths": {
     "reflow_root": "Path to reflow installation (configured in setup workflow)",
     "workflows_directory": "workflows/",
