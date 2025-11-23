@@ -1,0 +1,366 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "template_name": "development_standards_template",
+  "template_version": "1.0.0",
+  "description": "Template for development standards configuration - language-specific defaults with user preference overrides",
+  "created": "2025-11-23",
+  "reflow_version": "3.20.0",
+
+  "usage": {
+    "location": "{system_root}/specs/development/development_standards.json",
+    "created_by": "S-03-A07 (Configure Development Standards) or configure_development_standards.py",
+    "used_by": [
+      "D-01-A04.5 (Interface Contract Generation)",
+      "D-01.4 (Language-specific Setup)",
+      "FA-07/SE-01 (Service Organization Strategy)",
+      "generate_python_project.py",
+      "generate_interface_protocols.py"
+    ]
+  },
+
+  "template": {
+    "schema_version": "1.0.0",
+    "created": "TIMESTAMP",
+    "last_modified": "TIMESTAMP",
+    "llm_prompted": true,
+
+    "primary_language": {
+      "language": "LANGUAGE_NAME",
+      "version": "VERSION_CONSTRAINT",
+      "selection_rationale": "REASON_FOR_LANGUAGE_CHOICE"
+    },
+
+    "language_standards": {
+      "python": {
+        "interface_strategy": {
+          "value": "protocol_di",
+          "options": ["protocol_di", "abc", "manual"],
+          "default": "protocol_di",
+          "user_customized": false,
+          "rationale": "Protocol + DI provides structural typing, no metaclass conflicts, and easy testing via dependency injection"
+        },
+        "dependency_manager": {
+          "value": "hatchling",
+          "options": ["hatchling", "poetry", "uv", "setuptools", "pip_requirements"],
+          "default": "hatchling",
+          "user_customized": false,
+          "rationale": "Hatchling is PEP 517/518/621 compliant, fast, and requires minimal configuration"
+        },
+        "lock_file_generation": {
+          "value": true,
+          "options": [true, false],
+          "default": true,
+          "lock_tool_by_manager": {
+            "hatchling": "pip-tools (pip-compile)",
+            "poetry": "poetry.lock (built-in)",
+            "uv": "uv.lock (built-in)",
+            "setuptools": "pip-tools (pip-compile)",
+            "pip_requirements": "pip-tools (pip-compile)"
+          },
+          "user_customized": false,
+          "rationale": "Lock files ensure reproducible builds across environments"
+        },
+        "project_config": {
+          "value": "pyproject_toml",
+          "options": ["pyproject_toml", "setup_py", "setup_cfg"],
+          "default": "pyproject_toml",
+          "user_customized": false,
+          "rationale": "pyproject.toml is the modern Python standard (PEP 518/621)"
+        },
+        "testing_framework": {
+          "value": "pytest",
+          "options": ["pytest", "unittest", "nose2"],
+          "default": "pytest",
+          "user_customized": false,
+          "rationale": "pytest is the de facto standard with excellent ecosystem support"
+        },
+        "linting": {
+          "value": "ruff",
+          "options": ["ruff", "flake8_black", "pylint", "none"],
+          "default": "ruff",
+          "user_customized": false,
+          "rationale": "ruff replaces flake8, black, isort with a single fast tool"
+        },
+        "type_checking": {
+          "value": "mypy",
+          "options": ["mypy", "pyright", "none"],
+          "default": "mypy",
+          "user_customized": false,
+          "rationale": "mypy is the standard, pyright is faster but less ecosystem support"
+        },
+        "web_framework": {
+          "value": "fastapi",
+          "options": ["fastapi", "flask", "django", "litestar", "none"],
+          "default": "fastapi",
+          "user_customized": false,
+          "rationale": "FastAPI is async-native with automatic OpenAPI docs and excellent typing support"
+        },
+        "orm": {
+          "value": "sqlalchemy",
+          "options": ["sqlalchemy", "sqlmodel", "tortoise", "raw_sql", "none"],
+          "default": "sqlalchemy",
+          "user_customized": false,
+          "rationale": "SQLAlchemy 2.0 is the industry standard with excellent typing support"
+        },
+        "configuration": {
+          "value": "pydantic_settings",
+          "options": ["pydantic_settings", "python_dotenv", "dynaconf", "none"],
+          "default": "pydantic_settings",
+          "user_customized": false,
+          "rationale": "Pydantic Settings provides type-safe configuration with validation"
+        },
+        "logging": {
+          "value": "structlog",
+          "options": ["structlog", "stdlib_logging", "loguru"],
+          "default": "structlog",
+          "user_customized": false,
+          "rationale": "structlog provides structured JSON logs ideal for observability"
+        },
+        "http_client": {
+          "value": "httpx",
+          "options": ["httpx", "requests", "aiohttp"],
+          "default": "httpx",
+          "user_customized": false,
+          "rationale": "httpx is async-native with an API similar to requests"
+        }
+      },
+
+      "typescript": {
+        "interface_strategy": {
+          "value": "typescript_interfaces",
+          "options": ["typescript_interfaces", "manual"],
+          "default": "typescript_interfaces",
+          "user_customized": false,
+          "rationale": "TypeScript interfaces are the native structural typing mechanism"
+        },
+        "package_manager": {
+          "value": "pnpm",
+          "options": ["pnpm", "npm", "yarn", "bun"],
+          "default": "pnpm",
+          "user_customized": false,
+          "rationale": "pnpm is fast, disk-efficient, and strict about dependencies"
+        },
+        "lock_file_generation": {
+          "value": true,
+          "options": [true, false],
+          "default": true,
+          "user_customized": false,
+          "rationale": "Lock files ensure reproducible builds"
+        },
+        "testing_framework": {
+          "value": "vitest",
+          "options": ["vitest", "jest", "mocha"],
+          "default": "vitest",
+          "user_customized": false,
+          "rationale": "vitest is fast, ESM-native, and compatible with Vite projects"
+        },
+        "linting": {
+          "value": "eslint_prettier",
+          "options": ["eslint_prettier", "biome", "none"],
+          "default": "eslint_prettier",
+          "user_customized": false,
+          "rationale": "ESLint + Prettier is the established standard for TypeScript"
+        },
+        "web_framework": {
+          "value": "none",
+          "options": ["nextjs", "express", "fastify", "hono", "none"],
+          "default": "none",
+          "user_customized": false,
+          "rationale": "Depends on use case - frontend vs backend vs full-stack"
+        }
+      },
+
+      "rust": {
+        "interface_strategy": {
+          "value": "traits",
+          "options": ["traits"],
+          "default": "traits",
+          "user_customized": false,
+          "rationale": "Rust traits are the only interface mechanism"
+        },
+        "build_system": {
+          "value": "cargo",
+          "options": ["cargo"],
+          "default": "cargo",
+          "user_customized": false,
+          "rationale": "Cargo is the standard build system for Rust"
+        },
+        "lock_file_generation": {
+          "value": true,
+          "options": [true, false],
+          "default": true,
+          "user_customized": false,
+          "rationale": "Cargo.lock ensures reproducible builds"
+        },
+        "testing_framework": {
+          "value": "builtin",
+          "options": ["builtin"],
+          "default": "builtin",
+          "user_customized": false,
+          "rationale": "Rust has built-in testing support"
+        },
+        "web_framework": {
+          "value": "none",
+          "options": ["axum", "actix_web", "rocket", "none"],
+          "default": "none",
+          "user_customized": false,
+          "rationale": "Depends on use case"
+        }
+      },
+
+      "go": {
+        "interface_strategy": {
+          "value": "interfaces",
+          "options": ["interfaces"],
+          "default": "interfaces",
+          "user_customized": false,
+          "rationale": "Go interfaces are implicit and the only interface mechanism"
+        },
+        "module_system": {
+          "value": "go_mod",
+          "options": ["go_mod"],
+          "default": "go_mod",
+          "user_customized": false,
+          "rationale": "Go modules are the standard dependency system"
+        },
+        "lock_file_generation": {
+          "value": true,
+          "options": [true, false],
+          "default": true,
+          "user_customized": false,
+          "rationale": "go.sum ensures reproducible builds"
+        },
+        "testing_framework": {
+          "value": "builtin",
+          "options": ["builtin", "testify"],
+          "default": "builtin",
+          "user_customized": false,
+          "rationale": "Go has built-in testing support"
+        },
+        "web_framework": {
+          "value": "none",
+          "options": ["gin", "echo", "fiber", "chi", "none"],
+          "default": "none",
+          "user_customized": false,
+          "rationale": "Depends on use case"
+        }
+      },
+
+      "java": {
+        "interface_strategy": {
+          "value": "interfaces",
+          "options": ["interfaces", "abstract_classes"],
+          "default": "interfaces",
+          "user_customized": false,
+          "rationale": "Java interfaces provide clean contracts without implementation coupling"
+        },
+        "build_system": {
+          "value": "gradle",
+          "options": ["gradle", "maven"],
+          "default": "gradle",
+          "user_customized": false,
+          "rationale": "Gradle is more flexible and faster than Maven"
+        },
+        "lock_file_generation": {
+          "value": true,
+          "options": [true, false],
+          "default": true,
+          "user_customized": false,
+          "rationale": "Lock files ensure reproducible builds"
+        },
+        "testing_framework": {
+          "value": "junit5",
+          "options": ["junit5", "junit4", "testng"],
+          "default": "junit5",
+          "user_customized": false,
+          "rationale": "JUnit 5 is the modern standard with better extension model"
+        },
+        "web_framework": {
+          "value": "none",
+          "options": ["spring_boot", "quarkus", "micronaut", "none"],
+          "default": "none",
+          "user_customized": false,
+          "rationale": "Depends on use case"
+        }
+      }
+    },
+
+    "cross_cutting": {
+      "containerization": {
+        "value": "docker",
+        "options": ["docker", "podman", "none"],
+        "default": "docker",
+        "user_customized": false,
+        "rationale": "Docker is the industry standard for containerization"
+      },
+      "ci_cd": {
+        "value": "github_actions",
+        "options": ["github_actions", "gitlab_ci", "jenkins", "none"],
+        "default": "github_actions",
+        "user_customized": false,
+        "rationale": "GitHub Actions integrates well with GitHub-hosted repositories"
+      },
+      "api_documentation": {
+        "value": "openapi",
+        "options": ["openapi", "graphql_schema", "none"],
+        "default": "openapi",
+        "user_customized": false,
+        "rationale": "OpenAPI is the standard for REST API documentation"
+      }
+    },
+
+    "service_organization": {
+      "strategy": {
+        "value": null,
+        "options": ["workflow_based", "domain_based", "hybrid"],
+        "default": null,
+        "user_customized": false,
+        "rationale": null,
+        "note": "Set during functional allocation (FA-07 or SE-01) based on LLM analysis"
+      },
+      "analysis_results": {
+        "coordination_complexity": {
+          "value": null,
+          "levels": ["low", "medium", "high"],
+          "description": "Count of functions with coordination keywords (lock, synchronize, queue, coordinate)"
+        },
+        "workflow_span": {
+          "value": null,
+          "levels": ["single_domain", "cross_domain"],
+          "description": "Whether primary workflows span multiple domains"
+        },
+        "operation_types": {
+          "value": null,
+          "levels": ["crud_heavy", "workflow_heavy", "balanced"],
+          "description": "Ratio of CRUD operations to workflow operations"
+        },
+        "recommendation": null,
+        "recommendation_rationale": null
+      },
+      "allocation_details": {
+        "workflow_services": [],
+        "domain_services": [],
+        "shared_services": []
+      }
+    },
+
+    "user_notes": ""
+  },
+
+  "llm_guidance": {
+    "when_to_create": "During S-03-A07 (Configure Development Standards) after foundational documents are established",
+    "prompting_strategy": {
+      "introduction": "Present the purpose of development standards and explain that sensible defaults are provided",
+      "per_language": "For each language used in the project, show defaults with rationale and ask if user wants to customize",
+      "customization": "If user wants to customize, show options with descriptions for each setting",
+      "confirmation": "Summarize chosen standards and confirm before saving"
+    },
+    "skip_conditions": [
+      "User explicitly says 'skip' or 'use defaults'",
+      "Brownfield project with existing configuration (pyproject.toml, package.json, etc.)",
+      "User has already configured standards in a previous session"
+    ],
+    "fallback_behavior": "If development_standards.json doesn't exist when needed, create with defaults and log warning"
+  }
+}

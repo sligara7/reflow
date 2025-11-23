@@ -574,17 +574,61 @@
             "If yes: Git repo initialized/configured, initial commit made, working_memory.json updated",
             "If no: Git automation disabled in working_memory.json"
           ]
+        },
+        {
+          "action_id": "S-03-A07",
+          "description": "Configure Development Standards (NEW v3.20.0)",
+          "purpose": "Establish language-specific development standards with user input - interface strategy, dependency management, tooling",
+          "tool": "configure_development_standards.py",
+          "command_pattern": "python3 {reflow_root}/tools/configure_development_standards.py {system_root} --language {primary_language} [--use-defaults | --customize]",
+          "user_prompt": {
+            "introduction": "I'll now configure development standards for your project. Each language has sensible defaults based on modern best practices.",
+            "per_language_example": "For **Python**, the recommended development standards are:\n- **Interface Strategy**: Protocol + DI (structural typing, no metaclass conflicts)\n- **Dependency Manager**: Hatchling (PEP 517/518/621 compliant)\n- **Lock Files**: Generate (reproducible builds)\n- **Testing**: pytest\n- **Linting**: ruff\n\nWould you like to:\n1. Accept these defaults (recommended)\n2. Customize one or more settings\n3. Skip (will use defaults when needed)",
+            "customization_flow": "If user wants to customize, present options for each setting with descriptions"
+          },
+          "python_defaults": {
+            "interface_strategy": "protocol_di",
+            "dependency_manager": "hatchling",
+            "lock_file_generation": true,
+            "web_framework": "fastapi",
+            "orm": "sqlalchemy",
+            "testing": "pytest",
+            "linting": "ruff",
+            "type_checking": "mypy"
+          },
+          "outputs": [
+            "specs/development/development_standards.json"
+          ],
+          "storage": {
+            "location": "specs/development/development_standards.json",
+            "used_by": [
+              "D-01-A04.5 (Interface Contract Generation)",
+              "D-01.4 (Language-specific Setup)",
+              "FA-07/SE-01 (Service Organization Strategy)",
+              "generate_python_project.py",
+              "generate_interface_protocols.py"
+            ]
+          },
+          "blocking": false,
+          "skip_conditions": [
+            "User explicitly says 'skip' or 'use defaults later'",
+            "Brownfield project with existing pyproject.toml/package.json",
+            "Standards already configured in previous session"
+          ],
+          "benefit": "Eliminates repeated decision prompts in development workflow - standards configured once, used throughout"
         }
       ],
       "tools_used": [
         "bootstrap_development_context.py",
-        "generate_rag_embeddings.py (optional)"
+        "generate_rag_embeddings.py (optional)",
+        "configure_development_standards.py"
       ],
       "templates_used": [
         "working_memory_template.json",
         "step_progress_tracker_template.json",
         "current_focus_template.md",
-        "rag_context_config_template.json (optional)"
+        "rag_context_config_template.json (optional)",
+        "development_standards_template.json"
       ],
       "outputs": [
         "docs/SYSTEM_MISSION_STATEMENT.md",
@@ -594,7 +638,8 @@
         "context/step_progress_tracker.json",
         "context/current_focus.md",
         "context/git_config.json (if git automation enabled)",
-        ".gitignore (if git automation enabled)"
+        ".gitignore (if git automation enabled)",
+        "specs/development/development_standards.json"
       ],
       "gates": [
         {

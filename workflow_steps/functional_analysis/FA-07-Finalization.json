@@ -49,11 +49,68 @@
       "OPTION B: Stop here (deliver functional architecture to stakeholders)"
     ]
   },
+  "service_organization_analysis": {
+    "new_in_version": "v3.20.0 - Service organization strategy recommendation",
+    "description": "Analyze functional architecture to recommend service organization strategy BEFORE functional allocation",
+    "when_to_run": "After user chooses Option A (continue to service architecture), BEFORE allocation",
+    "analysis": {
+      "step_1": "Analyze coordination complexity",
+      "method": "Count functions with coordination keywords (lock, synchronize, queue, coordinate, state, transaction)",
+      "scoring": {
+        "low": "< 2 coordination points",
+        "medium": "2-5 coordination points",
+        "high": "> 5 coordination points"
+      }
+    },
+    "analysis_2": {
+      "step_2": "Analyze workflow span",
+      "method": "Map functional flows to domains, count cross-domain flows",
+      "scoring": {
+        "single_domain": "< 30% flows cross domain boundaries",
+        "cross_domain": "> 30% flows cross domain boundaries"
+      }
+    },
+    "analysis_3": {
+      "step_3": "Analyze operation types",
+      "method": "Classify functions as CRUD (create, read, update, delete patterns) vs workflow (multi-step, coordination-heavy)",
+      "scoring": {
+        "crud_heavy": "> 60% CRUD operations",
+        "workflow_heavy": "> 60% workflow operations",
+        "balanced": "40-60% each"
+      }
+    },
+    "recommendation_matrix": {
+      "workflow_based": {
+        "when": "HIGH coordination + CROSS_DOMAIN + WORKFLOW_HEAVY",
+        "benefit": "Keeps coordination logic local, workflows self-contained",
+        "example_services": ["ExperimentExecutionService", "DataProcessingPipelineService"]
+      },
+      "domain_based": {
+        "when": "LOW coordination + SINGLE_DOMAIN + CRUD_HEAVY",
+        "benefit": "Clear domain boundaries, aligns with business domains",
+        "example_services": ["UserService", "DeviceService", "ConfigurationService"]
+      },
+      "hybrid": {
+        "when": "MEDIUM coordination OR BALANCED operations",
+        "benefit": "Best of both - workflow services for complex flows, domain services for shared resources",
+        "example_services": ["WorkflowOrchestrator (workflow)", "DeviceRegistry (domain)"]
+      }
+    },
+    "user_prompt": {
+      "template": "Based on functional architecture analysis:\n- Coordination Complexity: {complexity} ({count} coordination points)\n- Workflow Span: {span} ({percent}% cross-domain)\n- Operations: {ops_type} ({crud_percent}% CRUD, {workflow_percent}% workflows)\n\n**Recommendation: {strategy}**\n{rationale}\n\nWould you like to:\n1. Accept {strategy} (recommended)\n2. Use domain-based instead\n3. Use workflow-based instead\n4. Use hybrid approach"
+    },
+    "storage": {
+      "location": "specs/development/development_standards.json",
+      "field": "service_organization",
+      "stores": ["strategy.value", "analysis_results.*", "allocation_details.*"]
+    }
+  },
   "user_decision_point": {
     "mandatory": "YES - User MUST decide whether to continue or stop",
     "question": "Do you want to continue to service architecture (allocate functions to services) or stop here (architecture-only deliverables)?",
     "option_a": {
       "choice": "Continue to service architecture",
+      "pre_step": "Run service_organization_analysis FIRST to recommend strategy",
       "next_workflow": {
         "if_bottom_up": "01b-bottom_up_integration (allocate functions to existing services)",
         "if_top_down": "01c-top_down_design (create new services to implement functions)"

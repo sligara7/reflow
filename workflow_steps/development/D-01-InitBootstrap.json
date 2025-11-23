@@ -33,19 +33,15 @@
     { "id": "D1.4", "description": "Setup language-specific development environments", "tool": "manual", "input": "development_language_configuration.json", "outputs": ["Language-specific project structures", "Framework initialization", "Development tooling setup"] },
     {
       "id": "D1.4.5",
-      "description": "Generate interface contracts (CHOICE: Protocol-based or ABC-based)",
-      "new_in_version": "v3.18.0 - Protocol-based interfaces + Dependency Injection",
-      "user_prompt": {
-        "ask": "Which interface contract strategy would you like to use?",
-        "options": [
-          "1. Protocol-based with Dependency Injection (RECOMMENDED) - Modern, flexible, no metaclass conflicts, supports multiple implementations",
-          "2. Abstract Base Classes (ABC) - Traditional inheritance-based contracts",
-          "3. Skip interface generation - Manual implementation"
-        ],
-        "default": "1",
-        "recommendation": "Protocol-based is recommended for multi-facility deployments, framework integration (FastAPI, SQLAlchemy), and high testability. Avoids metaclass conflicts.",
-        "learn_more": "See docs/ARCHITECTURAL_PATTERNS_PROTOCOLS_DI.md for detailed comparison"
+      "description": "Generate interface contracts based on development standards",
+      "new_in_version": "v3.20.0 - Uses development_standards.json (configured in S-03-A07)",
+      "behavior": {
+        "read_standards": "specs/development/development_standards.json",
+        "extract_field": "language_standards.python.interface_strategy.value",
+        "fallback": "If standards file not found, use 'protocol_di' as default",
+        "no_user_prompt": "Choice already made during S-03-A07 - uses stored preference"
       },
+      "previous_version_note": "v3.18.0 prompted user here; v3.20.0 reads from development_standards.json configured during setup",
       "if_choice_1_protocol_based": {
         "tool": "generate_interface_protocols.py",
         "command": "python3 {reflow_root}/tools/generate_interface_protocols.py {system_root}",
@@ -115,6 +111,35 @@
         "field": "interface_contract_strategy",
         "values": ["protocol_based", "abc_based", "manual"]
       }
+    },
+    {
+      "id": "D1.4.6",
+      "description": "Generate Python project structure based on development standards (NEW v3.20.0)",
+      "new_in_version": "v3.20.0 - Uses development_standards.json for pyproject.toml generation",
+      "condition": "Primary language is Python",
+      "tool": "generate_python_project.py",
+      "command": "python3 {reflow_root}/tools/generate_python_project.py {system_root} --service {service_name}",
+      "behavior": {
+        "read_standards": "specs/development/development_standards.json",
+        "extracts": [
+          "dependency_manager (hatchling, poetry, uv)",
+          "lock_file_generation (true/false)",
+          "web_framework (fastapi, flask, etc.)",
+          "testing_framework (pytest, unittest)",
+          "linting (ruff, flake8_black)"
+        ]
+      },
+      "outputs": [
+        "services/{service_name}/pyproject.toml",
+        "services/{service_name}/src/{service_name}/__init__.py",
+        "services/{service_name}/src/{service_name}/main.py",
+        "services/{service_name}/tests/__init__.py",
+        "services/{service_name}/tests/test_main.py",
+        "services/{service_name}/README.md"
+      ],
+      "for_each_service": true,
+      "purpose": "Generate consistent project structure using configured development standards",
+      "benefit": "Eliminates manual pyproject.toml setup; ensures all services follow same standards"
     },
     { "id": "D1.5", "description": "Confirm mission artifacts present and aligned", "tool": "manual", "inputs": ["specs/human/SYSTEM_MISSION_STATEMENT.md", "specs/human/USER_SCENARIOS.md", "specs/human/SUCCESS_CRITERIA.md"] }
   ],

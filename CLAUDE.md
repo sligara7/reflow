@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.19.0
-**Last Updated**: 2025-11-21
+**Version**: 3.20.0
+**Last Updated**: 2025-11-23
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.20.0**: **Development Standards Configuration** - Centralized language-specific development standards configured once during setup (S-03-A07). For Python: Protocol + DI interfaces (default), Hatchling dependency management, lock file generation, pytest, ruff. Service organization strategy (workflow-based vs domain-based) recommended during functional allocation based on analysis. Eliminates repeated decision prompts.
 
 **NEW in v3.19.0**: **Deployment Environment Specification** - Define WHERE and HOW the system will be deployed BEFORE development begins. New workflow (02b-deployment_environment.json) captures deployment context upfront: target platforms, containerization strategy, scaling requirements, security constraints, observability needs, and infrastructure dependencies. Prevents late-stage deployment surprises.
 
@@ -443,6 +445,48 @@ service_architecture.json                     ← Symlink to current
 ```
 
 ## New Features Summary
+
+### v3.20.0 - Development Standards Configuration System
+**Problem Solved**: Users face repeated decision prompts during development (interface strategy, dependency manager, tooling). Preferences are scattered across multiple files. No standardized Python project generation.
+
+**Key Features**:
+- **Centralized Standards**: Single `development_standards.json` configured once during S-03-A07
+- **Python Standards**: Protocol + DI (default), Hatchling, lock files, pytest, ruff, mypy
+- **Service Organization**: LLM analyzes functional architecture and recommends workflow-based vs domain-based allocation
+- **Project Generation**: `generate_python_project.py` creates consistent pyproject.toml and project structure
+
+**Python Defaults**:
+| Setting | Default | Alternatives |
+|---------|---------|--------------|
+| Interface Strategy | `protocol_di` | abc, manual |
+| Dependency Manager | `hatchling` | poetry, uv, setuptools |
+| Lock Files | `true` | false |
+| Web Framework | `fastapi` | flask, django, litestar |
+| Testing | `pytest` | unittest |
+| Linting | `ruff` | flake8_black, pylint |
+
+**New Tools**:
+1. `configure_development_standards.py` - Configure standards interactively or with defaults
+2. `generate_python_project.py` - Generate pyproject.toml and project structure
+
+**Workflow Integration**:
+- **S-03-A07** (NEW): Configure Development Standards during setup
+- **D-01-A04.5**: Uses standards (no longer prompts - reads from config)
+- **D-01-A04.6** (NEW): Generate Python project structure per service
+- **FA-07**: Service organization strategy recommendation
+
+**Service Organization Strategy** (during FA-07):
+- Analyzes coordination complexity, workflow span, operation types
+- Recommends: workflow-based, domain-based, or hybrid
+- Stores choice in `development_standards.json`
+
+**Impact**:
+- Eliminates 5+ decision prompts during development workflow
+- Consistent project structure across all services
+- Modern Python packaging (PEP 517/518/621)
+- 2-4 hours saved per project setup
+
+**Full Documentation**: See `docs/DEVELOPMENT_STANDARDS.md`
 
 ### v3.19.0 - Deployment Environment Specification Workflow
 **Problem Solved**: Deployment environment is often an afterthought, scattered across multiple workflows (SE-04, AV-02-A04, D-06_5) and discovered late during implementation. Developers make containerization, security, and scaling decisions without knowing the target platform upfront.
