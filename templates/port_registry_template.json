@@ -39,10 +39,38 @@
       "note": "These are standard ports; can be remapped if conflicts exist"
     }
   },
+  "service_types": {
+    "description": "Service type classification determines validation requirements (v3.23.0)",
+    "deployed_service": {
+      "description": "Standard deployed service that exposes network ports",
+      "requires_primary_port": true,
+      "requires_health_check": true,
+      "examples": ["REST API services", "gRPC services", "GraphQL servers", "background workers with admin ports"]
+    },
+    "library_plugin": {
+      "description": "Library/plugin that is imported at runtime, not deployed as a separate process",
+      "requires_primary_port": false,
+      "requires_health_check": false,
+      "examples": ["Strategy plugins", "Authentication providers", "Data validators", "Format converters"]
+    },
+    "sidecar": {
+      "description": "Sidecar container that may share port with parent service or use its own",
+      "requires_primary_port": false,
+      "requires_health_check": true,
+      "examples": ["Log collectors", "Proxy containers", "Service mesh sidecars"]
+    },
+    "external_dependency": {
+      "description": "External service not managed by this system, port for reference only",
+      "requires_primary_port": true,
+      "requires_health_check": false,
+      "examples": ["Third-party APIs", "Managed databases", "Cloud services"]
+    }
+  },
   "service_ports": {
     "EXAMPLE_SERVICE_ID": {
       "service_name": "Example Service",
       "service_id": "example_service",
+      "service_type": "deployed_service",
       "classification": "application|internal|data|infrastructure",
       "ports": {
         "primary": {
@@ -96,6 +124,20 @@
           "primary_port": 8000,
           "note": "Production uses load balancer, services run on standard ports"
         }
+      }
+    },
+    "EXAMPLE_LIBRARY_PLUGIN": {
+      "service_name": "Example Strategy Plugin",
+      "service_id": "example_strategy_plugin",
+      "service_type": "library_plugin",
+      "classification": "internal",
+      "description": "Library plugin imported at runtime - does NOT expose network ports",
+      "ports": {},
+      "plugin_info": {
+        "import_path": "plugins.example_strategy",
+        "interface": "StrategyInterface",
+        "loaded_by": ["EXAMPLE_SERVICE_ID"],
+        "note": "No ports required - this is a library, not a deployed service"
       }
     }
   },

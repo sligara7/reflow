@@ -1,11 +1,13 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.22.0
+**Version**: 3.23.0
 **Last Updated**: 2025-11-24
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v3.23.0**: **Plugin-Based Architecture Validation Support** - Validation tools now properly handle plugin-based architectures. Added `service_type` classification (`deployed_service`, `library_plugin`, `sidecar`, `external_dependency`) to port registry. Library plugins no longer fail validation for missing primary ports since they are imported at runtime, not deployed as separate processes. Fixes GitHub issue #41. See updated `validate_port_registry.py` and `templates/port_registry_template.json`.
 
 **NEW in v3.22.0**: **LLM Compliance & Constraint Enforcement** - Pre-execution constraint mechanisms to ensure LLM agents follow workflows correctly. Problem: LLMs optimize for "getting to the answer" not "following the process" - TC-004 showed 46% time lost to friction. Solution: (1) JSON schemas for critical files (functional_architecture_schema.json, service_architecture_schema.json), (2) Tool CONTRACT.json pattern documenting exact input requirements, (3) Schema-First mechanism in FA-02 (mandatory schema read BEFORE artifact creation), (4) Execution proof requirements (tool output files as verification), (5) Objective quality gates with measurable criteria. See `schemas/`, `tools/contracts/`, and updated FA-02 workflow.
 

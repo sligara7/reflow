@@ -28,6 +28,23 @@ from json_utils import safe_load_json, JSONValidationError
 
 
 class PortRegistryValidator:
+    """
+    Validates port_registry.json for conflicts and compliance.
+
+    v3.23.0: Added service_type support for plugin-based architectures.
+    Service types determine validation requirements:
+    - deployed_service: Requires primary port (default, backward compatible)
+    - library_plugin: No port required (imported at runtime)
+    - sidecar: Port optional (may share with parent)
+    - external_dependency: Port for reference only
+    """
+
+    # Service types that require a primary port
+    REQUIRES_PRIMARY_PORT = {'deployed_service', 'external_dependency'}
+
+    # Valid service types
+    VALID_SERVICE_TYPES = {'deployed_service', 'library_plugin', 'sidecar', 'external_dependency'}
+
     def __init__(self, port_registry_path: Path):
         """
         Initialize validator with pre-validated port registry path.
@@ -83,7 +100,13 @@ class PortRegistryValidator:
         port_to_services = defaultdict(list)
 
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":  # Skip template example
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             ports = service_data.get('ports', {})
@@ -110,7 +133,13 @@ class PortRegistryValidator:
         all_ports = defaultdict(list)
 
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             service_name = service_data.get('service_name', service_id)
@@ -148,7 +177,13 @@ class PortRegistryValidator:
                     range_mapping[category] = (start, end)
 
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             classification = service_data.get('classification', '').replace('_services', '')
@@ -166,7 +201,13 @@ class PortRegistryValidator:
     def _check_privileged_ports(self):
         """PC-04: Avoid well-known ports below 1024"""
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             ports = service_data.get('ports', {})
@@ -181,7 +222,13 @@ class PortRegistryValidator:
     def _check_docker_mapping_consistency(self):
         """PC-05: Docker host-container port mappings should typically match"""
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             ports = service_data.get('ports', {})
@@ -204,23 +251,55 @@ class PortRegistryValidator:
                     )
 
     def _check_required_fields(self):
-        """Check that all services have required port fields"""
+        """Check that all services have required port fields based on service_type (v3.23.0)"""
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
                 continue
 
             service_name = service_data.get('service_name', service_id)
 
+            # Get service_type (default to deployed_service for backward compatibility)
+            service_type = service_data.get('service_type', 'deployed_service')
+
+            # Validate service_type
+            if service_type not in self.VALID_SERVICE_TYPES:
+                self.warnings.append(
+                    f"Service '{service_name}' has unknown service_type '{service_type}'. "
+                    f"Valid types: {', '.join(sorted(self.VALID_SERVICE_TYPES))}"
+                )
+                # Default to deployed_service behavior for unknown types
+                service_type = 'deployed_service'
+
             # Check for ports section
             if 'ports' not in service_data:
+                # Library plugins don't need ports section
+                if service_type == 'library_plugin':
+                    self.info_messages.append(
+                        f"Service '{service_name}' is a library_plugin - no ports required"
+                    )
+                    continue
                 self.errors.append(f"Service '{service_name}' missing 'ports' section")
                 continue
 
             ports = service_data.get('ports', {})
 
-            # Check for primary port
+            # Check for primary port based on service_type
             if 'primary' not in ports:
-                self.errors.append(f"Service '{service_name}' missing 'primary' port definition")
+                if service_type in self.REQUIRES_PRIMARY_PORT:
+                    self.errors.append(
+                        f"Service '{service_name}' (type: {service_type}) missing 'primary' port definition"
+                    )
+                elif service_type == 'library_plugin':
+                    # Library plugins explicitly don't need primary ports
+                    self.info_messages.append(
+                        f"Service '{service_name}' is a library_plugin - no primary port required"
+                    )
+                elif service_type == 'sidecar':
+                    # Sidecars may or may not have their own port
+                    self.info_messages.append(
+                        f"Service '{service_name}' is a sidecar - primary port optional"
+                    )
                 continue
 
             primary = ports['primary']
@@ -248,7 +327,13 @@ class PortRegistryValidator:
 
         used_ports = set()
         for service_id, service_data in self.port_registry.get('service_ports', {}).items():
-            if service_id == "EXAMPLE_SERVICE_ID":
+            # Skip template examples
+            if service_id in ("EXAMPLE_SERVICE_ID", "EXAMPLE_LIBRARY_PLUGIN"):
+                continue
+
+            # Skip library plugins - they don't expose ports (v3.23.0)
+            service_type = service_data.get('service_type', 'deployed_service')
+            if service_type == 'library_plugin':
                 continue
 
             ports = service_data.get('ports', {})
