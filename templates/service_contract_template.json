@@ -1,10 +1,44 @@
 {
   "_metadata": {
     "template_name": "service_contract_template.json",
-    "version": "3.17.0",
-    "description": "Service Interface Contract - Embedded architectural contract that warns LLMs before making breaking changes",
+    "version": "3.22.0",
+    "description": "Service Interface Contract - Embedded architectural contract that warns LLMs before making breaking changes AND anchors LLM to Reflow workflow context",
     "created_date": "2025-11-19",
-    "purpose": "Proactive drift prevention by declaring contracted functions and interfaces within each service"
+    "updated_date": "2025-11-24",
+    "purpose": "Proactive drift prevention + context anchoring to prevent LLM tunnel vision during development"
+  },
+
+  "reflow_workflow_anchor": {
+    "_purpose": "This section reminds LLM agents they are executing a Reflow workflow, preventing context drift during long development sessions",
+    "message": "You are executing a Reflow workflow. This SERVICE_CONTRACT.json is your anchor to the system architecture.",
+    "workflow": "{CURRENT_WORKFLOW}",
+    "workflow_step": "{CURRENT_STEP}",
+    "working_memory_location": "../../context/working_memory.json",
+
+    "before_any_modification": [
+      "1. READ this entire SERVICE_CONTRACT.json file",
+      "2. CHECK: Does your change affect contracted_functions? If yes, STOP - update functional architecture first",
+      "3. CHECK: Does your change affect contracted_interfaces? If yes, STOP - this is a BREAKING change",
+      "4. CHECK: Are you adding new dependencies (consuming new interfaces)? If yes, update system_of_systems_graph.json first",
+      "5. UPDATE: context/working_memory.json with your current action (prevents drift)"
+    ],
+
+    "context_refresh_trigger": {
+      "description": "If you've been coding for a while and aren't sure what workflow step you're on:",
+      "actions": [
+        "READ context/working_memory.json",
+        "READ context/dev_current_focus.md",
+        "VERIFY: What is my current Reflow workflow step?",
+        "VERIFY: What validation gate do I need to pass next?"
+      ]
+    },
+
+    "drift_check_questions": [
+      "What Reflow workflow step am I currently executing?",
+      "What service am I working on and what are its contracted functions?",
+      "What is the next validation gate I need to pass?",
+      "Have I updated working_memory.json recently?"
+    ]
   },
   "_instructions": {
     "usage": "This template generates SERVICE_CONTRACT.json files for each service",

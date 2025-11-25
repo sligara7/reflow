@@ -1,24 +1,125 @@
 {
   "workflow_metadata": {
-    "version": "0.1.0",
+    "version": "2.0.0",
     "name": "Dev-02 Core & Domain Model Realization",
     "based_on": "service_development_workflow.json D2–D3",
-    "description": "Transform architectural skeleton into concrete code foundations and core domain logic."
+    "description": "Transform architectural skeleton into concrete code foundations and core domain logic.",
+    "llm_context_anchoring_version": "3.22.0"
+  },
+
+  "llm_context_anchoring": {
+    "_purpose": "Prevent LLM context drift during long development tasks",
+    "description": "Development tasks are long. LLMs can 'forget' they're executing a Reflow workflow. This section defines checkpoints to re-anchor.",
+
+    "mandatory_context_refresh": {
+      "description": "MANDATORY: Re-read workflow context at start of D-02",
+      "timing": "Before executing any D-02 step",
+      "actions": [
+        "READ context/working_memory.json - extract current_workflow, current_step, paths",
+        "READ specs/machine/graphs/system_of_systems_graph.json - understand service relationships",
+        "READ specs/machine/service_arch/{current_service}/service_architecture.json - understand this service",
+        "ACKNOWLEDGE: 'I am executing Reflow workflow D-02 for {service_name}'"
+      ]
+    },
+
+    "checkpoint_frequency": {
+      "description": "Insert context checkpoint every N actions or time threshold",
+      "actions_threshold": 3,
+      "time_threshold_minutes": 30,
+      "checkpoint_action": "D2.X.5-CHECKPOINT"
+    },
+
+    "drift_indicators": [
+      "LLM makes changes without reading SERVICE_CONTRACT.json",
+      "LLM adds interfaces not in interface_registry.json",
+      "LLM forgets what workflow step it's on when asked",
+      "LLM doesn't update dev_progress_tracker.json",
+      "LLM skips validation gates"
+    ],
+
+    "anchor_files": {
+      "description": "Files that should remind LLM of workflow context",
+      "service_contract": "services/{service_name}/SERVICE_CONTRACT.json",
+      "working_memory": "context/working_memory.json",
+      "dev_focus": "context/dev_current_focus.md",
+      "dev_tracker": "context/dev_progress_tracker.json"
+    }
   },
   "entry_conditions": {
     "from": "Dev-01",
     "artifacts": ["context/dev_progress_tracker.json", "specs/machine/index.json"]
   },
   "steps": [
+    {
+      "id": "D2.0-ANCHOR",
+      "type": "context_anchor",
+      "description": "MANDATORY: Anchor to Reflow workflow context before starting D-02",
+      "purpose": "Prevent context drift during long development phase",
+      "blocking": true,
+      "actions": [
+        "READ context/working_memory.json",
+        "READ specs/machine/service_arch/{service}/service_architecture.json",
+        "ACKNOWLEDGE: 'I am executing Reflow D-02 for {service_name}. My next validation gate is D-02 exit criteria.'",
+        "UPDATE context/dev_current_focus.md with current service and D-02 start"
+      ],
+      "llm_must_state": "Before proceeding, state: 'I am starting Reflow D-02 (Core & Domain) for [service_name]. I will checkpoint every 3 actions.'"
+    },
     { "id": "D2.1", "description": "Generate directory skeleton for each service (dependency order)", "tool": "bash", "output": "code/<service>/" },
     { "id": "D2.2", "description": "Instantiate data models from specs/machine/service_arch/<service>/data_models.json", "tool": "manual" },
     { "id": "D2.3", "description": "Create placeholder interface adapters aligning with api_contracts.json", "tool": "manual" },
+    {
+      "id": "D2.3.5-CHECKPOINT",
+      "type": "context_checkpoint",
+      "description": "CHECKPOINT: Re-anchor to Reflow workflow after 3 implementation steps",
+      "purpose": "Prevent tunnel vision - LLM may have lost workflow context while coding",
+      "actions": [
+        "PAUSE current coding task",
+        "READ services/{service_name}/SERVICE_CONTRACT.json (if exists)",
+        "VERIFY: Am I following the contracted functions?",
+        "VERIFY: Have I introduced any new interfaces not in the architecture?",
+        "UPDATE context/dev_progress_tracker.json with D2.1, D2.2, D2.3 status",
+        "STATE: 'Checkpoint complete. I am on Reflow D-02, next: D2.4 (config loader)'"
+      ],
+      "drift_check": {
+        "questions": [
+          "What Reflow workflow step am I on?",
+          "What service am I building?",
+          "What contracted functions must this service implement?",
+          "What is my next validation gate?"
+        ],
+        "if_cannot_answer": "STOP - Read working_memory.json and SERVICE_CONTRACT.json before continuing"
+      }
+    },
     { "id": "D2.4", "description": "Add configuration loader honoring infrastructure.json", "tool": "manual" },
     { "id": "D2.5", "description": "Register DI graph if applicable", "tool": "manual" },
     { "id": "D2.6", "description": "Initial lint & type pass", "tool": "bash" },
+    {
+      "id": "D2.6.5-CHECKPOINT",
+      "type": "context_checkpoint",
+      "description": "CHECKPOINT: Re-anchor before domain logic implementation",
+      "purpose": "Domain logic is the longest part - anchor before diving in",
+      "actions": [
+        "READ services/{service_name}/SERVICE_CONTRACT.json",
+        "LIST contracted functions that need implementation",
+        "UPDATE context/dev_current_focus.md: 'Starting domain logic for {service}. Functions: {list}'",
+        "STATE: 'Checkpoint complete. Now implementing domain logic. Functions to implement: [list]'"
+      ]
+    },
     { "id": "D3.1", "description": "Rank use cases and implement domain services (pure logic first)", "tool": "manual" },
     { "id": "D3.2", "description": "Wire API handlers to domain services per api_contracts.json", "tool": "manual" },
     { "id": "D3.3", "description": "Enforce validation and auth policies per compliance.json", "tool": "manual" },
+    {
+      "id": "D3.3.5-CHECKPOINT",
+      "type": "context_checkpoint",
+      "description": "CHECKPOINT: Verify implementation matches architecture before generating contracts",
+      "purpose": "Last check before contract generation - catch drift early",
+      "actions": [
+        "COMPARE implemented functions vs specs/machine/service_arch/{service}/service_architecture.json",
+        "VERIFY: All allocated_functions are implemented",
+        "VERIFY: No extra functions added that aren't in architecture",
+        "If drift detected: Document in context/dev_current_focus.md for D-06 reconciliation"
+      ]
+    },
     { "id": "D3.4", "action_id": "D-02-A05", "description": "Generate service interface contracts", "tool": "generate_service_contracts.py", "command_pattern": "python3 {reflow_root}/tools/generate_service_contracts.py {system_root} --service {service_name}", "purpose": "Embed architectural contract within service to prevent LLM drift", "output": "services/{service_name}/SERVICE_CONTRACT.json", "new_in_version": "v3.17.0", "when": "After domain model implementation, before integration surfaces" }
   ],
   "artifact_routing": {
