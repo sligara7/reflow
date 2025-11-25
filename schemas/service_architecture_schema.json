@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://reflow.dev/schemas/service_architecture.json",
+  "title": "Service Architecture Schema",
+  "description": "JSON Schema for service_architecture.json files. This schema is REQUIRED for SE-02+ tools. LLM agents MUST read this schema BEFORE creating service architecture files.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["service_name", "allocated_functions"],
+  "properties": {
+    "service_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the service (e.g., UserService, CheckoutWorkflowService)"
+    },
+    "service_id": {
+      "type": "string",
+      "pattern": "^SVC-[0-9]+$",
+      "description": "Unique service identifier (e.g., SVC-001)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this service does (single responsibility)"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": ["workflow_orchestrator", "domain_capability", "infrastructure", "integration", "gateway"],
+      "description": "Type of service based on service organization strategy"
+    },
+    "allocated_functions": {
+      "type": "array",
+      "description": "CRITICAL: Functions allocated to this service. Must reference function_ids from functional_architecture.json",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["function_id"],
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "description": "Reference to function_id in functional_architecture.json"
+          },
+          "function_name": {
+            "type": "string",
+            "description": "Human-readable function name"
+          },
+          "name": {
+            "type": "string",
+            "description": "ALIAS for function_name"
+          },
+          "implementation_status": {
+            "type": "string",
+            "enum": ["planned", "in_progress", "implemented", "tested", "deployed"]
+          }
+        }
+      }
+    },
+    "functions": {
+      "type": "array",
+      "description": "ALIAS for allocated_functions - some tools expect this field name",
+      "items": {
+        "type": "object"
+      }
+    },
+    "interfaces_provided": {
+      "type": "array",
+      "description": "Interfaces this service exposes to other services",
+      "items": {
+        "type": "object",
+        "required": ["interface_id"],
+        "properties": {
+          "interface_id": {
+            "type": "string",
+            "description": "Unique interface identifier"
+          },
+          "interface_name": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "ALIAS for interface_name"
+          },
+          "operations": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["REST", "gRPC", "GraphQL", "WebSocket", "Message Queue", "Event Bus"]
+          },
+          "consumers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Service IDs or names that consume this interface"
+          }
+        }
+      }
+    },
+    "provides": {
+      "type": "array",
+      "description": "ALIAS for interfaces_provided",
+      "items": { "type": "string" }
+    },
+    "interfaces_consumed": {
+      "type": "array",
+      "description": "Interfaces this service depends on from other services",
+      "items": {
+        "type": "object",
+        "properties": {
+          "interface_id": { "type": "string" },
+          "interface_name": { "type": "string" },
+          "name": { "type": "string" },
+          "provider_service": {
+            "type": "string",
+            "description": "Service that provides this interface"
+          },
+          "provider": {
+            "type": "string",
+            "description": "ALIAS for provider_service"
+          }
+        }
+      }
+    },
+    "consumes": {
+      "type": "array",
+      "description": "ALIAS for interfaces_consumed",
+      "items": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Services this service depends on",
+      "items": {
+        "type": "object",
+        "properties": {
+          "service_id": { "type": "string" },
+          "service_name": { "type": "string" },
+          "name": { "type": "string" },
+          "dependency_type": {
+            "type": "string",
+            "enum": ["sync", "async", "event", "data"]
+          },
+          "interface_used": { "type": "string" }
+        }
+      }
+    },
+    "technology_stack": {
+      "type": "object",
+      "properties": {
+        "language": { "type": "string" },
+        "framework": { "type": "string" },
+        "database": { "type": "string" },
+        "messaging": { "type": "string" }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "properties": {
+        "containerized": { "type": "boolean" },
+        "scaling_strategy": {
+          "type": "string",
+          "enum": ["horizontal", "vertical", "none"]
+        },
+        "replicas": { "type": "integer" }
+      }
+    },
+    "interfaces": {
+      "type": "array",
+      "description": "COMBINED interfaces (provided + consumed) - legacy format",
+      "items": {
+        "type": "object"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created_date": { "type": "string" },
+        "last_updated": { "type": "string" },
+        "created_by": { "type": "string" },
+        "architecture_version": { "type": "string" }
+      }
+    }
+  },
+  "llm_compliance_requirements": {
+    "mandatory_pre_read": true,
+    "description": "LLM agents MUST read this schema BEFORE creating service_architecture.json",
+    "critical_fields": {
+      "service_name": "MUST be a non-empty string",
+      "allocated_functions": "MUST be an ARRAY with at least one function. Each MUST have 'function_id'."
+    },
+    "field_aliases": {
+      "description": "Some tools use different field names. This schema supports both.",
+      "function_name_aliases": ["function_name", "name"],
+      "allocated_functions_aliases": ["allocated_functions", "functions"],
+      "interfaces_provided_aliases": ["interfaces_provided", "provides"],
+      "interfaces_consumed_aliases": ["interfaces_consumed", "consumes"],
+      "provider_aliases": ["provider_service", "provider"]
+    },
+    "validation_command": "python3 tools/validate_architecture_format.py <file> --mode service",
+    "validation_timing": "IMMEDIATELY after creating the file, BEFORE proceeding to next step",
+    "traceability_requirement": "All function_ids in allocated_functions MUST exist in functional_architecture.json"
+  }
+}

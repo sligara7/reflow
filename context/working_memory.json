@@ -1,13 +1,13 @@
 {
   "template_version": "2.1",
   "system_name": "Reflow Workflow System",
-  "current_workflow": "99-meta_analysis",
-  "current_step": "COMPLETE",
-  "current_substep": null,
-  "current_phase": "complete",
+  "current_workflow": "98-reflow_feature_update",
+  "current_step": "RFU-06",
+  "current_substep": "A01",
+  "current_phase": "finalization",
   "reflow_self_update_mode": true,
   "auto_meta_analysis": true,
-  "reflow_feature_description": "v3.19.0 Deployment Environment Specification - Add dedicated workflow phase to define operational/deployment environment BEFORE development. Problem: Currently, deployment environment is scattered across multiple workflows (SE-04, AV-02-A04, D-06_5) and is often an afterthought rather than an upfront design consideration. Understanding WHERE and HOW services will run should inform development decisions (containerization, scaling, security, monitoring). Solution: (1) Create new workflow 02b-deployment_environment.json between artifacts and development phases, (2) Define deployment environment specification step (DE-01) covering: target platforms, containerization strategy, scaling requirements, security constraints, observability requirements, infrastructure dependencies. (3) Add deployment environment template. Benefits: Prevents deployment surprises, informs development decisions upfront, ensures infrastructure requirements are captured early, reduces late-stage rework from deployment constraints discovered during implementation.",
+  "reflow_feature_description": "v3.22.0 LLM Compliance & Constraint Enforcement - Add pre-execution constraint mechanisms to ensure LLM agents follow workflows correctly. Problem: LLMs optimize for 'getting to the answer' not 'following the process'. They skip steps, don't run tools, or produce outputs that tools reject due to format mismatches (see TC-004: 46% time lost to friction). Current validation is post-hoc (after artifact creation), leading to rework loops. Solution: (1) Create JSON schemas for critical files (functional_architecture.json, service_architecture.json), (2) Implement Tool CONTRACT.json pattern to document exact input requirements, (3) Add Schema-First mechanism to FA-02 workflow (mandatory schema read before artifact creation), (4) Add execution proof requirements (tool output files as verification), (5) Convert subjective gates to objective measurable criteria. Benefits: Reduces tool rejection rate from 46% to <5%, eliminates 'did you follow the workflow?' questions, provides non-LLM credibility checks, ensures format compliance before artifacts are created.",
   "feature_implementation_status": "IN_PROGRESS",
   "meta_analysis_result": {
     "status": "PASSED",

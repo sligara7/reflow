@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://reflow.dev/schemas/tool_contract.json",
+  "title": "Tool Contract Schema",
+  "description": "JSON Schema for tool CONTRACT.json files. These contracts document exact input requirements for Reflow tools to enable LLM compliance.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["contract_version", "tool_name", "input_requirements"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema"
+    },
+    "contract_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this contract"
+    },
+    "tool_name": {
+      "type": "string",
+      "description": "Name of the tool this contract describes (e.g., 'analyze_service_organization.py')"
+    },
+    "tool_version": {
+      "type": "string",
+      "description": "Version of the tool this contract is for"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this tool does"
+    },
+    "workflow_step": {
+      "type": "string",
+      "description": "Primary workflow step that uses this tool (e.g., 'SE-02-A00')"
+    },
+    "workflow_steps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "All workflow steps that use this tool"
+    },
+    "input_requirements": {
+      "type": "object",
+      "description": "CRITICAL: Exact input requirements for this tool",
+      "properties": {
+        "files": {
+          "type": "array",
+          "description": "Input files required",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" },
+              "required": { "type": "boolean" },
+              "fallback_path": { "type": "string" },
+              "schema_reference": { "type": "string" }
+            }
+          }
+        },
+        "required_fields": {
+          "type": "object",
+          "description": "Required fields in input files"
+        },
+        "field_aliases": {
+          "type": "object",
+          "description": "Accepted field name aliases"
+        }
+      }
+    },
+    "output_specification": {
+      "type": "object",
+      "description": "What the tool produces",
+      "properties": {
+        "files_generated": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" },
+              "description": { "type": "string" },
+              "required_fields": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "console_output": {
+          "type": "object"
+        }
+      }
+    },
+    "execution_requirements": {
+      "type": "object",
+      "properties": {
+        "python_version": { "type": "string" },
+        "dependencies": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "working_directory": { "type": "string" },
+        "command_pattern": { "type": "string" }
+      }
+    },
+    "common_errors": {
+      "type": "object",
+      "description": "Known errors and solutions",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "symptom": { "type": "string" },
+          "cause": { "type": "string" },
+          "solution": { "type": "string" }
+        }
+      }
+    },
+    "llm_compliance": {
+      "type": "object",
+      "description": "LLM agent compliance requirements",
+      "properties": {
+        "mandatory_pre_read": {
+          "type": "array",
+          "description": "Files LLM MUST read BEFORE running this tool",
+          "items": { "type": "string" }
+        },
+        "pre_execution_checks": {
+          "type": "array",
+          "description": "Checks LLM should perform before running tool",
+          "items": { "type": "string" }
+        },
+        "execution_proof": {
+          "type": "object",
+          "description": "How to verify tool was actually executed",
+          "properties": {
+            "required": { "type": "boolean" },
+            "proof_file": { "type": "string" },
+            "verification": { "type": "string" }
+          }
+        },
+        "guidance_for_llm": {
+          "type": "object",
+          "description": "Guidance text for LLM agents"
+        }
+      }
+    }
+  }
+}

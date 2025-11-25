@@ -1,0 +1,154 @@
+{
+  "$schema": "https://reflow.dev/schemas/tool_contract.json",
+  "contract_version": "1.0.0",
+  "tool_name": "system_of_systems_graph_v2.py",
+  "tool_version": "3.0.0",
+  "description": "Framework-agnostic graph generator for analyzing system and functional architectures using NetworkX",
+  "workflow_steps": ["SE-02", "SE-03", "FA-05", "D-06"],
+
+  "modes": {
+    "service_mode": {
+      "description": "Default mode - analyzes service architectures",
+      "flag": "(no flag, default)",
+      "input_files": ["specs/machine/service_arch/*/service_architecture.json", "specs/machine/interface_registry.json"]
+    },
+    "functional_mode": {
+      "description": "Analyzes functional architectures",
+      "flag": "--functional-mode",
+      "input_files": ["specs/functional/functional_architecture.json"]
+    }
+  },
+
+  "input_requirements": {
+    "functional_mode": {
+      "files": [
+        {
+          "path": "specs/functional/functional_architecture.json",
+          "required": true,
+          "schema_reference": "schemas/functional_architecture_schema.json"
+        }
+      ],
+      "required_fields": {
+        "functions": {
+          "type": "array",
+          "description": "Array of function objects - becomes graph nodes",
+          "min_items": 1,
+          "item_schema": {
+            "required_fields": ["function_id", "function_name"],
+            "optional_fields": ["name", "description", "inputs", "outputs", "type", "function_type", "context_consumption"]
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Array of dependency objects - becomes graph edges",
+          "aliases": ["function_dependencies", "edges"],
+          "item_schema": {
+            "required_fields": ["source_function", "target_function"],
+            "optional_fields": ["source", "target", "dependency_type", "type", "weight", "probability", "condition"]
+          }
+        }
+      },
+      "field_aliases": {
+        "function_id": ["function_id", "id"],
+        "function_name": ["function_name", "name"],
+        "source_function": ["source_function", "source"],
+        "target_function": ["target_function", "target"],
+        "dependencies": ["dependencies", "function_dependencies", "edges"]
+      }
+    },
+    "service_mode": {
+      "files": [
+        {
+          "path": "specs/machine/service_arch/*/service_architecture.json",
+          "required": true,
+          "schema_reference": "schemas/service_architecture_schema.json"
+        },
+        {
+          "path": "specs/machine/interface_registry.json",
+          "required": true
+        }
+      ],
+      "required_fields": {
+        "service_architectures": {
+          "description": "Each service needs a service_architecture.json file",
+          "required_fields": ["service_name", "allocated_functions"]
+        }
+      }
+    }
+  },
+
+  "output_specification": {
+    "files_generated": [
+      {
+        "path": "specs/{functional|machine}/graphs/system_of_systems_graph.json",
+        "description": "NetworkX node_link_data format graph",
+        "required_fields": ["graph", "nodes", "links", "metadata"]
+      },
+      {
+        "path": "specs/{functional|machine}/graphs/architecture_issues.json",
+        "description": "Detected issues (gaps, orphans, unreachable nodes)",
+        "required_fields": ["orphaned_nodes", "unreachable_nodes", "dead_end_nodes"]
+      }
+    ],
+    "console_output": {
+      "description": "Analysis summary with node/edge counts and detected issues"
+    }
+  },
+
+  "execution_requirements": {
+    "python_version": ">=3.8",
+    "dependencies": ["networkx>=3.0", "pathlib", "json"],
+    "working_directory": "reflow root",
+    "command_patterns": {
+      "functional_mode": "python3 {tools_path}/system_of_systems_graph_v2.py {system_root} --functional-mode",
+      "service_mode": "python3 {tools_path}/system_of_systems_graph_v2.py {system_root}",
+      "with_analysis": "python3 {tools_path}/system_of_systems_graph_v2.py {system_root} --functional-mode --analyze"
+    }
+  },
+
+  "common_errors": {
+    "no_functions_found": {
+      "symptom": "Graph has 0 nodes",
+      "cause": "Functions array missing or empty, or field names don't match expected",
+      "solution": "Ensure 'functions' array exists with items having 'function_id' and 'function_name'"
+    },
+    "no_edges_found": {
+      "symptom": "All functions appear orphaned/unreachable",
+      "cause": "Dependencies array missing or field names don't match",
+      "solution": "Ensure 'dependencies' (or 'function_dependencies' or 'edges') array exists with 'source_function' and 'target_function'"
+    },
+    "system_root_resolution": {
+      "symptom": "Tool uses wrong directory (reflow_root instead of system_root)",
+      "cause": "Path resolution bug in working_memory.json reading",
+      "solution": "Pass system_root explicitly as command line argument"
+    },
+    "index_json_missing": {
+      "symptom": "Error about missing index.json",
+      "cause": "Service mode requires index.json to discover service architectures",
+      "solution": "Create specs/machine/index.json or use --functional-mode"
+    }
+  },
+
+  "llm_compliance": {
+    "mandatory_pre_read": [
+      "schemas/functional_architecture_schema.json",
+      "tools/contracts/system_of_systems_graph_v2.CONTRACT.json"
+    ],
+    "pre_execution_checks": [
+      "Verify input file exists (functional_architecture.json or service_architecture files)",
+      "Verify 'functions' field is an array (functional mode)",
+      "Verify 'dependencies' field exists (functional mode)",
+      "Verify each function has 'function_id' field"
+    ],
+    "execution_proof": {
+      "required": true,
+      "proof_file": "specs/{functional|machine}/graphs/system_of_systems_graph.json",
+      "verification": "File must exist and contain 'nodes' and 'links' arrays"
+    },
+    "guidance_for_llm": {
+      "before_running": "READ this CONTRACT.json to understand exact input requirements. Use --functional-mode for functional architecture analysis.",
+      "field_name_preference": "Use canonical field names: 'function_id', 'function_name', 'source_function', 'target_function', 'dependencies'",
+      "after_running": "Check architecture_issues.json for gaps, orphaned nodes, and unreachable functions"
+    }
+  }
+}

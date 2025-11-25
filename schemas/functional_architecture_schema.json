@@ -1,0 +1,269 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://reflow.dev/schemas/functional_architecture.json",
+  "title": "Functional Architecture Schema",
+  "description": "JSON Schema for functional_architecture.json files. This schema is REQUIRED for FA-05 analysis tools. LLM agents MUST read this schema BEFORE creating functional architecture files.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["functions", "dependencies"],
+  "properties": {
+    "template_metadata": {
+      "type": "object",
+      "description": "Optional metadata about the template used"
+    },
+    "system_info": {
+      "type": "object",
+      "properties": {
+        "system_name": { "type": "string" },
+        "functional_requirements_source": { "type": "string" },
+        "user_scenarios_source": { "type": "string" }
+      }
+    },
+    "functional_flows": {
+      "type": "array",
+      "description": "High-level functional flows mapping user scenarios to function sequences",
+      "items": {
+        "type": "object",
+        "required": ["flow_id", "flow_name"],
+        "properties": {
+          "flow_id": {
+            "type": "string",
+            "pattern": "^FLOW-[0-9]+$",
+            "description": "Unique flow identifier (e.g., FLOW-001)"
+          },
+          "flow_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable flow name"
+          },
+          "flow_type": {
+            "type": "string",
+            "enum": ["process_flow", "decision_flow", "data_flow", "user_interaction_flow", "integration_flow", "error_flow"]
+          },
+          "description": { "type": "string" },
+          "user_scenarios": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "entry_functions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "exit_functions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "steps": {
+            "type": "array",
+            "description": "Alias for sequence - ordered list of function IDs",
+            "items": { "type": "string" }
+          },
+          "sequence": {
+            "type": "array",
+            "description": "Ordered list of function IDs in this flow",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "functions": {
+      "type": "array",
+      "description": "CRITICAL: Array of function definitions. Tool expects data.get('functions', []).",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["function_id", "function_name"],
+        "properties": {
+          "function_id": {
+            "type": "string",
+            "pattern": "^F-[0-9]+|F-ERR-[0-9]+$",
+            "description": "Unique function identifier (e.g., F-001, F-ERR-001)"
+          },
+          "function_name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable function name (Verb + Object format recommended)"
+          },
+          "name": {
+            "type": "string",
+            "description": "ALIAS for function_name - some tools expect 'name' field"
+          },
+          "function_type": {
+            "type": "string",
+            "enum": ["read", "write", "process", "decide", "generate", "validate", "iterate", "coordinate", "transform", "query"],
+            "description": "Type of operation this function performs"
+          },
+          "type": {
+            "type": "string",
+            "description": "ALIAS for function_type"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this function does (single responsibility)"
+          },
+          "inputs": {
+            "type": "array",
+            "description": "Input parameters for this function",
+            "items": {
+              "type": "object",
+              "properties": {
+                "input_name": { "type": "string" },
+                "name": { "type": "string" },
+                "input_type": { "type": "string" },
+                "type": { "type": "string" },
+                "input_source": { "type": "string" },
+                "source": { "type": "string" },
+                "required": { "type": "boolean" }
+              }
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "description": "Output values produced by this function",
+            "items": {
+              "type": "object",
+              "properties": {
+                "output_name": { "type": "string" },
+                "name": { "type": "string" },
+                "output_type": { "type": "string" },
+                "type": { "type": "string" },
+                "output_destination": { "type": "string" },
+                "destination": { "type": "string" }
+              }
+            }
+          },
+          "error_handling": {
+            "type": "object",
+            "properties": {
+              "error_types": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "error_handler_function": { "type": "string" }
+            }
+          },
+          "context_consumption": {
+            "type": ["string", "integer"],
+            "description": "For AI workflows: estimated tokens consumed by this function"
+          },
+          "execution_time": {
+            "type": ["string", "number"],
+            "description": "Estimated execution time"
+          },
+          "requirements_satisfied": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "CRITICAL: Array of function dependencies (edges). Required for graph construction.",
+      "items": {
+        "type": "object",
+        "required": ["source_function", "target_function"],
+        "properties": {
+          "source_function": {
+            "type": "string",
+            "description": "Function ID of the source (caller)"
+          },
+          "source": {
+            "type": "string",
+            "description": "ALIAS for source_function"
+          },
+          "target_function": {
+            "type": "string",
+            "description": "Function ID of the target (callee)"
+          },
+          "target": {
+            "type": "string",
+            "description": "ALIAS for target_function"
+          },
+          "dependency_type": {
+            "type": "string",
+            "enum": ["function_call", "data_flow", "control_flow", "error_flow"],
+            "description": "Type of dependency relationship"
+          },
+          "type": {
+            "type": "string",
+            "description": "ALIAS for dependency_type"
+          },
+          "description": { "type": "string" },
+          "weight": {
+            "type": ["string", "integer"],
+            "description": "Context consumption weight for this edge"
+          },
+          "probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Probability this path is taken (0.0-1.0)"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition under which this dependency executes"
+          }
+        }
+      }
+    },
+    "function_dependencies": {
+      "type": "array",
+      "description": "ALIAS for 'dependencies' - some workflows use this field name",
+      "items": {
+        "type": "object"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "ALIAS for 'dependencies' - graph terminology",
+      "items": {
+        "type": "object"
+      }
+    },
+    "dag_properties": {
+      "type": "object",
+      "description": "Summary properties of the DAG structure"
+    },
+    "context_analysis": {
+      "type": "object",
+      "description": "Context consumption analysis for AI workflows"
+    },
+    "validation_status": {
+      "type": "object",
+      "description": "Stakeholder and technical validation status"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "created_date": { "type": "string" },
+        "last_updated": { "type": "string" },
+        "created_by": { "type": "string" },
+        "review_status": {
+          "type": "string",
+          "enum": ["draft", "reviewed", "approved"]
+        }
+      }
+    }
+  },
+  "llm_compliance_requirements": {
+    "mandatory_pre_read": true,
+    "description": "LLM agents MUST read this schema BEFORE creating functional_architecture.json",
+    "critical_fields": {
+      "functions": "MUST be an ARRAY, not an object. Each item MUST have 'function_id' and 'function_name'.",
+      "dependencies": "MUST exist and be an ARRAY. Without this, tool cannot create graph edges."
+    },
+    "field_aliases": {
+      "description": "Some tools use different field names. This schema supports both.",
+      "function_name_aliases": ["function_name", "name"],
+      "function_type_aliases": ["function_type", "type"],
+      "source_aliases": ["source_function", "source"],
+      "target_aliases": ["target_function", "target"],
+      "dependencies_aliases": ["dependencies", "function_dependencies", "edges"],
+      "sequence_aliases": ["sequence", "steps"]
+    },
+    "validation_command": "python3 tools/validate_architecture_format.py <file> --mode functional",
+    "validation_timing": "IMMEDIATELY after creating the file, BEFORE proceeding to next step"
+  }
+}

@@ -3,9 +3,60 @@
     "step_id": "FA-02",
     "name": "Functional Flow Definition",
     "workflow": "01d-functional_analysis",
+    "version": "2.0.0",
+    "description": "Define functional flows and decompose into atomic functions with Schema-First compliance",
+    "phase": "functional_decomposition",
+    "llm_compliance_version": "3.22.0"
+  },
+
+  "llm_compliance_requirements": {
     "version": "1.0.0",
-    "description": "Define functional flows and decompose into atomic functions",
-    "phase": "functional_decomposition"
+    "description": "Schema-First mechanism to ensure LLM agents create tool-compatible artifacts",
+
+    "mandatory_pre_read": {
+      "description": "LLM agents MUST read these files BEFORE creating functional_architecture.json",
+      "blocking": true,
+      "files": [
+        {
+          "file": "schemas/functional_architecture_schema.json",
+          "purpose": "Understand exact field names and structure required",
+          "critical_fields_to_note": ["functions (ARRAY)", "dependencies (ARRAY)", "function_id", "function_name", "source_function", "target_function"]
+        },
+        {
+          "file": "templates/functional_architecture_template.json",
+          "purpose": "Use as starting point - copy structure exactly",
+          "warning": "Do NOT rename fields from template"
+        },
+        {
+          "file": "tools/contracts/system_of_systems_graph_v2.CONTRACT.json",
+          "purpose": "Understand what FA-05 tool expects",
+          "critical": "This contract shows exact field names tool will parse"
+        }
+      ],
+      "llm_acknowledgment_required": "Before creating functional_architecture.json, acknowledge: 'I have read the schema and will use exact field names: functions, dependencies, function_id, function_name, source_function, target_function'"
+    },
+
+    "execution_proof_required": {
+      "description": "Proof that validation tool was actually executed (not just claimed)",
+      "proof_file": "context/FA-02_validation_result.json",
+      "proof_required_fields": ["status", "errors", "warnings", "timestamp", "tool_version"],
+      "verification": "File must exist with recent timestamp and status field",
+      "blocking": true,
+      "on_missing_proof": "STOP - validation was not executed. Run validation tool and create proof file."
+    },
+
+    "pre_flight_checklist": {
+      "description": "LLM MUST complete this checklist before creating functional_architecture.json",
+      "checklist": [
+        "[ ] READ schemas/functional_architecture_schema.json",
+        "[ ] READ templates/functional_architecture_template.json",
+        "[ ] CONFIRM field names: 'functions' (not 'function_list'), 'dependencies' (not 'edges' or 'links')",
+        "[ ] CONFIRM function fields: 'function_id' AND 'function_name' (both required)",
+        "[ ] CONFIRM dependency fields: 'source_function' AND 'target_function'",
+        "[ ] ACKNOWLEDGE: 'I will use exact field names from schema'"
+      ],
+      "blocking": true
+    }
   },
   "detailed_guidance": {
     "purpose": "Map user scenarios to functional flows, then decompose flows into reusable atomic functions",
@@ -198,16 +249,23 @@
   },
 
   "execution_steps_WITH_VALIDATION": [
+    "0. ⚠️ PRE-FLIGHT (MANDATORY): Read schemas/functional_architecture_schema.json and templates/functional_architecture_template.json BEFORE creating any files",
     "1. Read functional requirements from specs/functional/functional_requirements.json",
     "2. For each user scenario, map to functional flows (process, decision, data, interaction flows)",
     "3. Decompose each flow into atomic functions (one function = one specific task)",
-    "4. Create functions array with ALL atomic functions (ARRAY format, include function_id and function_name)",
-    "5. Create dependencies array showing function call relationships (source → target)",
+    "4. Create functions array with ALL atomic functions - USE EXACT FIELD NAMES FROM SCHEMA:",
+    "   - Use 'functions' (not 'function_list' or 'funcs')",
+    "   - Each function MUST have 'function_id' AND 'function_name'",
+    "5. Create dependencies array showing function call relationships - USE EXACT FIELD NAMES:",
+    "   - Use 'dependencies' (not 'edges' or 'links')",
+    "   - Each dependency MUST have 'source_function' AND 'target_function'",
     "6. Create specs/functional/functional_architecture.json with functions and dependencies",
-    "7. ⚠️ IMMEDIATELY validate format:",
-    "   python3 {reflow_root}/tools/validate_architecture_format.py specs/functional/functional_architecture.json --mode functional",
-    "8. If validation FAILS: FIX errors NOW (see on_validation_failure above)",
-    "9. If validation PASSES: Proceed to FA-03 (generate visualizations for stakeholder review)"
+    "7. ⚠️ IMMEDIATELY validate format AND CREATE PROOF FILE:",
+    "   python3 {reflow_root}/tools/validate_architecture_format.py specs/functional/functional_architecture.json --mode functional > context/FA-02_validation_output.txt 2>&1",
+    "8. CREATE EXECUTION PROOF FILE context/FA-02_validation_result.json with format:",
+    "   { \"status\": \"PASS|FAIL\", \"errors\": [], \"warnings\": [], \"timestamp\": \"ISO-8601\", \"tool_version\": \"X.Y.Z\" }",
+    "9. If validation FAILS: FIX errors NOW (see on_validation_failure above), re-run validation",
+    "10. If validation PASSES: Proceed to FA-03 (generate visualizations for stakeholder review)"
   ],
 
   "success_criteria": {
@@ -215,7 +273,63 @@
     "all_flows_decomposed_to_atomic_functions": true,
     "function_dependencies_defined": true,
     "dag_created_no_cycles": true,
-    "functional_architecture_json_created": true
+    "functional_architecture_json_created": true,
+    "schema_compliance_verified": {
+      "description": "Artifact uses exact field names from schema",
+      "required": true,
+      "measurable": true
+    },
+    "validation_proof_exists": {
+      "description": "context/FA-02_validation_result.json exists with status=PASS",
+      "required": true,
+      "measurable": true
+    }
+  },
+
+  "quality_gate": {
+    "gate_id": "G-FA-02",
+    "name": "Functional Architecture Schema Compliance Gate",
+    "blocking": true,
+    "objective_checks": [
+      {
+        "check_id": "G-FA-02-01",
+        "check": "file_exists",
+        "path": "specs/functional/functional_architecture.json",
+        "measurable": true
+      },
+      {
+        "check_id": "G-FA-02-02",
+        "check": "json_valid",
+        "description": "File is valid JSON",
+        "measurable": true
+      },
+      {
+        "check_id": "G-FA-02-03",
+        "check": "field_exists",
+        "field": "functions",
+        "type": "array",
+        "min_items": 1,
+        "measurable": true
+      },
+      {
+        "check_id": "G-FA-02-04",
+        "check": "field_exists",
+        "field": "dependencies",
+        "type": "array",
+        "measurable": true
+      },
+      {
+        "check_id": "G-FA-02-05",
+        "check": "validation_tool_passed",
+        "tool": "validate_architecture_format.py",
+        "proof_file": "context/FA-02_validation_result.json",
+        "proof_required_field": "status",
+        "proof_required_value": "PASS",
+        "measurable": true
+      }
+    ],
+    "llm_self_certification_allowed": false,
+    "note": "Gate must be verified by objective checks, not LLM self-assessment"
   },
   "typical_time": "2-4 hours for small systems, 6-10 hours for complex systems",
   "next_step": "FA-03 (generate human-readable visualizations for stakeholder review)"

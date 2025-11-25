@@ -1,0 +1,122 @@
+{
+  "$schema": "https://reflow.dev/schemas/tool_contract.json",
+  "contract_version": "1.0.0",
+  "tool_name": "analyze_service_organization.py",
+  "tool_version": "3.21.0",
+  "description": "Analyzes functional architecture to recommend optimal service organization strategy",
+  "workflow_step": "SE-02-A00",
+
+  "input_requirements": {
+    "files": [
+      {
+        "path": "specs/functional/functional_architecture.json",
+        "required": true,
+        "fallback_path": "specs/machine/functional_architecture.json",
+        "schema_reference": "schemas/functional_architecture_schema.json"
+      }
+    ],
+    "required_fields": {
+      "functions": {
+        "type": "array",
+        "description": "Array of function objects",
+        "min_items": 1,
+        "item_schema": {
+          "required_fields": ["name"],
+          "optional_fields": ["function_name", "function_id", "description", "inputs", "outputs", "type", "function_type"]
+        }
+      },
+      "functional_flows": {
+        "type": "array",
+        "description": "Array of flow objects (optional but recommended)",
+        "item_schema": {
+          "required_fields": [],
+          "optional_fields": ["flow_id", "flow_name", "sequence", "steps", "entry_functions", "exit_functions"]
+        }
+      }
+    },
+    "field_aliases": {
+      "description": "Tool accepts these field name aliases - use whichever your template uses",
+      "name": {
+        "canonical": "name",
+        "aliases": ["function_name"],
+        "note": "Tool prefers 'name' but will try 'function_name' as fallback"
+      },
+      "sequence": {
+        "canonical": "sequence",
+        "aliases": ["steps"],
+        "note": "For flows, tool prefers 'sequence' but accepts 'steps'"
+      },
+      "type": {
+        "canonical": "type",
+        "aliases": ["function_type"],
+        "note": "Tool prefers 'type' but accepts 'function_type'"
+      }
+    }
+  },
+
+  "output_specification": {
+    "files_generated": [
+      {
+        "path": "specs/machine/service_organization_analysis.json",
+        "description": "Analysis results with metrics and scores",
+        "required_fields": ["coordination_complexity", "workflow_span", "operation_types", "recommendation"]
+      },
+      {
+        "path": "specs/machine/service_organization_strategy.json",
+        "description": "Recorded user choice with rationale",
+        "required_fields": ["strategy", "rationale", "timestamp"]
+      }
+    ],
+    "console_output": {
+      "description": "Human-readable analysis and recommendation",
+      "includes": ["metric breakdown", "strategy scores", "recommendation with explanation"]
+    }
+  },
+
+  "execution_requirements": {
+    "python_version": ">=3.8",
+    "dependencies": ["pathlib", "collections", "json"],
+    "working_directory": "reflow root (not system root)",
+    "command_pattern": "python3 {tools_path}/analyze_service_organization.py {system_root}"
+  },
+
+  "common_errors": {
+    "functional_architecture_not_found": {
+      "symptom": "Functional architecture not found",
+      "cause": "File doesn't exist at expected path",
+      "solution": "Run functional analysis workflow first (01d-functional_analysis.json)"
+    },
+    "name_field_missing": {
+      "symptom": "Tool reports 0 functions found",
+      "cause": "Functions use 'function_name' instead of 'name'",
+      "solution": "Add 'name' field to each function OR use v3.22.0+ which supports field aliases"
+    },
+    "datetime_import_error": {
+      "symptom": "NameError: name 'datetime' is not defined",
+      "cause": "Missing datetime import (bug in v3.18.0-v3.21.0)",
+      "solution": "Fixed in v3.22.0 - add 'from datetime import datetime' import"
+    }
+  },
+
+  "llm_compliance": {
+    "mandatory_pre_read": [
+      "schemas/functional_architecture_schema.json",
+      "tools/contracts/analyze_service_organization.CONTRACT.json"
+    ],
+    "pre_execution_checks": [
+      "Verify functional_architecture.json exists",
+      "Verify 'functions' field is an array with at least 1 item",
+      "Verify each function has 'name' or 'function_name' field"
+    ],
+    "execution_proof": {
+      "required": true,
+      "proof_file": "specs/machine/service_organization_analysis.json",
+      "verification": "File must exist and contain 'recommendation' field"
+    },
+    "guidance_for_llm": {
+      "before_running": "READ this CONTRACT.json to understand exact input requirements",
+      "field_name_preference": "Use 'name' (not 'function_name') and 'sequence' (not 'steps') to avoid issues",
+      "after_running": "Make an EDUCATED recommendation - don't just echo 'tool recommends X'. Consider user context, system complexity, and team experience when synthesizing the recommendation."
+    }
+  }
+}
