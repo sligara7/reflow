@@ -3,18 +3,20 @@
 Analyze Service Organization Strategy
 
 Analyzes a system's functional architecture to recommend the optimal
-service organization strategy: domain-based, workflow-based, or hybrid.
+service organization strategy: plugin-based modular, domain-based, workflow-based, or hybrid.
 
 Analysis Factors:
 1. Coordination Complexity - How much cross-service coordination is required?
 2. Workflow Span - Do workflows span multiple domains?
 3. Operation Types - CRUD-heavy vs workflow-heavy?
 4. State Management - Distributed state requirements?
+5. Extensibility Requirements - Does the system need runtime extensibility? (NEW v3.21.0)
 
 Recommendations:
+- Plugin-Based Modular: High extensibility, protocol-based interfaces, modular components (PREFERRED for modern systems)
 - Domain-Based: Clear domains, low coordination, CRUD-heavy
 - Workflow-Based: High coordination, cross-domain workflows, workflow-heavy
-- Hybrid: Mix of both patterns
+- Hybrid: Mix of patterns based on specific service needs
 
 Usage:
     python3 analyze_service_organization.py /path/to/system_root/
@@ -27,7 +29,7 @@ Outputs:
     - Console output with analysis and recommendation
     - specs/machine/service_organization_strategy.json (choice recording)
 
-Version: 3.18.0
+Version: 3.21.0
 """
 
 import json
@@ -65,6 +67,22 @@ class ServiceOrganizationAnalyzer:
         'submit', 'execute', 'process', 'run', 'start', 'complete',
         'workflow', 'pipeline', 'orchestrate', 'batch', 'job',
         'task', 'operation', 'procedure', 'sequence'
+    }
+
+    # Keywords indicating extensibility/plugin requirements (NEW v3.21.0)
+    EXTENSIBILITY_KEYWORDS = {
+        'plugin', 'extension', 'module', 'adapter', 'provider', 'handler',
+        'strategy', 'factory', 'registry', 'loader', 'hook', 'callback',
+        'injectable', 'configurable', 'customizable', 'extensible', 'pluggable',
+        'interface', 'protocol', 'contract', 'abstraction', 'dynamic',
+        'runtime', 'discover', 'register', 'unregister', 'swap', 'replace'
+    }
+
+    # Keywords indicating modular architecture needs
+    MODULARITY_KEYWORDS = {
+        'component', 'module', 'package', 'layer', 'boundary', 'isolation',
+        'decouple', 'independent', 'standalone', 'reusable', 'composable',
+        'interchangeable', 'hot-swap', 'lazy-load', 'on-demand'
     }
 
     def __init__(self, system_root: str):
@@ -328,11 +346,97 @@ class ServiceOrganizationAnalyzer:
 
         return op_type, details
 
+    def analyze_extensibility_requirements(self) -> Tuple[str, Dict[str, Any]]:
+        """
+        Analyze extensibility and modularity requirements (NEW v3.21.0)
+
+        Returns:
+            Tuple of (extensibility_level, analysis_details)
+            extensibility_level: "LOW" | "MEDIUM" | "HIGH"
+        """
+        print("\n🔌 Analyzing extensibility requirements...")
+
+        extensible_functions = []
+        modular_functions = []
+        total_functions = 0
+
+        for func in self.functional_arch.get('functions', []):
+            total_functions += 1
+            func_name = func.get('name', '').lower()
+            func_desc = func.get('description', '').lower()
+
+            # Check for extensibility keywords
+            ext_keywords_found = []
+            for keyword in self.EXTENSIBILITY_KEYWORDS:
+                if keyword in func_name or keyword in func_desc:
+                    ext_keywords_found.append(keyword)
+
+            if ext_keywords_found:
+                extensible_functions.append({
+                    'name': func.get('name', ''),
+                    'keywords': ext_keywords_found,
+                    'description': func.get('description', '')
+                })
+
+            # Check for modularity keywords
+            mod_keywords_found = []
+            for keyword in self.MODULARITY_KEYWORDS:
+                if keyword in func_name or keyword in func_desc:
+                    mod_keywords_found.append(keyword)
+
+            if mod_keywords_found:
+                modular_functions.append({
+                    'name': func.get('name', ''),
+                    'keywords': mod_keywords_found,
+                    'description': func.get('description', '')
+                })
+
+        extensibility_count = len(extensible_functions)
+        modularity_count = len(modular_functions)
+        combined_count = len(set([f['name'] for f in extensible_functions] +
+                                  [f['name'] for f in modular_functions]))
+        combined_ratio = combined_count / max(total_functions, 1)
+
+        # Determine extensibility level
+        if combined_count >= 5 or combined_ratio > 0.15:
+            level = "HIGH"
+        elif combined_count >= 2 or combined_ratio > 0.05:
+            level = "MEDIUM"
+        else:
+            level = "LOW"
+
+        details = {
+            'level': level,
+            'extensible_functions': extensibility_count,
+            'modular_functions': modularity_count,
+            'combined_unique': combined_count,
+            'total_functions': total_functions,
+            'ratio': combined_ratio,
+            'extensibility_examples': extensible_functions[:5],
+            'modularity_examples': modular_functions[:5]
+        }
+
+        print(f"  📊 Extensibility indicators: {extensibility_count}/{total_functions}")
+        print(f"  📊 Modularity indicators: {modularity_count}/{total_functions}")
+        print(f"  📊 Combined unique: {combined_count}/{total_functions} ({combined_ratio:.1%})")
+        print(f"  🎯 Extensibility level: {level}")
+        if extensible_functions:
+            print(f"  📋 Extensibility examples:")
+            for func in extensible_functions[:3]:
+                print(f"     - {func['name']}: {', '.join(func['keywords'][:3])}")
+        if modular_functions:
+            print(f"  📋 Modularity examples:")
+            for func in modular_functions[:3]:
+                print(f"     - {func['name']}: {', '.join(func['keywords'][:3])}")
+
+        return level, details
+
     def generate_recommendation(
         self,
         coordination_level: str,
         span_type: str,
-        operation_type: str
+        operation_type: str,
+        extensibility_level: str = "LOW"
     ) -> Tuple[str, str]:
         """
         Generate service organization recommendation
@@ -341,33 +445,48 @@ class ServiceOrganizationAnalyzer:
             coordination_level: "LOW" | "MEDIUM" | "HIGH"
             span_type: "SINGLE_DOMAIN" | "CROSS_DOMAIN"
             operation_type: "CRUD_HEAVY" | "WORKFLOW_HEAVY" | "BALANCED"
+            extensibility_level: "LOW" | "MEDIUM" | "HIGH"
 
         Returns:
             Tuple of (recommendation, rationale)
-            recommendation: "DOMAIN_BASED" | "WORKFLOW_BASED" | "HYBRID"
+            recommendation: "PLUGIN_BASED" | "DOMAIN_BASED" | "WORKFLOW_BASED" | "HYBRID"
         """
         print("\n💡 Generating recommendation...")
 
-        # Decision matrix
+        # Decision matrix - scores for each strategy
+        score_plugin = 0
         score_workflow = 0
         score_domain = 0
+        score_hybrid = 0
 
-        # Factor 1: Coordination complexity
+        # Factor 1: Extensibility requirements (NEW - most important for plugin-based)
+        if extensibility_level == "HIGH":
+            score_plugin += 4  # Strong signal for plugin-based
+            score_hybrid += 1  # Hybrid can also support extensibility
+        elif extensibility_level == "MEDIUM":
+            score_plugin += 2
+            score_hybrid += 1
+        # LOW extensibility doesn't add to plugin score
+
+        # Factor 2: Coordination complexity
         if coordination_level == "HIGH":
             score_workflow += 2
+            score_plugin += 1  # Plugin-based also handles coordination well
         elif coordination_level == "MEDIUM":
             score_workflow += 1
             score_domain += 1
+            score_plugin += 1
         else:  # LOW
             score_domain += 2
 
-        # Factor 2: Workflow span
+        # Factor 3: Workflow span
         if span_type == "CROSS_DOMAIN":
             score_workflow += 2
+            score_plugin += 1  # Plugins can span domains via protocols
         else:  # SINGLE_DOMAIN
             score_domain += 2
 
-        # Factor 3: Operation types
+        # Factor 4: Operation types
         if operation_type == "WORKFLOW_HEAVY":
             score_workflow += 2
         elif operation_type == "CRUD_HEAVY":
@@ -375,11 +494,59 @@ class ServiceOrganizationAnalyzer:
         else:  # BALANCED
             score_workflow += 1
             score_domain += 1
+            score_plugin += 1  # Balanced systems benefit from modularity
+            score_hybrid += 1
 
-        # Determine recommendation
-        if score_workflow > score_domain + 1:
-            recommendation = "WORKFLOW_BASED"
-            rationale = f"Workflow-based organization recommended due to:"
+        # Bonus for plugin-based: modern systems benefit from Protocol-based interfaces
+        # Plugin-based is generally the most flexible architecture
+        score_plugin += 1  # Small baseline bonus for modern architecture
+
+        # Calculate hybrid score as a blend
+        score_hybrid += (score_workflow + score_domain) // 3
+
+        # Determine recommendation based on highest score
+        scores = {
+            'PLUGIN_BASED': score_plugin,
+            'WORKFLOW_BASED': score_workflow,
+            'DOMAIN_BASED': score_domain,
+            'HYBRID': score_hybrid
+        }
+
+        # Get top two scores
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        top_strategy, top_score = sorted_scores[0]
+        second_strategy, second_score = sorted_scores[1]
+
+        # If top two are very close, recommend the more flexible option
+        if top_score - second_score <= 1:
+            # Prefer plugin-based when scores are close (more flexible)
+            if 'PLUGIN_BASED' in [top_strategy, second_strategy]:
+                recommendation = 'PLUGIN_BASED'
+            elif 'HYBRID' in [top_strategy, second_strategy]:
+                recommendation = 'HYBRID'
+            else:
+                recommendation = top_strategy
+        else:
+            recommendation = top_strategy
+
+        # Generate rationale based on recommendation
+        if recommendation == "PLUGIN_BASED":
+            rationale = "Plugin-Based Modular Architecture recommended due to:"
+            reasons = []
+            if extensibility_level == "HIGH":
+                reasons.append(f"HIGH extensibility requirements - system needs runtime plugin loading/swapping")
+            elif extensibility_level == "MEDIUM":
+                reasons.append("MEDIUM extensibility requirements - system benefits from modular, replaceable components")
+            reasons.append("Protocol-based interfaces enable loose coupling and easy testing")
+            reasons.append("Dependency injection provides flexibility for different environments")
+            if coordination_level in ["HIGH", "MEDIUM"]:
+                reasons.append("Coordination can be handled via injected orchestrators")
+            if operation_type == "BALANCED":
+                reasons.append("Balanced operations work well with modular plugin structure")
+            rationale += "\n" + "\n".join(f"  - {r}" for r in reasons)
+
+        elif recommendation == "WORKFLOW_BASED":
+            rationale = "Workflow-based organization recommended due to:"
             reasons = []
             if coordination_level == "HIGH":
                 reasons.append(f"HIGH coordination complexity ({coordination_level})")
@@ -389,9 +556,8 @@ class ServiceOrganizationAnalyzer:
                 reasons.append("system is workflow-heavy, not CRUD-heavy")
             rationale += "\n" + "\n".join(f"  - {r}" for r in reasons)
 
-        elif score_domain > score_workflow + 1:
-            recommendation = "DOMAIN_BASED"
-            rationale = f"Domain-based organization recommended due to:"
+        elif recommendation == "DOMAIN_BASED":
+            rationale = "Domain-based organization recommended due to:"
             reasons = []
             if coordination_level == "LOW":
                 reasons.append(f"LOW coordination complexity ({coordination_level})")
@@ -401,14 +567,20 @@ class ServiceOrganizationAnalyzer:
                 reasons.append("system is CRUD-heavy with simple operations")
             rationale += "\n" + "\n".join(f"  - {r}" for r in reasons)
 
-        else:
-            recommendation = "HYBRID"
-            rationale = f"Hybrid organization recommended due to mixed characteristics:\n"
+        else:  # HYBRID
+            rationale = "Hybrid organization recommended due to mixed characteristics:\n"
             rationale += f"  - Coordination: {coordination_level}\n"
             rationale += f"  - Workflow span: {span_type}\n"
             rationale += f"  - Operation type: {operation_type}\n"
-            rationale += "Consider workflow services for complex coordination and domain services for shared capabilities."
+            rationale += f"  - Extensibility: {extensibility_level}\n"
+            rationale += "Consider combining patterns: plugin-based for extensible components, workflow services for coordination, domain services for shared capabilities."
 
+        # Print scoring breakdown for transparency
+        print(f"\n  📊 Strategy Scores:")
+        print(f"     Plugin-Based: {score_plugin}")
+        print(f"     Workflow-Based: {score_workflow}")
+        print(f"     Domain-Based: {score_domain}")
+        print(f"     Hybrid: {score_hybrid}")
         print(f"  🎯 Recommendation: {recommendation}")
         print(f"  📝 Rationale:\n{rationale}")
 
@@ -436,6 +608,11 @@ class ServiceOrganizationAnalyzer:
         print(f"\n3. Operation Types: {self.analysis_results['operations']['type']}")
         print(f"   CRUD: {self.analysis_results['operations']['crud_ratio']:.0%}, Workflows: {self.analysis_results['operations']['workflow_ratio']:.0%}")
 
+        # NEW: Extensibility analysis (v3.21.0)
+        if 'extensibility' in self.analysis_results:
+            print(f"\n4. Extensibility Requirements: {self.analysis_results['extensibility']['level']}")
+            print(f"   {self.analysis_results['extensibility']['combined_unique']} functions indicate extensibility/modularity needs")
+
         print(f"\n💡 RECOMMENDATION: {recommendation}")
         print(f"\n{rationale}")
 
@@ -443,28 +620,45 @@ class ServiceOrganizationAnalyzer:
         print("ORGANIZATION STRATEGY OPTIONS")
         print("=" * 70)
 
-        print(f"\n1. Domain-Based Organization")
+        print(f"\n1. Plugin-Based Modular Architecture {'⭐ RECOMMENDED' if recommendation == 'PLUGIN_BASED' else ''}")
+        print(f"   Services: Modular components with Protocol-based interfaces")
+        print(f"   Example: PluginRegistry, ExtensionLoader, AdapterFactory, ProviderManager")
+        print(f"   Best for: High extensibility, runtime plugin loading, multi-environment deployment")
+        print(f"   Pros: Maximum flexibility, loose coupling, easy testing, runtime swappable components")
+        print(f"   Cons: Requires Protocol + DI patterns, more initial design effort")
+        print(f"   Key patterns: Protocol interfaces, Dependency Injection, Plugin discovery")
+
+        print(f"\n2. Domain-Based Organization {'⭐ RECOMMENDED' if recommendation == 'DOMAIN_BASED' else ''}")
         print(f"   Services: Organized by business domain/capability")
         print(f"   Example: UserService, ProductService, OrderService")
         print(f"   Best for: Clear domains, low coordination, CRUD operations")
         print(f"   Pros: Aligns with business domains, clear ownership")
         print(f"   Cons: Cross-domain coordination becomes distributed state")
 
-        print(f"\n2. Workflow-Based Organization {'⭐ RECOMMENDED' if recommendation == 'WORKFLOW_BASED' else ''}")
+        print(f"\n3. Workflow-Based Organization {'⭐ RECOMMENDED' if recommendation == 'WORKFLOW_BASED' else ''}")
         print(f"   Services: Organized by user workflows/operations")
         print(f"   Example: CheckoutWorkflowService, InventoryManagementService")
         print(f"   Best for: High coordination, cross-domain workflows")
         print(f"   Pros: Coordination is local, workflows self-contained")
         print(f"   Cons: May duplicate some domain logic")
 
-        print(f"\n3. Hybrid (Domain + Workflow) {'⭐ RECOMMENDED' if recommendation == 'HYBRID' else ''}")
-        print(f"   Workflow Services: Complex coordination operations")
-        print(f"   Domain Services: Shared capabilities")
-        print(f"   Best for: Large systems with both workflows and domains")
-        print(f"   Pros: Best of both strategies")
-        print(f"   Cons: More complex to design initially")
+        print(f"\n4. Hybrid (Mix of Patterns) {'⭐ RECOMMENDED' if recommendation == 'HYBRID' else ''}")
+        print(f"   Combines patterns based on specific service needs:")
+        print(f"   - Plugin services: Extensible, swappable components")
+        print(f"   - Workflow services: Complex coordination operations")
+        print(f"   - Domain services: Shared capabilities")
+        print(f"   Best for: Large, complex systems with varied requirements")
+        print(f"   Pros: Best of all strategies, tailored per component")
+        print(f"   Cons: Most complex to design, requires clear architectural guidelines")
 
         print("\n" + "=" * 70)
+        print("LLM AGENT: Make an EDUCATED recommendation based on:")
+        print("  1. The analysis scores above")
+        print("  2. User's stated requirements and preferences")
+        print("  3. System complexity and future extensibility needs")
+        print("  4. Team experience with patterns (Protocol/DI vs traditional)")
+        print("DO NOT just echo 'tool recommends X' - synthesize the analysis!")
+        print("=" * 70)
 
     def save_analysis_results(self, recommendation: str, rationale: str):
         """Save analysis results to JSON file"""
@@ -494,19 +688,22 @@ class ServiceOrganizationAnalyzer:
             coordination_level, coord_details = self.analyze_coordination_complexity()
             span_type, span_details = self.analyze_workflow_span()
             operation_type, op_details = self.analyze_operation_types()
+            extensibility_level, ext_details = self.analyze_extensibility_requirements()  # NEW v3.21.0
 
             # Store results
             self.analysis_results = {
                 'coordination': coord_details,
                 'span': span_details,
-                'operations': op_details
+                'operations': op_details,
+                'extensibility': ext_details  # NEW v3.21.0
             }
 
             # Generate recommendation
             recommendation, rationale = self.generate_recommendation(
                 coordination_level,
                 span_type,
-                operation_type
+                operation_type,
+                extensibility_level  # NEW v3.21.0
             )
 
             # Present choice

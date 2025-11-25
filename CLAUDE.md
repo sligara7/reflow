@@ -1,13 +1,15 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.20.0
-**Last Updated**: 2025-11-23
+**Version**: 3.21.0
+**Last Updated**: 2025-11-24
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
 
-**NEW in v3.20.0**: **Development Standards Configuration** - Centralized language-specific development standards configured once during setup (S-03-A07). For Python: Protocol + DI interfaces (default), Hatchling dependency management, lock file generation, pytest, ruff. Service organization strategy (workflow-based vs domain-based) recommended during functional allocation based on analysis. Eliminates repeated decision prompts.
+**NEW in v3.21.0**: **Plugin-Based Modular Architecture** - Added as 4th service organization option (alongside domain-based, workflow-based, hybrid). Tool now analyzes extensibility requirements and outputs strategy scores. LLM agents are instructed to make EDUCATED recommendations by synthesizing tool analysis with user context - NOT just echo "tool recommends X".
+
+**NEW in v3.20.0**: **Development Standards Configuration** - Centralized language-specific development standards configured once during setup (S-03-A07). For Python: Protocol + DI interfaces (default), Hatchling dependency management, lock file generation, pytest, ruff. Service organization strategy (plugin-based vs domain-based vs workflow-based vs hybrid) recommended during functional allocation based on analysis. Eliminates repeated decision prompts.
 
 **NEW in v3.19.0**: **Deployment Environment Specification** - Define WHERE and HOW the system will be deployed BEFORE development begins. New workflow (02b-deployment_environment.json) captures deployment context upfront: target platforms, containerization strategy, scaling requirements, security constraints, observability needs, and infrastructure dependencies. Prevents late-stage deployment surprises.
 
@@ -519,6 +521,26 @@ service_architecture.json                     ← Symlink to current
 
 **Full Documentation**: See `docs/changes/CHANGE_PROPOSAL_20251121_DEPLOYMENT_ENVIRONMENT.md`
 
+### v3.21.0 - Plugin-Based Modular Architecture Option (NEW)
+**Problem Solved**: LLM agents would just echo "tool recommends X" without making an educated recommendation. Also, plugin-based modular architecture wasn't offered as a standard option despite being the most flexible pattern for modern systems.
+
+**Key Features**:
+- **Plugin-Based as 4th Option**: Added plugin-based modular architecture alongside domain-based, workflow-based, and hybrid
+- **Extensibility Analysis**: Tool now analyzes extensibility/modularity keywords to detect systems that need plugin architecture
+- **Educated Recommendations**: LLM agents are now instructed to synthesize analysis scores with user context, NOT just echo tool output
+- **Strategy Scoring**: Tool outputs numerical scores for each strategy, enabling transparent decision-making
+
+**Updated Tool**: `analyze_service_organization.py` v3.21.0
+- Analyzes 5 factors: coordination, workflow span, operations, state management, extensibility
+- Outputs strategy scores for all 4 options
+- Explicit guidance for LLM to make educated recommendations
+
+**Workflow Integration**:
+- **SE-02-A00**: Now offers 4 options with scores and explicit LLM guidance
+- LLM must consider: tool scores + user requirements + system complexity + team experience
+
+**📖 See**: `workflow_steps/systems_engineering/SE-02-ServiceArchitecture.json` for updated LLM instructions
+
 ### v3.18.0 - Protocol-Based Interfaces, Dependency Injection & Service Organization Strategies
 **Problem Solved**: ABCs cause metaclass conflicts with frameworks (FastAPI, SQLAlchemy, Pydantic). Need flexible service organization strategies (domain-based vs workflow-based). Single implementation model limits multi-facility deployments.
 
@@ -526,15 +548,15 @@ service_architecture.json                     ← Symlink to current
 - **Protocol-Based Interfaces**: Use Python Protocols instead of ABCs - no metaclass conflicts, structural typing, multiple implementations without inheritance
 - **Dependency Injection**: Services declare dependencies via Protocol type hints, startup code provides implementations - easy testing, different impls per facility
 - **Behavior Mixins**: Reusable components (HasLifecycle, HasLogging, RequiresAuth, TracksMetrics) - wide inheritance pattern (depth=1) instead of deep hierarchies
-- **Service Organization Strategies**: LLM analyzes system and recommends domain-based, workflow-based, or hybrid organization based on coordination complexity, workflow span, operation types
+- **Service Organization Strategies**: LLM analyzes system and recommends plugin-based, domain-based, workflow-based, or hybrid organization based on coordination complexity, workflow span, operation types, and extensibility requirements (updated in v3.21.0)
 
 **New Tools**:
 1. `generate_interface_protocols.py` - Generate Protocols + DI infrastructure (alternative to `generate_interface_abc.py`)
-2. `analyze_service_organization.py` - Analyze system and recommend organization strategy
+2. `analyze_service_organization.py` - Analyze system and recommend organization strategy (v3.21.0: now includes plugin-based option)
 
 **Workflow Integration**:
 - **D-01-A04.5**: CHOICE - Protocol-based (recommended) vs ABC-based vs Skip
-- **SE-02-A00** (NEW): Analyze coordination/workflows → Recommend strategy → User chooses domain/workflow/hybrid
+- **SE-02-A00** (NEW): Analyze coordination/workflows/extensibility → Recommend strategy → User chooses plugin/domain/workflow/hybrid
 
 **Generated Artifacts** (Protocol-based):
 ```

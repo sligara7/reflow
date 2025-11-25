@@ -2,12 +2,12 @@
   "$schema": "./schemas/service_organization_strategy_schema.json",
   "strategy_metadata": {
     "decision_date": "YYYY-MM-DD",
-    "workflow_version": "3.18.0",
-    "analysis_tool_version": "3.18.0"
+    "workflow_version": "3.21.0",
+    "analysis_tool_version": "3.21.0"
   },
-  "chosen_strategy": "domain_based | workflow_based | hybrid",
+  "chosen_strategy": "plugin_based | domain_based | workflow_based | hybrid",
   "user_rationale": "Brief explanation of why user chose this strategy (2-3 sentences)",
-  "analysis_recommendation": "domain_based | workflow_based | hybrid",
+  "analysis_recommendation": "plugin_based | domain_based | workflow_based | hybrid",
   "analysis_results": {
     "coordination_complexity": {
       "level": "LOW | MEDIUM | HIGH",
@@ -42,9 +42,49 @@
       "other_operations": 0,
       "crud_ratio": 0.0,
       "workflow_ratio": 0.0
+    },
+    "extensibility_requirements": {
+      "level": "LOW | MEDIUM | HIGH",
+      "extensible_functions": 0,
+      "modular_functions": 0,
+      "combined_unique": 0,
+      "total_functions": 0,
+      "ratio": 0.0,
+      "extensibility_examples": [
+        {
+          "name": "Example function indicating extensibility",
+          "keywords": ["plugin", "extension"],
+          "description": "Function description"
+        }
+      ],
+      "modularity_examples": [
+        {
+          "name": "Example function indicating modularity",
+          "keywords": ["component", "module"],
+          "description": "Function description"
+        }
+      ]
     }
   },
   "strategy_description": {
+    "plugin_based": {
+      "description": "Modular components with Protocol-based interfaces and dependency injection",
+      "example_services": ["PluginRegistry", "ExtensionLoader", "AdapterFactory", "ProviderManager", "ComponentOrchestrator"],
+      "when_to_use": "High extensibility requirements, runtime plugin loading, multi-environment deployment, need for loose coupling",
+      "pros": [
+        "Maximum flexibility - swap implementations at runtime",
+        "Loose coupling via Protocol interfaces",
+        "Easy testing with mock implementations",
+        "Multi-environment deployment (prod, test, dev use different plugins)",
+        "Runtime discoverable and loadable components"
+      ],
+      "cons": [
+        "Requires Protocol + DI patterns (more upfront design)",
+        "Additional abstraction layer",
+        "Team needs to understand modern patterns"
+      ],
+      "key_patterns": ["Protocol interfaces", "Dependency Injection", "Plugin discovery", "Factory pattern", "Strategy pattern"]
+    },
     "domain_based": {
       "description": "Services organized by business domain/capability",
       "example_services": ["UserService", "ProductService", "OrderService", "PaymentService"],
@@ -82,8 +122,12 @@
       ]
     },
     "hybrid": {
-      "description": "Mix of workflow services and domain services",
+      "description": "Mix of plugin, workflow, and domain services based on specific needs",
       "example_services": {
+        "plugin_services": [
+          "ExtensionManager (runtime plugin loading)",
+          "AdapterRegistry (swappable adapters)"
+        ],
         "workflow_services": [
           "ExperimentExecutionService (complex coordination)",
           "BatchProcessingService (multi-step workflow)"
@@ -93,21 +137,34 @@
           "DeviceRegistryService (shared device catalog)"
         ]
       },
-      "when_to_use": "Large, complex systems with both complex workflows and clear shared domains",
+      "when_to_use": "Large, complex systems with varied requirements - some need extensibility, some need coordination, some are simple domains",
       "pros": [
-        "Best of both strategies",
+        "Best of all strategies - tailored per service",
+        "Plugin services for extensibility",
         "Workflow services handle coordination",
         "Domain services provide shared capabilities",
-        "Flexible - choose best pattern per service"
+        "Maximum flexibility"
       ],
       "cons": [
-        "More complex to design initially",
-        "Need to carefully decide which pattern per service",
-        "Requires more architectural discipline"
+        "Most complex to design initially",
+        "Need clear architectural guidelines per service type",
+        "Requires strong architectural discipline and documentation"
       ]
     }
   },
   "implementation_guidance": {
+    "plugin_based": {
+      "service_decomposition": "Identify swappable components, define Protocol interfaces, create plugin registries",
+      "coordination_pattern": "Injected orchestrators - coordination logic provided via DI, swappable per environment",
+      "state_management": "State managed via injected providers, multiple implementations per environment",
+      "integration_pattern": "Protocol interfaces + Dependency Injection, plugin discovery at startup",
+      "key_artifacts": [
+        "services/common/protocols/*.py - Protocol definitions",
+        "services/common/di/container.py - DI container",
+        "services/common/mixins/*.py - Behavior mixins (HasLifecycle, HasLogging, etc.)",
+        "Use generate_interface_protocols.py tool"
+      ]
+    },
     "domain_based": {
       "service_decomposition": "Group functions by business domain (User, Product, Order, Payment)",
       "coordination_pattern": "Distributed - services coordinate via events, sagas, or orchestration",
@@ -121,10 +178,11 @@
       "integration_pattern": "Workflow orchestration, command-query separation"
     },
     "hybrid": {
-      "service_decomposition": "Identify workflow services (complex coordination) and domain services (shared capabilities)",
-      "coordination_pattern": "Hybrid - local within workflow services, distributed between domain services",
-      "state_management": "Workflow services own workflow state, domain services own domain state",
-      "integration_pattern": "Mixed - orchestration for workflows, events for domain services"
+      "service_decomposition": "Classify each service: plugin (extensible), workflow (coordination), or domain (shared capabilities)",
+      "coordination_pattern": "Mixed - injected for plugins, local for workflows, distributed for domains",
+      "state_management": "Per service type: injected providers (plugin), workflow state (workflow), domain state (domain)",
+      "integration_pattern": "Mixed - DI for plugins, orchestration for workflows, events for domains",
+      "classification_guidance": "Document why each service uses its pattern in service_architecture.json"
     }
   },
   "references": {
