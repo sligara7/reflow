@@ -61,7 +61,7 @@ class RAGEmbeddingGenerator:
             sys.exit(1)
         
         config_data = safe_load_json(self.config_path, file_type_description="RAG context configuration")
-            self.config = config_data.get('rag_context_configuration', config_data)
+        self.config = config_data.get('rag_context_configuration', config_data)
         
         # Initialize embedding model
         model_name = self.config['embedding_configuration']['model']
