@@ -2,20 +2,34 @@
   "workflow_metadata": {
     "workflow_id": "99-meta_analysis",
     "name": "Reflow Meta-Analysis Workflow (Self-Sharpening Knife)",
-    "version": "3.0.0",
-    "description": "Run Reflow's own workflows (01d-functional_analysis.json) ON Reflow itself to detect gaps, context bottlenecks, and architectural issues, then use gap closure tools to propose and apply fixes - creating a truly self-improving system",
+    "version": "4.0.0",
+    "description": "Run Reflow's own workflows (01d-functional_analysis.json) ON Reflow itself to detect gaps, context bottlenecks, and architectural issues, then use gap closure tools to propose and apply fixes - creating a truly self-improving system. v4.0.0: Adds hierarchical workflow structure analysis",
     "created": "2025-11-04",
-    "last_updated": "2025-11-06",
-    "purpose": "Formalize the repeatable process of having Reflow analyze itself using functional architecture methodology with context consumption tracking, then apply implementation fixes to continuously improve",
-    "key_innovation": "v3.0.0: Truly self-referential - Reflow runs its own workflows (01d-functional_analysis.json) ON ITSELF, uses system_of_systems_graph_v2.py for graph analysis, and applies gap closure tools (reflow_gap_closure.py) to propose and implement fixes - making Reflow a fully self-improving 'self-sharpening knife'",
+    "last_updated": "2025-12-04",
+    "purpose": "Formalize the repeatable process of having Reflow analyze itself using functional architecture methodology with context consumption tracking, then apply implementation fixes to continuously improve. v4.0.0: Now includes analysis of hierarchical phase structure, transitions, and architecture anchors",
+    "key_innovation": "v4.0.0: Comprehensive hierarchical analysis - analyzes phase DAG, transition rules, iteration budgets, resync protocol, dual modes, and architecture anchors. Verifies hierarchical workflow structure integrity alongside functional architecture analysis",
     "when_to_use": "Run this workflow after any significant updates to Reflow workflows, tools, or templates to ensure no new issues introduced AND to continuously improve existing implementation",
-    "trigger_command": "Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow"
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/99-meta_analysis.json on system /path/to/reflow",
+    "hierarchical_integration": {
+      "phase": "PM",
+      "phase_name": "Meta & Maintenance",
+      "hierarchical_analysis_features": [
+        "Phase DAG analysis (connectivity, reachability, cycles)",
+        "Transition rule validation (prerequisites, mode behaviors)",
+        "Iteration budget analysis (P3↔P4 loop limits)",
+        "Resync protocol verification (completeness, mode handling)",
+        "Architecture anchor analysis (creation, checksums, reminders)",
+        "Dual mode configuration validation"
+      ]
+    }
   },
   "prerequisites": {
     "required_conditions": [
       "Reflow repository exists and is accessible",
       "Python 3.x installed with NetworkX library",
-      "All Reflow workflows, tools, and templates present"
+      "All Reflow workflows, tools, and templates present",
+      "Hierarchical workflow structure exists: workflow_master.json, phase_transitions.json, resync_protocol.json",
+      "Phase definitions exist in workflows/phases/"
     ],
     "not_required": [
       "Foundational documents (Reflow itself is the system being analyzed)",
@@ -25,13 +39,18 @@
   "entry_points": {
     "standard": {
       "id": "standard",
-      "description": "Standard meta-analysis - full functional architecture analysis with context tracking",
+      "description": "Standard meta-analysis - full functional architecture analysis with context tracking plus hierarchical analysis",
       "first_step": "META-01"
     },
     "quick": {
       "id": "quick",
       "description": "Quick check - run only functional architecture analysis on existing functional_architecture.json",
       "first_step": "META-04"
+    },
+    "hierarchical_only": {
+      "id": "hierarchical_only",
+      "description": "Hierarchical analysis only - analyze phase DAG, transitions, iteration budgets, resync protocol, and architecture anchors",
+      "first_step": "META-04H"
     }
   },
   "workflow_steps": [
@@ -349,6 +368,205 @@
             "Analysis completed without errors",
             "functional_architecture_analysis.json generated",
             "All issues categorized by severity"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "META-04H"
+    },
+    {
+      "step_id": "META-04H",
+      "name": "Hierarchical Workflow Structure Analysis (NEW v4.0.0)",
+      "description": "Analyze the hierarchical workflow structure: phase DAG, transitions, iteration budgets, resync protocol, and architecture anchors",
+      "phase": "hierarchical_analysis",
+      "actions": [
+        {
+          "action_id": "META-04H-A01",
+          "description": "Analyze phase DAG structure",
+          "reads": ["workflows/workflow_master.json", "workflows/phase_transitions.json"],
+          "analyses": [
+            {
+              "analysis_id": "HA-001",
+              "name": "Phase DAG Connectivity",
+              "description": "Verify all phases are reachable from P0",
+              "expected": "All phases (P1-P5, PM) reachable from P0"
+            },
+            {
+              "analysis_id": "HA-002",
+              "name": "Phase DAG Acyclicity",
+              "description": "Verify no unintended cycles in phase transitions",
+              "expected": "Only P3↔P4 has intentional bidirectional edges"
+            },
+            {
+              "analysis_id": "HA-003",
+              "name": "Terminal Phase Identification",
+              "description": "Verify P5 is a valid terminal phase",
+              "expected": "P5 has no outgoing transitions except to PM"
+            },
+            {
+              "analysis_id": "HA-004",
+              "name": "Phase Workflow Coverage",
+              "description": "Verify all workflows are assigned to exactly one phase",
+              "expected": "Every workflow in workflows/*.json appears in one phase definition"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A02",
+          "description": "Analyze transition rules",
+          "reads": "workflows/phase_transitions.json",
+          "analyses": [
+            {
+              "analysis_id": "HA-005",
+              "name": "Transition Prerequisites Satisfiability",
+              "description": "Verify all transition prerequisites can be satisfied",
+              "expected": "All prerequisites reference valid exit criteria from source phases"
+            },
+            {
+              "analysis_id": "HA-006",
+              "name": "Mode-Specific Behavior Completeness",
+              "description": "Verify all mode-specific transitions define both flexible and rigid behaviors",
+              "expected": "All transitions with mode_specific_behavior have both modes defined"
+            },
+            {
+              "analysis_id": "HA-007",
+              "name": "P2→P3 Anchor Creation",
+              "description": "Verify P2→P3 transition creates architecture anchor",
+              "expected": "P2→P3 transition has creates_architecture_anchor: true"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A03",
+          "description": "Analyze iteration budget mechanism",
+          "reads": ["workflows/workflow_master.json", "workflows/phase_transitions.json", "templates/working_memory_template.json"],
+          "analyses": [
+            {
+              "analysis_id": "HA-008",
+              "name": "Default Budget Configuration",
+              "description": "Verify default P3_P4_loops_budget is configured",
+              "expected": "Default value in workflow_master.json (typically 3)"
+            },
+            {
+              "analysis_id": "HA-009",
+              "name": "Budget Enforcement in Transitions",
+              "description": "Verify P4→P3 transition checks iteration budget",
+              "expected": "Transition has triggers_resync_if_budget_exceeded: true"
+            },
+            {
+              "analysis_id": "HA-010",
+              "name": "Budget Tracking in Working Memory",
+              "description": "Verify working_memory_template has iteration_tracking section",
+              "expected": "Contains P3_P4_loops_budget, current_count, resync_history"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A04",
+          "description": "Analyze resync protocol",
+          "reads": "workflows/resync_protocol.json",
+          "analyses": [
+            {
+              "analysis_id": "HA-011",
+              "name": "Protocol Step Completeness",
+              "description": "Verify resync protocol has all required steps",
+              "expected_steps": ["halt", "detect_drift", "compare_to_anchor", "present_to_user", "resolve_based_on_mode", "update_anchor", "reset_counter"]
+            },
+            {
+              "analysis_id": "HA-012",
+              "name": "Mode-Specific Resolution",
+              "description": "Verify resync has different resolution actions for each mode",
+              "expected": {
+                "flexible": "Update architecture to match implementation",
+                "rigid": "Revert implementation or create change request"
+              }
+            },
+            {
+              "analysis_id": "HA-013",
+              "name": "Escalation Path",
+              "description": "Verify resync has escalation path if resolution fails",
+              "expected": "Escalation to user/stakeholder defined"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A05",
+          "description": "Analyze architecture anchor mechanism",
+          "reads": ["templates/working_memory_template.json", "workflows/phases/P3_development/phase_definition.json", "workflows/phases/P4_validation/phase_definition.json"],
+          "analyses": [
+            {
+              "analysis_id": "HA-014",
+              "name": "Anchor Structure Completeness",
+              "description": "Verify architecture_anchor section in working_memory_template",
+              "expected": "Contains exists, checksums, design_intent, llm_reminder"
+            },
+            {
+              "analysis_id": "HA-015",
+              "name": "LLM Anchor Reminders",
+              "description": "Verify P3 and P4 phase definitions remind LLM of anchor",
+              "expected": "llm_instructions.on_entry includes architecture anchor reference"
+            },
+            {
+              "analysis_id": "HA-016",
+              "name": "Anchor Checksum Coverage",
+              "description": "Verify anchor checksums cover key architecture files",
+              "expected": "Checksums for service_architecture, functional_architecture, interface_registry"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A06",
+          "description": "Analyze dual development mode configuration",
+          "reads": ["workflows/workflow_master.json", "templates/working_memory_template.json"],
+          "analyses": [
+            {
+              "analysis_id": "HA-017",
+              "name": "Mode Definitions Complete",
+              "description": "Verify both flexible and rigid modes fully defined",
+              "expected": "Both modes have distinct settings and behaviors"
+            },
+            {
+              "analysis_id": "HA-018",
+              "name": "Mode-Specific Settings Consistency",
+              "description": "Verify mode settings are internally consistent",
+              "expected": {
+                "flexible": "auto_update_architecture: true, drift_tolerance > 0",
+                "rigid": "change_request_required: true, drift_tolerance: 0"
+              }
+            },
+            {
+              "analysis_id": "HA-019",
+              "name": "Discovered Requirements Tracking",
+              "description": "Verify discovered requirements tracking for both modes",
+              "expected": "discovered_requirements.json for flexible, change_requests.json for rigid"
+            }
+          ]
+        },
+        {
+          "action_id": "META-04H-A07",
+          "description": "Generate hierarchical analysis report",
+          "creates": "specs/hierarchical/hierarchical_analysis_report.json",
+          "includes": [
+            "Summary of all hierarchical analyses (HA-001 through HA-019)",
+            "Pass/fail status for each analysis",
+            "Issues found with severity (CRITICAL, WARNING, INFO)",
+            "Recommendations for fixes"
+          ]
+        }
+      ],
+      "outputs": [
+        "specs/hierarchical/hierarchical_analysis_report.json",
+        "Console output with hierarchical analysis summary"
+      ],
+      "typical_time": "15-20 minutes",
+      "gates": [
+        {
+          "gate_id": "G-META-04H",
+          "name": "Hierarchical Analysis Complete",
+          "checks": [
+            "All hierarchical analyses (HA-001 through HA-019) completed",
+            "hierarchical_analysis_report.json generated",
+            "Critical issues identified and categorized"
           ],
           "blocking": true
         }
@@ -757,6 +975,8 @@
       "Functional requirements document created (specs/functional/functional_requirements.json)",
       "Functional architecture document created (specs/functional/functional_architecture.json)",
       "Analysis run and results reviewed (specs/functional/functional_architecture_analysis.json)",
+      "HIERARCHICAL ANALYSIS COMPLETE (META-04H): Phase DAG, transitions, iteration budgets, resync protocol, anchors analyzed",
+      "Hierarchical analysis report generated (specs/hierarchical/hierarchical_analysis_report.json)",
       "Critical issues resolved in functional architecture spec (no context bottlenecks, no orphaned critical functions)",
       "IMPLEMENTATION FIXES APPLIED (META-05B): workflows/*.json, tools/*.py, schemas/*.json updated based on analysis",
       "Implementation validated: All workflows executable, tools pass syntax check, integration tests pass",
@@ -773,7 +993,8 @@
     "functional_completeness": "All functional requirements implemented by functions with no gaps",
     "flow_efficiency": "No unintentional circular dependencies, reasonable complexity",
     "ai_agent_feasibility": "AI agents can execute all Reflow workflows within context limits",
-    "self_improvement": "Implementation fixes applied to workflows, tools, and schemas - Reflow has successfully sharpened itself"
+    "self_improvement": "Implementation fixes applied to workflows, tools, and schemas - Reflow has successfully sharpened itself",
+    "hierarchical_integrity": "Phase DAG is valid, transitions work correctly, iteration budgets enforced, resync protocol complete, architecture anchors functional, dual modes configured"
   },
   "recommended_frequency": {
     "trigger_events": [
@@ -790,6 +1011,7 @@
       "This is Reflow analyzing ITSELF - system_root = reflow_root",
       "v3.0.0: INVOKE 01d-functional_analysis.json ON REFLOW - truly self-referential (META-03-A06)",
       "v3.0.0: RUN system_of_systems_graph_v2.py for graph-theoretic analysis (META-04-A04)",
+      "v4.0.0: RUN hierarchical analysis (META-04H) - analyze phase DAG, transitions, budgets, resync, anchors",
       "v3.0.0: USE reflow_gap_closure.py to propose gap solutions with mathematical reasoning (META-05-A04)",
       "Context consumption is the PRIMARY metric - track it for all functions",
       "Context bottlenecks (>160k tokens) are CRITICAL issues that block AI agents",
@@ -798,23 +1020,34 @@
       "Focus on functional CAPABILITIES, not implementation details",
       "Gap closure proposals are NOT auto-applied - review before accepting"
     ],
+    "hierarchical_analysis_guidance": {
+      "phase_dag_analysis": "Verify all phases reachable from P0, only P3↔P4 has bidirectional edges, P5 is terminal",
+      "transition_analysis": "Verify prerequisites satisfiable, mode-specific behaviors defined, P2→P3 creates anchor",
+      "iteration_budget_analysis": "Verify default budget configured, P4→P3 enforces budget, working_memory tracks count",
+      "resync_protocol_analysis": "Verify all 7 steps present, mode-specific resolution, escalation path defined",
+      "anchor_analysis": "Verify anchor structure complete, P3/P4 remind LLM of anchor, checksums cover key files",
+      "dual_mode_analysis": "Verify both modes defined, settings consistent, discovered requirements tracking works"
+    },
     "common_mistakes": [
       "Treating Reflow as a normal system instead of meta-analysis",
       "NOT invoking 01d-functional_analysis.json on Reflow (manual decomposition instead of using Reflow's own workflows)",
       "NOT running system_of_systems_graph_v2.py (missing graph-theoretic insights)",
+      "NOT running hierarchical analysis (META-04H) - missing phase structure validation",
       "NOT using gap closure tools (missing automated gap solution proposals)",
       "Not tracking context consumption for functions",
       "Missing high-context functions (file reads, large generations)",
       "Not iterating when critical issues found",
       "Creating visualizations without reviewing analysis first",
-      "Auto-applying gap closure proposals without review"
+      "Auto-applying gap closure proposals without review",
+      "Skipping hierarchical analysis when updating phase-related workflows"
     ],
-    "workflow_philosophy": "v3.0.0: Meta-analysis is TRULY self-referential - Reflow uses its OWN workflows (01d-functional_analysis.json) and tools (system_of_systems_graph_v2.py, reflow_gap_closure.py) to analyze and improve itself. This validates that Reflow's methodology works correctly and creates a self-improving system. Context consumption is the critical constraint that must be monitored.",
+    "workflow_philosophy": "v4.0.0: Meta-analysis now includes comprehensive hierarchical workflow structure analysis. Verifies phase DAG integrity, transition rules, iteration budgets, resync protocol, architecture anchors, and dual development modes. Combined with functional architecture analysis, provides complete validation of Reflow's structure and behavior.",
     "self_referential_benefits": [
       "Validates that 01d-functional_analysis.json works correctly (dogfooding)",
       "Ensures Reflow follows its own best practices",
       "Automatic gap detection and closure proposals using mathematical reasoning",
       "Graph-theoretic insights from NetworkX analysis (centrality, community, cycles, connectivity)",
+      "v4.0.0: Validates hierarchical workflow structure (phases, transitions, budgets, anchors)",
       "Truly self-improving - Reflow sharpens itself using its own tools"
     ]
   },
@@ -839,6 +1072,12 @@
       "version": "3.0.0",
       "date": "2025-11-06",
       "changes": "MAJOR: Truly self-referential meta-analysis - Reflow analyzes itself using its own workflows. Added: (1) META-03-A06: Invoke 01d-functional_analysis.json ON Reflow itself, (2) META-04-A04: Run system_of_systems_graph_v2.py for graph-theoretic analysis, (3) META-05-A04: Automated gap closure proposals using reflow_gap_closure.py with matrix analysis (B = C × A⁻¹) and architecture linking, (4) Updated META-05B to apply gap closure proposals to implementation. This makes Reflow a fully self-improving system that uses its own tools on itself."
+    },
+    {
+      "version": "4.0.0",
+      "date": "2025-12-04",
+      "changes": "MAJOR: Comprehensive hierarchical workflow structure analysis. (1) New step META-04H for hierarchical analysis with 19 analyses (HA-001 through HA-019). (2) Analyzes phase DAG (connectivity, acyclicity, terminal phases, workflow coverage). (3) Validates transition rules (prerequisites, mode behaviors, anchor creation). (4) Verifies iteration budgets (default config, enforcement, tracking). (5) Checks resync protocol (step completeness, mode resolution, escalation). (6) Validates architecture anchors (structure, LLM reminders, checksums). (7) Verifies dual mode configuration (definitions, settings consistency, requirements tracking). (8) New 'hierarchical_only' entry point. (9) Updated completion criteria and success criteria. (10) Updated LLM guidance for hierarchical analysis.",
+      "author": "Claude Opus 4"
     }
   ]
 }

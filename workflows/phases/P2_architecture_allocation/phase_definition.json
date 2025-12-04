@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P2",
+    "phase_name": "Architecture & Allocation",
+    "version": "1.0.0",
+    "description": "Allocate functions to services, define service boundaries, optimize architecture",
+    "duration_estimate": "4-8 hours"
+  },
+
+  "purpose": {
+    "primary": "Define WHERE functions live and HOW services interact",
+    "outcomes": [
+      "Functions allocated to services",
+      "Service boundaries defined",
+      "Interfaces between services specified",
+      "Deployment environment defined",
+      "Architecture optimized (optional)",
+      "ARCHITECTURE ANCHOR created for P3"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "01b-bottom_up_integration",
+      "name": "Bottom-Up Integration (SE parts)",
+      "file": "../../01b-bottom_up_integration.json",
+      "required": "conditional",
+      "condition": "approach_detection returned bottom_up",
+      "order": 1
+    },
+    {
+      "id": "01c-top_down_design",
+      "name": "Top-Down Design (SE parts)",
+      "file": "../../01c-top_down_design.json",
+      "required": "conditional",
+      "condition": "approach_detection returned top_down",
+      "order": 1
+    },
+    {
+      "id": "02-artifacts_visualization",
+      "name": "Artifacts & Visualization",
+      "file": "../../02-artifacts_visualization.json",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "02b-deployment_environment",
+      "name": "Deployment Environment",
+      "file": "../../02b-deployment_environment.json",
+      "required": true,
+      "order": 3
+    },
+    {
+      "id": "02c-bayesian_optimization",
+      "name": "Bayesian Architecture Optimization",
+      "file": null,
+      "tool": "tools/bayesian_optimization/bayesian_architecture_optimizer.py",
+      "required": false,
+      "order": 4,
+      "description": "OPTIONAL: Use Bayesian optimization to explore service allocation trade-offs"
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Requirements to enter P2",
+    "prerequisites": [
+      "P1 completed",
+      "specs/machine/functional_architecture.json exists",
+      "Functional architecture has at least 1 function"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "Requirements to leave P2 and enter P3",
+    "required_files": [
+      "specs/machine/service_architecture.json",
+      "specs/machine/interface_registry.json"
+    ],
+    "required_conditions": [
+      "All functions allocated to services",
+      "All service interfaces defined",
+      "Deployment environment specified"
+    ],
+    "critical_action": "CREATE ARCHITECTURE ANCHOR before exiting"
+  },
+
+  "architecture_anchor_creation": {
+    "description": "MANDATORY action when transitioning from P2 to P3",
+    "trigger": "exit_to_P3",
+    "actions": [
+      "Compute SHA256 checksums of architecture files",
+      "Extract design intent summary from service_architecture.json",
+      "Capture key decisions and constraints",
+      "Record service count, function count",
+      "Store in working_memory.json -> architecture_anchor"
+    ],
+    "template": {
+      "created_at": "{{timestamp}}",
+      "phase_exited": "P2",
+      "checksums": {
+        "service_architecture": "{{sha256}}",
+        "functional_architecture": "{{sha256}}",
+        "interface_registry": "{{sha256}}",
+        "system_of_systems_graph": "{{sha256}}"
+      },
+      "design_intent": {
+        "summary": "{{description from service_architecture.metadata}}",
+        "service_count": "{{count of services}}",
+        "function_count": "{{count of allocated functions}}",
+        "key_decisions": [
+          "{{extracted from design rationale}}"
+        ],
+        "constraints": [
+          "{{extracted from constraints section}}"
+        ]
+      },
+      "llm_reminder": "You are implementing an architecture with {{service_count}} services. Key constraints: {{constraints}}. Before modifying service boundaries or interfaces, VERIFY against this anchor."
+    }
+  },
+
+  "bayesian_optimization": {
+    "description": "Optional architectural optimization using Bayesian methods",
+    "when_to_use": [
+      "Complex architectures (>5 services)",
+      "Unclear trade-offs between allocation strategies",
+      "Context consumption concerns",
+      "High service coupling"
+    ],
+    "objectives_available": [
+      "minimize_complexity",
+      "minimize_context_bottlenecks",
+      "minimize_coupling",
+      "maximize_modularity",
+      "minimize_coordination"
+    ],
+    "invocation": {
+      "tool": "tools/bayesian_optimization/bayesian_architecture_optimizer.py",
+      "inputs": ["functional_architecture.json", "service_architecture.json"],
+      "outputs": ["optimization_results.json", "recommendations"]
+    }
+  },
+
+  "outputs": {
+    "files_created": [
+      "specs/machine/service_architecture.json",
+      "specs/machine/interface_registry.json",
+      "specs/machine/system_of_systems_graph.json",
+      "specs/deployment/deployment_environment_spec.json"
+    ],
+    "state_changes": [
+      "architecture_anchor created",
+      "iteration_counter initialized to 0",
+      "current_phase updated to P2 (then P3 on exit)"
+    ]
+  },
+
+  "mode_specific_behavior": {
+    "flexible": {
+      "description": "Architecture can be updated during P3/P4 resyncs",
+      "on_resync": "Update architecture to match implementation"
+    },
+    "rigid": {
+      "description": "Architecture is LOCKED after exiting P2",
+      "on_resync": "Realign implementation to match architecture",
+      "changes_require": "Formal change request approval"
+    }
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Read functional_architecture.json",
+      "Analyze function groupings for service allocation",
+      "Consider service organization strategies (domain, workflow, plugin, hybrid)"
+    ],
+    "during_phase": [
+      "Allocate all functions to services",
+      "Define clear service boundaries",
+      "Specify all inter-service interfaces",
+      "Consider deployment environment",
+      "Optionally run Bayesian optimization"
+    ],
+    "on_exit": [
+      "CRITICAL: Create architecture_anchor",
+      "Verify all functions allocated",
+      "Initialize iteration_counter = 0",
+      "Explain next phase (P3: Development)",
+      "Remind: this architecture is now the source of truth (especially in rigid mode)"
+    ]
+  },
+
+  "quality_checks": [
+    "All functions from P1 are allocated to exactly one service",
+    "All services have at least one function",
+    "All cross-service dependencies have interface definitions",
+    "No circular service dependencies",
+    "Deployment environment is complete"
+  ]
+}

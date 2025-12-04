@@ -1,7 +1,7 @@
 {
-  "template_version": "2.0",
-  "template_description": "Template for working_memory.json - context tracking with context management v3.0",
-  "template_notes": "Version 2.0 adds comprehensive context management fields for preventing context drift and token exhaustion",
+  "template_version": "3.0",
+  "template_description": "Template for working_memory.json - hierarchical workflow with dual-mode support",
+  "template_notes": "Version 3.0 adds hierarchical phase tracking, development mode (rigid/flexible), iteration budgets, architecture anchor, and resync protocol support",
   "system_name": "REPLACE_WITH_SYSTEM_NAME",
   "current_workflow": "CURRENT_WORKFLOW_ID (e.g., 01-systems_engineering)",
   "current_step": "CURRENT_STEP_ID",
@@ -14,6 +14,65 @@
     "workflow_steps_path": "/absolute/path/to/reflow/workflow_steps",
     "definitions_path": "/absolute/path/to/reflow/definitions",
     "note": "CRITICAL: These paths MUST be read and used for ALL tool/template/workflow references. Set during Setup workflow (00a-basic_setup). LLM agents: ALWAYS extract these paths from working_memory.json before invoking tools."
+  },
+  "phase_tracking": {
+    "current_phase": "P0",
+    "current_phase_name": "Setup & Configuration",
+    "phase_entered_at": "YYYY-MM-DD HH:MM:SS",
+    "phase_history": [],
+    "within_resync": false,
+    "note": "Hierarchical phase tracking. Phases: P0 (Setup), P1 (Functional Analysis), P2 (Architecture), P3 (Development), P4 (Validation), P5 (Operations), PM (Meta)"
+  },
+  "development_mode": {
+    "mode": null,
+    "mode_description": null,
+    "configured_at": null,
+    "rigid_settings": {
+      "change_request_required": true,
+      "approval_workflow": "external",
+      "drift_tolerance": 0.0,
+      "new_functionality_policy": "document_and_wait"
+    },
+    "flexible_settings": {
+      "auto_update_architecture": true,
+      "drift_tolerance": 0.3,
+      "new_functionality_policy": "implement_then_document"
+    },
+    "note": "CRITICAL: Set during P0. 'flexible' = architecture evolves with implementation (personal/exploratory). 'rigid' = implementation must conform to architecture (enterprise/approved)."
+  },
+  "iteration_tracking": {
+    "P3_P4_loops_budget": 3,
+    "current_count": 0,
+    "last_resync": null,
+    "resync_history": [],
+    "note": "Tracks P3<->P4 iterations. When current_count >= budget, resync_protocol is triggered to force architecture review."
+  },
+  "architecture_anchor": {
+    "exists": false,
+    "created_at": null,
+    "created_at_phase_transition": null,
+    "checksums": {
+      "service_architecture": null,
+      "functional_architecture": null,
+      "interface_registry": null,
+      "system_of_systems_graph": null
+    },
+    "design_intent": {
+      "summary": null,
+      "service_count": 0,
+      "function_count": 0,
+      "key_decisions": [],
+      "constraints": []
+    },
+    "llm_reminder": null,
+    "note": "Created when transitioning P2->P3. Re-injected at phase transitions and periodically during development. Prevents architecture drift."
+  },
+  "discovered_items": {
+    "discovered_requirements_file": "context/discovered_requirements.json",
+    "change_requests_file": "context/change_requests.json",
+    "pending_discovered_requirements": 0,
+    "pending_change_requests": 0,
+    "note": "Track new requirements discovered during P3/P4. Flexible mode: discovered_requirements. Rigid mode: change_requests."
   },
   "user_preferences": {
     "stakeholder_approval_required": null,

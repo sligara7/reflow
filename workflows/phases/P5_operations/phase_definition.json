@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P5",
+    "phase_name": "Operations",
+    "version": "1.0.0",
+    "description": "Deploy, monitor, and operate the system in production",
+    "duration_estimate": "1-2 weeks initial, ongoing thereafter"
+  },
+
+  "purpose": {
+    "primary": "Operationalize the validated system",
+    "outcomes": [
+      "System deployed to production",
+      "Monitoring and alerting configured",
+      "Operational runbooks created",
+      "System operating successfully"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "04b-operations",
+      "name": "Operations",
+      "file": "../../04b-operations.json",
+      "required": true,
+      "order": 1
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Requirements to enter P5",
+    "prerequisites": [
+      "P4 completed successfully",
+      "All blocking quality gates pass",
+      "Architecture drift score < threshold",
+      "Final architecture sync verification complete"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "P5 is typically ongoing, but can exit to maintenance mode",
+    "to_PM": {
+      "conditions": [
+        "System stable in production",
+        "Need to update/improve system"
+      ]
+    },
+    "back_to_P3_P4": {
+      "conditions": [
+        "Production issues require development changes"
+      ],
+      "note": "This triggers a new development cycle"
+    }
+  },
+
+  "operational_concerns": {
+    "deployment": [
+      "Container orchestration",
+      "Infrastructure as code",
+      "Blue-green or canary deployments"
+    ],
+    "monitoring": [
+      "Metrics collection",
+      "Log aggregation",
+      "Distributed tracing"
+    ],
+    "alerting": [
+      "Alert thresholds",
+      "Escalation policies",
+      "On-call rotations"
+    ],
+    "reliability": [
+      "Health checks",
+      "Circuit breakers",
+      "Graceful degradation"
+    ]
+  },
+
+  "outputs": {
+    "files_created": [
+      "infrastructure/*",
+      "ops/runbooks/*",
+      "ops/alerts/*"
+    ],
+    "state_changes": [
+      "System operational",
+      "Monitoring active"
+    ]
+  },
+
+  "mode_specific_behavior": {
+    "flexible": {
+      "description": "Can iterate quickly on operational improvements"
+    },
+    "rigid": {
+      "description": "Operational changes may require change management"
+    }
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Verify all prerequisites met",
+      "Review deployment environment spec from P2",
+      "Plan deployment strategy"
+    ],
+    "during_phase": [
+      "Execute deployment",
+      "Configure monitoring",
+      "Create operational documentation"
+    ],
+    "on_production_issues": [
+      "Assess severity",
+      "If code fix needed: return to P3/P4 cycle",
+      "If config fix: handle in P5",
+      "Document incident"
+    ]
+  }
+}

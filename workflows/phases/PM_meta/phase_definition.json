@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "PM",
+    "phase_name": "Meta & Maintenance",
+    "version": "1.0.0",
+    "description": "Self-improvement, feature updates, meta-analysis for Reflow or the system",
+    "duration_estimate": "varies"
+  },
+
+  "purpose": {
+    "primary": "Maintain and improve the system or Reflow itself",
+    "outcomes": [
+      "System updated with new features",
+      "Bugs fixed",
+      "Reflow workflows improved",
+      "Meta-analysis completed"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "feature_update",
+      "name": "Feature Update",
+      "file": "../../feature_update.json",
+      "required": false,
+      "order": 1,
+      "description": "Update existing system with new features"
+    },
+    {
+      "id": "97-GAN-inspired-test",
+      "name": "GAN-Inspired Testing",
+      "file": "../../97-GAN-inspired-test.json",
+      "required": false,
+      "order": 2,
+      "description": "Automated testing of Reflow workflows"
+    },
+    {
+      "id": "98-reflow_feature_update",
+      "name": "Reflow Feature Update",
+      "file": "../../98-reflow_feature_update.json",
+      "required": false,
+      "order": 3,
+      "description": "Update Reflow itself"
+    },
+    {
+      "id": "99-meta_analysis",
+      "name": "Meta Analysis",
+      "file": "../../99-meta_analysis.json",
+      "required": false,
+      "order": 4,
+      "description": "Comprehensive Reflow meta-analysis"
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Can enter from any phase via explicit request",
+    "prerequisites": [
+      "Explicit user request for maintenance/meta work"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "Return to previous phase or start new cycle",
+    "options": [
+      "Return to saved phase (if entered mid-workflow)",
+      "Start new P0 (for major changes)",
+      "Return to P3/P4 (for targeted fixes)"
+    ]
+  },
+
+  "use_cases": {
+    "system_feature_update": {
+      "description": "Add new feature to existing system",
+      "workflow": "feature_update.json",
+      "process": [
+        "Assess impact on architecture",
+        "If minor: implement directly",
+        "If major: may need to revisit P1/P2"
+      ]
+    },
+    "reflow_self_improvement": {
+      "description": "Improve Reflow workflows themselves",
+      "workflows": ["97", "98", "99"],
+      "process": [
+        "GAN testing identifies issues",
+        "Feature update fixes issues",
+        "Meta-analysis validates fixes"
+      ]
+    },
+    "bug_fix": {
+      "description": "Fix bugs in production system",
+      "process": [
+        "Identify bug",
+        "If localized: fix directly",
+        "If architectural: may need resync"
+      ]
+    }
+  },
+
+  "outputs": {
+    "files_created": [
+      "Varies by workflow"
+    ],
+    "state_changes": [
+      "System or Reflow updated"
+    ]
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Save current phase state (if mid-workflow)",
+      "Understand the maintenance task",
+      "Choose appropriate workflow"
+    ],
+    "during_phase": [
+      "Execute chosen maintenance workflow",
+      "Document changes made"
+    ],
+    "on_exit": [
+      "Restore saved phase state (if applicable)",
+      "Or start fresh cycle if major changes"
+    ]
+  }
+}

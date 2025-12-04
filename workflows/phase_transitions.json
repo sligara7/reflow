@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "name": "Phase Transition Rules",
+    "version": "1.0.0",
+    "description": "Defines valid transitions between phases, prerequisites, and mode-specific behaviors",
+    "created": "2025-12-04"
+  },
+
+  "transitions": {
+    "P0_to_P1": {
+      "from": "P0",
+      "to": "P1",
+      "type": "forward",
+      "always_allowed": true,
+      "prerequisites": {
+        "files_must_exist": ["context/working_memory.json"],
+        "fields_must_be_set": ["development_mode.mode", "paths.system_root"]
+      },
+      "on_transition": {
+        "actions": [
+          "Log phase transition in working_memory.json",
+          "Set current_phase to P1"
+        ]
+      }
+    },
+
+    "P1_to_P2": {
+      "from": "P1",
+      "to": "P2",
+      "type": "forward",
+      "prerequisites": {
+        "files_must_exist": [
+          "specs/machine/functional_architecture.json"
+        ],
+        "validation": "functional_architecture must have at least 1 function"
+      },
+      "on_transition": {
+        "actions": [
+          "Verify functional architecture is complete",
+          "Log phase transition"
+        ]
+      }
+    },
+
+    "P2_to_P3": {
+      "from": "P2",
+      "to": "P3",
+      "type": "forward",
+      "creates_architecture_anchor": true,
+      "prerequisites": {
+        "files_must_exist": [
+          "specs/machine/service_architecture.json",
+          "specs/machine/interface_registry.json"
+        ],
+        "validation": "All functions must be allocated to services"
+      },
+      "on_transition": {
+        "actions": [
+          "CREATE architecture_anchor (CRITICAL)",
+          "Compute checksums of architecture files",
+          "Capture design_intent_summary",
+          "Record key_decisions and constraints",
+          "Initialize iteration_counter to 0",
+          "Log phase transition"
+        ],
+        "architecture_anchor_template": {
+          "created_at": "{{timestamp}}",
+          "checksums": {
+            "service_architecture": "{{sha256}}",
+            "functional_architecture": "{{sha256}}",
+            "interface_registry": "{{sha256}}"
+          },
+          "design_intent": {
+            "summary": "{{extracted_from_architecture}}",
+            "service_count": "{{count}}",
+            "function_count": "{{count}}",
+            "key_decisions": ["{{extracted}}"],
+            "constraints": ["{{extracted}}"]
+          },
+          "llm_reminder": "You are implementing an architecture designed with specific intent. Before making changes that affect service boundaries, interfaces, or core functionality, VERIFY against this anchor."
+        }
+      }
+    },
+
+    "P3_to_P4": {
+      "from": "P3",
+      "to": "P4",
+      "type": "forward",
+      "prerequisites": {
+        "validation": "At least one service has implementation"
+      },
+      "on_transition": {
+        "actions": [
+          "Log phase transition",
+          "Re-inject architecture_anchor as context reminder"
+        ]
+      }
+    },
+
+    "P4_to_P3": {
+      "from": "P4",
+      "to": "P3",
+      "type": "iteration",
+      "budget_key": "P3_P4_loops",
+      "increments_counter": true,
+      "on_transition": {
+        "actions": [
+          "Increment iteration_counter",
+          "Check if iteration_counter > budget",
+          "If exceeded: TRIGGER resync_protocol instead of transitioning",
+          "If not exceeded: Log transition, continue"
+        ],
+        "before_transition_check": {
+          "if": "iteration_counter >= iteration_budget.P3_P4_loops",
+          "then": "REDIRECT to resync_protocol",
+          "else": "ALLOW transition"
+        }
+      }
+    },
+
+    "P4_to_P5": {
+      "from": "P4",
+      "to": "P5",
+      "type": "forward",
+      "prerequisites": {
+        "quality_gates": [
+          "All blocking quality gates must pass",
+          "Architecture drift score < threshold"
+        ]
+      },
+      "on_transition": {
+        "actions": [
+          "Final architecture sync verification",
+          "Log phase transition"
+        ]
+      }
+    },
+
+    "RESYNC_to_P2": {
+      "from": "P3 or P4",
+      "to": "P2",
+      "type": "resync",
+      "trigger": "iteration_budget_exceeded OR drift_detected",
+      "mode_specific_behavior": {
+        "flexible": {
+          "description": "Update architecture to match implementation",
+          "actions": [
+            "Run drift detection tools",
+            "Generate architecture diff",
+            "Present changes to user",
+            "AUTO-UPDATE architecture files",
+            "Regenerate architecture_anchor",
+            "Reset iteration_counter to 0",
+            "Return to P3"
+          ]
+        },
+        "rigid": {
+          "description": "Realign implementation to match architecture",
+          "actions": [
+            "Run drift detection tools",
+            "Generate implementation diff from architecture",
+            "Present drift to user",
+            "OPTIONS: (A) Revert implementation, (B) Create change request",
+            "If (A): Revert and continue",
+            "If (B): Add to change_requests.json, await approval",
+            "Reset iteration_counter to 0",
+            "Return to P3 with realigned implementation"
+          ]
+        }
+      }
+    },
+
+    "RESYNC_to_P1": {
+      "from": "P3 or P4",
+      "to": "P1",
+      "type": "resync",
+      "trigger": "major_drift (drift_score > 0.5)",
+      "description": "Major drift requires revisiting functional analysis",
+      "mode_specific_behavior": {
+        "flexible": {
+          "actions": [
+            "Run comprehensive drift detection",
+            "Identify new functions, removed functions, changed flows",
+            "Update functional_architecture.json",
+            "Then proceed to P2 to update service allocation",
+            "Regenerate architecture_anchor",
+            "Reset iteration_counter"
+          ]
+        },
+        "rigid": {
+          "actions": [
+            "HALT - Major drift in rigid mode is a critical issue",
+            "Generate detailed drift report",
+            "Create change request for functional changes",
+            "BLOCK until change request approved",
+            "Once approved: update functional architecture",
+            "Proceed through P1 -> P2 -> P3"
+          ]
+        }
+      }
+    },
+
+    "any_to_PM": {
+      "from": "any",
+      "to": "PM",
+      "type": "meta",
+      "condition": "explicit_user_request",
+      "preserves_state": true,
+      "on_transition": {
+        "actions": [
+          "Save current phase state",
+          "Enter meta/maintenance mode",
+          "On completion: return to saved phase"
+        ]
+      }
+    }
+  },
+
+  "iteration_budget_enforcement": {
+    "description": "How iteration budgets are enforced",
+    "counter_location": "working_memory.json -> iteration_tracking",
+    "check_points": [
+      "Before P4 -> P3 transition",
+      "Before P3 -> P4 transition (if coming from P4)"
+    ],
+    "on_exceed": {
+      "action": "trigger_resync_protocol",
+      "cannot_be_bypassed": true,
+      "user_informed": true
+    }
+  },
+
+  "architecture_anchor_usage": {
+    "description": "When and how the architecture anchor is used",
+    "injection_points": [
+      {
+        "when": "Entering P3 from P2",
+        "action": "Create anchor"
+      },
+      {
+        "when": "Any phase transition involving P3 or P4",
+        "action": "Re-inject anchor as context"
+      },
+      {
+        "when": "Every 5 development actions within P3",
+        "action": "Remind LLM of anchor"
+      },
+      {
+        "when": "Resync protocol triggered",
+        "action": "Compare current state to anchor"
+      }
+    ],
+    "anchor_reminder_template": "ARCHITECTURE REMINDER: You are implementing a system with {{service_count}} services and {{function_count}} functions. Key constraints: {{constraints}}. Design intent: {{summary}}. VERIFY any boundary or interface changes against this anchor."
+  },
+
+  "discovered_functionality_handling": {
+    "description": "What happens when new functionality is discovered during P3/P4",
+    "detection": "LLM identifies need for function/capability not in architecture",
+    "flexible_mode": {
+      "step_1": "Implement the functionality",
+      "step_2": "Add to context/discovered_requirements.json",
+      "step_3": "Continue development",
+      "step_4": "At next resync: architecture updated to include it"
+    },
+    "rigid_mode": {
+      "step_1": "STOP implementation of new functionality",
+      "step_2": "Document in context/change_requests.json",
+      "step_3": "Continue with OTHER work (not the new functionality)",
+      "step_4": "New functionality can only be implemented after approval"
+    },
+    "tracking_templates": {
+      "discovered_requirement": {
+        "id": "DR-{{sequence}}",
+        "discovered_at": "{{timestamp}}",
+        "discovered_during": "{{phase}}: {{current_task}}",
+        "description": "{{description}}",
+        "rationale": "{{why_needed}}",
+        "affected_services": ["{{services}}"],
+        "architecture_updated": false
+      },
+      "change_request": {
+        "id": "CR-{{sequence}}",
+        "created_at": "{{timestamp}}",
+        "type": "new_functionality | modification | removal",
+        "description": "{{description}}",
+        "rationale": "{{why_needed}}",
+        "impact_analysis": {
+          "affected_services": ["{{services}}"],
+          "affected_interfaces": ["{{interfaces}}"],
+          "risk_level": "low | medium | high"
+        },
+        "status": "pending_approval | approved | rejected",
+        "approved_by": null,
+        "approved_at": null
+      }
+    }
+  },
+
+  "llm_transition_checklist": {
+    "description": "Checklist for LLM to follow at each phase transition",
+    "before_any_transition": [
+      "Verify current phase exit criteria are met",
+      "Check iteration_budget status",
+      "Read target phase prerequisites"
+    ],
+    "P2_to_P3_special": [
+      "CREATE architecture_anchor (MANDATORY)",
+      "Confirm all functions allocated to services",
+      "Capture design intent summary",
+      "Initialize iteration_counter = 0"
+    ],
+    "P3_P4_iteration_special": [
+      "Increment iteration_counter",
+      "Check: counter > budget?",
+      "If YES: Do NOT transition, trigger resync instead"
+    ],
+    "on_resync": [
+      "Run drift detection",
+      "Compare to architecture_anchor",
+      "Follow mode-specific resolution",
+      "Update or realign as appropriate",
+      "Reset iteration_counter",
+      "Regenerate anchor if architecture changed"
+    ]
+  }
+}

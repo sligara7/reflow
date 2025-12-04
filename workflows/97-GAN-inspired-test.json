@@ -2,29 +2,42 @@
   "workflow_metadata": {
     "workflow_id": "97-GAN-inspired-test",
     "name": "GAN-Inspired Execution Audit Test Workflow",
-    "version": "1.0.0",
-    "description": "Automated execution audit testing using GAN-inspired approach (Agent A observes Agent B) with automatic fix triggering",
+    "version": "2.0.0",
+    "description": "Automated execution audit testing using GAN-inspired approach (Agent A observes Agent B) with automatic fix triggering. v2.0.0: Adds hierarchical workflow testing for phase transitions, iteration budgets, resync protocol, and dual development modes",
     "created": "2025-11-19",
-    "last_updated": "2025-11-19",
-    "purpose": "Continuously test Reflow workflows for friction points, tool/workflow misalignments, and usability issues by having Agent B execute workflows while Agent A observes and documents issues",
+    "last_updated": "2025-12-04",
+    "purpose": "Continuously test Reflow workflows for friction points, tool/workflow misalignments, and usability issues by having Agent B execute workflows while Agent A observes and documents issues. v2.0.0: Now includes hierarchical workflow structure testing",
     "key_innovation": "Separates execution (Agent B - Generator) from evaluation (Agent A - Discriminator) to identify real-world friction points, then auto-triggers fixes via 98-reflow_feature_update if critical issues found",
     "when_to_use": "Periodically (weekly/monthly) or before major releases to benchmark Reflow quality and identify regressions",
     "trigger_command": "Implement workflow in /path/to/reflow/workflows/97-GAN-inspired-test.json on system /path/to/reflow",
-    "auto_chains_to": ["98-reflow_feature_update.json (if critical issues found)", "99-meta_analysis.json (after fixes)"]
+    "auto_chains_to": ["98-reflow_feature_update.json (if critical issues found)", "99-meta_analysis.json (after fixes)"],
+    "hierarchical_integration": {
+      "phase": "PM",
+      "phase_name": "Meta & Maintenance",
+      "tests_hierarchical_components": [
+        "Phase transitions (P0→P1→P2→P3→P4→P5)",
+        "Iteration budgets (P3↔P4 loop limits)",
+        "Resync protocol (drift detection and resolution)",
+        "Dual development modes (flexible vs rigid)",
+        "Architecture anchor creation and verification"
+      ]
+    }
   },
   "prerequisites": {
     "required_conditions": [
       "Reflow repository exists and is accessible",
       "Test cases defined in tests/execution_audit/test_cases.json",
+      "Hierarchical workflow files exist: workflow_master.json, phase_transitions.json, resync_protocol.json",
+      "Phase definitions exist in workflows/phases/",
       "Python 3.x installed",
       "Sufficient disk space for test system outputs"
     ],
-    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root) and spawns sub-agents for testing"
+    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root) and spawns sub-agents for testing. v2.0.0: Now tests hierarchical workflow structure."
   },
   "entry_points": {
     "standard": {
       "id": "standard",
-      "description": "Run all enabled test cases with full observation",
+      "description": "Run all enabled test cases with full observation including hierarchical tests",
       "first_step": "GAN-01"
     },
     "quick": {
@@ -38,6 +51,11 @@
       "description": "Run a single test case by ID",
       "first_step": "GAN-02",
       "parameter": "test_id"
+    },
+    "hierarchical_only": {
+      "id": "hierarchical_only",
+      "description": "Run only hierarchical workflow structure tests (phase transitions, iteration budgets, resync protocol, dual modes)",
+      "first_step": "GAN-01H"
     }
   },
   "workflow_steps": [
@@ -88,6 +106,174 @@
         "GAN test report initialized"
       ],
       "typical_time": "2 minutes",
+      "next_step": "GAN-01H"
+    },
+    {
+      "step_id": "GAN-01H",
+      "name": "Hierarchical Workflow Structure Testing (NEW v2.0.0)",
+      "description": "Test the hierarchical workflow structure: phase transitions, iteration budgets, resync protocol, and dual development modes",
+      "phase": "hierarchical_testing",
+      "actions": [
+        {
+          "action_id": "GAN-01H-A01",
+          "description": "Validate hierarchical workflow files exist and are well-formed",
+          "validations": [
+            {
+              "file": "workflows/workflow_master.json",
+              "checks": ["File exists", "Valid JSON", "Contains phases array", "Contains development_modes"]
+            },
+            {
+              "file": "workflows/phase_transitions.json",
+              "checks": ["File exists", "Valid JSON", "Contains transitions array", "All transitions have prerequisites"]
+            },
+            {
+              "file": "workflows/resync_protocol.json",
+              "checks": ["File exists", "Valid JSON", "Contains protocol_steps array"]
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A02",
+          "description": "Validate all phase definitions exist",
+          "for_each_phase": ["P0_setup", "P1_functional_analysis", "P2_architecture_allocation", "P3_development", "P4_validation", "P5_operations", "PM_meta"],
+          "checks": [
+            "workflows/phases/{phase}/phase_definition.json exists",
+            "Contains workflows array",
+            "Contains exit_criteria",
+            "Contains llm_instructions (for architecture anchor reminders)"
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A03",
+          "description": "Test phase transition DAG integrity",
+          "tests": [
+            {
+              "test_id": "HT-001",
+              "name": "Phase DAG is acyclic",
+              "description": "Verify that phase transitions form a valid DAG with no unintended cycles",
+              "expected": "Only P3↔P4 has intentional bidirectional edges (iteration loop)"
+            },
+            {
+              "test_id": "HT-002",
+              "name": "All phases reachable from P0",
+              "description": "Verify every phase can be reached starting from P0",
+              "expected": "Path exists from P0 to every phase"
+            },
+            {
+              "test_id": "HT-003",
+              "name": "P5 is terminal",
+              "description": "Verify P5 (Operations) is a valid terminal phase",
+              "expected": "P5 has no outgoing transitions except to PM (maintenance)"
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A04",
+          "description": "Test iteration budget enforcement",
+          "tests": [
+            {
+              "test_id": "HT-004",
+              "name": "Default iteration budget exists",
+              "description": "Verify default P3_P4_loops_budget is configured",
+              "expected": "Default value of 3 in workflow_master.json"
+            },
+            {
+              "test_id": "HT-005",
+              "name": "Iteration counter in working_memory_template",
+              "description": "Verify working_memory_template has iteration_tracking section",
+              "expected": "Contains P3_P4_loops_budget, current_count, resync_history"
+            },
+            {
+              "test_id": "HT-006",
+              "name": "Resync protocol triggered on budget exceeded",
+              "description": "Verify phase_transitions.json P4→P3 checks iteration budget",
+              "expected": "Transition has 'triggers_resync_if_budget_exceeded: true'"
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A05",
+          "description": "Test resync protocol completeness",
+          "tests": [
+            {
+              "test_id": "HT-007",
+              "name": "Resync protocol has all required steps",
+              "description": "Verify resync_protocol.json contains complete protocol",
+              "expected_steps": ["halt", "detect_drift", "compare_to_anchor", "present_to_user", "resolve_based_on_mode", "update_anchor", "reset_counter"]
+            },
+            {
+              "test_id": "HT-008",
+              "name": "Resync has mode-specific behavior",
+              "description": "Verify resync handles flexible vs rigid modes differently",
+              "expected": "Different resolution actions for flexible (update architecture) vs rigid (revert or change request)"
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A06",
+          "description": "Test dual development mode configuration",
+          "tests": [
+            {
+              "test_id": "HT-009",
+              "name": "Both modes defined in workflow_master",
+              "description": "Verify workflow_master.json defines both flexible and rigid modes",
+              "expected": "development_modes contains 'flexible' and 'rigid' with distinct settings"
+            },
+            {
+              "test_id": "HT-010",
+              "name": "Mode-specific transition behavior",
+              "description": "Verify phase_transitions.json has mode_specific_behavior for P3↔P4",
+              "expected": "Transitions have different actions for flexible vs rigid mode"
+            },
+            {
+              "test_id": "HT-011",
+              "name": "Working memory template supports modes",
+              "description": "Verify working_memory_template has development_mode section",
+              "expected": "Contains mode, rigid_settings, flexible_settings"
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A07",
+          "description": "Test architecture anchor mechanism",
+          "tests": [
+            {
+              "test_id": "HT-012",
+              "name": "Architecture anchor in working_memory_template",
+              "description": "Verify working_memory_template has architecture_anchor section",
+              "expected": "Contains exists, checksums, design_intent, llm_reminder"
+            },
+            {
+              "test_id": "HT-013",
+              "name": "P2→P3 creates anchor",
+              "description": "Verify P2→P3 transition creates architecture anchor",
+              "expected": "Transition has 'creates_architecture_anchor: true'"
+            },
+            {
+              "test_id": "HT-014",
+              "name": "P3/P4 phases remind LLM of anchor",
+              "description": "Verify P3 and P4 phase definitions include anchor reminder in llm_instructions",
+              "expected": "llm_instructions.on_entry includes 'Read architecture_anchor from working_memory.json'"
+            }
+          ]
+        },
+        {
+          "action_id": "GAN-01H-A08",
+          "description": "Generate hierarchical test report",
+          "creates": "tests/execution_audit/sessions/{timestamp}/HIERARCHICAL_TEST_REPORT.md",
+          "includes": [
+            "Summary of all hierarchical tests (HT-001 through HT-014)",
+            "Pass/fail status for each test",
+            "Details on any failures",
+            "Recommendations for fixes"
+          ]
+        }
+      ],
+      "outputs": [
+        "HIERARCHICAL_TEST_REPORT.md",
+        "Pass/fail status for all hierarchical tests"
+      ],
+      "typical_time": "10-15 minutes",
       "next_step": "GAN-02"
     },
     {
@@ -176,7 +362,12 @@
                 "missing_tools": "Workflow references non-existent tools",
                 "ambiguous_instructions": "Workflow steps unclear or multiple interpretations",
                 "template_issues": "Template missing, broken, or doesn't match usage",
-                "path_resolution_issues": "Path conflicts or incorrect path assumptions"
+                "path_resolution_issues": "Path conflicts or incorrect path assumptions",
+                "hierarchical_phase_transition_issues": "Phase transition rules violated or missing prerequisites",
+                "hierarchical_iteration_budget_issues": "Iteration budget not enforced or counter not updated",
+                "hierarchical_resync_protocol_issues": "Resync protocol incomplete or not triggered correctly",
+                "hierarchical_development_mode_issues": "Mode-specific behavior not applied correctly",
+                "hierarchical_architecture_anchor_issues": "Architecture anchor not created, stale, or not referenced"
               }
             },
             {
@@ -251,7 +442,10 @@
             "p2_issues_count": "Number of P2 polish issues",
             "total_test_time_minutes": "Total execution time across all test cases",
             "successful_test_cases": "Number of test cases that completed successfully",
-            "failed_test_cases": "Number of test cases that could not complete"
+            "failed_test_cases": "Number of test cases that could not complete",
+            "hierarchical_tests_passed": "Number of hierarchical structure tests (HT-*) that passed",
+            "hierarchical_tests_failed": "Number of hierarchical structure tests (HT-*) that failed",
+            "hierarchical_test_pass_rate": "hierarchical_tests_passed / (hierarchical_tests_passed + hierarchical_tests_failed) * 100%"
           }
         },
         {
@@ -476,6 +670,12 @@
       "date": "2025-11-19",
       "changes": "Initial creation of GAN-inspired test workflow",
       "author": "Claude Sonnet 4.5 with user collaboration"
+    },
+    {
+      "version": "2.0.0",
+      "date": "2025-12-04",
+      "changes": "MAJOR: Added hierarchical workflow structure testing. (1) New step GAN-01H tests phase transitions, iteration budgets, resync protocol, and dual development modes. (2) 14 new hierarchical tests (HT-001 through HT-014). (3) New issue categories for hierarchical components. (4) New metrics for hierarchical test results. (5) New 'hierarchical_only' entry point. (6) Integration with workflow_master.json, phase_transitions.json, resync_protocol.json, and phase definitions.",
+      "author": "Claude Opus 4"
     }
   ]
 }

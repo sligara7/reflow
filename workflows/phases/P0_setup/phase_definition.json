@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P0",
+    "phase_name": "Setup & Configuration",
+    "version": "1.0.0",
+    "description": "Initialize project structure, configure paths, and set development mode",
+    "duration_estimate": "30-60 minutes"
+  },
+
+  "purpose": {
+    "primary": "Establish project foundation and development mode",
+    "outcomes": [
+      "Project directory structure created",
+      "Paths configured in working_memory.json",
+      "Development mode (rigid/flexible) selected",
+      "Framework selected (if applicable)",
+      "Development standards configured"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "00a-basic_setup",
+      "name": "Basic Setup",
+      "file": "../../00a-basic_setup.json",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "00b-framework_selection",
+      "name": "Framework Selection",
+      "file": "../../00b-framework_selection.json",
+      "required": false,
+      "order": 2,
+      "skip_condition": "User wants default UAF framework"
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Can always enter P0 - it's the entry point",
+    "prerequisites": []
+  },
+
+  "exit_criteria": {
+    "description": "Requirements to leave P0 and enter P1",
+    "required_files": [
+      "context/working_memory.json"
+    ],
+    "required_fields": [
+      "paths.system_root",
+      "paths.reflow_root",
+      "development_mode.mode"
+    ],
+    "validation": "working_memory.json is valid JSON with required fields"
+  },
+
+  "development_mode_configuration": {
+    "description": "This is where the critical development mode choice is made",
+    "prompt_to_user": {
+      "question": "What type of project is this?",
+      "options": [
+        {
+          "label": "Personal / Exploratory / Agile",
+          "value": "flexible",
+          "description": "Architecture can evolve with implementation. New requirements can be added freely. Design is a living document."
+        },
+        {
+          "label": "Enterprise / Approved / Regulated",
+          "value": "rigid",
+          "description": "Architecture is locked after approval. Implementation must conform to design. Changes require formal approval."
+        }
+      ]
+    },
+    "follow_up_if_rigid": {
+      "question": "What level of drift is acceptable?",
+      "options": [
+        {"label": "None (0%)", "value": 0.0, "description": "Implementation must match exactly"},
+        {"label": "Minimal (10%)", "value": 0.1, "description": "Minor internal variations allowed"},
+        {"label": "Threshold-only", "value": "threshold", "description": "Threshold requirements locked, objectives flexible"}
+      ]
+    },
+    "follow_up_iteration_budget": {
+      "question": "How many development/test iterations before forced architecture review?",
+      "default": 3,
+      "range": [1, 10]
+    }
+  },
+
+  "outputs": {
+    "files_created": [
+      "context/working_memory.json",
+      "context/step_progress_tracker.json"
+    ],
+    "state_changes": [
+      "current_phase set to P0 (then P1 on exit)",
+      "development_mode configured",
+      "iteration_budget configured"
+    ]
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Welcome user to Reflow",
+      "Explain the two development modes (flexible vs rigid)",
+      "Guide user through setup questions"
+    ],
+    "critical_actions": [
+      "MUST ask about development mode - this affects all subsequent phases",
+      "MUST configure iteration budget",
+      "MUST create working_memory.json with all required paths"
+    ],
+    "on_exit": [
+      "Summarize configuration",
+      "Explain what comes next (P1: Functional Analysis)",
+      "Transition to P1"
+    ]
+  },
+
+  "working_memory_template_additions": {
+    "development_mode": {
+      "mode": "flexible | rigid",
+      "configured_at": "{{timestamp}}",
+      "drift_tolerance": 0.0,
+      "rigid_settings": {
+        "change_request_required": true,
+        "approval_workflow": "external | self",
+        "drift_tolerance": 0.0
+      },
+      "flexible_settings": {
+        "auto_update_architecture": true,
+        "drift_tolerance": 0.3
+      }
+    },
+    "iteration_budget": {
+      "P3_P4_loops": 3,
+      "current_count": 0,
+      "last_resync": null
+    },
+    "phase_tracking": {
+      "current_phase": "P0",
+      "phase_history": [],
+      "phase_entered_at": "{{timestamp}}"
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P3",
+    "phase_name": "Development",
+    "version": "1.0.0",
+    "description": "Implement services according to the architecture defined in P2",
+    "duration_estimate": "days to weeks"
+  },
+
+  "purpose": {
+    "primary": "Implement the designed architecture",
+    "outcomes": [
+      "Services implemented according to architecture",
+      "Unit tests created",
+      "Service contracts validated",
+      "Implementation matches design (or drift documented)"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "03a-development_implementation",
+      "name": "Development Implementation",
+      "file": "../../03a-development_implementation.json",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "03b-development_validation",
+      "name": "Development Validation",
+      "file": "../../03b-development_validation.json",
+      "required": true,
+      "order": 2
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Requirements to enter P3",
+    "prerequisites": [
+      "P2 completed",
+      "service_architecture.json exists",
+      "interface_registry.json exists",
+      "ARCHITECTURE ANCHOR exists in working_memory.json"
+    ],
+    "on_entry_actions": [
+      "Re-inject architecture_anchor as context",
+      "Verify iteration_counter is initialized",
+      "Read architecture files to establish context"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "Requirements to leave P3",
+    "to_P4": {
+      "conditions": [
+        "At least one service has implementation",
+        "Unit tests exist for implemented services"
+      ]
+    },
+    "iteration_budget_check": {
+      "description": "Before transitioning to P4 or back from P4",
+      "check": "iteration_counter < iteration_budget.P3_P4_loops",
+      "if_exceeded": "TRIGGER resync_protocol instead of transitioning"
+    }
+  },
+
+  "iteration_tracking": {
+    "description": "Track P3<->P4 iterations to prevent infinite loops",
+    "counter_location": "working_memory.json -> iteration_tracking.current_count",
+    "increment_on": "transition from P4 back to P3",
+    "budget": "iteration_budget.P3_P4_loops (default: 3)",
+    "on_exceed": {
+      "action": "HALT - trigger resync_protocol",
+      "cannot_bypass": true
+    }
+  },
+
+  "architecture_anchor_reminders": {
+    "description": "Periodic reminders to stay aligned with architecture",
+    "reminder_frequency": "every 5 significant development actions",
+    "reminder_triggers": [
+      "Starting implementation of new service",
+      "Adding cross-service communication",
+      "Modifying interface contracts",
+      "After every 5 file edits"
+    ],
+    "reminder_template": "ARCHITECTURE CHECK: You are implementing {{current_service}}. Design intent: {{design_intent.summary}}. This service should: {{service_purpose}}. Interfaces: {{service_interfaces}}. VERIFY your changes align with this."
+  },
+
+  "discovered_functionality": {
+    "description": "Handling new requirements discovered during development",
+    "detection_triggers": [
+      "LLM identifies need for function not in architecture",
+      "Implementation requires capability not designed",
+      "Edge case requires new handling"
+    ],
+    "flexible_mode": {
+      "action": "implement_then_document",
+      "steps": [
+        "Implement the needed functionality",
+        "Add to context/discovered_requirements.json",
+        "Continue development",
+        "Architecture updated at next resync"
+      ]
+    },
+    "rigid_mode": {
+      "action": "document_and_wait",
+      "steps": [
+        "STOP - do not implement",
+        "Add to context/change_requests.json",
+        "Continue with OTHER work",
+        "Wait for approval before implementing"
+      ]
+    }
+  },
+
+  "drift_prevention": {
+    "description": "Mechanisms to prevent architecture drift",
+    "proactive_measures": [
+      "Architecture anchor re-injection at phase entry",
+      "Periodic reminders during development",
+      "Service contract validation before interface changes"
+    ],
+    "reactive_measures": [
+      "Iteration budget enforcement",
+      "Resync protocol when budget exceeded",
+      "Drift detection during resync"
+    ]
+  },
+
+  "outputs": {
+    "files_created": [
+      "services/*/src/*",
+      "services/*/tests/*",
+      "services/*/SERVICE_CONTRACT.json"
+    ],
+    "state_changes": [
+      "Services implemented",
+      "iteration_counter may be incremented"
+    ]
+  },
+
+  "mode_specific_behavior": {
+    "flexible": {
+      "description": "Implementation can drive architecture updates",
+      "drift_tolerance": "configurable (default 30%)",
+      "on_resync": "Update architecture to match implementation"
+    },
+    "rigid": {
+      "description": "Implementation must conform to architecture",
+      "drift_tolerance": "configurable (default 0%)",
+      "on_resync": "Revert implementation to match architecture"
+    }
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "READ architecture_anchor from working_memory.json",
+      "READ service_architecture.json",
+      "UNDERSTAND the design intent before coding",
+      "Check iteration_counter status"
+    ],
+    "during_phase": [
+      "Implement services according to architecture",
+      "Check architecture anchor before modifying interfaces",
+      "If discovering new requirement: follow mode-specific handling",
+      "Validate against service contracts"
+    ],
+    "on_discovering_new_requirement": {
+      "first": "PAUSE - recognize this is a new requirement",
+      "flexible": "Implement it, document in discovered_requirements.json",
+      "rigid": "STOP, document in change_requests.json, continue other work"
+    },
+    "before_transition_to_P4": [
+      "Check iteration_counter",
+      "If budget exceeded: DO NOT transition, trigger resync",
+      "Otherwise: proceed to P4"
+    ],
+    "on_return_from_P4": [
+      "INCREMENT iteration_counter",
+      "Check if budget exceeded",
+      "If exceeded: trigger resync_protocol",
+      "Re-inject architecture anchor"
+    ]
+  },
+
+  "quality_checks": [
+    "Implementation matches service_architecture.json",
+    "All allocated functions have implementations",
+    "Unit tests exist for each service",
+    "Service contracts are valid",
+    "No unauthorized interface changes (rigid mode)"
+  ],
+
+  "warnings": [
+    "This phase has highest drift risk - architecture anchor is critical",
+    "P3<->P4 loops can cause context loss - iteration budget prevents this",
+    "Always re-read architecture anchor when returning from P4"
+  ]
+}

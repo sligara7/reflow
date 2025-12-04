@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P4",
+    "phase_name": "Validation",
+    "version": "1.0.0",
+    "description": "Test implementation, verify quality gates, detect drift",
+    "duration_estimate": "1-2 weeks"
+  },
+
+  "purpose": {
+    "primary": "Validate implementation meets requirements and architecture",
+    "outcomes": [
+      "All tests passing",
+      "Quality gates verified",
+      "Architecture drift detected and addressed",
+      "System ready for operations (or issues identified)"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "04a-testing",
+      "name": "Testing",
+      "file": "../../04a-testing.json",
+      "required": true,
+      "order": 1
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Requirements to enter P4",
+    "prerequisites": [
+      "P3 has produced at least one implemented service",
+      "Unit tests exist for implemented services"
+    ],
+    "on_entry_actions": [
+      "Re-inject architecture_anchor",
+      "Run initial drift detection"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "Requirements to leave P4",
+    "to_P5": {
+      "conditions": [
+        "All blocking quality gates pass",
+        "Architecture drift score < threshold",
+        "No critical test failures"
+      ]
+    },
+    "to_P3": {
+      "conditions": [
+        "Test failures require implementation changes",
+        "Iteration budget not exceeded"
+      ],
+      "iteration_check": true
+    }
+  },
+
+  "iteration_tracking": {
+    "description": "P4->P3 transition increments counter",
+    "on_transition_to_P3": [
+      "INCREMENT iteration_counter",
+      "Check: counter >= budget?",
+      "If YES: HALT, trigger resync_protocol",
+      "If NO: allow transition to P3"
+    ]
+  },
+
+  "drift_detection": {
+    "description": "Detect how much implementation has drifted from architecture",
+    "when_to_run": [
+      "On entry to P4",
+      "Before transitioning to P5",
+      "When resync_protocol triggered"
+    ],
+    "tools": [
+      "tools/detect_context_drift.py",
+      "tools/validate_architecture.py",
+      "tools/validate_service_contracts.py"
+    ],
+    "drift_score": {
+      "description": "0.0 = perfect match, 1.0 = completely different",
+      "thresholds": {
+        "acceptable": 0.1,
+        "warning": 0.3,
+        "critical": 0.5
+      }
+    },
+    "on_drift_detected": {
+      "if_acceptable": "Log and continue",
+      "if_warning": "Warn user, recommend resync",
+      "if_critical": "REQUIRE resync before P5"
+    }
+  },
+
+  "quality_gates": {
+    "blocking": [
+      "Architecture Validation",
+      "Interface Registry Consistency",
+      "Contract Completeness",
+      "Test Coverage >= 80%",
+      "Observability Instrumentation",
+      "Docker Compose Validation",
+      "Operational Testing"
+    ],
+    "warning": [
+      "Security Scanning",
+      "Performance Testing",
+      "Documentation Completeness"
+    ]
+  },
+
+  "test_failure_handling": {
+    "description": "What to do when tests fail",
+    "process": [
+      "Analyze failure",
+      "Determine if fix is within architecture bounds",
+      "If yes: transition to P3 for fix (if budget allows)",
+      "If no (requires architecture change): mode-specific handling"
+    ],
+    "flexible_mode": {
+      "if_architecture_change_needed": "Document as discovered requirement, fix, update architecture at resync"
+    },
+    "rigid_mode": {
+      "if_architecture_change_needed": "Document as change request, STOP that fix, continue other testing"
+    }
+  },
+
+  "outputs": {
+    "files_created": [
+      "reports/test_results.json",
+      "reports/quality_gate_status.json",
+      "reports/drift_detection_report.json"
+    ],
+    "state_changes": [
+      "Test status updated",
+      "Quality gates evaluated",
+      "Drift score calculated"
+    ]
+  },
+
+  "mode_specific_behavior": {
+    "flexible": {
+      "drift_tolerance": "configurable (default 30%)",
+      "on_high_drift": "Trigger resync to update architecture"
+    },
+    "rigid": {
+      "drift_tolerance": "configurable (default 0%)",
+      "on_any_drift": "Must realign implementation to architecture"
+    }
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Re-inject architecture_anchor",
+      "Run drift detection",
+      "Report drift score to user",
+      "Begin testing workflow"
+    ],
+    "during_phase": [
+      "Run tests systematically",
+      "Check quality gates",
+      "Document failures clearly"
+    ],
+    "on_test_failure": [
+      "Analyze root cause",
+      "Determine if fix is architecture-compatible",
+      "Check iteration budget before returning to P3",
+      "If budget exceeded: trigger resync instead"
+    ],
+    "before_transition_to_P3": [
+      "Check iteration_counter",
+      "If counter >= budget: HALT, trigger resync_protocol",
+      "Otherwise: increment counter, allow transition"
+    ],
+    "before_transition_to_P5": [
+      "Verify all blocking quality gates pass",
+      "Verify drift score < threshold",
+      "Final architecture sync verification"
+    ]
+  },
+
+  "resync_trigger_conditions": [
+    "iteration_counter >= iteration_budget",
+    "drift_score > critical_threshold (0.5)",
+    "Multiple test failures require architecture changes"
+  ],
+
+  "warnings": [
+    "P4 is where drift becomes visible - tests reveal reality",
+    "High iteration counts indicate architecture/implementation mismatch",
+    "Forcing resync is protective, not punitive"
+  ]
+}
