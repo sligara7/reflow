@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "phase_id": "P1",
+    "phase_name": "Functional Analysis",
+    "version": "1.0.0",
+    "description": "Define WHAT functions exist and HOW they interact (framework-agnostic)",
+    "duration_estimate": "2-6 hours"
+  },
+
+  "purpose": {
+    "primary": "Analyze and document functional requirements as a DAG",
+    "outcomes": [
+      "All system functions identified",
+      "Function dependencies mapped",
+      "Functional flows documented",
+      "Entry/exit points identified",
+      "Functional architecture DAG created"
+    ]
+  },
+
+  "workflows": [
+    {
+      "id": "01a-approach_detection",
+      "name": "Approach Detection",
+      "file": "../../01a-approach_detection.json",
+      "required": true,
+      "order": 1,
+      "description": "Auto-detect bottom-up vs top-down based on existing code"
+    },
+    {
+      "id": "01d-functional_analysis",
+      "name": "Functional Analysis",
+      "file": "../../01d-functional_analysis.json",
+      "required": true,
+      "order": 2,
+      "description": "Core functional analysis workflow (FA-01 through FA-07)"
+    }
+  ],
+
+  "entry_criteria": {
+    "description": "Requirements to enter P1",
+    "prerequisites": [
+      "P0 completed",
+      "working_memory.json exists with paths configured",
+      "development_mode configured"
+    ]
+  },
+
+  "exit_criteria": {
+    "description": "Requirements to leave P1 and enter P2",
+    "required_files": [
+      "specs/machine/functional_architecture.json"
+    ],
+    "required_conditions": [
+      "At least 1 function defined",
+      "All functions have function_type",
+      "Dependencies form a valid DAG (no cycles)"
+    ]
+  },
+
+  "key_concepts": {
+    "function": {
+      "description": "A discrete unit of capability",
+      "attributes": ["function_id", "function_name", "function_type", "inputs", "outputs"]
+    },
+    "dependency": {
+      "description": "Relationship between functions",
+      "types": ["function_call", "data_flow", "control_flow", "error_flow"]
+    },
+    "functional_architecture": {
+      "description": "DAG of functions and their dependencies",
+      "note": "Framework-agnostic - always a DAG regardless of framework"
+    }
+  },
+
+  "outputs": {
+    "files_created": [
+      "specs/machine/functional_architecture.json",
+      "specs/machine/functional_requirements.json",
+      "specs/human/visualizations/functional_flow.mmd"
+    ],
+    "state_changes": [
+      "current_phase updated to P1",
+      "functional analysis complete"
+    ]
+  },
+
+  "mode_specific_behavior": {
+    "flexible": {
+      "description": "Functional requirements can be refined during later phases",
+      "on_discovering_new_function": "Add to functional_architecture, continue"
+    },
+    "rigid": {
+      "description": "Functional requirements locked after P1 completion",
+      "on_discovering_new_function": "Document as change request, do not add"
+    }
+  },
+
+  "llm_instructions": {
+    "on_entry": [
+      "Read working_memory.json to get paths and mode",
+      "Explain purpose of functional analysis",
+      "Begin approach detection"
+    ],
+    "during_phase": [
+      "Focus on WHAT functions exist, not WHERE they live",
+      "Ensure all functions have clear inputs/outputs",
+      "Map all dependencies between functions",
+      "Validate DAG structure (no cycles)"
+    ],
+    "on_exit": [
+      "Verify functional_architecture.json is complete",
+      "Generate functional visualizations",
+      "Summarize: X functions, Y dependencies, Z entry points",
+      "Explain next phase (P2: Architecture & Allocation)"
+    ]
+  },
+
+  "quality_checks": [
+    "All user requirements map to at least one function",
+    "No orphaned functions (unreachable from entry points)",
+    "No dead-end functions (except exit points)",
+    "All dependencies have valid source and target",
+    "DAG is acyclic"
+  ]
+}

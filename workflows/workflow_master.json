@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "name": "Reflow Master Orchestrator",
+    "version": "1.0.0",
+    "description": "Hierarchical workflow orchestrator managing phase-level DAG with dual-mode support (rigid/flexible)",
+    "created": "2025-12-04",
+    "purpose": "Prevent architecture drift, enforce phase transitions, manage iteration budgets"
+  },
+
+  "phase_dag": {
+    "description": "Directed Acyclic Graph of workflow phases",
+    "nodes": {
+      "P0": {
+        "name": "Setup & Configuration",
+        "directory": "phases/P0_setup",
+        "purpose": "Initialize project, set paths, configure development mode",
+        "is_entry_point": true
+      },
+      "P1": {
+        "name": "Functional Analysis",
+        "directory": "phases/P1_functional_analysis",
+        "purpose": "Define WHAT functions exist and HOW they interact"
+      },
+      "P2": {
+        "name": "Architecture & Allocation",
+        "directory": "phases/P2_architecture_allocation",
+        "purpose": "Define WHERE functions live, service boundaries, optimization"
+      },
+      "P3": {
+        "name": "Development",
+        "directory": "phases/P3_development",
+        "purpose": "Implement services according to architecture"
+      },
+      "P4": {
+        "name": "Validation",
+        "directory": "phases/P4_validation",
+        "purpose": "Test implementation, verify quality gates"
+      },
+      "P5": {
+        "name": "Operations",
+        "directory": "phases/P5_operations",
+        "purpose": "Deploy, monitor, operate in production"
+      },
+      "PM": {
+        "name": "Meta & Maintenance",
+        "directory": "phases/PM_meta",
+        "purpose": "Self-improvement, feature updates, meta-analysis"
+      }
+    },
+
+    "edges": {
+      "forward": [
+        {"from": "P0", "to": "P1", "type": "sequential"},
+        {"from": "P1", "to": "P2", "type": "sequential"},
+        {"from": "P2", "to": "P3", "type": "sequential", "creates_anchor": true},
+        {"from": "P3", "to": "P4", "type": "sequential"},
+        {"from": "P4", "to": "P5", "type": "sequential"}
+      ],
+      "iteration": [
+        {"from": "P4", "to": "P3", "type": "iteration", "budget_key": "P3_P4_loops"},
+        {"from": "P3", "to": "P4", "type": "iteration", "budget_key": "P3_P4_loops"}
+      ],
+      "resync": [
+        {"from": "P3", "to": "P2", "type": "resync", "trigger": "budget_exceeded"},
+        {"from": "P4", "to": "P2", "type": "resync", "trigger": "budget_exceeded"},
+        {"from": "P3", "to": "P1", "type": "resync", "trigger": "major_drift"},
+        {"from": "P4", "to": "P1", "type": "resync", "trigger": "major_drift"}
+      ],
+      "meta": [
+        {"from": "any", "to": "PM", "type": "meta", "condition": "explicit_request"}
+      ]
+    }
+  },
+
+  "development_modes": {
+    "flexible": {
+      "description": "Personal/Exploratory - architecture evolves with implementation",
+      "architecture_source_of_truth": false,
+      "implementation_drives_architecture": true,
+      "drift_response": "update_architecture",
+      "new_functionality_policy": "implement_then_document",
+      "change_request_required": false,
+      "auto_update_architecture_on_resync": true
+    },
+    "rigid": {
+      "description": "Enterprise/Approved - implementation must conform to architecture",
+      "architecture_source_of_truth": true,
+      "implementation_drives_architecture": false,
+      "drift_response": "realign_implementation",
+      "new_functionality_policy": "document_and_wait",
+      "change_request_required": true,
+      "auto_update_architecture_on_resync": false
+    }
+  },
+
+  "iteration_budgets": {
+    "description": "Maximum iterations before forced resync",
+    "defaults": {
+      "P3_P4_loops": 3,
+      "P4_P3_loops": 3
+    },
+    "on_budget_exceeded": {
+      "action": "trigger_resync_protocol",
+      "target_phase": "P2",
+      "escalate_to_P1_if": "drift_score > 0.5"
+    }
+  },
+
+  "architecture_anchor": {
+    "description": "Snapshot of architecture when leaving P2 for P3",
+    "created_at_transition": "P2 -> P3",
+    "contents": {
+      "files_to_checksum": [
+        "specs/machine/service_architecture.json",
+        "specs/machine/functional_architecture.json",
+        "specs/machine/interface_registry.json",
+        "specs/machine/system_of_systems_graph.json"
+      ],
+      "captured_fields": {
+        "design_intent_summary": "string",
+        "key_decisions": "array",
+        "constraints": "array",
+        "service_count": "number",
+        "function_count": "number"
+      }
+    },
+    "usage": {
+      "reinjected_at": ["phase_transitions", "resync_protocol", "every_N_iterations"],
+      "N_iterations_for_reminder": 5
+    }
+  },
+
+  "resync_protocol": {
+    "description": "Procedure when iteration budget exceeded or drift detected",
+    "reference": "resync_protocol.json",
+    "steps": [
+      "halt_current_work",
+      "detect_drift",
+      "present_comparison",
+      "mode_specific_resolution",
+      "reset_iteration_counter",
+      "continue_or_escalate"
+    ]
+  },
+
+  "discovered_items_tracking": {
+    "description": "Track new requirements/functionality discovered during development",
+    "flexible_mode": {
+      "file": "context/discovered_requirements.json",
+      "action": "implement_then_document",
+      "architecture_update": "at_next_resync"
+    },
+    "rigid_mode": {
+      "file": "context/change_requests.json",
+      "action": "document_and_wait",
+      "requires": "approval_before_implementation"
+    }
+  },
+
+  "llm_instructions": {
+    "on_phase_entry": [
+      "Read phase_definition.json for current phase",
+      "Read architecture_anchor from working_memory.json",
+      "Check iteration_budget status",
+      "Remind yourself of design intent and constraints"
+    ],
+    "on_phase_exit": [
+      "Verify exit criteria met",
+      "Update working_memory.json with progress",
+      "If entering P3 from P2: create architecture_anchor"
+    ],
+    "on_iteration": [
+      "Increment iteration counter",
+      "Check if budget exceeded",
+      "If exceeded: trigger resync_protocol"
+    ],
+    "on_discovering_new_requirement": {
+      "flexible": "Implement it, add to discovered_requirements.json",
+      "rigid": "STOP, add to change_requests.json, continue with other work"
+    }
+  },
+
+  "phase_summary": {
+    "P0": {
+      "workflows": ["00a-basic_setup.json", "00b-framework_selection.json"],
+      "outputs": ["working_memory.json", "development_mode configured"],
+      "duration_estimate": "30-60 minutes"
+    },
+    "P1": {
+      "workflows": ["01a-approach_detection.json", "01d-functional_analysis.json"],
+      "outputs": ["functional_architecture.json", "functional requirements"],
+      "duration_estimate": "2-6 hours"
+    },
+    "P2": {
+      "workflows": ["01b-bottom_up_integration.json (SE parts)", "01c-top_down_design.json (SE parts)", "02-artifacts_visualization.json", "02b-deployment_environment.json", "02c-bayesian_optimization.json"],
+      "outputs": ["service_architecture.json", "interface_registry.json", "ICDs", "architecture_anchor"],
+      "duration_estimate": "4-8 hours"
+    },
+    "P3": {
+      "workflows": ["03a-development_implementation.json", "03b-development_validation.json"],
+      "outputs": ["implemented services", "unit tests"],
+      "duration_estimate": "days-weeks"
+    },
+    "P4": {
+      "workflows": ["04a-testing.json"],
+      "outputs": ["test results", "quality gate status"],
+      "duration_estimate": "1-2 weeks"
+    },
+    "P5": {
+      "workflows": ["04b-operations.json"],
+      "outputs": ["deployed system", "monitoring"],
+      "duration_estimate": "1-2 weeks"
+    },
+    "PM": {
+      "workflows": ["97-GAN-inspired-test.json", "98-reflow_feature_update.json", "99-meta_analysis.json", "feature_update.json"],
+      "outputs": ["improvements to reflow or system"],
+      "duration_estimate": "varies"
+    }
+  }
+}

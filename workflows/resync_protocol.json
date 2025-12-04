@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "name": "Resync Protocol",
+    "version": "1.0.0",
+    "description": "Procedure for synchronizing architecture and implementation when drift is detected or iteration budget exceeded",
+    "created": "2025-12-04",
+    "purpose": "Prevent architecture drift and maintain design intent throughout development"
+  },
+
+  "trigger_conditions": {
+    "iteration_budget_exceeded": {
+      "description": "P3<->P4 loop count exceeds configured budget",
+      "detection": "iteration_tracking.current_count >= iteration_budget.P3_P4_loops",
+      "severity": "mandatory"
+    },
+    "drift_detected": {
+      "description": "Architecture drift score exceeds threshold",
+      "detection": "drift_score > development_mode.drift_tolerance",
+      "severity": "configurable"
+    },
+    "major_drift": {
+      "description": "Drift is so significant that functional analysis may need revisiting",
+      "detection": "drift_score > 0.5",
+      "severity": "critical",
+      "escalates_to": "P1"
+    },
+    "manual_trigger": {
+      "description": "User explicitly requests resync",
+      "severity": "user_controlled"
+    }
+  },
+
+  "protocol_steps": {
+    "step_1_halt": {
+      "name": "Halt Current Work",
+      "description": "Stop ongoing development/testing work",
+      "actions": [
+        "Save current work state",
+        "Note current file being edited",
+        "Log resync trigger reason"
+      ],
+      "llm_instruction": "STOP current development task. A resync is required because: {{trigger_reason}}"
+    },
+
+    "step_2_detect": {
+      "name": "Detect Drift",
+      "description": "Run drift detection tools to quantify divergence",
+      "tools": [
+        "tools/detect_context_drift.py",
+        "tools/validate_architecture.py",
+        "tools/validate_service_contracts.py"
+      ],
+      "outputs": {
+        "drift_score": "0.0 to 1.0",
+        "drifted_services": ["list of services that drifted"],
+        "drift_details": {
+          "added_functions": ["functions in impl not in arch"],
+          "removed_functions": ["functions in arch not in impl"],
+          "modified_interfaces": ["interfaces that changed"],
+          "boundary_changes": ["service boundary modifications"]
+        }
+      },
+      "llm_instruction": "Run drift detection. Compare current implementation to architecture_anchor."
+    },
+
+    "step_3_compare": {
+      "name": "Present Comparison",
+      "description": "Show user the difference between design and implementation",
+      "presentation": {
+        "format": "side-by-side comparison",
+        "sections": [
+          "Design Intent (from anchor)",
+          "Current Implementation",
+          "Drift Summary",
+          "Affected Services"
+        ]
+      },
+      "llm_instruction": "Present the drift analysis to the user clearly. Show what was designed vs what exists."
+    },
+
+    "step_4_resolve": {
+      "name": "Mode-Specific Resolution",
+      "description": "Handle drift according to development mode",
+      "flexible_mode": {
+        "description": "Update architecture to match implementation",
+        "steps": [
+          "Review drift details with user",
+          "Confirm changes are intentional evolution",
+          "Update functional_architecture.json with new functions",
+          "Update service_architecture.json with new allocations",
+          "Update interface_registry.json with new interfaces",
+          "Regenerate system_of_systems_graph.json"
+        ],
+        "llm_instruction": "In FLEXIBLE mode: Update architecture to match reality. Document WHY each change was made.",
+        "user_confirmation_required": true
+      },
+      "rigid_mode": {
+        "description": "Realign implementation to match architecture",
+        "options": [
+          {
+            "option": "A",
+            "name": "Revert Implementation",
+            "description": "Undo implementation changes to match architecture",
+            "steps": [
+              "Identify implementation changes that caused drift",
+              "Revert those changes",
+              "Re-run tests to verify alignment"
+            ]
+          },
+          {
+            "option": "B",
+            "name": "Create Change Request",
+            "description": "Formally request architecture changes",
+            "steps": [
+              "Document each drift item as change request",
+              "Add to context/change_requests.json",
+              "BLOCK implementation of drifted features",
+              "Continue with non-drifted work"
+            ]
+          }
+        ],
+        "llm_instruction": "In RIGID mode: Present options A (revert) or B (change request). User must choose.",
+        "user_choice_required": true
+      }
+    },
+
+    "step_5_update_anchor": {
+      "name": "Update Architecture Anchor",
+      "description": "If architecture was updated (flexible mode), regenerate anchor",
+      "condition": "architecture files were modified",
+      "actions": [
+        "Recompute checksums",
+        "Update design_intent if changed",
+        "Update key_decisions",
+        "Record resync event in anchor history"
+      ],
+      "llm_instruction": "Regenerate architecture_anchor with new checksums and updated design intent."
+    },
+
+    "step_6_reset_counter": {
+      "name": "Reset Iteration Counter",
+      "description": "Reset the P3<->P4 iteration counter",
+      "action": "Set iteration_tracking.current_count = 0",
+      "record": {
+        "last_resync": "{{timestamp}}",
+        "resync_reason": "{{trigger_reason}}",
+        "resolution": "{{flexible|rigid}}: {{action_taken}}"
+      }
+    },
+
+    "step_7_continue": {
+      "name": "Continue or Escalate",
+      "description": "Return to development or escalate to earlier phase",
+      "decision_logic": {
+        "if_minor_drift": "Return to P3, continue development",
+        "if_major_drift": "Return to P2 to revise architecture allocation",
+        "if_fundamental_drift": "Return to P1 to revise functional analysis"
+      },
+      "escalation_thresholds": {
+        "to_P3": "drift_score < 0.3",
+        "to_P2": "0.3 <= drift_score < 0.5",
+        "to_P1": "drift_score >= 0.5"
+      }
+    }
+  },
+
+  "flexible_mode_workflow": {
+    "summary": "Update architecture to match implementation",
+    "philosophy": "Implementation reveals requirements; architecture should reflect reality",
+    "steps": [
+      "1. Halt and detect drift",
+      "2. Present drift to user",
+      "3. Confirm changes are intentional (not bugs)",
+      "4. Update all architecture files",
+      "5. Regenerate anchor",
+      "6. Reset counter",
+      "7. Continue development"
+    ],
+    "documentation_required": [
+      "WHY each change was made",
+      "What requirement drove the change",
+      "Impact on other services"
+    ],
+    "output": {
+      "updated_files": [
+        "functional_architecture.json",
+        "service_architecture.json",
+        "interface_registry.json"
+      ],
+      "log": "context/resync_history.json"
+    }
+  },
+
+  "rigid_mode_workflow": {
+    "summary": "Realign implementation to match architecture",
+    "philosophy": "Architecture is approved; implementation must conform",
+    "steps": [
+      "1. Halt and detect drift",
+      "2. Present drift to user",
+      "3. User chooses: Revert OR Change Request",
+      "4A. If Revert: undo implementation changes",
+      "4B. If Change Request: document and await approval",
+      "5. Anchor unchanged (unless CR approved later)",
+      "6. Reset counter",
+      "7. Continue with conforming work"
+    ],
+    "change_request_template": {
+      "id": "CR-{{sequence}}",
+      "type": "drift_resolution",
+      "created_at": "{{timestamp}}",
+      "created_during": "resync_protocol",
+      "drift_items": [
+        {
+          "description": "{{what drifted}}",
+          "current_implementation": "{{what exists}}",
+          "original_design": "{{what was designed}}",
+          "rationale_for_change": "{{why it should be approved}}"
+        }
+      ],
+      "status": "pending_approval",
+      "blocking_services": ["{{services that cannot proceed}}"]
+    }
+  },
+
+  "discovered_requirements_integration": {
+    "description": "Handle requirements discovered during P3/P4 that were tracked",
+    "flexible_mode": {
+      "action": "Include in architecture update during resync",
+      "source": "context/discovered_requirements.json",
+      "process": [
+        "Read all DR-* entries with architecture_updated=false",
+        "Add to architecture files",
+        "Mark as architecture_updated=true"
+      ]
+    },
+    "rigid_mode": {
+      "action": "Convert to change requests if not already",
+      "process": [
+        "DR-* entries should already be CR-* entries",
+        "Verify all are in change_requests.json",
+        "Await approval for each"
+      ]
+    }
+  },
+
+  "resync_history": {
+    "description": "Log all resync events for audit trail",
+    "location": "context/resync_history.json",
+    "entry_format": {
+      "resync_id": "RESYNC-{{sequence}}",
+      "timestamp": "{{ISO8601}}",
+      "trigger": "iteration_budget | drift_detected | major_drift | manual",
+      "drift_score": 0.0,
+      "mode": "flexible | rigid",
+      "resolution": {
+        "action": "architecture_updated | implementation_reverted | change_request_created",
+        "details": "{{specifics}}"
+      },
+      "escalation": "P3 | P2 | P1",
+      "files_modified": ["{{list}}"],
+      "anchor_regenerated": true
+    }
+  },
+
+  "llm_master_instruction": {
+    "when_resync_triggered": [
+      "ANNOUNCE: 'Resync protocol triggered due to {{reason}}'",
+      "HALT current work immediately",
+      "Run drift detection tools",
+      "Present comparison to user",
+      "ASK: development mode determines action",
+      "  - FLEXIBLE: 'I will update the architecture to match implementation. Please confirm.'",
+      "  - RIGID: 'Choose: (A) Revert implementation or (B) Create change request'",
+      "Execute chosen resolution",
+      "Regenerate anchor if architecture changed",
+      "Reset iteration counter",
+      "ANNOUNCE: 'Resync complete. Returning to {{phase}}.'"
+    ],
+    "critical_reminders": [
+      "Resync CANNOT be bypassed",
+      "User confirmation required before architecture updates",
+      "Always document WHY changes were made",
+      "Always regenerate anchor after architecture changes"
+    ]
+  }
+}
