@@ -2,24 +2,36 @@
   "workflow_metadata": {
     "workflow_id": "98-reflow_feature_update",
     "name": "Reflow Feature Update Workflow (Self-Sharpening Auto-Trigger)",
-    "version": "1.0.0",
-    "description": "Feature update workflow specifically for Reflow itself - automatically triggers meta-analysis after feature implementation to ensure continuous self-improvement",
+    "version": "2.0.0",
+    "description": "Feature update workflow specifically for Reflow itself - automatically triggers meta-analysis after feature implementation to ensure continuous self-improvement. v2.0.0: Phase-aware feature development with hierarchical integrity verification",
     "created": "2025-11-04",
-    "last_updated": "2025-11-04",
-    "purpose": "Update Reflow's own workflows, tools, or templates, then automatically validate changes through meta-analysis",
-    "key_innovation": "Automatically triggers meta-analysis (steps META-04, META-05, META-05B) after feature update completes, creating a continuous self-sharpening loop",
+    "last_updated": "2025-12-04",
+    "purpose": "Update Reflow's own workflows, tools, or templates, then automatically validate changes through meta-analysis. v2.0.0: Now determines which phases are affected by features and validates hierarchical integrity",
+    "key_innovation": "Automatically triggers meta-analysis (steps META-04, META-05, META-05B) after feature update completes, creating a continuous self-sharpening loop. v2.0.0: Phase-aware development ensures features integrate correctly with hierarchical workflow structure",
     "when_to_use": "When updating Reflow's own implementation (workflows/*.json, tools/*.py, schemas/*.json, templates/*.json)",
     "do_not_use_for": "Updating OTHER systems - use standard feature_update.json workflow instead",
-    "trigger_command": "Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>"
+    "trigger_command": "Implement workflow in /path/to/reflow/workflows/98-reflow_feature_update.json on system /path/to/reflow with feature: <description>",
+    "hierarchical_integration": {
+      "phase": "PM",
+      "phase_name": "Meta & Maintenance",
+      "phase_aware_features": [
+        "Determine which phases are affected by feature",
+        "Phase-specific validation for affected phases",
+        "Hierarchical integrity verification (transitions, budgets, anchors)",
+        "Update phase definitions if feature adds new workflows"
+      ]
+    }
   },
   "prerequisites": {
     "required_conditions": [
       "Reflow repository exists and is accessible",
       "Python 3.x installed with NetworkX library",
       "Functional architecture exists: specs/functional/functional_architecture.json",
-      "All Reflow workflows, tools, and templates present"
+      "All Reflow workflows, tools, and templates present",
+      "Hierarchical workflow structure exists: workflow_master.json, phase_transitions.json, resync_protocol.json",
+      "Phase definitions exist in workflows/phases/"
     ],
-    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root)"
+    "special_note": "This workflow operates on Reflow itself (system_root = reflow_root). v2.0.0: Phase-aware development."
   },
   "entry_points": {
     "standard": {
@@ -57,6 +69,81 @@
       ],
       "outputs": ["Updated context/working_memory.json"],
       "typical_time": "5 minutes",
+      "next_step": "RFU-01A"
+    },
+    {
+      "step_id": "RFU-01A",
+      "name": "Phase Impact Analysis (NEW v2.0.0)",
+      "description": "Determine which hierarchical phases are affected by the feature and plan phase-specific validation",
+      "phase": "phase_analysis",
+      "actions": [
+        {
+          "action_id": "RFU-01A-A01",
+          "description": "Analyze feature description to determine affected phases",
+          "analysis": {
+            "method": "Map feature changes to hierarchical phases",
+            "phase_mapping": {
+              "P0_setup": "Changes to setup workflows (00a, 00b), working_memory_template, path configuration",
+              "P1_functional_analysis": "Changes to functional analysis workflows (01d), functional architecture tools",
+              "P2_architecture_allocation": "Changes to architecture workflows (01a, 01b, 01c, 02, 02b), Bayesian optimization, service allocation",
+              "P3_development": "Changes to development workflows (03a), implementation tools, service contracts",
+              "P4_validation": "Changes to validation workflows (03b), testing tools, quality gates",
+              "P5_operations": "Changes to operations workflows (04a, 04b), deployment tools",
+              "PM_meta": "Changes to meta workflows (97, 98, 99), self-improvement tools"
+            }
+          },
+          "output": "List of affected phases with impact assessment"
+        },
+        {
+          "action_id": "RFU-01A-A02",
+          "description": "Check if feature adds new workflows that need phase assignment",
+          "checks": [
+            "Does feature create new workflow files?",
+            "Which phase(s) should new workflows belong to?",
+            "Do phase definitions need updating?"
+          ],
+          "if_new_workflows": "Plan to update workflows/phases/{phase}/phase_definition.json"
+        },
+        {
+          "action_id": "RFU-01A-A03",
+          "description": "Check if feature affects phase transitions",
+          "checks": [
+            "Does feature change prerequisites for any phase transition?",
+            "Does feature add new transition rules?",
+            "Does feature modify iteration budget behavior?"
+          ],
+          "if_transition_changes": "Plan to update workflows/phase_transitions.json"
+        },
+        {
+          "action_id": "RFU-01A-A04",
+          "description": "Check if feature affects resync protocol",
+          "checks": [
+            "Does feature change drift detection?",
+            "Does feature modify resync resolution actions?",
+            "Does feature affect architecture anchor creation?"
+          ],
+          "if_resync_changes": "Plan to update workflows/resync_protocol.json"
+        },
+        {
+          "action_id": "RFU-01A-A05",
+          "description": "Record phase impact in working_memory.json",
+          "updates": {
+            "feature_phase_impact": {
+              "affected_phases": ["list of affected phase IDs"],
+              "new_workflows_added": ["list of new workflow IDs"],
+              "phase_definitions_to_update": ["list of phase directories"],
+              "transition_rules_affected": true,
+              "resync_protocol_affected": false,
+              "architecture_anchor_affected": false
+            }
+          }
+        }
+      ],
+      "outputs": [
+        "Phase impact analysis",
+        "Updated working_memory.json with feature_phase_impact"
+      ],
+      "typical_time": "10 minutes",
       "next_step": "RFU-02"
     },
     {
@@ -354,6 +441,101 @@
           "critical_note": "Workflow validation (RFU-05-A02B) is MANDATORY - prevents broken workflows"
         }
       ],
+      "next_step": "RFU-05A"
+    },
+    {
+      "step_id": "RFU-05A",
+      "name": "Hierarchical Integrity Verification (NEW v2.0.0)",
+      "description": "Verify that feature implementation maintains hierarchical workflow structure integrity",
+      "phase": "hierarchical_verification",
+      "actions": [
+        {
+          "action_id": "RFU-05A-A01",
+          "description": "Verify phase definitions are consistent with feature changes",
+          "for_each_affected_phase": "Read working_memory.json -> feature_phase_impact.affected_phases",
+          "checks": [
+            "Phase definition exists in workflows/phases/{phase}/",
+            "Phase workflows array is up-to-date (includes new workflows)",
+            "Phase exit_criteria are still valid",
+            "Phase llm_instructions reference architecture anchor correctly"
+          ]
+        },
+        {
+          "action_id": "RFU-05A-A02",
+          "description": "Verify phase transition DAG integrity",
+          "read": "workflows/phase_transitions.json",
+          "checks": [
+            "All phases have at least one incoming transition (except P0)",
+            "All phases have at least one outgoing transition (except P5 and PM)",
+            "P3↔P4 iteration loop is intact",
+            "Prerequisites are satisfiable",
+            "Mode-specific behaviors are consistent"
+          ],
+          "purpose": "Ensure feature didn't break phase transition graph"
+        },
+        {
+          "action_id": "RFU-05A-A03",
+          "description": "Verify resync protocol integrity",
+          "read": "workflows/resync_protocol.json",
+          "checks": [
+            "All protocol steps present and complete",
+            "Mode-specific resolution actions defined",
+            "Escalation path defined (if resolution fails)",
+            "Integration with iteration_tracking works"
+          ],
+          "purpose": "Ensure resync protocol still functions correctly"
+        },
+        {
+          "action_id": "RFU-05A-A04",
+          "description": "Verify architecture anchor mechanism",
+          "checks": [
+            "P2→P3 transition still creates anchor",
+            "Anchor structure in working_memory_template is complete",
+            "P3/P4 phase definitions remind LLM of anchor"
+          ],
+          "purpose": "Ensure architecture drift prevention still works"
+        },
+        {
+          "action_id": "RFU-05A-A05",
+          "description": "Verify dual development mode configuration",
+          "checks": [
+            "Both modes defined in workflow_master.json",
+            "Mode-specific settings are consistent",
+            "Discovered requirements tracking works for both modes"
+          ],
+          "purpose": "Ensure both flexible and rigid modes still function"
+        },
+        {
+          "action_id": "RFU-05A-A06",
+          "description": "Update phase definitions if feature added new workflows",
+          "condition": "If working_memory.json -> feature_phase_impact.new_workflows_added is not empty",
+          "for_each_new_workflow": {
+            "add_to_phase_definition": "Add workflow to workflows/phases/{phase}/phase_definition.json",
+            "update_workflow_sequence": "Ensure workflow appears in correct order",
+            "update_exit_criteria": "If workflow adds new outputs that are exit criteria"
+          }
+        }
+      ],
+      "outputs": [
+        "Hierarchical integrity verification report",
+        "Updated phase definitions (if needed)"
+      ],
+      "typical_time": "15-20 minutes",
+      "gates": [
+        {
+          "gate_id": "G-RFU-05A",
+          "name": "Hierarchical Integrity Verified",
+          "checks": [
+            "Phase transition DAG is intact",
+            "Resync protocol is complete",
+            "Architecture anchor mechanism works",
+            "Dual mode configuration is consistent",
+            "All new workflows assigned to phases"
+          ],
+          "blocking": true,
+          "failure_action": "Fix hierarchical structure issues before proceeding"
+        }
+      ],
       "next_step": "RFU-06"
     },
     {
@@ -410,10 +592,12 @@
   ],
   "completion_criteria": {
     "required": [
+      "Phase impact analysis complete (RFU-01A)",
       "Feature implementation complete (RFU-02)",
       "Meta-analysis run on updated Reflow (RFU-03)",
       "Critical issues resolved in spec (RFU-04)",
       "IMPLEMENTATION OPTIMIZATIONS APPLIED (RFU-05): Feature code optimized based on analysis",
+      "HIERARCHICAL INTEGRITY VERIFIED (RFU-05A): Phase transitions, resync protocol, anchors verified",
       "All tests pass (unit, integration, regression)",
       "Changes committed and pushed to GitHub (RFU-06)"
     ],
@@ -435,15 +619,38 @@
   "llm_agent_guidance": {
     "critical_reminders": [
       "This workflow operates on Reflow itself - system_root = reflow_root",
+      "v2.0.0: ALWAYS run RFU-01A (Phase Impact Analysis) - determine which phases are affected",
       "ALWAYS run steps RFU-03 through RFU-05 - meta-analysis is NOT optional for Reflow updates",
       "RFU-05 (Implementation Refinement) is the self-sharpening step - do NOT skip",
+      "v2.0.0: ALWAYS run RFU-05A (Hierarchical Integrity Verification) - ensure phase structure intact",
       "Focus meta-analysis on NEW feature impact (context delta, new functions, integration)",
       "If feature introduces NO issues in analysis, RFU-04 and RFU-05 complete quickly (no work needed)",
-      "Commit message should document BOTH feature implementation AND self-sharpening optimizations"
+      "Commit message should document BOTH feature implementation AND self-sharpening optimizations",
+      "If feature adds new workflows, update phase definitions to include them"
     ],
+    "hierarchical_awareness": {
+      "phase_impact_analysis": "RFU-01A maps features to affected phases (P0-P5, PM)",
+      "phase_definition_updates": "If new workflows added, update workflows/phases/{phase}/phase_definition.json",
+      "transition_rules": "If feature affects phase transitions, update workflows/phase_transitions.json",
+      "resync_protocol": "If feature affects drift detection, update workflows/resync_protocol.json",
+      "architecture_anchor": "If feature affects anchor creation/verification, ensure mechanism intact"
+    },
     "when_to_use_this_vs_99_meta_analysis": {
       "use_98_reflow_feature_update": "When adding/updating a specific feature to Reflow (targeted analysis)",
       "use_99_meta_analysis": "When doing comprehensive health check of ALL of Reflow (quarterly, before releases)"
     }
-  }
+  },
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-04",
+      "changes": "Initial creation of Reflow feature update workflow with auto meta-analysis"
+    },
+    {
+      "version": "2.0.0",
+      "date": "2025-12-04",
+      "changes": "MAJOR: Phase-aware feature development. (1) New step RFU-01A for phase impact analysis. (2) New step RFU-05A for hierarchical integrity verification. (3) Updated completion criteria to include phase analysis and hierarchical verification. (4) LLM guidance for hierarchical awareness. (5) Support for updating phase definitions when new workflows added.",
+      "author": "Claude Opus 4"
+    }
+  ]
 }
