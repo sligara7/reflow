@@ -1,0 +1,222 @@
+{
+  "step_metadata": {
+    "step_id": "RE-01",
+    "name": "Codebase Discovery & Inventory",
+    "workflow": "01e-reverse_engineering",
+    "version": "1.0.0",
+    "description": "Scan source directories and catalog all code files, languages, frameworks, and entry points",
+    "phase": "discovery",
+    "typical_time": "30-60 minutes",
+    "created": "2025-12-05"
+  },
+  "inputs": {
+    "required": [
+      {
+        "name": "legacy_codebase_path",
+        "type": "path",
+        "description": "Absolute path to the codebase to analyze",
+        "example": "/home/user/legacy-system/src"
+      }
+    ],
+    "optional": [
+      {
+        "name": "exclude_patterns",
+        "type": "array",
+        "description": "Glob patterns of files/directories to exclude",
+        "default": ["**/node_modules/**", "**/.git/**", "**/venv/**", "**/__pycache__/**"]
+      },
+      {
+        "name": "max_file_size_mb",
+        "type": "number",
+        "description": "Maximum file size to analyze in MB",
+        "default": 10
+      }
+    ]
+  },
+  "actions": [
+    {
+      "action_id": "RE-01-A01",
+      "description": "Define source codebase location",
+      "type": "user_input",
+      "prompt": "Please provide the path to the legacy codebase you want to analyze:",
+      "validation": "Path must exist and be readable",
+      "output": "legacy_codebase_path stored in working_memory.json"
+    },
+    {
+      "action_id": "RE-01-A02",
+      "description": "Scan source directories for all code files",
+      "type": "tool_invocation",
+      "tool": "analyze_codebase.py",
+      "command_pattern": "python3 {reflow_root}/tools/analyze_codebase.py {legacy_codebase_path} --output {system_root}/specs/reverse/codebase_inventory.json",
+      "outputs": ["specs/reverse/codebase_inventory.json"],
+      "llm_instructions": [
+        "Run the analyze_codebase.py tool with the provided path",
+        "If tool doesn't exist yet, perform manual analysis using file system commands",
+        "For manual analysis: recursively list all files, categorize by extension"
+      ]
+    },
+    {
+      "action_id": "RE-01-A03",
+      "description": "Detect programming languages and versions",
+      "type": "analysis",
+      "detection_methods": {
+        "by_extension": {
+          ".py": "python",
+          ".js": "javascript",
+          ".ts": "typescript",
+          ".java": "java",
+          ".go": "go",
+          ".rs": "rust",
+          ".rb": "ruby",
+          ".cbl": "cobol",
+          ".f90": "fortran",
+          ".c": "c",
+          ".cpp": "cpp",
+          ".cs": "csharp"
+        },
+        "by_config_file": {
+          "pyproject.toml": {"language": "python", "version_field": "requires-python"},
+          "setup.py": {"language": "python", "detect_in_file": true},
+          "requirements.txt": {"language": "python"},
+          "package.json": {"language": "javascript/typescript", "version_field": "engines.node"},
+          "go.mod": {"language": "go", "version_field": "go"},
+          "Cargo.toml": {"language": "rust", "version_field": "rust-version"},
+          "pom.xml": {"language": "java", "version_in_file": true},
+          "build.gradle": {"language": "java/kotlin"}
+        }
+      },
+      "output_field": "languages_detected in codebase_inventory.json"
+    },
+    {
+      "action_id": "RE-01-A04",
+      "description": "Identify frameworks and libraries",
+      "type": "analysis",
+      "detection_sources": [
+        "Import statements in source files",
+        "Dependency manifests (requirements.txt, package.json, pom.xml)",
+        "Configuration files (django settings, spring config)",
+        "Framework-specific file patterns (manage.py for Django, etc.)"
+      ],
+      "common_frameworks": {
+        "python": ["django", "flask", "fastapi", "celery", "sqlalchemy", "pytest"],
+        "javascript": ["react", "vue", "angular", "express", "next", "nest"],
+        "java": ["spring", "springboot", "hibernate", "junit", "maven", "gradle"],
+        "go": ["gin", "echo", "fiber", "gorm"]
+      },
+      "output_field": "frameworks_detected in codebase_inventory.json"
+    },
+    {
+      "action_id": "RE-01-A05",
+      "description": "Detect entry points (main functions, API endpoints, CLI handlers)",
+      "type": "analysis",
+      "entry_point_patterns": {
+        "python": {
+          "main_function": "if __name__ == '__main__':",
+          "wsgi": "*.wsgi, wsgi.py",
+          "asgi": "*.asgi, asgi.py",
+          "cli": "console_scripts in setup.py/pyproject.toml",
+          "django_management": "manage.py"
+        },
+        "javascript": {
+          "main": "main field in package.json",
+          "scripts": "scripts field in package.json",
+          "server": "server.js, index.js, app.js"
+        },
+        "java": {
+          "main_class": "public static void main(String[] args)",
+          "spring_boot": "@SpringBootApplication"
+        }
+      },
+      "output_field": "entry_points in codebase_inventory.json"
+    },
+    {
+      "action_id": "RE-01-A06",
+      "description": "Catalog dependencies from manifest files",
+      "type": "analysis",
+      "manifest_files": [
+        "requirements.txt", "requirements-*.txt", "setup.py", "pyproject.toml",
+        "package.json", "package-lock.json", "yarn.lock",
+        "pom.xml", "build.gradle", "build.gradle.kts",
+        "go.mod", "go.sum",
+        "Cargo.toml", "Cargo.lock",
+        "Gemfile", "Gemfile.lock"
+      ],
+      "dependency_classification": {
+        "runtime": "Dependencies required at runtime",
+        "development": "Dependencies for testing/development only",
+        "system": "External system dependencies (databases, message queues)"
+      },
+      "output_field": "dependencies in codebase_inventory.json"
+    },
+    {
+      "action_id": "RE-01-A07",
+      "description": "Identify configuration files and environment variables",
+      "type": "analysis",
+      "config_patterns": [
+        "*.env", ".env.*", "config.json", "config.yaml", "config.yml",
+        "settings.py", "settings/*.py", "application.properties", "application.yml"
+      ],
+      "environment_detection": [
+        "os.environ references",
+        "process.env references",
+        "System.getenv references",
+        "os.Getenv references"
+      ],
+      "output_field": "configuration in codebase_inventory.json"
+    },
+    {
+      "action_id": "RE-01-A08",
+      "description": "Calculate code metrics (LOC, file count, test coverage)",
+      "type": "analysis",
+      "metrics_to_calculate": [
+        {"metric": "total_files", "description": "Total number of source files"},
+        {"metric": "total_lines", "description": "Total lines of code (excluding blanks/comments)"},
+        {"metric": "test_coverage_detected", "description": "Existing test coverage if detectable"},
+        {"metric": "documentation_detected", "description": "Presence/quality of documentation"},
+        {"metric": "files_by_type", "description": "Breakdown of files by language"},
+        {"metric": "largest_files", "description": "Top 10 largest files (may need refactoring)"}
+      ],
+      "output_field": "code_metrics in codebase_inventory.json"
+    }
+  ],
+  "outputs": [
+    {
+      "file": "specs/reverse/codebase_inventory.json",
+      "template": "codebase_inventory_template.json",
+      "description": "Complete inventory of the analyzed codebase"
+    },
+    {
+      "file": "docs/CODEBASE_INVENTORY_SUMMARY.md",
+      "description": "Human-readable summary of the codebase",
+      "optional": true
+    }
+  ],
+  "gates": [
+    {
+      "gate_id": "G-RE-01",
+      "name": "Codebase Inventory Complete",
+      "checks": [
+        {
+          "check": "At least one programming language detected",
+          "failure_action": "Verify path is correct and contains source code"
+        },
+        {
+          "check": "Entry points identified",
+          "failure_action": "Manually identify how the system is started/invoked"
+        },
+        {
+          "check": "Dependencies cataloged",
+          "failure_action": "Check for non-standard dependency management, document manually"
+        }
+      ],
+      "blocking": true
+    }
+  ],
+  "llm_agent_guidance": {
+    "manual_fallback": "If analyze_codebase.py doesn't exist, perform manual analysis using: find, wc, grep, head commands",
+    "large_codebases": "For codebases >100k LOC, consider sampling or analyzing in sections",
+    "binary_files": "Skip binary files (.pyc, .class, .o, executables) - focus on source code",
+    "generated_code": "Flag generated code (protobuf, OpenAPI generated) - may need to analyze source definitions instead"
+  },
+  "next_step": "RE-02"
+}

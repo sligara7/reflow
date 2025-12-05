@@ -1,11 +1,19 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 3.23.0
-**Last Updated**: 2025-11-24
+**Version**: 4.1.0
+**Last Updated**: 2025-12-05
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v4.1.0**: **System Overhaul Feature** - Two major capabilities for legacy system modernization:
+1. **Reverse Engineering Workflow (01e)**: Extract functional architecture from ANY existing codebase - Reflow or not. Systematically analyzes unknown systems to generate codebase inventory, extract functions and interfaces, synthesize functional architecture, and infer service boundaries.
+2. **Language Migration Workflow (01f)**: Systematic language transformation (e.g., COBOL→Python, Python2→Python3, Java→Go) with **interface-stable behavior preservation**. Extracts interface contracts BEFORE migration, validates them AFTER migration.
+
+**Key Principle**: Functions and interfaces are language-agnostic. Extract the functional architecture first, then swap implementations while preserving interfaces.
+
+See `workflows/01e-reverse_engineering.json`, `workflows/01f-language_migration.json`, and `docs/changes/CHANGE_PROPOSAL_20251205_OVERHAUL_FEATURE.md`.
 
 **NEW in v3.23.0**: **Plugin-Based Architecture Validation Support** - Validation tools now properly handle plugin-based architectures. Added `service_type` classification (`deployed_service`, `library_plugin`, `sidecar`, `external_dependency`) to port registry. Library plugins no longer fail validation for missing primary ports since they are imported at runtime, not deployed as separate processes. Fixes GitHub issue #41. See updated `validate_port_registry.py` and `templates/port_registry_template.json`.
 
@@ -123,16 +131,18 @@ pixi run validate-arch <system_path>  # Shortcuts available
 
 **Fallback**: `pip install networkx>=3.0`
 
-### The Workflows (v3.12.0 - Modular + Self-Sharpening)
+### The Workflows (v4.1.0 - Modular + Self-Sharpening + Overhaul)
 
 **Core Workflows**:
 ```
 00a-basic_setup.json             → Basic setup (5-10 min)
 00b-framework_selection.json     → Framework selection [OPTIONAL] (5-10 min)
-01a-approach_detection.json      → Auto-detect approach (<5 min)
+01a-approach_detection.json      → Auto-detect approach (<5 min) [UPDATED v4.1.0]
 01b-bottom_up_integration.json   → Bottom-up integration (2-3 hours)
 01c-top_down_design.json         → Top-down design (2-4 hours)
 01d-functional_analysis.json     → Functional analysis (2-6 hours)
+01e-reverse_engineering.json     → Reverse engineer unknown codebases (2-4 hours) [NEW v4.1.0]
+01f-language_migration.json      → Language migration with interface preservation (days-weeks) [NEW v4.1.0]
 02-artifacts_visualization.json  → ICDs, diagrams (1-2 hours)
 02b-deployment_environment.json  → Deployment environment spec (1-2 hours) [NEW v3.19.0]
 03a-development_implementation.json → Implementation (days-weeks)

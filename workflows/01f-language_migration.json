@@ -1,0 +1,652 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "01f-language_migration",
+    "name": "Language Migration Workflow",
+    "version": "1.0.0",
+    "description": "Systematic language transformation with interface-stable behavior preservation",
+    "created": "2025-12-05",
+    "last_updated": "2025-12-05",
+    "purpose": "Migrate codebases from one language to another while preserving functional behavior through interface contracts",
+    "key_innovation": "Interface-stable transformation - extract interfaces BEFORE migration, validate interfaces AFTER migration",
+    "when_to_use": [
+      "Legacy modernization (COBOL -> Python, Fortran -> Rust)",
+      "Platform shift (Java -> Go, Python -> Rust)",
+      "Version upgrade (Python 2 -> Python 3.12)",
+      "Ecosystem migration (Java Spring -> Go standard library)"
+    ],
+    "hierarchical_integration": {
+      "phase": "P2",
+      "phase_name": "Architecture Allocation",
+      "entry_from": ["01e-reverse_engineering", "01a-approach_detection (when approach=migration)"],
+      "exit_to": ["03a-development_implementation", "02-artifacts_visualization"]
+    }
+  },
+  "prerequisites": {
+    "required_workflows": [
+      "00a-basic_setup"
+    ],
+    "required_files": [
+      "context/working_memory.json",
+      "specs/functional/functional_architecture.json"
+    ],
+    "optional_files": [
+      "specs/reverse/codebase_inventory.json (from 01e)",
+      "specs/reverse/extracted_functions.json (from 01e)"
+    ],
+    "prerequisite_note": "If functional_architecture.json doesn't exist, must run 01e-reverse_engineering first"
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Full migration workflow with reverse engineering",
+      "first_step": "LM-01"
+    },
+    "from_architecture": {
+      "id": "from_architecture",
+      "description": "Start from existing functional architecture (skip reverse engineering)",
+      "first_step": "LM-01",
+      "prerequisite": "specs/functional/functional_architecture.json exists and is complete"
+    },
+    "from_contracts": {
+      "id": "from_contracts",
+      "description": "Resume from existing interface contracts",
+      "first_step": "LM-04",
+      "prerequisite": "specs/migration/interface_contracts.json exists"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "LM-01",
+      "name": "Migration Scope Definition",
+      "description": "Define source/target languages, migration scope, constraints, and success criteria",
+      "phase": "planning",
+      "step_file": "workflow_steps/language_migration/LM-01-MigrationScopeDefinition.json",
+      "actions": [
+        {
+          "action_id": "LM-01-A01",
+          "description": "Define source language and version",
+          "prompt_user": true,
+          "inputs": ["Source language (e.g., python)", "Source version (e.g., 2.7)", "Source framework (e.g., django)"]
+        },
+        {
+          "action_id": "LM-01-A02",
+          "description": "Define target language and version",
+          "prompt_user": true,
+          "inputs": ["Target language (e.g., python)", "Target version (e.g., 3.12)", "Target framework (e.g., fastapi)"]
+        },
+        {
+          "action_id": "LM-01-A03",
+          "description": "Define migration scope (full system vs specific services)"
+        },
+        {
+          "action_id": "LM-01-A04",
+          "description": "Define migration constraints (timeline, team skills, dependencies)"
+        },
+        {
+          "action_id": "LM-01-A05",
+          "description": "Establish success criteria (performance, test coverage, feature parity)"
+        },
+        {
+          "action_id": "LM-01-A06",
+          "description": "Identify risks and mitigation strategies"
+        },
+        {
+          "action_id": "LM-01-A07",
+          "description": "Create migration_scope.json"
+        }
+      ],
+      "tools_used": [],
+      "templates_used": [
+        "migration_scope_template.json"
+      ],
+      "outputs": [
+        "specs/migration/migration_scope.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-01",
+          "name": "Migration Scope Defined",
+          "checks": [
+            "Source and target languages defined",
+            "Scope clearly bounded",
+            "Success criteria established"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "LM-02"
+    },
+    {
+      "step_id": "LM-02",
+      "name": "Pre-Migration Reverse Engineering",
+      "description": "Execute or verify reverse engineering to have complete functional architecture",
+      "phase": "preparation",
+      "step_file": "workflow_steps/language_migration/LM-02-PreMigrationReverseEngineering.json",
+      "conditional": true,
+      "actions": [
+        {
+          "action_id": "LM-02-A01",
+          "description": "Check if functional_architecture.json exists and is complete"
+        },
+        {
+          "action_id": "LM-02-A02",
+          "description": "If missing or incomplete: Execute 01e-reverse_engineering workflow",
+          "delegates_to": "01e-reverse_engineering.json"
+        },
+        {
+          "action_id": "LM-02-A03",
+          "description": "Verify functional architecture completeness for migration"
+        },
+        {
+          "action_id": "LM-02-A04",
+          "description": "Document ALL interfaces (critical for preservation)"
+        }
+      ],
+      "tools_used": [],
+      "outputs": [
+        "specs/functional/functional_architecture.json (verified complete)"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-02",
+          "name": "Functional Architecture Ready",
+          "checks": [
+            "functional_architecture.json exists",
+            "All functions documented",
+            "All interfaces documented",
+            "Coverage >= 90% for migration scope"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "LM-03"
+    },
+    {
+      "step_id": "LM-03",
+      "name": "Interface Contract Extraction",
+      "description": "Extract formal interface contracts from source code - the foundation for behavior preservation",
+      "phase": "preparation",
+      "step_file": "workflow_steps/language_migration/LM-03-InterfaceContractExtraction.json",
+      "critical": true,
+      "actions": [
+        {
+          "action_id": "LM-03-A01",
+          "description": "Extract interface contracts from source code",
+          "tool": "extract_interface_contracts.py",
+          "command_pattern": "python3 {reflow_root}/tools/extract_interface_contracts.py {legacy_codebase_path} --architecture {system_root}/specs/functional/functional_architecture.json --output {system_root}/specs/migration/interface_contracts.json"
+        },
+        {
+          "action_id": "LM-03-A02",
+          "description": "Document input/output types for each interface"
+        },
+        {
+          "action_id": "LM-03-A03",
+          "description": "Document error conditions and exception handling"
+        },
+        {
+          "action_id": "LM-03-A04",
+          "description": "Document side effects (database writes, network calls, etc.)"
+        },
+        {
+          "action_id": "LM-03-A05",
+          "description": "Generate interface test cases (golden tests)",
+          "tool": "generate_interface_tests.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_interface_tests.py {system_root}/specs/migration/interface_contracts.json --output {system_root}/tests/migration/interface_tests/"
+        },
+        {
+          "action_id": "LM-03-A06",
+          "description": "Run golden tests against source implementation (baseline)"
+        },
+        {
+          "action_id": "LM-03-A07",
+          "description": "Store baseline test results for comparison"
+        }
+      ],
+      "tools_used": [
+        "extract_interface_contracts.py",
+        "generate_interface_tests.py"
+      ],
+      "templates_used": [
+        "interface_contracts_template.json"
+      ],
+      "outputs": [
+        "specs/migration/interface_contracts.json",
+        "tests/migration/interface_tests/",
+        "specs/migration/baseline_test_results.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-03",
+          "name": "Interface Contracts Complete",
+          "checks": [
+            "All interfaces have formal contracts",
+            "Golden tests generated for each interface",
+            "Baseline tests pass against source implementation"
+          ],
+          "blocking": true,
+          "critical_note": "This is the foundation for behavior preservation - DO NOT SKIP"
+        }
+      ],
+      "next_step": "LM-04"
+    },
+    {
+      "step_id": "LM-04",
+      "name": "Language Translation Rules Definition",
+      "description": "Define type mappings, pattern translations, and dependency equivalents",
+      "phase": "preparation",
+      "step_file": "workflow_steps/language_migration/LM-04-TranslationRulesDefinition.json",
+      "actions": [
+        {
+          "action_id": "LM-04-A01",
+          "description": "Define translation rules interactively",
+          "tool": "define_translation_rules.py",
+          "command_pattern": "python3 {reflow_root}/tools/define_translation_rules.py --source {source_language} --target {target_language} --output {system_root}/specs/migration/translation_rules.json"
+        },
+        {
+          "action_id": "LM-04-A02",
+          "description": "Define type mappings (source types -> target types)"
+        },
+        {
+          "action_id": "LM-04-A03",
+          "description": "Define pattern mappings (idioms, design patterns)"
+        },
+        {
+          "action_id": "LM-04-A04",
+          "description": "Define dependency mappings (libraries -> equivalents)"
+        },
+        {
+          "action_id": "LM-04-A05",
+          "description": "Define build system mapping"
+        },
+        {
+          "action_id": "LM-04-A06",
+          "description": "Define idiom mappings (language-specific patterns)"
+        },
+        {
+          "action_id": "LM-04-A07",
+          "description": "Review and validate translation rules"
+        }
+      ],
+      "tools_used": [
+        "define_translation_rules.py"
+      ],
+      "templates_used": [
+        "translation_rules_template.json"
+      ],
+      "outputs": [
+        "specs/migration/translation_rules.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-04",
+          "name": "Translation Rules Defined",
+          "checks": [
+            "Type mappings complete",
+            "Dependency mappings defined",
+            "Rules validated for consistency"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "LM-05"
+    },
+    {
+      "step_id": "LM-05",
+      "name": "Component-by-Component Translation",
+      "description": "Systematically translate each component/service while preserving interface contracts",
+      "phase": "translation",
+      "step_file": "workflow_steps/language_migration/LM-05-ComponentTranslation.json",
+      "iterative": true,
+      "actions": [
+        {
+          "action_id": "LM-05-A01",
+          "description": "Identify components to translate (from migration scope)"
+        },
+        {
+          "action_id": "LM-05-A02",
+          "description": "For each component: Translate types and data structures",
+          "tool": "translate_component.py",
+          "command_pattern": "python3 {reflow_root}/tools/translate_component.py {component_path} --rules {system_root}/specs/migration/translation_rules.json --contracts {system_root}/specs/migration/interface_contracts.json --output {system_root}/services/{component_name}/"
+        },
+        {
+          "action_id": "LM-05-A03",
+          "description": "Translate function signatures (preserve interface contracts)"
+        },
+        {
+          "action_id": "LM-05-A04",
+          "description": "Translate function bodies (using target language idioms)"
+        },
+        {
+          "action_id": "LM-05-A05",
+          "description": "Translate tests to target language test framework"
+        },
+        {
+          "action_id": "LM-05-A06",
+          "description": "Generate target language project structure (pyproject.toml, etc.)"
+        },
+        {
+          "action_id": "LM-05-A07",
+          "description": "Run unit tests on translated component"
+        }
+      ],
+      "tools_used": [
+        "translate_component.py"
+      ],
+      "outputs": [
+        "services/{component_name}/ (translated source)",
+        "tests/{component_name}/ (translated tests)"
+      ],
+      "iteration_control": {
+        "iterate_over": "components in migration_scope.json",
+        "completion_check": "All components translated and unit tests pass"
+      },
+      "gates": [
+        {
+          "gate_id": "G-LM-05",
+          "name": "Component Translation Complete",
+          "checks": [
+            "All components translated",
+            "Unit tests pass for each component",
+            "No syntax errors in target language"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "LM-06"
+    },
+    {
+      "step_id": "LM-06",
+      "name": "Interface Validation",
+      "description": "Run interface test suite against new implementation - verify behavior preservation",
+      "phase": "validation",
+      "step_file": "workflow_steps/language_migration/LM-06-InterfaceValidation.json",
+      "critical": true,
+      "actions": [
+        {
+          "action_id": "LM-06-A01",
+          "description": "Run interface test suite against translated implementation",
+          "tool": "validate_interface_preservation.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_interface_preservation.py {system_root}/tests/migration/interface_tests/ --implementation {system_root}/services/ --baseline {system_root}/specs/migration/baseline_test_results.json --output {system_root}/specs/migration/interface_validation_results.json"
+        },
+        {
+          "action_id": "LM-06-A02",
+          "description": "Compare results to baseline (source implementation)"
+        },
+        {
+          "action_id": "LM-06-A03",
+          "description": "Verify all interface contracts satisfied"
+        },
+        {
+          "action_id": "LM-06-A04",
+          "description": "Document any intentional behavioral changes"
+        },
+        {
+          "action_id": "LM-06-A05",
+          "description": "Fix interface violations (iterate until pass)"
+        }
+      ],
+      "tools_used": [
+        "validate_interface_preservation.py"
+      ],
+      "outputs": [
+        "specs/migration/interface_validation_results.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-06",
+          "name": "Interface Validation Gate",
+          "checks": [
+            "All interface tests pass",
+            "Results match baseline",
+            "No unintentional behavioral changes"
+          ],
+          "blocking": true,
+          "critical_note": "This gate ensures behavior preservation - DO NOT BYPASS"
+        }
+      ],
+      "next_step": "LM-07"
+    },
+    {
+      "step_id": "LM-07",
+      "name": "Integration Testing",
+      "description": "Test migrated components together and with any remaining original components",
+      "phase": "validation",
+      "step_file": "workflow_steps/language_migration/LM-07-IntegrationTesting.json",
+      "actions": [
+        {
+          "action_id": "LM-07-A01",
+          "description": "Define integration test scenarios"
+        },
+        {
+          "action_id": "LM-07-A02",
+          "description": "Test migrated components together"
+        },
+        {
+          "action_id": "LM-07-A03",
+          "description": "Test migrated components with original components (hybrid mode)"
+        },
+        {
+          "action_id": "LM-07-A04",
+          "description": "Verify data flow consistency"
+        },
+        {
+          "action_id": "LM-07-A05",
+          "description": "Test error handling and edge cases"
+        },
+        {
+          "action_id": "LM-07-A06",
+          "description": "Performance comparison (source vs target)"
+        },
+        {
+          "action_id": "LM-07-A07",
+          "description": "Document integration test results"
+        }
+      ],
+      "tools_used": [],
+      "outputs": [
+        "specs/migration/integration_test_results.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-07",
+          "name": "Integration Testing Complete",
+          "checks": [
+            "All integration tests pass",
+            "Data flow verified",
+            "Performance meets criteria"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "LM-08"
+    },
+    {
+      "step_id": "LM-08",
+      "name": "Incremental Cutover Strategy",
+      "description": "Plan and execute incremental migration from old to new system",
+      "phase": "deployment",
+      "step_file": "workflow_steps/language_migration/LM-08-IncrementalCutover.json",
+      "actions": [
+        {
+          "action_id": "LM-08-A01",
+          "description": "Define cutover sequence (which components migrate first)"
+        },
+        {
+          "action_id": "LM-08-A02",
+          "description": "Create rollback plan for each component"
+        },
+        {
+          "action_id": "LM-08-A03",
+          "description": "Define validation checkpoints"
+        },
+        {
+          "action_id": "LM-08-A04",
+          "description": "Plan for hybrid operation (some old, some new)"
+        },
+        {
+          "action_id": "LM-08-A05",
+          "description": "Define monitoring and alerting during cutover"
+        },
+        {
+          "action_id": "LM-08-A06",
+          "description": "Execute cutover per plan (or document for execution)"
+        }
+      ],
+      "tools_used": [],
+      "templates_used": [
+        "cutover_plan_template.json"
+      ],
+      "outputs": [
+        "specs/migration/cutover_plan.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-08",
+          "name": "Cutover Plan Complete",
+          "checks": [
+            "Cutover sequence defined",
+            "Rollback plan exists for each component",
+            "Validation checkpoints established"
+          ],
+          "blocking": false
+        }
+      ],
+      "next_step": "LM-09"
+    },
+    {
+      "step_id": "LM-09",
+      "name": "Migration Completion & Documentation",
+      "description": "Finalize migration, update specs, archive old code, generate documentation",
+      "phase": "finalization",
+      "step_file": "workflow_steps/language_migration/LM-09-MigrationCompletion.json",
+      "actions": [
+        {
+          "action_id": "LM-09-A01",
+          "description": "Verify all components migrated"
+        },
+        {
+          "action_id": "LM-09-A02",
+          "description": "Update architecture specs to reflect new implementation"
+        },
+        {
+          "action_id": "LM-09-A03",
+          "description": "Update functional_architecture.json with target language"
+        },
+        {
+          "action_id": "LM-09-A04",
+          "description": "Generate comprehensive migration report",
+          "tool": "generate_migration_report.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_migration_report.py {system_root}/specs/migration/ --output {system_root}/docs/MIGRATION_REPORT.md"
+        },
+        {
+          "action_id": "LM-09-A05",
+          "description": "Archive source language artifacts"
+        },
+        {
+          "action_id": "LM-09-A06",
+          "description": "Update working_memory.json with migration completion"
+        }
+      ],
+      "tools_used": [
+        "generate_migration_report.py"
+      ],
+      "outputs": [
+        "docs/MIGRATION_REPORT.md",
+        "specs/functional/functional_architecture.json (updated)",
+        "archive/legacy_source/ (archived)"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-09",
+          "name": "Migration Complete",
+          "checks": [
+            "All components migrated and validated",
+            "Architecture specs updated",
+            "Migration report generated"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "complete",
+      "exit_options": [
+        {
+          "option": "development",
+          "description": "Proceed to development workflow for enhancements",
+          "next_workflow": "03a-development_implementation"
+        },
+        {
+          "option": "artifacts",
+          "description": "Generate architecture artifacts",
+          "next_workflow": "02-artifacts_visualization"
+        },
+        {
+          "option": "complete",
+          "description": "End here - migration complete",
+          "next_workflow": null
+        }
+      ]
+    }
+  ],
+  "quality_gates": {
+    "summary": {
+      "total_gates": 9,
+      "blocking_gates": 8,
+      "non_blocking_gates": 1,
+      "critical_gates": ["G-LM-03 (Interface Contracts)", "G-LM-06 (Interface Validation)"]
+    }
+  },
+  "completion_criteria": {
+    "required": [
+      "Migration scope defined (LM-01)",
+      "Functional architecture complete (LM-02)",
+      "Interface contracts extracted (LM-03)",
+      "Translation rules defined (LM-04)",
+      "All components translated (LM-05)",
+      "Interface validation passed (LM-06)",
+      "Integration testing passed (LM-07)",
+      "Migration report generated (LM-09)"
+    ],
+    "optional": [
+      "Cutover plan created (LM-08)",
+      "Legacy code archived (LM-09)"
+    ]
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "Interface preservation is the KEY to successful migration",
+      "NEVER skip LM-03 (Interface Contract Extraction) - this is the foundation",
+      "NEVER bypass G-LM-06 (Interface Validation) - behavior preservation depends on it",
+      "Translation rules can be iteratively refined during LM-05",
+      "When in doubt, preserve behavior over optimizing for target language idioms",
+      "Document ALL intentional behavioral changes"
+    ],
+    "behavior_preservation_principle": {
+      "description": "Functions and interfaces are language-agnostic",
+      "process": [
+        "1. Extract interfaces BEFORE migration (LM-03)",
+        "2. Transform implementation WHILE preserving interfaces (LM-05)",
+        "3. Validate interfaces AFTER migration (LM-06)",
+        "4. Result: Behavior preservation guaranteed at interface boundaries"
+      ]
+    },
+    "common_migration_patterns": {
+      "python2_to_python3": {
+        "type_changes": ["unicode -> str", "str -> bytes", "long -> int"],
+        "syntax_changes": ["print x -> print(x)", "except E, e -> except E as e"],
+        "library_changes": ["urllib2 -> urllib.request", "ConfigParser -> configparser"]
+      },
+      "sync_to_async": {
+        "pattern_changes": ["def f() -> async def f()", "requests -> httpx"],
+        "careful_areas": ["database connections", "file I/O", "external API calls"]
+      }
+    }
+  },
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-12-05",
+      "changes": "Initial creation as part of System Overhaul feature (v4.1.0)",
+      "author": "Claude Opus 4"
+    }
+  ]
+}

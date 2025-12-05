@@ -3,9 +3,10 @@
   "metadata": {
     "phase_id": "P2",
     "phase_name": "Architecture & Allocation",
-    "version": "1.0.0",
-    "description": "Allocate functions to services, define service boundaries, optimize architecture",
-    "duration_estimate": "4-8 hours"
+    "version": "1.1.0",
+    "description": "Allocate functions to services, define service boundaries, optimize architecture. v1.1.0: Added reverse engineering and language migration workflows for System Overhaul feature.",
+    "duration_estimate": "4-8 hours",
+    "last_updated": "2025-12-05"
   },
 
   "purpose": {
@@ -36,6 +37,26 @@
       "required": "conditional",
       "condition": "approach_detection returned top_down",
       "order": 1
+    },
+    {
+      "id": "01e-reverse_engineering",
+      "name": "Reverse Engineering (System Overhaul)",
+      "file": "../../01e-reverse_engineering.json",
+      "required": "conditional",
+      "condition": "approach_detection returned reverse_engineering",
+      "order": 1,
+      "added_in": "v1.1.0 - System Overhaul feature",
+      "description": "Extract functional architecture from unknown/legacy codebase without Reflow artifacts"
+    },
+    {
+      "id": "01f-language_migration",
+      "name": "Language Migration (System Overhaul)",
+      "file": "../../01f-language_migration.json",
+      "required": "conditional",
+      "condition": "approach_detection returned language_migration OR follows 01e-reverse_engineering",
+      "order": 1,
+      "added_in": "v1.1.0 - System Overhaul feature",
+      "description": "Systematic language transformation with interface-stable behavior preservation"
     },
     {
       "id": "02-artifacts_visualization",

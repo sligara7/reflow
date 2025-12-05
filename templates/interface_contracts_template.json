@@ -1,0 +1,265 @@
+{
+  "template_metadata": {
+    "template_id": "interface_contracts_template",
+    "name": "Interface Contracts Template",
+    "version": "1.0.0",
+    "description": "Template for documenting interface contracts for behavior preservation during migration",
+    "workflow": "01f-language_migration",
+    "step": "LM-03",
+    "created": "2025-12-05",
+    "critical_note": "Interface contracts are the foundation for behavior preservation - completeness is critical"
+  },
+  "schema_version": "1.0.0",
+  "extraction_date": "REPLACE: ISO 8601 timestamp",
+  "source_codebase": "REPLACE: Path to source codebase",
+  "source_language": {
+    "language": "REPLACE: Source language",
+    "version": "REPLACE: Source version"
+  },
+  "contracts": [
+    {
+      "interface_id": "REPLACE: Unique identifier for this interface (e.g., UserManagementAPI)",
+      "interface_type": "REPLACE: rest_api, grpc, graphql, function_module, database, message_queue, file_system",
+      "description": "REPLACE: What this interface does",
+      "location": {
+        "file": "REPLACE: Path to file where interface is defined",
+        "line_start": "REPLACE: Starting line number",
+        "line_end": "REPLACE: Ending line number"
+      },
+      "operations": [
+        {
+          "operation_id": "REPLACE: Unique operation identifier",
+          "name": "REPLACE: Operation/function name",
+          "description": "REPLACE: What this operation does",
+          "method": "REPLACE: HTTP method for APIs (GET, POST, etc.) or null",
+          "path": "REPLACE: URL path for APIs or function signature",
+          "request": {
+            "content_type": "REPLACE: application/json, multipart/form-data, etc.",
+            "parameters": [
+              {
+                "name": "REPLACE: Parameter name",
+                "type": "REPLACE: Type (string, integer, boolean, object, array)",
+                "required": "REPLACE: true or false",
+                "location": "REPLACE: path, query, header, body",
+                "description": "REPLACE: What this parameter is for",
+                "constraints": {
+                  "min_length": "REPLACE: Minimum length if applicable",
+                  "max_length": "REPLACE: Maximum length if applicable",
+                  "pattern": "REPLACE: Regex pattern if applicable",
+                  "enum": ["REPLACE: List of allowed values if applicable"]
+                },
+                "default_value": "REPLACE: Default value or null"
+              }
+            ],
+            "body_schema": {
+              "REPLACE_FIELD_NAME": {
+                "type": "REPLACE: Field type",
+                "required": "REPLACE: true or false",
+                "description": "REPLACE: Field description"
+              }
+            }
+          },
+          "response": {
+            "success": {
+              "status_code": "REPLACE: HTTP status code (e.g., 200, 201) or null for functions",
+              "content_type": "REPLACE: Response content type",
+              "schema": {
+                "REPLACE_FIELD_NAME": {
+                  "type": "REPLACE: Field type",
+                  "description": "REPLACE: Field description"
+                }
+              },
+              "description": "REPLACE: What successful response contains"
+            },
+            "errors": [
+              {
+                "status_code": "REPLACE: Error status code (e.g., 400, 404, 500)",
+                "error_code": "REPLACE: Application error code (e.g., VALIDATION_ERROR)",
+                "condition": "REPLACE: When this error occurs",
+                "response_schema": {
+                  "error": "REPLACE: Error message format",
+                  "details": "REPLACE: Additional error details format"
+                }
+              }
+            ]
+          },
+          "side_effects": [
+            {
+              "type": "REPLACE: database_write, database_read, network_call, file_write, file_read, event_emit, cache_update",
+              "description": "REPLACE: What side effect occurs",
+              "target": "REPLACE: Target of side effect (table name, file path, service name)"
+            }
+          ],
+          "idempotent": "REPLACE: true if calling multiple times has same effect as once, false otherwise",
+          "timeout_ms": "REPLACE: Expected timeout in milliseconds or null",
+          "rate_limit": {
+            "limit": "REPLACE: Number of calls allowed",
+            "window_seconds": "REPLACE: Time window for rate limit"
+          },
+          "authentication_required": "REPLACE: true or false",
+          "authorization": {
+            "required_roles": ["REPLACE: List of roles that can access this operation"],
+            "required_permissions": ["REPLACE: List of permissions required"]
+          }
+        }
+      ],
+      "state_dependencies": [
+        {
+          "type": "REPLACE: database, cache, session, file, external_service",
+          "name": "REPLACE: Name of dependency",
+          "description": "REPLACE: How this interface depends on this state",
+          "required_for": ["REPLACE: List of operations that need this state"]
+        }
+      ],
+      "invariants": [
+        {
+          "invariant_id": "REPLACE: Unique identifier",
+          "description": "REPLACE: Condition that must always be true",
+          "verification": "REPLACE: How to verify this invariant holds"
+        }
+      ],
+      "golden_tests": [
+        {
+          "test_id": "REPLACE: Unique test identifier (e.g., test_create_user_success)",
+          "test_type": "REPLACE: success, error, edge_case, boundary",
+          "description": "REPLACE: What this test verifies",
+          "preconditions": [
+            {
+              "type": "REPLACE: database_state, cache_state, mock_service",
+              "description": "REPLACE: Required precondition",
+              "setup": "REPLACE: How to set up this precondition"
+            }
+          ],
+          "input": {
+            "REPLACE_PARAM_NAME": "REPLACE: Test input value"
+          },
+          "expected_output": {
+            "status_code": "REPLACE: Expected status code",
+            "body_contains": {
+              "REPLACE_FIELD": "REPLACE: Expected value or pattern"
+            },
+            "headers_contain": {
+              "REPLACE_HEADER": "REPLACE: Expected header value"
+            }
+          },
+          "expected_side_effects": [
+            {
+              "type": "REPLACE: database_write, file_write, etc.",
+              "verification": "REPLACE: How to verify side effect occurred"
+            }
+          ],
+          "postconditions": [
+            {
+              "description": "REPLACE: Condition that should be true after test",
+              "verification": "REPLACE: How to verify"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cross_cutting_contracts": {
+    "authentication": {
+      "mechanism": "REPLACE: jwt, oauth2, session, api_key",
+      "token_location": "REPLACE: header, cookie, query",
+      "header_name": "REPLACE: Header name (e.g., Authorization)",
+      "token_format": "REPLACE: Token format (e.g., Bearer {token})",
+      "expiration": "REPLACE: Token expiration time"
+    },
+    "error_handling": {
+      "standard_error_format": {
+        "error_field": "REPLACE: Field name for error message",
+        "code_field": "REPLACE: Field name for error code",
+        "details_field": "REPLACE: Field name for additional details"
+      },
+      "common_error_codes": [
+        {
+          "code": "REPLACE: Error code",
+          "meaning": "REPLACE: What this code means",
+          "http_status": "REPLACE: Associated HTTP status"
+        }
+      ]
+    },
+    "pagination": {
+      "style": "REPLACE: offset_limit, cursor, page_number",
+      "parameters": {
+        "page_param": "REPLACE: Parameter name for page/offset",
+        "size_param": "REPLACE: Parameter name for page size",
+        "max_size": "REPLACE: Maximum page size"
+      },
+      "response_fields": {
+        "items_field": "REPLACE: Field containing items",
+        "total_field": "REPLACE: Field containing total count",
+        "next_page_field": "REPLACE: Field for next page cursor/offset"
+      }
+    },
+    "logging_and_tracing": {
+      "correlation_id_header": "REPLACE: Header name for correlation/request ID",
+      "log_format": "REPLACE: Structured log format if any"
+    }
+  },
+  "data_contracts": [
+    {
+      "contract_id": "REPLACE: Unique identifier for data contract",
+      "name": "REPLACE: Data type name (e.g., User, Order)",
+      "description": "REPLACE: What this data type represents",
+      "schema": {
+        "REPLACE_FIELD_NAME": {
+          "type": "REPLACE: Field type",
+          "required": "REPLACE: true or false",
+          "description": "REPLACE: Field description",
+          "constraints": {}
+        }
+      },
+      "validation_rules": [
+        {
+          "rule_id": "REPLACE: Unique rule identifier",
+          "field": "REPLACE: Field this rule applies to",
+          "rule": "REPLACE: Validation rule description",
+          "error_message": "REPLACE: Error message when validation fails"
+        }
+      ],
+      "relationships": [
+        {
+          "related_type": "REPLACE: Related data type name",
+          "relationship": "REPLACE: one_to_one, one_to_many, many_to_many",
+          "foreign_key": "REPLACE: Foreign key field"
+        }
+      ]
+    }
+  ],
+  "baseline_test_results": {
+    "execution_date": "REPLACE: When baseline tests were run",
+    "source_implementation": "REPLACE: Path to source implementation",
+    "total_tests": "REPLACE: Total number of golden tests",
+    "passed": "REPLACE: Number passed",
+    "failed": "REPLACE: Number failed",
+    "skipped": "REPLACE: Number skipped",
+    "results": [
+      {
+        "test_id": "REPLACE: Test identifier",
+        "status": "REPLACE: passed, failed, skipped",
+        "actual_output": "REPLACE: Actual output from source implementation",
+        "execution_time_ms": "REPLACE: Test execution time",
+        "notes": "REPLACE: Any notes about this test result"
+      }
+    ]
+  },
+  "extraction_notes": {
+    "coverage": {
+      "interfaces_extracted": "REPLACE: Number of interfaces extracted",
+      "operations_extracted": "REPLACE: Number of operations extracted",
+      "golden_tests_generated": "REPLACE: Number of golden tests",
+      "estimated_coverage_percent": "REPLACE: Percentage of codebase covered"
+    },
+    "limitations": [
+      "REPLACE: Any limitations in extraction (e.g., couldn't extract from dynamically generated endpoints)"
+    ],
+    "manual_review_needed": [
+      "REPLACE: Areas that need manual contract verification"
+    ],
+    "assumptions": [
+      "REPLACE: Any assumptions made during extraction"
+    ]
+  }
+}

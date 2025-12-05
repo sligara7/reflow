@@ -1,0 +1,545 @@
+{
+  "workflow_metadata": {
+    "workflow_id": "01e-reverse_engineering",
+    "name": "Reverse Engineering Workflow",
+    "version": "1.0.0",
+    "description": "Extract functional architecture from ANY existing codebase through systematic analysis",
+    "created": "2025-12-05",
+    "last_updated": "2025-12-05",
+    "purpose": "Take over unknown systems, generate documentation from code, perform pre-migration analysis",
+    "key_innovation": "Systematically extracts functions, interfaces, and service boundaries from code that may have no documentation",
+    "when_to_use": [
+      "Taking over a system with no documentation",
+      "Pre-migration analysis before language conversion",
+      "Generating architecture docs from code",
+      "Audit/compliance - prove what a system actually does"
+    ],
+    "hierarchical_integration": {
+      "phase": "P2",
+      "phase_name": "Architecture Allocation",
+      "entry_from": ["01a-approach_detection (when approach=overhaul)"],
+      "exit_to": ["01f-language_migration", "01b-bottom_up_integration", "02-artifacts_visualization"]
+    }
+  },
+  "prerequisites": {
+    "required_workflows": [
+      "00a-basic_setup"
+    ],
+    "required_files": [
+      "context/working_memory.json"
+    ],
+    "required_inputs": [
+      "Path to legacy/unknown codebase (can be external to system_root)"
+    ],
+    "optional_files": [
+      "docs/SYSTEM_MISSION_STATEMENT.md (if exists)",
+      "docs/USER_SCENARIOS.md (if exists)"
+    ]
+  },
+  "entry_points": {
+    "standard": {
+      "id": "standard",
+      "description": "Full reverse engineering workflow",
+      "first_step": "RE-01"
+    },
+    "quick_inventory": {
+      "id": "quick_inventory",
+      "description": "Just codebase inventory without full analysis",
+      "first_step": "RE-01",
+      "exit_after": "RE-01"
+    },
+    "from_inventory": {
+      "id": "from_inventory",
+      "description": "Resume from existing codebase_inventory.json",
+      "first_step": "RE-02",
+      "prerequisite": "specs/reverse/codebase_inventory.json exists"
+    }
+  },
+  "workflow_steps": [
+    {
+      "step_id": "RE-01",
+      "name": "Codebase Discovery & Inventory",
+      "description": "Scan source directories and catalog all code files, languages, frameworks, and entry points",
+      "phase": "discovery",
+      "step_file": "workflow_steps/reverse_engineering/RE-01-CodebaseDiscovery.json",
+      "actions": [
+        {
+          "action_id": "RE-01-A01",
+          "description": "Define source codebase location",
+          "prompt_user": true,
+          "input": "Path to legacy codebase to analyze"
+        },
+        {
+          "action_id": "RE-01-A02",
+          "description": "Scan source directories for all code files",
+          "tool": "analyze_codebase.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_codebase.py {legacy_codebase_path} --output {system_root}/specs/reverse/codebase_inventory.json"
+        },
+        {
+          "action_id": "RE-01-A03",
+          "description": "Detect programming languages and versions"
+        },
+        {
+          "action_id": "RE-01-A04",
+          "description": "Identify frameworks and libraries"
+        },
+        {
+          "action_id": "RE-01-A05",
+          "description": "Detect entry points (main functions, API endpoints, CLI handlers)"
+        },
+        {
+          "action_id": "RE-01-A06",
+          "description": "Catalog dependencies from manifest files"
+        },
+        {
+          "action_id": "RE-01-A07",
+          "description": "Identify configuration files and environment variables"
+        },
+        {
+          "action_id": "RE-01-A08",
+          "description": "Calculate code metrics (LOC, file count, test coverage)"
+        }
+      ],
+      "tools_used": [
+        "analyze_codebase.py"
+      ],
+      "templates_used": [
+        "codebase_inventory_template.json"
+      ],
+      "outputs": [
+        "specs/reverse/codebase_inventory.json",
+        "docs/CODEBASE_INVENTORY_SUMMARY.md"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-01",
+          "name": "Codebase Inventory Complete",
+          "checks": [
+            "At least one programming language detected",
+            "Entry points identified",
+            "Dependencies cataloged"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RE-02"
+    },
+    {
+      "step_id": "RE-02",
+      "name": "Function Extraction",
+      "description": "Parse code to extract all functions, their signatures, dependencies, and classifications",
+      "phase": "extraction",
+      "step_file": "workflow_steps/reverse_engineering/RE-02-FunctionExtraction.json",
+      "actions": [
+        {
+          "action_id": "RE-02-A01",
+          "description": "Parse source files to extract function definitions",
+          "tool": "extract_functions.py",
+          "command_pattern": "python3 {reflow_root}/tools/extract_functions.py {legacy_codebase_path} --inventory {system_root}/specs/reverse/codebase_inventory.json --output {system_root}/specs/reverse/extracted_functions.json"
+        },
+        {
+          "action_id": "RE-02-A02",
+          "description": "Extract function signatures (inputs, outputs, exceptions)"
+        },
+        {
+          "action_id": "RE-02-A03",
+          "description": "Detect function dependencies (which functions call which)"
+        },
+        {
+          "action_id": "RE-02-A04",
+          "description": "Classify functions by type (pure, stateful, I/O, coordination)"
+        },
+        {
+          "action_id": "RE-02-A05",
+          "description": "Extract docstrings and comments as descriptions"
+        },
+        {
+          "action_id": "RE-02-A06",
+          "description": "Build function call graph"
+        }
+      ],
+      "tools_used": [
+        "extract_functions.py"
+      ],
+      "templates_used": [
+        "extracted_functions_template.json"
+      ],
+      "outputs": [
+        "specs/reverse/extracted_functions.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-02",
+          "name": "Function Extraction Complete",
+          "checks": [
+            "Functions extracted from all source files",
+            "Function call graph built",
+            "Functions classified by type"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RE-03"
+    },
+    {
+      "step_id": "RE-03",
+      "name": "Interface Detection",
+      "description": "Identify all internal and external interfaces (APIs, databases, file systems, networks)",
+      "phase": "extraction",
+      "step_file": "workflow_steps/reverse_engineering/RE-03-InterfaceDetection.json",
+      "actions": [
+        {
+          "action_id": "RE-03-A01",
+          "description": "Detect external interfaces",
+          "tool": "detect_interfaces.py",
+          "command_pattern": "python3 {reflow_root}/tools/detect_interfaces.py {legacy_codebase_path} --functions {system_root}/specs/reverse/extracted_functions.json --output {system_root}/specs/reverse/detected_interfaces.json"
+        },
+        {
+          "action_id": "RE-03-A02",
+          "description": "Extract API contracts (endpoints, request/response schemas)"
+        },
+        {
+          "action_id": "RE-03-A03",
+          "description": "Detect database interfaces (queries, ORMs, connections)"
+        },
+        {
+          "action_id": "RE-03-A04",
+          "description": "Identify file system interfaces (reads, writes, paths)"
+        },
+        {
+          "action_id": "RE-03-A05",
+          "description": "Detect network interfaces (HTTP clients, sockets, message queues)"
+        },
+        {
+          "action_id": "RE-03-A06",
+          "description": "Identify internal module interfaces (service boundaries)"
+        },
+        {
+          "action_id": "RE-03-A07",
+          "description": "Map data flows between components"
+        }
+      ],
+      "tools_used": [
+        "detect_interfaces.py"
+      ],
+      "templates_used": [
+        "detected_interfaces_template.json"
+      ],
+      "outputs": [
+        "specs/reverse/detected_interfaces.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-03",
+          "name": "Interface Detection Complete",
+          "checks": [
+            "External interfaces cataloged",
+            "Internal interfaces identified",
+            "Data flows mapped"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RE-04"
+    },
+    {
+      "step_id": "RE-04",
+      "name": "Functional Architecture Synthesis",
+      "description": "Synthesize extracted information into standard Reflow functional_architecture.json",
+      "phase": "synthesis",
+      "step_file": "workflow_steps/reverse_engineering/RE-04-ArchitectureSynthesis.json",
+      "actions": [
+        {
+          "action_id": "RE-04-A01",
+          "description": "Synthesize functional architecture from extracted data",
+          "tool": "synthesize_architecture.py",
+          "command_pattern": "python3 {reflow_root}/tools/synthesize_architecture.py {system_root}/specs/reverse/extracted_functions.json {system_root}/specs/reverse/detected_interfaces.json --output {system_root}/specs/functional/functional_architecture.json"
+        },
+        {
+          "action_id": "RE-04-A02",
+          "description": "Build function dependency graph"
+        },
+        {
+          "action_id": "RE-04-A03",
+          "description": "Identify functional clusters (high cohesion groups)"
+        },
+        {
+          "action_id": "RE-04-A04",
+          "description": "Detect functional gaps (missing error handlers, incomplete flows)"
+        },
+        {
+          "action_id": "RE-04-A05",
+          "description": "Detect redundancies (duplicate functionality)"
+        },
+        {
+          "action_id": "RE-04-A06",
+          "description": "Map to user scenarios (if foundational docs exist)"
+        }
+      ],
+      "tools_used": [
+        "synthesize_architecture.py"
+      ],
+      "templates_used": [
+        "functional_architecture_template.json"
+      ],
+      "outputs": [
+        "specs/functional/functional_architecture.json",
+        "specs/functional/functional_requirements.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-04",
+          "name": "Architecture Synthesis Complete",
+          "checks": [
+            "functional_architecture.json created in standard format",
+            "Function dependency graph complete",
+            "Functional clusters identified"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RE-05"
+    },
+    {
+      "step_id": "RE-05",
+      "name": "Service Boundary Inference",
+      "description": "Analyze function clusters to infer natural service boundaries",
+      "phase": "synthesis",
+      "step_file": "workflow_steps/reverse_engineering/RE-05-ServiceBoundaryInference.json",
+      "actions": [
+        {
+          "action_id": "RE-05-A01",
+          "description": "Analyze function clusters for service boundaries",
+          "tool": "infer_service_boundaries.py",
+          "command_pattern": "python3 {reflow_root}/tools/infer_service_boundaries.py {system_root}/specs/functional/functional_architecture.json --output {system_root}/specs/reverse/inferred_services.json"
+        },
+        {
+          "action_id": "RE-05-A02",
+          "description": "Detect existing module/package boundaries in code"
+        },
+        {
+          "action_id": "RE-05-A03",
+          "description": "Calculate cohesion and coupling metrics"
+        },
+        {
+          "action_id": "RE-05-A04",
+          "description": "Propose service decomposition based on analysis"
+        },
+        {
+          "action_id": "RE-05-A05",
+          "description": "Identify cross-cutting concerns (auth, logging, config)"
+        },
+        {
+          "action_id": "RE-05-A06",
+          "description": "Map inferred services to existing code structure"
+        }
+      ],
+      "tools_used": [
+        "infer_service_boundaries.py"
+      ],
+      "templates_used": [
+        "inferred_services_template.json"
+      ],
+      "outputs": [
+        "specs/reverse/inferred_services.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-05",
+          "name": "Service Boundaries Inferred",
+          "checks": [
+            "Service boundaries proposed",
+            "Cohesion/coupling metrics calculated",
+            "Cross-cutting concerns identified"
+          ],
+          "blocking": false
+        }
+      ],
+      "next_step": "RE-06"
+    },
+    {
+      "step_id": "RE-06",
+      "name": "Validation & Gap Analysis",
+      "description": "Validate extracted architecture against actual code and identify gaps",
+      "phase": "validation",
+      "step_file": "workflow_steps/reverse_engineering/RE-06-ValidationGapAnalysis.json",
+      "actions": [
+        {
+          "action_id": "RE-06-A01",
+          "description": "Validate extracted architecture against code",
+          "tool": "validate_extraction.py",
+          "command_pattern": "python3 {reflow_root}/tools/validate_extraction.py {legacy_codebase_path} {system_root}/specs/functional/functional_architecture.json --output {system_root}/specs/reverse/extraction_validation_report.json"
+        },
+        {
+          "action_id": "RE-06-A02",
+          "description": "Identify unmapped functions (code not in architecture)"
+        },
+        {
+          "action_id": "RE-06-A03",
+          "description": "Identify undocumented interfaces"
+        },
+        {
+          "action_id": "RE-06-A04",
+          "description": "Detect inconsistencies (architecture vs code behavior)"
+        },
+        {
+          "action_id": "RE-06-A05",
+          "description": "Calculate extraction coverage percentage"
+        },
+        {
+          "action_id": "RE-06-A06",
+          "description": "Generate gap closure recommendations"
+        }
+      ],
+      "tools_used": [
+        "validate_extraction.py"
+      ],
+      "templates_used": [
+        "extraction_validation_template.json"
+      ],
+      "outputs": [
+        "specs/reverse/extraction_validation_report.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-06",
+          "name": "Extraction Validation Gate",
+          "checks": [
+            "Extraction coverage >= 80%",
+            "No critical gaps (missing core functionality)",
+            "Inconsistencies documented"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "RE-07"
+    },
+    {
+      "step_id": "RE-07",
+      "name": "Architecture Finalization",
+      "description": "Refine and finalize extracted architecture, generate documentation and visualizations",
+      "phase": "finalization",
+      "step_file": "workflow_steps/reverse_engineering/RE-07-ArchitectureFinalization.json",
+      "actions": [
+        {
+          "action_id": "RE-07-A01",
+          "description": "Refine functional architecture based on validation"
+        },
+        {
+          "action_id": "RE-07-A02",
+          "description": "Generate human-readable documentation",
+          "tool": "generate_human_documentation.py",
+          "command_pattern": "python3 {reflow_root}/tools/generate_human_documentation.py {system_root}/specs/functional/functional_architecture.json --output {system_root}/docs/REVERSE_ENGINEERING_REPORT.md"
+        },
+        {
+          "action_id": "RE-07-A03",
+          "description": "Create function dependency visualization",
+          "output": "docs/diagrams/reverse/function_dependency_graph.svg"
+        },
+        {
+          "action_id": "RE-07-A04",
+          "description": "Create service boundary visualization",
+          "output": "docs/diagrams/reverse/inferred_services.svg"
+        },
+        {
+          "action_id": "RE-07-A05",
+          "description": "Update working_memory.json with extraction results"
+        },
+        {
+          "action_id": "RE-07-A06",
+          "description": "Determine next workflow (migration, integration, or complete)"
+        }
+      ],
+      "tools_used": [
+        "generate_human_documentation.py",
+        "system_of_systems_graph_v2.py"
+      ],
+      "outputs": [
+        "specs/functional/functional_architecture.json (finalized)",
+        "docs/REVERSE_ENGINEERING_REPORT.md",
+        "docs/diagrams/reverse/function_dependency_graph.svg",
+        "docs/diagrams/reverse/inferred_services.svg"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-RE-07",
+          "name": "Reverse Engineering Complete",
+          "checks": [
+            "Functional architecture finalized",
+            "Documentation generated",
+            "Visualizations created"
+          ],
+          "blocking": true
+        }
+      ],
+      "next_step": "complete",
+      "exit_options": [
+        {
+          "option": "language_migration",
+          "description": "Proceed to language migration workflow (01f)",
+          "next_workflow": "01f-language_migration"
+        },
+        {
+          "option": "bottom_up_integration",
+          "description": "Proceed to bottom-up integration (01b)",
+          "next_workflow": "01b-bottom_up_integration"
+        },
+        {
+          "option": "artifacts",
+          "description": "Generate architecture artifacts only (02)",
+          "next_workflow": "02-artifacts_visualization"
+        },
+        {
+          "option": "complete",
+          "description": "End here - reverse engineering only",
+          "next_workflow": null
+        }
+      ]
+    }
+  ],
+  "quality_gates": {
+    "summary": {
+      "total_gates": 7,
+      "blocking_gates": 6,
+      "non_blocking_gates": 1
+    }
+  },
+  "completion_criteria": {
+    "required": [
+      "Codebase inventory complete (RE-01)",
+      "Functions extracted (RE-02)",
+      "Interfaces detected (RE-03)",
+      "Functional architecture synthesized (RE-04)",
+      "Validation passed with >= 80% coverage (RE-06)",
+      "Documentation generated (RE-07)"
+    ],
+    "optional": [
+      "Service boundaries inferred (RE-05)",
+      "Visualizations created (RE-07)"
+    ]
+  },
+  "llm_agent_guidance": {
+    "critical_reminders": [
+      "This workflow operates on EXTERNAL codebases - not just the Reflow system_root",
+      "The legacy_codebase_path may be different from system_root",
+      "Store all extraction artifacts in specs/reverse/ to keep separate from standard specs",
+      "Final functional_architecture.json goes in specs/functional/ (standard location)",
+      "Extraction coverage < 80% requires manual review before proceeding",
+      "If foundational docs don't exist, skip user scenario mapping"
+    ],
+    "common_issues": {
+      "binary_files": "Skip binary files - focus on source code only",
+      "minified_code": "Flag minified JavaScript/CSS - may need unminified sources",
+      "generated_code": "Identify generated code (e.g., protobuf, OpenAPI) - extract from source definitions",
+      "obfuscated_code": "Flag obfuscated code - may require deobfuscation tools"
+    }
+  },
+  "version_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-12-05",
+      "changes": "Initial creation as part of System Overhaul feature (v4.1.0)",
+      "author": "Claude Opus 4"
+    }
+  ]
+}

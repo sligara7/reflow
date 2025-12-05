@@ -1,0 +1,241 @@
+{
+  "template_metadata": {
+    "template_id": "translation_rules_template",
+    "name": "Language Translation Rules Template",
+    "version": "1.0.0",
+    "description": "Template for defining type mappings, pattern translations, and dependency equivalents for language migration",
+    "workflow": "01f-language_migration",
+    "step": "LM-04",
+    "created": "2025-12-05"
+  },
+  "schema_version": "1.0.0",
+  "created_date": "REPLACE: ISO 8601 timestamp",
+  "source_language": {
+    "name": "REPLACE: Source language (e.g., python, java, cobol)",
+    "version": "REPLACE: Source version (e.g., 2.7, 8, 85)",
+    "framework": "REPLACE: Source framework if applicable (e.g., django, spring)"
+  },
+  "target_language": {
+    "name": "REPLACE: Target language",
+    "version": "REPLACE: Target version",
+    "framework": "REPLACE: Target framework if applicable"
+  },
+  "type_mappings": {
+    "_description": "Map source language types to target language types",
+    "_example_python2_to_python3": {
+      "unicode": "str",
+      "str": "bytes",
+      "long": "int",
+      "basestring": "str"
+    },
+    "_example_python_to_typescript": {
+      "str": "string",
+      "int": "number",
+      "float": "number",
+      "bool": "boolean",
+      "list": "Array",
+      "dict": "Record<string, any>",
+      "None": "null",
+      "Optional[T]": "T | null",
+      "List[T]": "T[]",
+      "Dict[K, V]": "Record<K, V>"
+    },
+    "REPLACE_SOURCE_TYPE": "REPLACE_TARGET_TYPE"
+  },
+  "syntax_mappings": {
+    "_description": "Map source syntax patterns to target syntax",
+    "_example_python2_to_python3": {
+      "print x": "print(x)",
+      "print >>sys.stderr, x": "print(x, file=sys.stderr)",
+      "except E, e:": "except E as e:",
+      "raise E, msg": "raise E(msg)",
+      "exec code": "exec(code)",
+      "`x`": "repr(x)",
+      "<>": "!=",
+      "dict.iteritems()": "dict.items()",
+      "dict.iterkeys()": "dict.keys()",
+      "dict.itervalues()": "dict.values()",
+      "dict.has_key(k)": "k in dict",
+      "xrange(n)": "range(n)",
+      "raw_input()": "input()",
+      "reduce(f, l)": "functools.reduce(f, l)",
+      "filter(None, l)": "[x for x in l if x]",
+      "map(f, l)": "[f(x) for x in l]"
+    },
+    "REPLACE_SOURCE_SYNTAX": "REPLACE_TARGET_SYNTAX"
+  },
+  "pattern_mappings": {
+    "_description": "Map design patterns and idioms between languages",
+    "_example_sync_to_async_python": {
+      "def function_name()": "async def function_name()",
+      "requests.get(url)": "await httpx.AsyncClient().get(url)",
+      "time.sleep(n)": "await asyncio.sleep(n)",
+      "for item in items:": "async for item in items:",
+      "with open(f) as file:": "async with aiofiles.open(f) as file:"
+    },
+    "_example_django_to_fastapi": {
+      "class_based_view": "function_router",
+      "django_orm_query": "sqlalchemy_async_query",
+      "django_form": "pydantic_model",
+      "django_serializer": "pydantic_response_model"
+    },
+    "REPLACE_SOURCE_PATTERN": {
+      "description": "REPLACE: Description of the pattern",
+      "target_pattern": "REPLACE: How to implement in target",
+      "example_source": "REPLACE: Example in source language",
+      "example_target": "REPLACE: Example in target language"
+    }
+  },
+  "dependency_mappings": {
+    "_description": "Map source dependencies to target equivalents",
+    "_example_python_to_rust": {
+      "requests": "reqwest",
+      "aiohttp": "reqwest (async)",
+      "flask": "actix-web or rocket",
+      "sqlalchemy": "diesel or sqlx",
+      "pytest": "built-in test framework",
+      "pydantic": "serde",
+      "celery": "tokio (for async tasks)"
+    },
+    "_example_python2_to_python3": {
+      "ConfigParser": "configparser",
+      "Queue": "queue",
+      "SocketServer": "socketserver",
+      "urllib2": "urllib.request",
+      "urlparse": "urllib.parse",
+      "cPickle": "pickle",
+      "cStringIO": "io.StringIO",
+      "mock": "unittest.mock"
+    },
+    "REPLACE_SOURCE_DEPENDENCY": {
+      "target": "REPLACE: Target equivalent",
+      "version": "REPLACE: Recommended version",
+      "migration_notes": "REPLACE: Any notes for migration"
+    }
+  },
+  "build_system_mapping": {
+    "_description": "Map build/package configuration between languages",
+    "_example_python_to_typescript": {
+      "setup.py": "package.json",
+      "requirements.txt": "package.json dependencies",
+      "pyproject.toml": "package.json + tsconfig.json",
+      "pytest.ini": "jest.config.js",
+      "tox.ini": "package.json scripts"
+    },
+    "source_config_file": "REPLACE: Source config file name",
+    "target_config_file": "REPLACE: Target config file name",
+    "field_mappings": {
+      "REPLACE_SOURCE_FIELD": "REPLACE_TARGET_FIELD"
+    }
+  },
+  "idiom_mappings": {
+    "_description": "Language-specific idioms and best practices",
+    "_example_python_to_go": {
+      "list_comprehension": "for loop with append",
+      "dict_comprehension": "make + for loop",
+      "context_manager": "defer statement",
+      "decorator": "higher-order function",
+      "exception_handling": "error return value",
+      "class_with_methods": "struct with methods"
+    },
+    "REPLACE_IDIOM_NAME": {
+      "source_idiom": "REPLACE: How it's done in source",
+      "target_idiom": "REPLACE: How to do it in target",
+      "rationale": "REPLACE: Why this mapping"
+    }
+  },
+  "error_handling_mapping": {
+    "_description": "Map error handling patterns",
+    "_example_python_to_go": {
+      "pattern": "exceptions_to_error_return",
+      "source": "try/except with raise",
+      "target": "if err != nil return err",
+      "mapping_rules": [
+        "ValueError -> custom error type",
+        "TypeError -> custom error type",
+        "RuntimeError -> custom error type",
+        "Exception -> error interface"
+      ]
+    },
+    "source_pattern": "REPLACE: Source error handling pattern",
+    "target_pattern": "REPLACE: Target error handling pattern",
+    "exception_mappings": {
+      "REPLACE_SOURCE_EXCEPTION": "REPLACE_TARGET_ERROR"
+    }
+  },
+  "testing_framework_mapping": {
+    "_description": "Map testing frameworks and patterns",
+    "source_framework": "REPLACE: Source test framework (e.g., pytest)",
+    "target_framework": "REPLACE: Target test framework (e.g., jest)",
+    "assertion_mappings": {
+      "REPLACE_SOURCE_ASSERTION": "REPLACE_TARGET_ASSERTION"
+    },
+    "fixture_mappings": {
+      "REPLACE_SOURCE_FIXTURE": "REPLACE_TARGET_FIXTURE"
+    },
+    "mock_mappings": {
+      "REPLACE_SOURCE_MOCK": "REPLACE_TARGET_MOCK"
+    }
+  },
+  "concurrency_mapping": {
+    "_description": "Map concurrency patterns",
+    "_example_python_to_go": {
+      "threading.Thread": "go routine",
+      "multiprocessing.Pool": "worker pool pattern",
+      "asyncio.gather": "sync.WaitGroup",
+      "queue.Queue": "channel",
+      "threading.Lock": "sync.Mutex"
+    },
+    "REPLACE_SOURCE_CONCURRENCY": "REPLACE_TARGET_CONCURRENCY"
+  },
+  "database_mapping": {
+    "_description": "Map database access patterns",
+    "source_orm": "REPLACE: Source ORM (e.g., sqlalchemy, django.db)",
+    "target_orm": "REPLACE: Target ORM or query builder",
+    "query_mappings": {
+      "REPLACE_SOURCE_QUERY_PATTERN": "REPLACE_TARGET_QUERY_PATTERN"
+    },
+    "connection_mapping": {
+      "source": "REPLACE: Source connection pattern",
+      "target": "REPLACE: Target connection pattern"
+    }
+  },
+  "special_cases": [
+    {
+      "case_id": "REPLACE: Unique identifier",
+      "description": "REPLACE: Description of special case",
+      "source_code_pattern": "REPLACE: Pattern in source code",
+      "target_code_pattern": "REPLACE: How to implement in target",
+      "rationale": "REPLACE: Why this special handling",
+      "requires_manual_review": "REPLACE: true or false"
+    }
+  ],
+  "known_incompatibilities": [
+    {
+      "incompatibility_id": "REPLACE: Unique identifier",
+      "description": "REPLACE: What cannot be directly translated",
+      "source_feature": "REPLACE: Feature in source language",
+      "workaround": "REPLACE: How to handle this",
+      "behavioral_change": "REPLACE: true if behavior will change"
+    }
+  ],
+  "validation_rules": [
+    {
+      "rule_id": "REPLACE: Unique identifier",
+      "description": "REPLACE: Rule description",
+      "check": "REPLACE: What to check after translation",
+      "action_if_fails": "REPLACE: What to do if check fails"
+    }
+  ],
+  "translation_notes": {
+    "general_guidance": [
+      "REPLACE: General guidance for translators"
+    ],
+    "known_pitfalls": [
+      "REPLACE: Known pitfalls to avoid"
+    ],
+    "quality_checks": [
+      "REPLACE: Quality checks to perform after translation"
+    ]
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "template_metadata": {
+    "template_id": "codebase_inventory_template",
+    "name": "Codebase Inventory Template",
+    "version": "1.0.0",
+    "description": "Template for documenting legacy/unknown codebase analysis results",
+    "workflow": "01e-reverse_engineering",
+    "step": "RE-01",
+    "created": "2025-12-05"
+  },
+  "schema_version": "1.0.0",
+  "inventory_date": "REPLACE: ISO 8601 timestamp of inventory creation",
+  "source_root": "REPLACE: Absolute path to analyzed codebase",
+  "analysis_configuration": {
+    "exclude_patterns": ["**/node_modules/**", "**/.git/**", "**/venv/**", "**/__pycache__/**"],
+    "max_file_size_mb": 10,
+    "analysis_depth": "full"
+  },
+  "languages_detected": [
+    {
+      "language": "REPLACE: Language name (e.g., python, java, go)",
+      "version_detected": "REPLACE: Detected version (e.g., 2.7, 3.8, 11) or 'unknown'",
+      "file_count": "REPLACE: Number of files in this language",
+      "lines_of_code": "REPLACE: Total lines of code",
+      "primary": "REPLACE: true if this is the primary language, false otherwise",
+      "detection_method": "REPLACE: How version was detected (config_file, syntax_analysis, shebang)"
+    }
+  ],
+  "frameworks_detected": [
+    {
+      "name": "REPLACE: Framework name (e.g., django, spring, react)",
+      "version": "REPLACE: Detected version or 'unknown'",
+      "usage_areas": ["REPLACE: List of usage areas (e.g., web_api, orm, testing)"],
+      "confidence": "REPLACE: high, medium, or low",
+      "detection_source": "REPLACE: How it was detected (import_statement, config_file, file_pattern)"
+    }
+  ],
+  "entry_points": [
+    {
+      "type": "REPLACE: Entry point type (main, wsgi, asgi, cli, api, scheduled_task)",
+      "file": "REPLACE: Path to file relative to source_root",
+      "function": "REPLACE: Function name if applicable",
+      "description": "REPLACE: What this entry point does",
+      "commands": ["REPLACE: CLI commands if applicable"]
+    }
+  ],
+  "dependencies": {
+    "runtime": [
+      {
+        "name": "REPLACE: Dependency name",
+        "version_constraint": "REPLACE: Version constraint (e.g., >=1.0.0,<2.0.0)",
+        "source": "REPLACE: Where declared (requirements.txt, package.json, etc.)"
+      }
+    ],
+    "development": [
+      {
+        "name": "REPLACE: Dev dependency name",
+        "version_constraint": "REPLACE: Version constraint",
+        "source": "REPLACE: Where declared"
+      }
+    ],
+    "system": [
+      {
+        "name": "REPLACE: System dependency (postgresql, redis, etc.)",
+        "version_required": "REPLACE: Version if known",
+        "detected_via": "REPLACE: How detected (config, connection_string, import)"
+      }
+    ]
+  },
+  "configuration": {
+    "files": [
+      {
+        "path": "REPLACE: Path to config file",
+        "type": "REPLACE: Config type (env, yaml, json, python)",
+        "purpose": "REPLACE: What this config controls"
+      }
+    ],
+    "environment_variables": [
+      {
+        "name": "REPLACE: Environment variable name",
+        "usage_locations": ["REPLACE: List of files that reference this variable"],
+        "appears_required": "REPLACE: true if code fails without it, false/unknown otherwise",
+        "default_value": "REPLACE: Default value if any, or null"
+      }
+    ]
+  },
+  "directory_structure": {
+    "pattern": "REPLACE: Recognized pattern (django_standard, maven_standard, monorepo, etc.) or 'custom'",
+    "top_level_directories": [
+      {
+        "name": "REPLACE: Directory name",
+        "purpose": "REPLACE: What this directory contains",
+        "file_count": "REPLACE: Number of files"
+      }
+    ],
+    "apps_or_modules": ["REPLACE: List of application/module directories"],
+    "shared_or_common": ["REPLACE: Shared code directories"],
+    "tests_location": "REPLACE: Where tests are located"
+  },
+  "code_metrics": {
+    "total_files": "REPLACE: Total number of source files",
+    "total_lines": "REPLACE: Total lines of code (excluding blanks/comments)",
+    "blank_lines": "REPLACE: Number of blank lines",
+    "comment_lines": "REPLACE: Number of comment lines",
+    "test_files": "REPLACE: Number of test files",
+    "test_coverage_detected": "REPLACE: Existing test coverage percentage if detectable, or null",
+    "documentation_detected": "REPLACE: none, minimal, partial, comprehensive",
+    "files_by_extension": {
+      "REPLACE_EXTENSION": "REPLACE: Number of files"
+    },
+    "largest_files": [
+      {
+        "path": "REPLACE: Path to file",
+        "lines": "REPLACE: Number of lines",
+        "note": "REPLACE: Any notes (may need refactoring, generated code, etc.)"
+      }
+    ],
+    "average_file_size_lines": "REPLACE: Average lines per file",
+    "complexity_indicators": {
+      "max_function_length_detected": "REPLACE: Lines in longest function found",
+      "max_class_size_detected": "REPLACE: Lines in largest class found",
+      "cyclomatic_complexity_estimate": "REPLACE: low, medium, high, or specific number"
+    }
+  },
+  "potential_issues_detected": [
+    {
+      "issue_type": "REPLACE: Type (dead_code, circular_import, large_file, no_tests, etc.)",
+      "location": "REPLACE: Path or general location",
+      "severity": "REPLACE: low, medium, high",
+      "description": "REPLACE: Description of the issue"
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "REPLACE: Category (architecture, testing, documentation, modernization)",
+      "recommendation": "REPLACE: What should be done",
+      "priority": "REPLACE: high, medium, low",
+      "rationale": "REPLACE: Why this is recommended"
+    }
+  ],
+  "analysis_notes": {
+    "limitations": ["REPLACE: List any limitations in the analysis (e.g., couldn't parse certain files)"],
+    "manual_review_needed": ["REPLACE: Areas that need manual review"],
+    "assumptions_made": ["REPLACE: Any assumptions made during analysis"]
+  }
+}

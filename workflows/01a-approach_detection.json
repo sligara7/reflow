@@ -2,12 +2,13 @@
   "workflow_metadata": {
     "workflow_id": "01a-approach_detection",
     "name": "Approach Detection Workflow",
-    "version": "3.7.0",
-    "description": "Automatically detect bottom-up (existing components) vs top-down (greenfield) approach",
+    "version": "4.1.0",
+    "description": "Automatically detect bottom-up, top-down, reverse engineering (overhaul), or language migration approach",
     "created_from": "01-systems_engineering.json v1.0.0 - SE-00 step extracted",
-    "last_updated": "2025-10-27",
-    "purpose": "Route to 01b-bottom_up_integration or 01c-top_down_design based on system directory analysis",
-    "context_reduction": "Reduced from 1,535 lines to ~150 lines (90% reduction)"
+    "last_updated": "2025-12-05",
+    "purpose": "Route to 01b-bottom_up_integration, 01c-top_down_design, 01e-reverse_engineering, or 01f-language_migration based on system analysis",
+    "context_reduction": "Reduced from 1,535 lines to ~200 lines (87% reduction)",
+    "v4.1.0_changes": "Added overhaul detection for legacy system takeover and language migration scenarios"
   },
   "prerequisites": {
     "required_workflows": [
@@ -29,11 +30,11 @@
     {
       "step_id": "SE-00",
       "name": "Auto-Detect Integration Approach",
-      "description": "Automatically detect bottom-up (existing components) vs top-down (greenfield) by examining system directory",
+      "description": "Automatically detect approach by examining system directory and user intent: bottom-up (Reflow-compatible existing components), top-down (greenfield), reverse_engineering (unknown/legacy takeover), or language_migration (modernization)",
       "phase": "approach_detection",
       "step_file": "workflow_steps/systems_engineering/SE-00-AutoDetectApproach.json",
       "approach": "auto_detect",
-      "when_to_use": "When using 'auto' entry point - LLM examines system directory to determine approach",
+      "when_to_use": "When using 'auto' entry point - LLM examines system directory and user context to determine approach",
       "actions": [
         {
           "action_id": "SE-00-A01",
@@ -41,26 +42,51 @@
         },
         {
           "action_id": "SE-00-A02",
-          "description": "Classify system as bottom-up or top-down based on evidence"
+          "description": "Check for Reflow artifacts (working_memory.json, specs/machine/, specs/functional/)",
+          "reflow_indicators": ["context/working_memory.json", "specs/machine/service_arch/", "specs/functional/functional_architecture.json"]
+        },
+        {
+          "action_id": "SE-00-A02B",
+          "description": "Check for legacy/overhaul indicators",
+          "overhaul_indicators": {
+            "no_reflow_artifacts": "System has code but no Reflow specs",
+            "legacy_languages": ["cobol", "fortran", "python2", "perl", "visual_basic"],
+            "user_intent_keywords": ["takeover", "inherit", "legacy", "no documentation", "reverse engineer", "migrate", "modernize", "convert"]
+          }
         },
         {
           "action_id": "SE-00-A03",
-          "description": "Record detection result in approach_detection_result.json"
+          "description": "Classify system approach based on evidence",
+          "classification_rules": {
+            "top_down": "No existing code in system_root, greenfield project",
+            "bottom_up": "Existing code WITH Reflow artifacts (or Reflow-compatible structure)",
+            "reverse_engineering": "Existing code WITHOUT Reflow artifacts, unknown system takeover",
+            "language_migration": "User explicitly requests language conversion OR legacy language detected"
+          }
         },
         {
           "action_id": "SE-00-A04",
-          "description": "Update working_memory.json with detected approach"
+          "description": "Record detection result in approach_detection_result.json"
         },
         {
           "action_id": "SE-00-A05",
-          "description": "Route to BU-01 (bottom-up) or SE-01 (top-down)"
+          "description": "Update working_memory.json with detected approach"
+        },
+        {
+          "action_id": "SE-00-A06",
+          "description": "Route to appropriate workflow based on detected approach"
         }
       ],
       "outputs": [
         "context/approach_detection_result.json",
         "context/working_memory.json (updated with detected_approach)"
       ],
-      "next_workflow_routing": "Dynamic: 01b-bottom_up_integration if bottom_up detected, 01c-top_down_design if top_down detected"
+      "next_workflow_routing": {
+        "bottom_up": "01b-bottom_up_integration (existing Reflow-compatible components)",
+        "top_down": "01c-top_down_design (greenfield, no existing code)",
+        "reverse_engineering": "01e-reverse_engineering (unknown system, no Reflow artifacts)",
+        "language_migration": "01f-language_migration (modernization, language conversion)"
+      }
     }
   ],
   "quality_gates": {
@@ -70,6 +96,39 @@
   "next_workflow": {
     "if_bottom_up": "01b-bottom_up_integration",
     "if_top_down": "01c-top_down_design",
+    "if_reverse_engineering": "01e-reverse_engineering",
+    "if_language_migration": "01f-language_migration",
     "routing_note": "LLM reads context/approach_detection_result.json to determine next workflow"
-  }
+  },
+  "llm_agent_guidance": {
+    "overhaul_detection": {
+      "when_to_suggest_reverse_engineering": [
+        "User says 'I inherited this codebase'",
+        "User says 'no documentation exists'",
+        "User says 'need to understand what this system does'",
+        "Existing code found but NO Reflow artifacts (no working_memory.json, no specs/)",
+        "User asks to 'take over' or 'pick up' an existing system"
+      ],
+      "when_to_suggest_language_migration": [
+        "User explicitly mentions 'migrate from X to Y'",
+        "User mentions 'modernize' or 'convert' legacy code",
+        "Legacy languages detected (COBOL, Fortran, Python 2, Perl, Visual Basic)",
+        "User asks to 'rewrite in' a different language",
+        "User mentions specific source and target languages"
+      ],
+      "disambiguation_prompt": "I detected existing code. Would you like to:\n1. **Reverse Engineer** - Extract architecture from this unknown codebase\n2. **Migrate Language** - Convert this code to a different language\n3. **Bottom-Up Integration** - Integrate these existing components (assumes Reflow-compatible)\n4. **Top-Down Design** - Start fresh, ignore existing code"
+    }
+  },
+  "version_history": [
+    {
+      "version": "4.1.0",
+      "date": "2025-12-05",
+      "changes": "Added reverse_engineering and language_migration approach detection for System Overhaul feature"
+    },
+    {
+      "version": "3.7.0",
+      "date": "2025-10-27",
+      "changes": "Initial extraction from 01-systems_engineering.json"
+    }
+  ]
 }
