@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "template_name": "cutover_plan",
+  "description": "Plan for cutting over from legacy system to migrated system",
+  "workflow": "01f-language_migration",
+  "step": "LM-08",
+
+  "cutover_metadata": {
+    "plan_id": "",
+    "project_name": "",
+    "created_date": "",
+    "last_updated": "",
+    "status": "draft|approved|in_progress|completed|rolled_back",
+    "owner": "",
+    "approvers": []
+  },
+
+  "system_overview": {
+    "legacy_system": {
+      "name": "",
+      "language": "",
+      "location": "",
+      "current_status": "active|deprecated|decommissioned"
+    },
+    "new_system": {
+      "name": "",
+      "language": "",
+      "location": "",
+      "validation_status": "pending|passed|failed"
+    }
+  },
+
+  "cutover_strategy": {
+    "approach": "big_bang|phased|parallel_run|blue_green|canary",
+    "description": "",
+    "parallel_run_duration": "",
+    "rollback_window": ""
+  },
+
+  "pre_cutover_checklist": [
+    {
+      "item_id": "PRE001",
+      "description": "All unit tests passing",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    },
+    {
+      "item_id": "PRE002",
+      "description": "All integration tests passing",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    },
+    {
+      "item_id": "PRE003",
+      "description": "Golden tests validate interface preservation",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    },
+    {
+      "item_id": "PRE004",
+      "description": "Performance benchmarks acceptable",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    },
+    {
+      "item_id": "PRE005",
+      "description": "Documentation updated",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    },
+    {
+      "item_id": "PRE006",
+      "description": "Rollback procedure tested",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": "",
+      "due_date": ""
+    }
+  ],
+
+  "cutover_steps": [
+    {
+      "step_number": 1,
+      "action": "",
+      "description": "",
+      "duration_estimate": "",
+      "owner": "",
+      "verification": "",
+      "rollback_action": ""
+    }
+  ],
+
+  "post_cutover_checklist": [
+    {
+      "item_id": "POST001",
+      "description": "Smoke tests passing",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": ""
+    },
+    {
+      "item_id": "POST002",
+      "description": "Monitoring and alerting configured",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": ""
+    },
+    {
+      "item_id": "POST003",
+      "description": "Legacy system decommissioned",
+      "status": "pending|in_progress|completed|blocked",
+      "owner": ""
+    }
+  ],
+
+  "rollback_plan": {
+    "trigger_conditions": [],
+    "rollback_steps": [
+      {
+        "step_number": 1,
+        "action": "",
+        "description": "",
+        "owner": ""
+      }
+    ],
+    "rollback_verification": ""
+  },
+
+  "communication_plan": {
+    "stakeholders": [],
+    "notification_channels": [],
+    "status_update_frequency": "",
+    "escalation_path": []
+  },
+
+  "timeline": {
+    "planned_cutover_date": "",
+    "cutover_window_start": "",
+    "cutover_window_end": "",
+    "monitoring_period_end": "",
+    "legacy_decommission_date": ""
+  },
+
+  "contacts": {
+    "primary_contact": {
+      "name": "",
+      "role": "",
+      "email": "",
+      "phone": ""
+    },
+    "escalation_contact": {
+      "name": "",
+      "role": "",
+      "email": "",
+      "phone": ""
+    }
+  },
+
+  "notes": ""
+}

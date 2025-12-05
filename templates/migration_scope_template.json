@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "template_name": "migration_scope",
+  "description": "Defines the scope and strategy for a language migration project",
+  "workflow": "01f-language_migration",
+  "step": "LM-01",
+
+  "migration_metadata": {
+    "project_name": "",
+    "migration_id": "",
+    "created_date": "",
+    "last_updated": "",
+    "status": "draft",
+    "owner": "",
+    "reviewers": []
+  },
+
+  "source_system": {
+    "language": "",
+    "language_version": "",
+    "codebase_path": "",
+    "total_files": 0,
+    "total_lines_of_code": 0,
+    "frameworks": [],
+    "build_system": "",
+    "test_coverage_percent": null,
+    "documentation_quality": "minimal|basic|comprehensive"
+  },
+
+  "target_system": {
+    "language": "",
+    "language_version": "",
+    "target_path": "",
+    "frameworks": [],
+    "build_system": "",
+    "packaging": "",
+    "test_framework": ""
+  },
+
+  "scope_definition": {
+    "in_scope": {
+      "modules": [],
+      "functions": [],
+      "files": [],
+      "description": ""
+    },
+    "out_of_scope": {
+      "modules": [],
+      "functions": [],
+      "files": [],
+      "description": "",
+      "rationale": ""
+    },
+    "migration_phases": [
+      {
+        "phase_number": 1,
+        "name": "",
+        "description": "",
+        "components": [],
+        "dependencies": [],
+        "estimated_effort": ""
+      }
+    ]
+  },
+
+  "migration_strategy": {
+    "approach": "big_bang|incremental|strangler_fig|parallel_run",
+    "rationale": "",
+    "interface_preservation": {
+      "enabled": true,
+      "strategy": "protocol_based|abc_based|manual",
+      "description": "Preserve function signatures and interfaces across migration"
+    },
+    "testing_strategy": {
+      "golden_tests": true,
+      "unit_tests": true,
+      "integration_tests": true,
+      "description": ""
+    },
+    "rollback_plan": ""
+  },
+
+  "constraints": {
+    "timeline": "",
+    "budget": "",
+    "resource_availability": "",
+    "technical_constraints": [],
+    "business_constraints": []
+  },
+
+  "risks": [
+    {
+      "risk_id": "R001",
+      "description": "",
+      "probability": "low|medium|high",
+      "impact": "low|medium|high",
+      "mitigation": ""
+    }
+  ],
+
+  "success_criteria": [
+    {
+      "criterion_id": "SC001",
+      "description": "",
+      "measurement": "",
+      "target_value": ""
+    }
+  ],
+
+  "dependencies": {
+    "external_libraries": [],
+    "system_dependencies": [],
+    "data_dependencies": []
+  },
+
+  "notes": ""
+}

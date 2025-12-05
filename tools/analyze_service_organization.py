@@ -29,7 +29,13 @@ Outputs:
     - Console output with analysis and recommendation
     - specs/machine/service_organization_strategy.json (choice recording)
 
-Version: 3.21.0
+Version: 4.1.1
+
+Changelog v4.1.1:
+- FIX: KeyError 'span_type' when no functional flows defined
+- NEW: REAL_TIME operation type for games/emulators/simulations
+- NEW: Real-time system detection via keywords
+- FIX: Graceful handling of missing span data in presentation
 """
 
 import json
@@ -83,6 +89,16 @@ class ServiceOrganizationAnalyzer:
         'component', 'module', 'package', 'layer', 'boundary', 'isolation',
         'decouple', 'independent', 'standalone', 'reusable', 'composable',
         'interchangeable', 'hot-swap', 'lazy-load', 'on-demand'
+    }
+
+    # Keywords indicating real-time/frame-based systems (NEW v4.1.1)
+    REAL_TIME_KEYWORDS = {
+        'game_loop', 'main_loop', 'frame', 'render', 'update', 'tick',
+        '60fps', 'fps', 'frame_rate', 'framerate', 'vsync', 'refresh',
+        'emulator', 'emulation', 'simulation', 'real_time', 'realtime',
+        'ppu', 'apu', 'cpu', 'gpu', 'controller', 'input_poll',
+        'audio_callback', 'video_buffer', 'pixel', 'sprite', 'tile',
+        'scanline', 'vblank', 'hblank', 'interrupt', 'cycle'
     }
 
     def __init__(self, system_root: str):
@@ -189,15 +205,28 @@ class ServiceOrganizationAnalyzer:
 
         Returns:
             Tuple of (span_type, analysis_details)
-            span_type: "SINGLE_DOMAIN" | "CROSS_DOMAIN"
+            span_type: "SINGLE_DOMAIN" | "CROSS_DOMAIN" | "NONE"
         """
         print("\n🌐 Analyzing workflow span...")
 
         # Extract flows from functional architecture
         flows = self.functional_arch.get('functional_flows', [])
         if not flows:
-            print("  ⚠️  No functional flows defined - assuming SINGLE_DOMAIN")
-            return "SINGLE_DOMAIN", {'flows': 0, 'cross_domain': 0}
+            # FIX v4.1.1: Return complete details dict to avoid KeyError
+            print("  ⚠️  No functional flows defined - checking for real-time system indicators")
+            is_realtime = self._detect_real_time_system()
+            details = {
+                'span_type': 'NONE',
+                'total_flows': 0,
+                'cross_domain_flows': 0,
+                'ratio': 0.0,
+                'examples': [],
+                'is_real_time': is_realtime,
+                'note': 'No workflow flows defined - system may be frame-based/real-time rather than workflow-based'
+            }
+            if is_realtime:
+                print("  🎮 Real-time/frame-based system detected")
+            return "NONE", details
 
         # Map functions to domains (if we can infer from naming/grouping)
         function_domains = self._infer_function_domains()
@@ -249,6 +278,41 @@ class ServiceOrganizationAnalyzer:
 
         return span_type, details
 
+    def _detect_real_time_system(self) -> bool:
+        """
+        Detect if this is a real-time/frame-based system (NEW v4.1.1)
+
+        Returns:
+            True if system appears to be real-time/frame-based
+        """
+        realtime_score = 0
+        total_functions = 0
+
+        for func in self.functional_arch.get('functions', []):
+            total_functions += 1
+            func_name = func.get('function_name', func.get('name', '')).lower()
+            func_desc = func.get('description', '').lower()
+
+            # Check for real-time keywords
+            for keyword in self.REAL_TIME_KEYWORDS:
+                if keyword in func_name or keyword in func_desc:
+                    realtime_score += 1
+                    break
+
+        # Also check cluster names
+        for cluster in self.functional_arch.get('functional_clusters', []):
+            cluster_name = cluster.get('name', '').lower()
+            cluster_desc = cluster.get('description', '').lower()
+
+            for keyword in self.REAL_TIME_KEYWORDS:
+                if keyword in cluster_name or keyword in cluster_desc:
+                    realtime_score += 2
+                    break
+
+        # If significant portion of functions are real-time related
+        ratio = realtime_score / max(total_functions, 1)
+        return ratio > 0.15 or realtime_score >= 5
+
     def _infer_function_domains(self) -> Dict[str, str]:
         """
         Infer domain for each function based on naming patterns
@@ -288,20 +352,21 @@ class ServiceOrganizationAnalyzer:
 
     def analyze_operation_types(self) -> Tuple[str, Dict[str, Any]]:
         """
-        Analyze operation types: CRUD vs Workflow
+        Analyze operation types: CRUD vs Workflow vs Real-Time (NEW v4.1.1)
 
         Returns:
             Tuple of (operation_type, analysis_details)
-            operation_type: "CRUD_HEAVY" | "WORKFLOW_HEAVY" | "BALANCED"
+            operation_type: "CRUD_HEAVY" | "WORKFLOW_HEAVY" | "REAL_TIME" | "BALANCED"
         """
         print("\n⚙️  Analyzing operation types...")
 
         crud_operations = []
         workflow_operations = []
+        realtime_operations = []  # NEW v4.1.1
         other_operations = []
 
         for func in self.functional_arch.get('functions', []):
-            func_name = func.get('name', '').lower()
+            func_name = func.get('function_name', func.get('name', '')).lower()
             func_desc = func.get('description', '').lower()
 
             # Check for CRUD keywords
@@ -312,19 +377,28 @@ class ServiceOrganizationAnalyzer:
             workflow_found = any(keyword in func_name or keyword in func_desc
                                for keyword in self.WORKFLOW_KEYWORDS)
 
-            if crud_found and not workflow_found:
-                crud_operations.append(func.get('name', ''))
-            elif workflow_found:
-                workflow_operations.append(func.get('name', ''))
-            else:
-                other_operations.append(func.get('name', ''))
+            # Check for real-time keywords (NEW v4.1.1)
+            realtime_found = any(keyword in func_name or keyword in func_desc
+                               for keyword in self.REAL_TIME_KEYWORDS)
 
-        total = len(crud_operations) + len(workflow_operations) + len(other_operations)
+            if realtime_found:
+                realtime_operations.append(func.get('function_name', func.get('name', '')))
+            elif crud_found and not workflow_found:
+                crud_operations.append(func.get('function_name', func.get('name', '')))
+            elif workflow_found:
+                workflow_operations.append(func.get('function_name', func.get('name', '')))
+            else:
+                other_operations.append(func.get('function_name', func.get('name', '')))
+
+        total = len(crud_operations) + len(workflow_operations) + len(realtime_operations) + len(other_operations)
         crud_ratio = len(crud_operations) / max(total, 1)
         workflow_ratio = len(workflow_operations) / max(total, 1)
+        realtime_ratio = len(realtime_operations) / max(total, 1)
 
-        # Determine operation type
-        if crud_ratio > 0.6:
+        # Determine operation type (NEW v4.1.1: added REAL_TIME)
+        if realtime_ratio > 0.3:
+            op_type = "REAL_TIME"
+        elif crud_ratio > 0.6:
             op_type = "CRUD_HEAVY"
         elif workflow_ratio > 0.6:
             op_type = "WORKFLOW_HEAVY"
@@ -335,13 +409,16 @@ class ServiceOrganizationAnalyzer:
             'type': op_type,
             'crud_operations': len(crud_operations),
             'workflow_operations': len(workflow_operations),
+            'realtime_operations': len(realtime_operations),  # NEW v4.1.1
             'other_operations': len(other_operations),
             'crud_ratio': crud_ratio,
-            'workflow_ratio': workflow_ratio
+            'workflow_ratio': workflow_ratio,
+            'realtime_ratio': realtime_ratio  # NEW v4.1.1
         }
 
         print(f"  📊 CRUD operations: {len(crud_operations)}/{total} ({crud_ratio:.1%})")
         print(f"  📊 Workflow operations: {len(workflow_operations)}/{total} ({workflow_ratio:.1%})")
+        print(f"  📊 Real-time operations: {len(realtime_operations)}/{total} ({realtime_ratio:.1%})")
         print(f"  🎯 Operation type: {op_type}")
 
         return op_type, details
@@ -486,8 +563,13 @@ class ServiceOrganizationAnalyzer:
         else:  # SINGLE_DOMAIN
             score_domain += 2
 
-        # Factor 4: Operation types
-        if operation_type == "WORKFLOW_HEAVY":
+        # Factor 4: Operation types (NEW v4.1.1: added REAL_TIME)
+        if operation_type == "REAL_TIME":
+            score_plugin += 3  # Real-time systems benefit greatly from swappable backends
+            score_hybrid += 2  # Hybrid also works well
+            # Workflow-based is NOT recommended for real-time (tight coupling needed)
+            score_workflow -= 1
+        elif operation_type == "WORKFLOW_HEAVY":
             score_workflow += 2
         elif operation_type == "CRUD_HEAVY":
             score_domain += 2
@@ -537,6 +619,10 @@ class ServiceOrganizationAnalyzer:
                 reasons.append(f"HIGH extensibility requirements - system needs runtime plugin loading/swapping")
             elif extensibility_level == "MEDIUM":
                 reasons.append("MEDIUM extensibility requirements - system benefits from modular, replaceable components")
+            # NEW v4.1.1: Real-time specific reasoning
+            if operation_type == "REAL_TIME":
+                reasons.append("REAL_TIME system benefits from swappable backends (headless, SDL, pygame)")
+                reasons.append("Plugin architecture enables AI training mode without display/audio")
             reasons.append("Protocol-based interfaces enable loose coupling and easy testing")
             reasons.append("Dependency injection provides flexibility for different environments")
             if coordination_level in ["HIGH", "MEDIUM"]:
@@ -602,11 +688,26 @@ class ServiceOrganizationAnalyzer:
         print(f"\n1. Coordination Complexity: {self.analysis_results['coordination']['level']}")
         print(f"   {self.analysis_results['coordination']['coordination_functions']} functions require coordination")
 
-        print(f"\n2. Workflow Span: {self.analysis_results['span']['span_type']}")
-        print(f"   {self.analysis_results['span']['cross_domain_flows']} of {self.analysis_results['span']['total_flows']} flows span multiple domains")
+        # FIX v4.1.1: Handle missing span fields gracefully
+        span_data = self.analysis_results.get('span', {})
+        span_type = span_data.get('span_type', 'UNKNOWN')
+        cross_domain = span_data.get('cross_domain_flows', 0)
+        total_flows = span_data.get('total_flows', 0)
+        print(f"\n2. Workflow Span: {span_type}")
+        if total_flows > 0:
+            print(f"   {cross_domain} of {total_flows} flows span multiple domains")
+        elif span_data.get('is_real_time'):
+            print(f"   No workflow flows - system is frame-based/real-time")
+        else:
+            print(f"   No workflow flows defined")
 
-        print(f"\n3. Operation Types: {self.analysis_results['operations']['type']}")
-        print(f"   CRUD: {self.analysis_results['operations']['crud_ratio']:.0%}, Workflows: {self.analysis_results['operations']['workflow_ratio']:.0%}")
+        op_data = self.analysis_results.get('operations', {})
+        print(f"\n3. Operation Types: {op_data.get('type', 'UNKNOWN')}")
+        realtime_ratio = op_data.get('realtime_ratio', 0)
+        if realtime_ratio > 0:
+            print(f"   CRUD: {op_data.get('crud_ratio', 0):.0%}, Workflows: {op_data.get('workflow_ratio', 0):.0%}, Real-time: {realtime_ratio:.0%}")
+        else:
+            print(f"   CRUD: {op_data.get('crud_ratio', 0):.0%}, Workflows: {op_data.get('workflow_ratio', 0):.0%}")
 
         # NEW: Extensibility analysis (v3.21.0)
         if 'extensibility' in self.analysis_results:

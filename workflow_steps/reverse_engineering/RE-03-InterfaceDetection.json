@@ -1,0 +1,83 @@
+{
+  "step_id": "RE-03",
+  "step_name": "Interface Detection",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Identify internal and external interfaces, API boundaries, and integration points",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "extracted_functions.json",
+        "path": "specs/reverse/extracted_functions.json",
+        "description": "Extracted functions from RE-02"
+      },
+      {
+        "artifact": "codebase_inventory.json",
+        "path": "specs/reverse/codebase_inventory.json",
+        "description": "Codebase inventory from RE-01"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "detected_interfaces.json",
+        "path": "specs/reverse/detected_interfaces.json",
+        "description": "Detected interfaces and API boundaries"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-03-A01",
+      "action": "Identify external interfaces",
+      "description": "Detect interfaces exposed to external systems",
+      "tool": null,
+      "llm_guidance": "Look for:\n- REST/HTTP endpoints\n- CLI argument parsing\n- File format readers/writers\n- Network socket operations\n- Database connections\n- Message queue consumers/producers"
+    },
+    {
+      "action_id": "RE-03-A02",
+      "action": "Identify internal interfaces",
+      "description": "Detect module/class boundaries within the codebase",
+      "tool": null,
+      "llm_guidance": "Look for:\n- Public class methods\n- Exported module functions\n- Abstract base classes / interfaces\n- Protocol definitions\n- Callback patterns"
+    },
+    {
+      "action_id": "RE-03-A03",
+      "action": "Identify language interop interfaces",
+      "description": "Detect cross-language boundaries (FFI, bindings)",
+      "tool": null,
+      "llm_guidance": "Look for:\n- C FFI bindings (ctypes, cffi)\n- Fortran iso_c_binding\n- JNI/JNA interfaces\n- WASM exports\n- Python C extensions"
+    },
+    {
+      "action_id": "RE-03-A04",
+      "action": "Document interface contracts",
+      "description": "For each interface, document the expected behavior",
+      "tool": null,
+      "llm_guidance": "For each interface, document:\n- Input types and constraints\n- Output types and guarantees\n- Error conditions\n- Thread safety requirements\n- Performance characteristics"
+    },
+    {
+      "action_id": "RE-03-A05",
+      "action": "Generate detected_interfaces.json",
+      "description": "Compile interface information into structured format",
+      "tool": null,
+      "llm_guidance": "Create specs/reverse/detected_interfaces.json with:\n- external_interfaces array\n- internal_interfaces array\n- interop_interfaces array\n- Each interface should have: name, type, methods/operations, consumers, providers"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-03",
+    "criteria": [
+      "All entry points have interface documentation",
+      "External interfaces are fully documented",
+      "Cross-module dependencies are mapped to interfaces"
+    ],
+    "blocking": false
+  },
+
+  "next_steps": ["RE-04"],
+  "rollback_to": "RE-02"
+}

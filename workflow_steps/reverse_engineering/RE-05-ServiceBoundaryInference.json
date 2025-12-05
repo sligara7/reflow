@@ -1,0 +1,74 @@
+{
+  "step_id": "RE-05",
+  "step_name": "Service Boundary Inference",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Infer potential service boundaries and analyze service organization strategies",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "description": "Functional architecture from RE-04"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "service_organization_analysis.json",
+        "path": "specs/machine/service_organization_analysis.json",
+        "description": "Service organization strategy analysis and recommendation"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-05-A01",
+      "action": "Run service organization analysis",
+      "description": "Analyze functional architecture for service organization patterns",
+      "tool": "analyze_service_organization.py",
+      "llm_guidance": "Run: python3 {tools_path}/analyze_service_organization.py {system_root}\n\nThis tool analyzes:\n- Coordination complexity\n- Workflow span\n- Operation types (CRUD, Workflow, REAL_TIME)\n- Extensibility requirements\n\nAnd recommends: PLUGIN_BASED, DOMAIN_BASED, WORKFLOW_BASED, or HYBRID"
+    },
+    {
+      "action_id": "RE-05-A02",
+      "action": "Review and validate recommendation",
+      "description": "Evaluate the tool's recommendation against system specifics",
+      "tool": null,
+      "llm_guidance": "Consider:\n- Does the recommendation match the system type?\n- For real-time systems (games, emulators): PLUGIN_BASED or HYBRID usually best\n- For CRUD apps: DOMAIN_BASED often sufficient\n- For workflow-heavy systems: WORKFLOW_BASED appropriate\n\nMake an EDUCATED recommendation - don't just echo the tool output!"
+    },
+    {
+      "action_id": "RE-05-A03",
+      "action": "Define service boundaries",
+      "description": "Based on chosen strategy, define service/module boundaries",
+      "tool": null,
+      "llm_guidance": "For PLUGIN_BASED:\n- Identify swappable components (backends, handlers, providers)\n- Define Protocol interfaces for each\n\nFor DOMAIN_BASED:\n- Group by business domain\n- Identify shared services\n\nFor HYBRID:\n- Combine approaches per component need\n- Document which pattern applies where"
+    },
+    {
+      "action_id": "RE-05-A04",
+      "action": "Document service allocation",
+      "description": "Map functional clusters to proposed services",
+      "tool": null,
+      "llm_guidance": "Create mapping:\n- functional_cluster -> proposed_service\n- Document rationale for each allocation\n- Note any functions that span services"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-05",
+    "criteria": [
+      "Service organization strategy chosen with rationale",
+      "All functional clusters mapped to services",
+      "Protocol/interface boundaries defined for PLUGIN_BASED",
+      "No circular service dependencies"
+    ],
+    "blocking": false
+  },
+
+  "next_steps": ["RE-06"],
+  "rollback_to": "RE-04",
+
+  "notes": "For monolithic legacy systems, the 'service' may actually be a single package with multiple modules. The key output is the organizational strategy, not necessarily microservices."
+}

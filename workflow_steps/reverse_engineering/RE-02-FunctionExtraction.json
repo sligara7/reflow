@@ -1,0 +1,96 @@
+{
+  "step_id": "RE-02",
+  "step_name": "Function Extraction",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Extract functions, data types, and interfaces from legacy codebase to build functional inventory",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "codebase_inventory.json",
+        "path": "specs/reverse/codebase_inventory.json",
+        "description": "Codebase inventory from RE-01"
+      }
+    ],
+    "optional": [
+      {
+        "artifact": "legacy_source",
+        "path": "context/working_memory.json -> paths.legacy_codebase_path",
+        "description": "Path to legacy source code"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "extracted_functions.json",
+        "path": "specs/reverse/extracted_functions.json",
+        "template": "extracted_functions_template.json",
+        "description": "Extracted functions with signatures and dependencies"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-02-A01",
+      "action": "Review codebase inventory",
+      "description": "Review the languages, frameworks, and entry points identified in RE-01",
+      "tool": null,
+      "llm_guidance": "Read specs/reverse/codebase_inventory.json and note the primary language, largest files, and detected entry points"
+    },
+    {
+      "action_id": "RE-02-A02",
+      "action": "Extract functions by language",
+      "description": "For each source file, extract function/method definitions",
+      "tool": "extract_functions.py (if available) OR LLM-assisted extraction",
+      "llm_guidance": "For each major source file, identify:\n- Function/method names\n- Parameters and return types\n- Dependencies (calls to other functions)\n- Purpose (inferred from name and code)\n\nLanguage-specific patterns:\n- Python: def, class methods\n- Java: public/private methods\n- C/C++: function definitions\n- Fortran: subroutine, function, program\n- JavaScript: function, arrow functions, class methods"
+    },
+    {
+      "action_id": "RE-02-A03",
+      "action": "Extract data types",
+      "description": "Identify structs, classes, types, and data structures",
+      "tool": null,
+      "llm_guidance": "For each source file, identify:\n- Class/struct definitions\n- Type aliases\n- Enums\n- Data structures and their fields\n- Inheritance relationships"
+    },
+    {
+      "action_id": "RE-02-A04",
+      "action": "Map dependencies",
+      "description": "Create dependency graph between functions",
+      "tool": null,
+      "llm_guidance": "For each function, identify:\n- Functions it calls\n- Global state it accesses\n- External dependencies (libraries)\n- I/O operations"
+    },
+    {
+      "action_id": "RE-02-A05",
+      "action": "Categorize functions",
+      "description": "Classify each function by type",
+      "tool": null,
+      "llm_guidance": "Categorize each function as:\n- pure: No side effects, deterministic output\n- stateful: Modifies internal state\n- io: Performs file/network/display operations\n- coordination: Orchestrates other functions"
+    },
+    {
+      "action_id": "RE-02-A06",
+      "action": "Generate extracted_functions.json",
+      "description": "Compile all extracted information into structured JSON",
+      "tool": null,
+      "llm_guidance": "Create specs/reverse/extracted_functions.json with:\n- functions array (name, type, inputs, outputs, dependencies, source_location)\n- data_types array (name, attributes, relationships)\n- dependency_graph (function -> [called_functions])"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-02",
+    "criteria": [
+      "At least 80% of source files analyzed",
+      "All entry points have functions extracted",
+      "Dependency graph is complete (no dangling references)",
+      "Function categorizations are consistent"
+    ],
+    "blocking": false
+  },
+
+  "next_steps": ["RE-03"],
+  "rollback_to": "RE-01",
+
+  "notes": "For large codebases (>10K LOC), prioritize entry points and high-dependency modules first. Use sampling for very large files."
+}

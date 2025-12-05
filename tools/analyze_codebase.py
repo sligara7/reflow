@@ -2,7 +2,7 @@
 """
 analyze_codebase.py - Codebase Discovery and Inventory Tool
 
-Part of Reflow v4.1.0 System Overhaul Feature
+Part of Reflow v4.1.1 System Overhaul Feature
 Workflow: 01e-reverse_engineering
 Step: RE-01 Codebase Discovery & Inventory
 
@@ -19,6 +19,14 @@ Usage:
 
 Example:
     python3 analyze_codebase.py /path/to/legacy/code --output specs/reverse/codebase_inventory.json
+
+Changelog v4.1.1:
+- NEW: Entry point detection for C/C++ (main function)
+- NEW: Entry point detection for Fortran (PROGRAM statement)
+- NEW: Entry point detection for Rust (fn main)
+- NEW: Fortran version detection (F77/F90/F95/F2003/F2008)
+- FIX: Fortran comment detection (! and fixed-form comments)
+- NEW: Detect entry points for ALL languages, not just primary
 """
 
 import argparse
@@ -76,7 +84,13 @@ EXTENSION_TO_LANGUAGE = {
     '.f': 'fortran',
     '.f90': 'fortran',
     '.f95': 'fortran',
+    '.f03': 'fortran',
+    '.f08': 'fortran',
     '.for': 'fortran',
+    '.fpp': 'fortran',
+    '.F': 'fortran',
+    '.F90': 'fortran',
+    '.F95': 'fortran',
 }
 
 # Default exclude patterns
@@ -250,6 +264,16 @@ def count_lines(file_path: Path) -> Tuple[int, int, int]:
                     if stripped.startswith('#'):
                         comment += 1
 
+                # Fortran comments (NEW v4.1.1)
+                elif ext.lower() in ['.f', '.f90', '.f95', '.f03', '.f08', '.for', '.fpp']:
+                    # Fortran uses ! for comments (free form)
+                    # Fixed form uses C, c, or * in column 1
+                    if stripped.startswith('!'):
+                        comment += 1
+                    elif len(line) > 0 and line[0].lower() in ['c', '*']:
+                        # Fixed-form Fortran comment (column 1)
+                        comment += 1
+
     except Exception:
         pass
 
@@ -299,6 +323,69 @@ def detect_python_version(codebase_path: Path) -> Optional[str]:
             pass
 
     return None
+
+
+def detect_fortran_version(codebase_path: Path, files: List[Path]) -> Optional[str]:
+    """Detect Fortran version from code features (NEW v4.1.1)."""
+    # Feature indicators for different Fortran versions
+    f2008_patterns = [
+        r'\bblock\s*$', r'\bendblock\b', r'\bsubmodule\b', r'\bdo\s+concurrent\b',
+        r'\bcontiguous\b', r'\berror\s+stop\b', r'\bcodimension\b'
+    ]
+    f2003_patterns = [
+        r'\bextends\s*\(', r'\bdeferred\b', r'\babstract\b', r'\bclass\s*\(',
+        r'\bprocedure\s*\(', r'\btype\s*,\s*extends', r'\bimport\b',
+        r'\biso_c_binding\b', r'\biso_fortran_env\b'
+    ]
+    f95_patterns = [
+        r'\bforall\b', r'\bpure\b', r'\belemental\b', r'\bnullify\b',
+        r'\ballocatable\b', r'\bwhere\b'
+    ]
+    f90_patterns = [
+        r'\bmodule\s+\w+', r'\buse\s+\w+', r'\binterface\b', r'\bcontains\b',
+        r'\bprivate\b', r'\bpublic\b', r'\bintent\s*\('
+    ]
+
+    f2008_score = 0
+    f2003_score = 0
+    f95_score = 0
+    f90_score = 0
+
+    for f in files[:30]:  # Sample files for performance
+        try:
+            content = f.read_text(errors='ignore').lower()
+
+            for pattern in f2008_patterns:
+                if re.search(pattern, content, re.IGNORECASE):
+                    f2008_score += 1
+
+            for pattern in f2003_patterns:
+                if re.search(pattern, content, re.IGNORECASE):
+                    f2003_score += 1
+
+            for pattern in f95_patterns:
+                if re.search(pattern, content, re.IGNORECASE):
+                    f95_score += 1
+
+            for pattern in f90_patterns:
+                if re.search(pattern, content, re.IGNORECASE):
+                    f90_score += 1
+        except Exception:
+            pass
+
+    # Determine version based on scores
+    if f2008_score >= 2:
+        return "Fortran 2008+"
+    elif f2003_score >= 2:
+        return "Fortran 2003"
+    elif f95_score >= 2:
+        return "Fortran 95"
+    elif f90_score >= 2:
+        return "Fortran 90"
+    elif f90_score >= 1 or f95_score >= 1:
+        return "Fortran 90/95"
+    else:
+        return "Fortran 77 (or unknown)"
 
 
 def detect_node_version(codebase_path: Path) -> Optional[str]:
@@ -496,6 +583,59 @@ def detect_entry_points(codebase_path: Path, language: str, files: List[Path]) -
                 except Exception:
                     pass
 
+    # NEW v4.1.1: C/C++ entry point detection
+    elif language in ['c', 'cpp']:
+        for f in files:
+            if f.suffix.lower() in ['.c', '.cpp', '.cc', '.cxx']:
+                try:
+                    content = f.read_text(errors='ignore')
+                    # Standard main functions
+                    if re.search(r'\bint\s+main\s*\(', content) or \
+                       re.search(r'\bvoid\s+main\s*\(', content) or \
+                       re.search(r'\bint\s+wmain\s*\(', content):  # Windows
+                        entry_points.append({
+                            'type': 'main',
+                            'file': str(f.relative_to(codebase_path)),
+                            'function': 'main',
+                            'description': f'{"C++" if f.suffix.lower() in [".cpp", ".cc", ".cxx"] else "C"} main function'
+                        })
+                except Exception:
+                    pass
+
+    # NEW v4.1.1: Fortran entry point detection
+    elif language == 'fortran':
+        for f in files:
+            if f.suffix.lower() in ['.f', '.f90', '.f95', '.f03', '.f08', '.for', '.fpp']:
+                try:
+                    content = f.read_text(errors='ignore')
+                    # Look for PROGRAM statement
+                    match = re.search(r'^\s*program\s+(\w+)', content, re.IGNORECASE | re.MULTILINE)
+                    if match:
+                        entry_points.append({
+                            'type': 'main',
+                            'file': str(f.relative_to(codebase_path)),
+                            'function': match.group(1),
+                            'description': f'Fortran program: {match.group(1)}'
+                        })
+                except Exception:
+                    pass
+
+    # NEW v4.1.1: Rust entry point detection
+    elif language == 'rust':
+        for f in files:
+            if f.suffix == '.rs':
+                try:
+                    content = f.read_text(errors='ignore')
+                    if re.search(r'\bfn\s+main\s*\(', content):
+                        entry_points.append({
+                            'type': 'main',
+                            'file': str(f.relative_to(codebase_path)),
+                            'function': 'main',
+                            'description': 'Rust main function'
+                        })
+                except Exception:
+                    pass
+
     return entry_points
 
 
@@ -610,6 +750,10 @@ def analyze_codebase(codebase_path: str, output_path: str, exclude_patterns: Opt
             version = detect_python_version(codebase)
         elif lang in ['javascript', 'typescript']:
             version = detect_node_version(codebase)
+        # NEW v4.1.1: Fortran version detection
+        elif lang == 'fortran':
+            fortran_files = files_by_language.get('fortran', [])
+            version = detect_fortran_version(codebase, fortran_files)
 
         languages_detected.append({
             'language': lang,
@@ -627,12 +771,13 @@ def analyze_codebase(codebase_path: str, output_path: str, exclude_patterns: Opt
         primary_files = files_by_language.get(primary_lang, [])
         frameworks_detected = detect_frameworks(codebase, primary_lang, primary_files)
 
-    # Detect entry points
+    # Detect entry points (NEW v4.1.1: Check ALL detected languages, not just primary)
     entry_points = []
-    if languages_detected:
-        primary_lang = languages_detected[0]['language']
-        primary_files = files_by_language.get(primary_lang, [])
-        entry_points = detect_entry_points(codebase, primary_lang, primary_files)
+    for lang_info in languages_detected:
+        lang = lang_info['language']
+        lang_files = files_by_language.get(lang, [])
+        lang_entry_points = detect_entry_points(codebase, lang, lang_files)
+        entry_points.extend(lang_entry_points)
 
     # Parse dependencies
     runtime_deps = []

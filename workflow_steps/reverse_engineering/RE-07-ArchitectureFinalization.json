@@ -1,0 +1,98 @@
+{
+  "step_id": "RE-07",
+  "step_name": "Architecture Finalization",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Finalize the reverse-engineered architecture and prepare for migration or development",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "description": "Functional architecture from RE-04"
+      },
+      {
+        "artifact": "gap_analysis_report.json",
+        "path": "specs/reverse/gap_analysis_report.json",
+        "description": "Gap analysis from RE-06"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "description": "Finalized functional architecture (updated)"
+      },
+      {
+        "artifact": "FUNCTIONAL_ARCHITECTURE.md",
+        "path": "specs/human/documentation/FUNCTIONAL_ARCHITECTURE.md",
+        "description": "Human-readable architecture documentation"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-07-A01",
+      "action": "Address identified gaps",
+      "description": "Resolve or document mitigation for gaps from RE-06",
+      "tool": null,
+      "llm_guidance": "For each gap in gap_analysis_report.json:\n- Either fix the gap (add missing functions, resolve dependencies)\n- Or document as known limitation with mitigation strategy\n\nUpdate functional_architecture.json with fixes"
+    },
+    {
+      "action_id": "RE-07-A02",
+      "action": "Final architecture review",
+      "description": "Comprehensive review of the architecture",
+      "tool": null,
+      "llm_guidance": "Review:\n- All functions present and categorized\n- Dependencies consistent\n- Clusters cohesive\n- Entry points complete\n- Service boundaries logical"
+    },
+    {
+      "action_id": "RE-07-A03",
+      "action": "Generate human documentation",
+      "description": "Create human-readable architecture documentation",
+      "tool": "generate_human_documentation.py",
+      "llm_guidance": "Run: python3 {tools_path}/generate_human_documentation.py {system_root}/specs/functional/functional_architecture.json --output {system_root}/specs/human/documentation/\n\nOr manually create FUNCTIONAL_ARCHITECTURE.md with:\n- System overview\n- Architecture diagram (Mermaid)\n- Component descriptions\n- Dependency map\n- Key decisions"
+    },
+    {
+      "action_id": "RE-07-A04",
+      "action": "Update working memory",
+      "description": "Record completion and prepare for next workflow",
+      "tool": null,
+      "llm_guidance": "Update context/working_memory.json:\n- Set current_step to 'RE-07-COMPLETE'\n- Record artifacts created\n- Note next workflow options:\n  - 01f-language_migration (for migration projects)\n  - 01b-bottom_up_integration (for modernization)\n  - 02-artifacts_visualization (for documentation)"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-07",
+    "criteria": [
+      "All critical gaps addressed or documented",
+      "Functional architecture validates against codebase",
+      "Human documentation generated",
+      "Working memory updated"
+    ],
+    "blocking": true
+  },
+
+  "next_steps": [
+    {
+      "workflow": "01f-language_migration",
+      "condition": "If performing language migration"
+    },
+    {
+      "workflow": "01b-bottom_up_integration",
+      "condition": "If integrating with new architecture"
+    },
+    {
+      "workflow": "02-artifacts_visualization",
+      "condition": "If generating visualizations and ICDs"
+    }
+  ],
+
+  "rollback_to": "RE-06",
+
+  "completion_message": "Reverse engineering workflow complete. The functional architecture has been extracted from the legacy codebase and is ready for the next phase."
+}

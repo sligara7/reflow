@@ -1,0 +1,89 @@
+{
+  "step_id": "RE-06",
+  "step_name": "Validation & Gap Analysis",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Validate the reverse-engineered architecture and identify gaps or inconsistencies",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "description": "Functional architecture from RE-04"
+      },
+      {
+        "artifact": "service_organization_analysis.json",
+        "path": "specs/machine/service_organization_analysis.json",
+        "description": "Service organization analysis from RE-05"
+      },
+      {
+        "artifact": "codebase_inventory.json",
+        "path": "specs/reverse/codebase_inventory.json",
+        "description": "Original codebase inventory from RE-01"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "gap_analysis_report.json",
+        "path": "specs/reverse/gap_analysis_report.json",
+        "description": "Gap analysis findings and recommendations"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-06-A01",
+      "action": "Validate coverage",
+      "description": "Check that architecture covers entire codebase",
+      "tool": null,
+      "llm_guidance": "Compare:\n- Total functions in architecture vs estimated from codebase inventory\n- All entry points covered?\n- Major files analyzed?\n\nDocument any unanalyzed portions"
+    },
+    {
+      "action_id": "RE-06-A02",
+      "action": "Check dependency consistency",
+      "description": "Validate that all dependencies are resolved",
+      "tool": null,
+      "llm_guidance": "Check:\n- No references to undefined functions\n- All imports/uses resolved\n- External dependencies identified\n- No orphan functions (no callers and not entry points)"
+    },
+    {
+      "action_id": "RE-06-A03",
+      "action": "Identify architectural gaps",
+      "description": "Find missing or incomplete architectural elements",
+      "tool": null,
+      "llm_guidance": "Look for:\n- Functions without clear categorization\n- Clusters with high external coupling\n- Missing error handling patterns\n- Undocumented configuration dependencies\n- Hidden state management"
+    },
+    {
+      "action_id": "RE-06-A04",
+      "action": "Assess migration risks",
+      "description": "Identify elements that may be difficult to migrate",
+      "tool": null,
+      "llm_guidance": "Flag:\n- Language-specific features (goto, macros, intrinsics)\n- Platform-specific code\n- Assembly or inline assembly\n- Hardware-specific operations\n- Performance-critical sections\n- Global state dependencies"
+    },
+    {
+      "action_id": "RE-06-A05",
+      "action": "Generate gap analysis report",
+      "description": "Document all findings",
+      "tool": null,
+      "llm_guidance": "Create specs/reverse/gap_analysis_report.json with:\n- coverage_analysis\n- dependency_issues\n- architectural_gaps\n- migration_risks\n- recommendations"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-06",
+    "criteria": [
+      "Coverage > 80% of codebase",
+      "All critical gaps documented",
+      "Migration risks assessed",
+      "Recommendations provided for each gap"
+    ],
+    "blocking": false
+  },
+
+  "next_steps": ["RE-07"],
+  "rollback_to": "RE-05"
+}

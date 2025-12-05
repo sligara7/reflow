@@ -1,0 +1,85 @@
+{
+  "step_id": "RE-04",
+  "step_name": "Architecture Synthesis",
+  "workflow": "01e-reverse_engineering",
+  "version": "4.1.1",
+  "description": "Synthesize functional architecture from extracted functions, types, and interfaces",
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "extracted_functions.json",
+        "path": "specs/reverse/extracted_functions.json",
+        "description": "Extracted functions from RE-02"
+      },
+      {
+        "artifact": "detected_interfaces.json",
+        "path": "specs/reverse/detected_interfaces.json",
+        "description": "Detected interfaces from RE-03"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "template": "functional_architecture_template.json",
+        "description": "Complete functional architecture"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "RE-04-A01",
+      "action": "Group functions into clusters",
+      "description": "Identify natural groupings of related functions",
+      "tool": null,
+      "llm_guidance": "Group functions by:\n- Shared dependencies\n- Common data access patterns\n- Naming conventions (UserX, OrderX)\n- File/module organization\n- Functional cohesion\n\nCreate functional_clusters array"
+    },
+    {
+      "action_id": "RE-04-A02",
+      "action": "Define functional flows (if applicable)",
+      "description": "Identify major workflows through the system",
+      "tool": null,
+      "llm_guidance": "For workflow-based systems, identify:\n- User-initiated flows (e.g., checkout flow)\n- Batch processing flows\n- Event-driven flows\n\nFor frame-based/real-time systems (games, emulators):\n- Document the main loop structure\n- Note that traditional workflows may not apply\n- Set functional_flows to empty array if not applicable"
+    },
+    {
+      "action_id": "RE-04-A03",
+      "action": "Map entry points",
+      "description": "Connect entry points to functional clusters",
+      "tool": null,
+      "llm_guidance": "For each entry point from codebase_inventory:\n- Identify the initial function chain\n- Map to functional clusters\n- Create entry_points array"
+    },
+    {
+      "action_id": "RE-04-A04",
+      "action": "Generate functional_architecture.json",
+      "description": "Compile complete functional architecture",
+      "tool": null,
+      "llm_guidance": "Create specs/functional/functional_architecture.json using the template:\n- metadata section (system name, source info)\n- functions array (from extracted_functions)\n- data_types array\n- functional_clusters array\n- entry_points array\n- functional_flows array (may be empty for real-time systems)\n- summary section"
+    },
+    {
+      "action_id": "RE-04-A05",
+      "action": "Validate architecture completeness",
+      "description": "Check that all functions are accounted for",
+      "tool": null,
+      "llm_guidance": "Verify:\n- All extracted functions appear in the architecture\n- No orphan functions (not in any cluster)\n- All entry points are mapped\n- Dependencies are consistent"
+    }
+  ],
+
+  "quality_gate": {
+    "gate_id": "QG-RE-04",
+    "criteria": [
+      "All functions assigned to clusters",
+      "All entry points mapped",
+      "No circular dependencies between clusters",
+      "Architecture covers 100% of extracted functions"
+    ],
+    "blocking": true
+  },
+
+  "next_steps": ["RE-05"],
+  "rollback_to": "RE-03"
+}

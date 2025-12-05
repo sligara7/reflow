@@ -1,11 +1,22 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 4.1.0
+**Version**: 4.1.1
 **Last Updated**: 2025-12-05
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v4.1.1**: **System Overhaul Refinements** - Bug fixes and enhancements based on real-world testing with Blocktran (Fortran→Python) and SuperMarioBros-C (C++→Python):
+- **FIX**: `analyze_service_organization.py` KeyError when no functional flows defined
+- **NEW**: REAL_TIME operation type for games, emulators, and simulations
+- **NEW**: Entry point detection for C/C++ (main), Fortran (PROGRAM), and Rust (fn main)
+- **NEW**: Fortran version detection (F77/F90/F95/F2003/F2008)
+- **FIX**: Fortran comment detection (! and fixed-form comments)
+- **NEW**: Missing workflow step files (RE-02 through RE-07)
+- **NEW**: Migration templates (migration_scope_template.json, cutover_plan_template.json)
+
+See `docs/changes/CHANGE_PROPOSAL_20251205_V411_REFINEMENTS.md` for full details.
 
 **NEW in v4.1.0**: **System Overhaul Feature** - Two major capabilities for legacy system modernization:
 1. **Reverse Engineering Workflow (01e)**: Extract functional architecture from ANY existing codebase - Reflow or not. Systematically analyzes unknown systems to generate codebase inventory, extract functions and interfaces, synthesize functional architecture, and infer service boundaries.
