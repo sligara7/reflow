@@ -1,0 +1,147 @@
+{
+  "step_id": "LM-04.5",
+  "step_name": "Architecture Re-evaluation",
+  "workflow": "01f-language_migration",
+  "version": "1.1.0",
+  "description": "Evaluate whether to preserve original architecture or improve it using Reflow's service organization analysis",
+
+  "purpose": {
+    "statement": "Migration is an opportunity to improve architecture, not just change language",
+    "key_questions": [
+      "Is the original code well-structured or poorly organized?",
+      "Would a different service organization be more appropriate?",
+      "Should we preserve structure for minimal risk, or re-architect for better maintainability?",
+      "Does the system type (CRUD, workflow, real-time) suggest a particular organization?"
+    ]
+  },
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "functional_architecture.json",
+        "path": "specs/functional/functional_architecture.json",
+        "description": "Functional architecture from reverse engineering"
+      },
+      {
+        "artifact": "translation_rules.json",
+        "path": "specs/migration/translation_rules.json",
+        "description": "Translation rules from LM-04"
+      }
+    ],
+    "optional": [
+      {
+        "artifact": "codebase_inventory.json",
+        "path": "specs/reverse/codebase_inventory.json",
+        "description": "Original codebase analysis"
+      }
+    ]
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "architecture_decision.json",
+        "path": "specs/migration/architecture_decision.json",
+        "description": "Documented decision: PRESERVE, RE_ARCHITECT, or HYBRID"
+      },
+      {
+        "artifact": "function_to_service_mapping.json",
+        "path": "specs/migration/function_to_service_mapping.json",
+        "description": "Mapping of every source function to target service/module"
+      },
+      {
+        "artifact": "service_organization_analysis.json",
+        "path": "specs/machine/service_organization_analysis.json",
+        "description": "Output from analyze_service_organization.py (if run)"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "LM-04.5-A01",
+      "action": "Analyze original code structure quality",
+      "description": "Evaluate the quality of the source codebase organization",
+      "tool": null,
+      "llm_guidance": "Assess the source code:\n- Is it well-organized with clear module boundaries?\n- Are there god classes or files (>1000 lines)?\n- Is there excessive coupling between components?\n- Are concerns properly separated?\n- Is there evidence of technical debt?\n\nDocument findings in architecture_decision.json"
+    },
+    {
+      "action_id": "LM-04.5-A02",
+      "action": "Run service organization analysis",
+      "description": "Use Reflow's tool to analyze optimal organization",
+      "tool": "analyze_service_organization.py",
+      "command_pattern": "python3 {reflow_root}/tools/analyze_service_organization.py {system_root}",
+      "llm_guidance": "Run the analysis tool. It will evaluate:\n- Coordination complexity\n- Workflow span\n- Operation types (CRUD, Workflow, Real-time)\n- Extensibility requirements\n\nAnd recommend: PLUGIN_BASED, DOMAIN_BASED, WORKFLOW_BASED, or HYBRID"
+    },
+    {
+      "action_id": "LM-04.5-A03",
+      "action": "Present options to user and get decision",
+      "description": "User chooses: PRESERVE, RE_ARCHITECT, or HYBRID",
+      "tool": null,
+      "prompt_user": true,
+      "llm_guidance": "Present to user:\n\n**Option 1: PRESERVE**\n- Keep original structure, just translate language\n- Lowest risk, fastest migration\n- Preserves existing knowledge/documentation\n- Best when: original code is well-structured\n\n**Option 2: RE_ARCHITECT**\n- Apply Reflow's recommended service organization\n- Higher effort, but better long-term maintainability\n- Opportunity to fix technical debt\n- Best when: original code is poorly organized\n\n**Option 3: HYBRID**\n- Preserve some components, re-architect others\n- Balanced approach\n- Best when: some parts are good, others need improvement\n\n**Tool Recommendation**: [from analyze_service_organization.py]\n**LLM Assessment**: [your evaluation of original code quality]\n\nAsk user to choose."
+    },
+    {
+      "action_id": "LM-04.5-A04",
+      "action": "If RE_ARCHITECT: Define target service architecture",
+      "description": "Generate new service boundaries based on analysis",
+      "tool": null,
+      "conditional": "architecture_decision == RE_ARCHITECT or architecture_decision == HYBRID",
+      "llm_guidance": "Based on service organization analysis:\n\n**PLUGIN_BASED**: Identify swappable components (backends, providers, handlers). Define Protocol interfaces.\n\n**DOMAIN_BASED**: Group by business domain. Identify shared services.\n\n**WORKFLOW_BASED**: Organize around major workflows/processes.\n\n**HYBRID**: Combine approaches per component.\n\nCreate service definitions in specs/machine/service_architecture.json"
+    },
+    {
+      "action_id": "LM-04.5-A05",
+      "action": "Create function-to-service mapping",
+      "description": "Map EVERY source function to a target location",
+      "tool": null,
+      "llm_guidance": "Create specs/migration/function_to_service_mapping.json:\n\n{\n  \"mapping\": [\n    {\n      \"source_function\": \"original_function_name\",\n      \"source_file\": \"path/to/source.cpp\",\n      \"target_service\": \"service_name\",\n      \"target_module\": \"module_name.py\",\n      \"target_function\": \"new_function_name\",\n      \"notes\": \"any refactoring notes\"\n    }\n  ],\n  \"unmapped_functions\": [],  // MUST BE EMPTY\n  \"total_functions\": N,\n  \"mapping_complete\": true\n}\n\nEVERY function must be mapped. No exceptions."
+    },
+    {
+      "action_id": "LM-04.5-A06",
+      "action": "Update migration scope with architecture decision",
+      "description": "Record decision in migration_scope.json",
+      "tool": null,
+      "llm_guidance": "Update specs/migration/migration_scope.json with:\n- architecture_decision: PRESERVE | RE_ARCHITECT | HYBRID\n- service_organization: PLUGIN_BASED | DOMAIN_BASED | WORKFLOW_BASED | HYBRID\n- rationale: why this decision was made"
+    }
+  ],
+
+  "decision_framework": {
+    "preserve_when": [
+      "Original code is well-organized with clear boundaries",
+      "Time constraints require minimal changes",
+      "Team is familiar with existing structure",
+      "Risk tolerance is low",
+      "The codebase was designed by experienced architects"
+    ],
+    "re_architect_when": [
+      "Original code is spaghetti or poorly organized",
+      "God classes/files with >1000 lines",
+      "Excessive coupling between components",
+      "The system type suggests different organization (e.g., workflow-based for process-heavy systems)",
+      "Technical debt is significant",
+      "Long-term maintainability is a priority"
+    ],
+    "hybrid_when": [
+      "Some components are well-designed, others are not",
+      "Core domain logic is good but infrastructure is messy",
+      "Partial re-architecture reduces risk while improving quality"
+    ]
+  },
+
+  "quality_gate": {
+    "gate_id": "QG-LM-04.5",
+    "name": "Architecture Decision Gate",
+    "criteria": [
+      "Architecture decision documented (PRESERVE, RE_ARCHITECT, or HYBRID)",
+      "User has approved the decision",
+      "function_to_service_mapping.json is complete",
+      "ALL functions from functional_architecture.json are mapped",
+      "No unmapped functions remain"
+    ],
+    "blocking": true,
+    "verification": "Count functions in functional_architecture.json == Count in function_to_service_mapping.json"
+  },
+
+  "next_steps": ["LM-05"],
+  "rollback_to": "LM-04"
+}

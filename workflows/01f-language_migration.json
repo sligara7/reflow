@@ -2,18 +2,31 @@
   "workflow_metadata": {
     "workflow_id": "01f-language_migration",
     "name": "Language Migration Workflow",
-    "version": "1.0.0",
-    "description": "Systematic language transformation with interface-stable behavior preservation",
+    "version": "1.1.0",
+    "description": "Complete codebase translation from source to target language, producing functionally equivalent runnable code",
     "created": "2025-12-05",
     "last_updated": "2025-12-05",
     "purpose": "Migrate codebases from one language to another while preserving functional behavior through interface contracts",
-    "key_innovation": "Interface-stable transformation - extract interfaces BEFORE migration, validate interfaces AFTER migration",
+    "key_innovation": "Complete code translation with architecture re-evaluation - not just stubs, but fully working runnable code",
+    "expected_outcome": "A fully functional, runnable application in the target language that produces the same behavior as the source",
     "when_to_use": [
       "Legacy modernization (COBOL -> Python, Fortran -> Rust)",
       "Platform shift (Java -> Go, Python -> Rust)",
       "Version upgrade (Python 2 -> Python 3.12)",
-      "Ecosystem migration (Java Spring -> Go standard library)"
+      "Ecosystem migration (Java Spring -> Go standard library)",
+      "Code quality improvement (poorly structured code -> clean architecture)"
     ],
+    "what_this_workflow_produces": {
+      "primary_output": "Complete, runnable application in target language",
+      "not_just": ["Stubs", "Interfaces only", "Architecture diagrams", "Partial implementations"],
+      "includes": [
+        "ALL source code translated line-by-line or function-by-function",
+        "Complete implementation of ALL functions (not placeholders)",
+        "Working build system (pyproject.toml, Cargo.toml, etc.)",
+        "Executable entry points that run the application",
+        "Tests that validate functional equivalence"
+      ]
+    },
     "hierarchical_integration": {
       "phase": "P2",
       "phase_name": "Architecture Allocation",
@@ -288,25 +301,112 @@
           "blocking": true
         }
       ],
+      "next_step": "LM-04.5"
+    },
+    {
+      "step_id": "LM-04.5",
+      "name": "Architecture Re-evaluation",
+      "description": "Evaluate whether to preserve original architecture or improve it using Reflow's service organization analysis",
+      "phase": "preparation",
+      "step_file": "workflow_steps/language_migration/LM-04.5-ArchitectureReEvaluation.json",
+      "critical": true,
+      "actions": [
+        {
+          "action_id": "LM-04.5-A01",
+          "description": "Analyze original code structure quality",
+          "llm_guidance": "Evaluate: Was the original code well-structured? Poorly organized? Monolithic when it should be modular?"
+        },
+        {
+          "action_id": "LM-04.5-A02",
+          "description": "Run service organization analysis",
+          "tool": "analyze_service_organization.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_service_organization.py {system_root}",
+          "llm_guidance": "Use this tool to determine optimal service organization: PLUGIN_BASED, DOMAIN_BASED, WORKFLOW_BASED, or HYBRID"
+        },
+        {
+          "action_id": "LM-04.5-A03",
+          "description": "Decide: Preserve original structure OR re-architect",
+          "prompt_user": true,
+          "options": [
+            "PRESERVE - Keep original structure, just translate language",
+            "RE_ARCHITECT - Apply Reflow's recommended service organization",
+            "HYBRID - Preserve some, improve others"
+          ],
+          "llm_guidance": "Present analysis to user with recommendation. Consider: Is original code well-organized? Would migration benefit from restructuring? Is there tech debt to address?"
+        },
+        {
+          "action_id": "LM-04.5-A04",
+          "description": "If RE_ARCHITECT: Generate new service architecture",
+          "conditional": "architecture_decision == RE_ARCHITECT or architecture_decision == HYBRID",
+          "delegates_to": "01b-bottom_up_integration (SE-02 Service Architecture step)",
+          "llm_guidance": "Use Reflow's functional analysis and service allocation workflows to define target architecture"
+        },
+        {
+          "action_id": "LM-04.5-A05",
+          "description": "Map source functions to target services/modules",
+          "llm_guidance": "Create explicit mapping: each source function -> target location. This mapping drives LM-05 translation."
+        },
+        {
+          "action_id": "LM-04.5-A06",
+          "description": "Update migration_scope.json with architecture decision"
+        }
+      ],
+      "tools_used": [
+        "analyze_service_organization.py"
+      ],
+      "outputs": [
+        "specs/migration/architecture_decision.json",
+        "specs/migration/function_to_service_mapping.json"
+      ],
+      "gates": [
+        {
+          "gate_id": "G-LM-04.5",
+          "name": "Architecture Decision Made",
+          "checks": [
+            "Architecture decision documented (PRESERVE, RE_ARCHITECT, or HYBRID)",
+            "Function-to-service mapping complete",
+            "User approved architecture approach"
+          ],
+          "blocking": true
+        }
+      ],
       "next_step": "LM-05"
     },
     {
       "step_id": "LM-05",
-      "name": "Component-by-Component Translation",
-      "description": "Systematically translate each component/service while preserving interface contracts",
+      "name": "Complete Code Translation",
+      "description": "Translate ALL source code to target language - every function, every line, producing runnable code",
       "phase": "translation",
       "step_file": "workflow_steps/language_migration/LM-05-ComponentTranslation.json",
       "iterative": true,
+      "critical": true,
+      "explicit_requirements": {
+        "what_translation_means": [
+          "Convert EVERY function from source language to target language",
+          "Translate the COMPLETE implementation, not just signatures",
+          "Produce RUNNABLE code, not stubs or placeholders",
+          "Include ALL business logic, algorithms, and control flow",
+          "Handle ALL edge cases present in original code"
+        ],
+        "not_acceptable": [
+          "Creating interface stubs without implementations",
+          "Adding TODO comments instead of translating code",
+          "Skipping 'complex' functions for later",
+          "Creating partial implementations",
+          "Leaving placeholder functions that raise NotImplementedError"
+        ],
+        "success_criteria": "The translated code can be executed and produces the same output/behavior as the source code"
+      },
       "actions": [
         {
           "action_id": "LM-05-A01",
-          "description": "Identify components to translate (from migration scope)"
+          "description": "Identify ALL components/functions to translate from function_to_service_mapping.json",
+          "llm_guidance": "Every single function in the mapping must be translated. No exceptions."
         },
         {
           "action_id": "LM-05-A02",
-          "description": "For each component: Translate types and data structures",
-          "tool": "translate_component.py",
-          "command_pattern": "python3 {reflow_root}/tools/translate_component.py {component_path} --rules {system_root}/specs/migration/translation_rules.json --contracts {system_root}/specs/migration/interface_contracts.json --output {system_root}/services/{component_name}/"
+          "description": "For each component: Translate types and data structures COMPLETELY",
+          "llm_guidance": "Translate all struct/class definitions, enums, constants, global state. Include all fields and methods."
         },
         {
           "action_id": "LM-05-A03",
@@ -314,7 +414,8 @@
         },
         {
           "action_id": "LM-05-A04",
-          "description": "Translate function bodies (using target language idioms)"
+          "description": "Translate function bodies - THE COMPLETE IMPLEMENTATION",
+          "llm_guidance": "This is the critical step. Translate the ENTIRE function body:\n- All control flow (if/else, loops, switch/match)\n- All business logic and algorithms\n- All error handling\n- All edge cases\n- Complex logic like goto statements (refactor to structured code)\n- Performance-critical sections\n\nDO NOT create stubs. DO NOT add TODO comments. TRANSLATE THE CODE."
         },
         {
           "action_id": "LM-05-A05",
@@ -322,34 +423,45 @@
         },
         {
           "action_id": "LM-05-A06",
-          "description": "Generate target language project structure (pyproject.toml, etc.)"
+          "description": "Generate target language project structure (pyproject.toml, Cargo.toml, etc.)"
         },
         {
           "action_id": "LM-05-A07",
-          "description": "Run unit tests on translated component"
+          "description": "Build and run the translated component",
+          "llm_guidance": "The code MUST compile/parse without errors. Run it to verify basic execution."
+        },
+        {
+          "action_id": "LM-05-A08",
+          "description": "Run unit tests on translated component - all tests must pass"
+        },
+        {
+          "action_id": "LM-05-A09",
+          "description": "Verify functional equivalence - translated code produces same output as source",
+          "llm_guidance": "Run both source and target with same inputs, compare outputs. Document any intentional differences."
         }
       ],
-      "tools_used": [
-        "translate_component.py"
-      ],
+      "tools_used": [],
       "outputs": [
-        "services/{component_name}/ (translated source)",
+        "services/{component_name}/ (COMPLETE translated source - runnable code)",
         "tests/{component_name}/ (translated tests)"
       ],
       "iteration_control": {
-        "iterate_over": "components in migration_scope.json",
-        "completion_check": "All components translated and unit tests pass"
+        "iterate_over": "ALL functions in function_to_service_mapping.json",
+        "completion_check": "Every function translated, code compiles, tests pass, application runs"
       },
       "gates": [
         {
           "gate_id": "G-LM-05",
-          "name": "Component Translation Complete",
+          "name": "Complete Code Translation Gate",
           "checks": [
-            "All components translated",
+            "ALL functions translated (0 stubs, 0 TODOs, 0 NotImplementedError)",
+            "Code compiles/parses without errors",
+            "Application entry point executes successfully",
             "Unit tests pass for each component",
-            "No syntax errors in target language"
+            "Functional equivalence verified (same behavior as source)"
           ],
-          "blocking": true
+          "blocking": true,
+          "critical_note": "This gate ensures COMPLETE translation. Partial implementations fail this gate."
         }
       ],
       "next_step": "LM-06"
@@ -589,10 +701,15 @@
   ],
   "quality_gates": {
     "summary": {
-      "total_gates": 9,
-      "blocking_gates": 8,
+      "total_gates": 10,
+      "blocking_gates": 9,
       "non_blocking_gates": 1,
-      "critical_gates": ["G-LM-03 (Interface Contracts)", "G-LM-06 (Interface Validation)"]
+      "critical_gates": [
+        "G-LM-03 (Interface Contracts)",
+        "G-LM-04.5 (Architecture Decision)",
+        "G-LM-05 (Complete Code Translation)",
+        "G-LM-06 (Interface Validation)"
+      ]
     }
   },
   "completion_criteria": {
@@ -601,7 +718,9 @@
       "Functional architecture complete (LM-02)",
       "Interface contracts extracted (LM-03)",
       "Translation rules defined (LM-04)",
-      "All components translated (LM-05)",
+      "Architecture decision made - PRESERVE, RE_ARCHITECT, or HYBRID (LM-04.5)",
+      "ALL code translated - complete runnable implementation (LM-05)",
+      "Translated application executes successfully (LM-05)",
       "Interface validation passed (LM-06)",
       "Integration testing passed (LM-07)",
       "Migration report generated (LM-09)"
@@ -609,39 +728,118 @@
     "optional": [
       "Cutover plan created (LM-08)",
       "Legacy code archived (LM-09)"
-    ]
+    ],
+    "final_deliverable": {
+      "description": "A complete, runnable application in the target language",
+      "verification": "The application can be executed and produces the same behavior as the source"
+    }
   },
   "llm_agent_guidance": {
+    "fundamental_principle": {
+      "statement": "This workflow produces a COMPLETE, RUNNABLE application - not stubs, not interfaces, not partial implementations",
+      "verification": "At the end of LM-05, you must be able to execute the translated application and it must work"
+    },
     "critical_reminders": [
+      "TRANSLATE ALL CODE - every function, every line, every algorithm",
+      "DO NOT create stubs or placeholder implementations",
+      "DO NOT add TODO comments instead of translating code",
+      "DO NOT skip 'complex' functions for later",
+      "The translated application MUST be executable",
       "Interface preservation is the KEY to successful migration",
       "NEVER skip LM-03 (Interface Contract Extraction) - this is the foundation",
       "NEVER bypass G-LM-06 (Interface Validation) - behavior preservation depends on it",
-      "Translation rules can be iteratively refined during LM-05",
+      "LM-04.5 allows you to IMPROVE the architecture, not just copy it",
       "When in doubt, preserve behavior over optimizing for target language idioms",
       "Document ALL intentional behavioral changes"
     ],
+    "what_complete_translation_means": {
+      "description": "Every function in the source codebase must have a corresponding implementation in the target language",
+      "includes": [
+        "All business logic translated line-by-line or algorithmically",
+        "All control flow (if/else, loops, switch) converted to target language equivalents",
+        "All data structures defined with proper types",
+        "All error handling implemented",
+        "Complex patterns (goto, macros) refactored to clean target language idioms",
+        "Entry points that allow the application to run"
+      ],
+      "does_not_mean": [
+        "Creating Protocol/Interface definitions without implementations",
+        "Writing test stubs that pass but don't test real code",
+        "Defining class structures without method bodies",
+        "Adding 'pass' or 'raise NotImplementedError' in function bodies"
+      ]
+    },
+    "architecture_re_evaluation": {
+      "description": "LM-04.5 is an opportunity to improve the codebase, not just translate it",
+      "when_to_re_architect": [
+        "Original code is poorly structured (god classes, spaghetti code)",
+        "Original code mixes concerns that should be separated",
+        "Domain-based organization would be cleaner than original structure",
+        "Workflow-based organization better matches the system's nature",
+        "Plugin-based architecture enables better extensibility"
+      ],
+      "when_to_preserve": [
+        "Original code is well-structured",
+        "Changing structure would break important invariants",
+        "Time/risk constraints require minimal changes",
+        "Original structure matches domain well"
+      ],
+      "leverage_reflow": "Use Reflow's analyze_service_organization.py and functional analysis workflows to make informed decisions"
+    },
     "behavior_preservation_principle": {
       "description": "Functions and interfaces are language-agnostic",
       "process": [
         "1. Extract interfaces BEFORE migration (LM-03)",
-        "2. Transform implementation WHILE preserving interfaces (LM-05)",
-        "3. Validate interfaces AFTER migration (LM-06)",
-        "4. Result: Behavior preservation guaranteed at interface boundaries"
+        "2. Decide on architecture (LM-04.5) - preserve or improve",
+        "3. Translate ALL implementation code (LM-05) - complete, runnable",
+        "4. Validate interfaces AFTER migration (LM-06)",
+        "5. Result: Behavior preservation guaranteed, architecture potentially improved"
       ]
     },
+    "handling_complex_code": {
+      "goto_statements": "Refactor to structured control flow (while loops, state machines, or function calls)",
+      "macros": "Expand macros and translate the expanded code, or convert to functions/templates",
+      "inline_assembly": "Rewrite in pure target language or use FFI to call native code",
+      "global_state": "Convert to explicit state objects passed as parameters, or use dependency injection",
+      "pointer_arithmetic": "Use array indexing, slices, or safe abstractions in target language"
+    },
     "common_migration_patterns": {
+      "cpp_to_python": {
+        "type_changes": ["int/long -> int", "std::string -> str", "std::vector -> list", "struct -> dataclass"],
+        "memory_management": "Python has GC - remove manual memory management",
+        "templates": "Use generics (TypeVar) or duck typing",
+        "header_files": "Not needed - just import modules"
+      },
+      "fortran_to_python": {
+        "arrays": "Use numpy for numeric arrays",
+        "common_blocks": "Convert to module-level variables or class attributes",
+        "subroutines": "Convert to functions with explicit returns",
+        "do_loops": "Convert to for loops or numpy operations"
+      },
       "python2_to_python3": {
         "type_changes": ["unicode -> str", "str -> bytes", "long -> int"],
         "syntax_changes": ["print x -> print(x)", "except E, e -> except E as e"],
         "library_changes": ["urllib2 -> urllib.request", "ConfigParser -> configparser"]
-      },
-      "sync_to_async": {
-        "pattern_changes": ["def f() -> async def f()", "requests -> httpx"],
-        "careful_areas": ["database connections", "file I/O", "external API calls"]
       }
     }
   },
   "version_history": [
+    {
+      "version": "1.1.0",
+      "date": "2025-12-05",
+      "changes": [
+        "Added explicit requirement for COMPLETE code translation (not stubs)",
+        "Added LM-04.5 Architecture Re-evaluation step - leverage Reflow's service organization analysis",
+        "Updated LM-05 with explicit_requirements section defining what translation means",
+        "Enhanced quality gate G-LM-05 to verify runnable code",
+        "Added comprehensive llm_agent_guidance for complete translation",
+        "Added what_this_workflow_produces section to workflow_metadata",
+        "Added handling_complex_code guidance (goto, macros, global state)",
+        "Added cpp_to_python and fortran_to_python migration patterns"
+      ],
+      "author": "Claude Opus 4",
+      "reason": "SMB migration test revealed LLM created stubs instead of complete translation"
+    },
     {
       "version": "1.0.0",
       "date": "2025-12-05",

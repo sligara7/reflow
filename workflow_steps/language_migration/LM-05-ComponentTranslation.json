@@ -1,0 +1,230 @@
+{
+  "step_id": "LM-05",
+  "step_name": "Complete Code Translation",
+  "workflow": "01f-language_migration",
+  "version": "1.1.0",
+  "description": "Translate ALL source code to target language - every function, every line, producing runnable code",
+
+  "fundamental_requirement": {
+    "statement": "This step produces COMPLETE, RUNNABLE code - not stubs, not interfaces, not partial implementations",
+    "verification": "At the end of this step, you must be able to execute the translated application and it must work",
+    "failure_conditions": [
+      "Any function with 'pass' or empty body",
+      "Any function raising NotImplementedError",
+      "Any TODO comments instead of actual code",
+      "Any placeholder implementations",
+      "Code that does not compile/parse",
+      "Code that crashes on execution"
+    ]
+  },
+
+  "inputs": {
+    "required": [
+      {
+        "artifact": "function_to_service_mapping.json",
+        "path": "specs/migration/function_to_service_mapping.json",
+        "description": "Mapping of source functions to target services/modules from LM-04.5"
+      },
+      {
+        "artifact": "translation_rules.json",
+        "path": "specs/migration/translation_rules.json",
+        "description": "Type and pattern mappings from LM-04"
+      },
+      {
+        "artifact": "interface_contracts.json",
+        "path": "specs/migration/interface_contracts.json",
+        "description": "Interface contracts to preserve from LM-03"
+      }
+    ],
+    "source_code": {
+      "path": "From working_memory.json: paths.legacy_codebase_path",
+      "description": "The actual source code to translate"
+    }
+  },
+
+  "outputs": {
+    "artifacts": [
+      {
+        "artifact": "Translated source code",
+        "path": "services/{component_name}/src/",
+        "description": "COMPLETE implementation in target language - all functions, all logic"
+      },
+      {
+        "artifact": "Translated tests",
+        "path": "services/{component_name}/tests/",
+        "description": "Tests translated to target language test framework"
+      },
+      {
+        "artifact": "Build configuration",
+        "path": "services/{component_name}/pyproject.toml (or equivalent)",
+        "description": "Build system for target language"
+      },
+      {
+        "artifact": "translation_log.json",
+        "path": "specs/migration/translation_log.json",
+        "description": "Log of each function translated with source->target mapping"
+      }
+    ]
+  },
+
+  "actions": [
+    {
+      "action_id": "LM-05-A01",
+      "action": "Load function mapping and identify ALL functions to translate",
+      "description": "Read function_to_service_mapping.json and create checklist",
+      "tool": null,
+      "llm_guidance": "Create an explicit list of EVERY function that needs translation. This is your checklist - every item must be completed. No exceptions."
+    },
+    {
+      "action_id": "LM-05-A02",
+      "action": "Translate data types and structures",
+      "description": "Convert all structs, classes, enums, constants to target language",
+      "tool": null,
+      "llm_guidance": "For each data type in the source:\n- Create equivalent type in target language\n- Preserve all fields and their types\n- Translate any methods on the type\n- Handle inheritance/composition patterns\n\nExample (C++ to Python):\nstruct Point { int x; int y; } -> @dataclass class Point: x: int; y: int"
+    },
+    {
+      "action_id": "LM-05-A03",
+      "action": "Translate function signatures",
+      "description": "Create function declarations with proper types",
+      "tool": null,
+      "llm_guidance": "For each function:\n- Translate parameter types\n- Translate return type\n- Preserve function semantics (pure, stateful, etc.)\n- Add type hints in target language"
+    },
+    {
+      "action_id": "LM-05-A04",
+      "action": "Translate function bodies - COMPLETE IMPLEMENTATION",
+      "description": "THE CRITICAL STEP: Translate the full implementation of every function",
+      "tool": null,
+      "llm_guidance": "This is the most important action. For EACH function:\n\n1. READ the entire source function\n2. UNDERSTAND what it does (all branches, all logic)\n3. TRANSLATE line-by-line or algorithmically:\n   - All control flow (if/else, loops, switch)\n   - All arithmetic and logic\n   - All function calls (map to target equivalents)\n   - All error handling\n   - All edge cases\n\n4. HANDLE complex patterns:\n   - goto -> while loops or state machines\n   - macros -> inline code or functions\n   - pointer arithmetic -> array indexing\n   - global state -> explicit parameters\n\n5. VERIFY the translation:\n   - Same number of code paths\n   - Same logic in each path\n   - Same error conditions\n\nDO NOT:\n- Add 'pass' or empty bodies\n- Raise NotImplementedError\n- Add TODO comments\n- Skip 'complex' functions\n- Create partial implementations"
+    },
+    {
+      "action_id": "LM-05-A05",
+      "action": "Translate tests",
+      "description": "Convert test files to target language test framework",
+      "tool": null,
+      "llm_guidance": "Translate existing tests to target test framework (e.g., pytest for Python). Add new tests to cover critical paths."
+    },
+    {
+      "action_id": "LM-05-A06",
+      "action": "Create build configuration",
+      "description": "Generate project structure and build files",
+      "tool": null,
+      "llm_guidance": "Create appropriate build configuration:\n- Python: pyproject.toml with all dependencies\n- Rust: Cargo.toml\n- Go: go.mod\n- etc.\n\nInclude all dependencies needed to build and run."
+    },
+    {
+      "action_id": "LM-05-A07",
+      "action": "Build the translated code",
+      "description": "Compile/parse the translated code to verify syntax",
+      "tool": null,
+      "llm_guidance": "Run the build:\n- Python: python -m py_compile *.py\n- Rust: cargo build\n- Go: go build\n\nFix ANY syntax errors before proceeding."
+    },
+    {
+      "action_id": "LM-05-A08",
+      "action": "Run translated application",
+      "description": "Execute the translated application to verify it runs",
+      "tool": null,
+      "llm_guidance": "Run the application entry point:\n- It should start without crashing\n- Basic functionality should work\n- If it's a CLI, run with --help\n- If it's a service, verify it starts\n\nThis is the VERIFICATION that translation is complete."
+    },
+    {
+      "action_id": "LM-05-A09",
+      "action": "Run unit tests",
+      "description": "Execute the translated test suite",
+      "tool": null,
+      "llm_guidance": "Run all translated tests. Fix any failures. All tests should pass."
+    },
+    {
+      "action_id": "LM-05-A10",
+      "action": "Verify functional equivalence",
+      "description": "Compare source and target behavior",
+      "tool": null,
+      "llm_guidance": "If possible, run both source and target with same inputs and compare outputs. Document any intentional differences."
+    },
+    {
+      "action_id": "LM-05-A11",
+      "action": "Generate translation log",
+      "description": "Document what was translated",
+      "tool": null,
+      "llm_guidance": "Create specs/migration/translation_log.json with:\n- List of all functions translated\n- Source file -> Target file mapping\n- Any refactoring decisions made\n- Any intentional behavior changes"
+    }
+  ],
+
+  "iteration_control": {
+    "iterate_over": "Each service/module in function_to_service_mapping.json",
+    "for_each_iteration": [
+      "Translate all functions allocated to this service",
+      "Build and verify the service compiles",
+      "Run service-level tests",
+      "Move to next service only when current is COMPLETE"
+    ],
+    "completion_criteria": "All services translated, all code compiles, all tests pass, application runs"
+  },
+
+  "quality_gate": {
+    "gate_id": "QG-LM-05",
+    "name": "Complete Code Translation Gate",
+    "criteria": [
+      "ALL functions from function_to_service_mapping.json have been translated",
+      "ZERO functions have empty bodies, 'pass', or NotImplementedError",
+      "ZERO TODO comments used as placeholder for code",
+      "Code compiles/parses without errors",
+      "Application entry point executes successfully",
+      "All unit tests pass",
+      "Functional equivalence verified or documented"
+    ],
+    "blocking": true,
+    "verification_commands": {
+      "python": [
+        "python -m py_compile services/**/*.py",
+        "python -m pytest services/*/tests/",
+        "python -m services.app.main --help (or equivalent entry point)"
+      ],
+      "rust": [
+        "cargo build --all",
+        "cargo test --all",
+        "cargo run --bin main -- --help"
+      ]
+    }
+  },
+
+  "common_translation_patterns": {
+    "control_flow": {
+      "goto": {
+        "pattern": "goto label; ... label:",
+        "translation": "Use while loop with state variable, or refactor to function calls",
+        "example": "state = 'start'; while True: if state == 'start': ... state = 'next'; continue"
+      },
+      "switch_fallthrough": {
+        "pattern": "switch(x) { case 1: ... case 2: ... }",
+        "translation": "Use match/case without fallthrough, or if/elif chain"
+      }
+    },
+    "memory": {
+      "malloc_free": {
+        "pattern": "ptr = malloc(size); ... free(ptr);",
+        "translation": "Just use normal object creation - Python/Go have GC"
+      },
+      "pointer_arithmetic": {
+        "pattern": "*(ptr + offset)",
+        "translation": "array[offset] or use numpy for numeric arrays"
+      }
+    },
+    "types": {
+      "void_pointer": {
+        "pattern": "void* data",
+        "translation": "Use Any type or generic/template"
+      },
+      "union": {
+        "pattern": "union { int i; float f; }",
+        "translation": "Use tagged union (dataclass with type field) or typing.Union"
+      }
+    }
+  },
+
+  "next_steps": ["LM-06"],
+  "rollback_to": "LM-04.5",
+
+  "failure_recovery": {
+    "if_function_too_complex": "Break into smaller helper functions, translate each",
+    "if_library_not_available": "Find equivalent library or implement the functionality",
+    "if_pattern_unknown": "Research target language idioms, ask for guidance if needed"
+  }
+}
