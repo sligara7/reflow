@@ -1,11 +1,25 @@
 # Reflow - LLM Agent Guide
 
-**Version**: 4.1.1
-**Last Updated**: 2025-12-05
+**Version**: 4.1.2
+**Last Updated**: 2025-12-06
 
 ## What is Reflow?
 
 Reflow is a **framework-agnostic systems engineering workflow** designed for LLM agents to design, architect, and develop complex systems across multiple domains. Provides structured JSON workflows with automated validation, context management, and comprehensive tooling.
+
+**NEW in v4.1.2**: **Abstraction Level Analysis for Language Migration** - Critical new tool and workflow update based on SMB (SuperMarioBros-C → Python) case study:
+- **NEW TOOL**: `analyze_abstraction_level.py` - Analyzes source code to determine abstraction level (1-4) and recommends translation strategy
+- **NEW CONCEPT**: Abstraction Gap determines translation strategy:
+  - Gap = 0: LITERAL translation (syntax changes only, e.g., Python 2 → Python 3)
+  - Gap = 1: DIRECT translation (idiom mapping, e.g., C++ → Java)
+  - Gap >= 2: SEMANTIC translation (translate behavior, not implementation)
+- **UPDATED**: LM-04 now includes abstraction analysis before defining translation rules
+- **UPDATED**: LM-05 includes strategy-specific guidance based on abstraction gap
+- **NEW DOC**: `docs/TRANSLATION_LEARNINGS.md` - Detailed case study from SMB migration
+
+**Key Insight**: Translating C++ (mimicking ASM, Level 2-3) to Python (Level 4) with gap >= 2 using literal translation produced 1,654 states and 7,862 operations. Semantic translation produced ~1,500 lines of clean, working code.
+
+See `tools/analyze_abstraction_level.py` and `docs/TRANSLATION_LEARNINGS.md` for details.
 
 **NEW in v4.1.1**: **System Overhaul Refinements** - Bug fixes and enhancements based on real-world testing with Blocktran (Fortran→Python) and SuperMarioBros-C (C++→Python):
 - **FIX**: `analyze_service_organization.py` KeyError when no functional flows defined

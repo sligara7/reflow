@@ -2,10 +2,10 @@
   "workflow_metadata": {
     "workflow_id": "01f-language_migration",
     "name": "Language Migration Workflow",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Complete codebase translation from source to target language, producing functionally equivalent runnable code",
     "created": "2025-12-05",
-    "last_updated": "2025-12-05",
+    "last_updated": "2025-12-06",
     "purpose": "Migrate codebases from one language to another while preserving functional behavior through interface contracts",
     "key_innovation": "Complete code translation with architecture re-evaluation - not just stubs, but fully working runnable code",
     "expected_outcome": "A fully functional, runnable application in the target language that produces the same behavior as the source",
@@ -244,16 +244,29 @@
     },
     {
       "step_id": "LM-04",
-      "name": "Language Translation Rules Definition",
-      "description": "Define type mappings, pattern translations, and dependency equivalents",
+      "name": "Abstraction Level Analysis & Translation Rules",
+      "description": "Analyze abstraction gap between source and target, then define appropriate translation strategy",
       "phase": "preparation",
       "step_file": "workflow_steps/language_migration/LM-04-TranslationRulesDefinition.json",
+      "critical": true,
       "actions": [
         {
+          "action_id": "LM-04-A00",
+          "description": "CRITICAL: Analyze source code abstraction level BEFORE defining translation rules",
+          "tool": "analyze_abstraction_level.py",
+          "command_pattern": "python3 {reflow_root}/tools/analyze_abstraction_level.py {legacy_codebase_path} --output {system_root}/specs/migration/abstraction_analysis.json",
+          "llm_guidance": "This analysis determines whether to use SEMANTIC or LITERAL translation. Classifications:\n- Level 1 (Machine Code): Binary, CPU-specific\n- Level 2 (Assembly): Mnemonics, hardware-aware, registers, flags\n- Level 3 (Middle-level): C/C++ with memory addresses, pointers, bit manipulation\n- Level 4 (High-level): Python, Java, C# - abstracts hardware entirely\n\nThe ABSTRACTION GAP = |source_level - target_level|"
+        },
+        {
+          "action_id": "LM-04-A00B",
+          "description": "Determine translation strategy based on abstraction gap",
+          "llm_guidance": "CRITICAL DECISION POINT:\n\n- Gap = 0 (same level): Use LITERAL translation (syntax changes only)\n  Example: Python 2 → Python 3\n\n- Gap = 1 (adjacent levels): Use DIRECT translation with idiom mapping\n  Example: C++ → Java, Go → Rust\n\n- Gap >= 2 (multiple levels): Use SEMANTIC translation (DO NOT translate 1:1)\n  Example: Assembly → Python, C++ (mimicking ASM) → Python\n\nFor Gap >= 2:\n1. Identify what each code section DOES, not HOW it does it\n2. Group low-level operations into semantic clusters\n3. Translate the HIGH-LEVEL BEHAVIOR, not the implementation\n4. Use target language's native abstractions\n\nSee docs/TRANSLATION_LEARNINGS.md for detailed examples from SMB migration."
+        },
+        {
           "action_id": "LM-04-A01",
-          "description": "Define translation rules interactively",
+          "description": "Define translation rules based on abstraction analysis",
           "tool": "define_translation_rules.py",
-          "command_pattern": "python3 {reflow_root}/tools/define_translation_rules.py --source {source_language} --target {target_language} --output {system_root}/specs/migration/translation_rules.json"
+          "command_pattern": "python3 {reflow_root}/tools/define_translation_rules.py --source {source_language} --target {target_language} --strategy {semantic|literal|direct} --output {system_root}/specs/migration/translation_rules.json"
         },
         {
           "action_id": "LM-04-A02",
@@ -261,7 +274,8 @@
         },
         {
           "action_id": "LM-04-A03",
-          "description": "Define pattern mappings (idioms, design patterns)"
+          "description": "Define pattern mappings (idioms, design patterns)",
+          "llm_guidance": "For SEMANTIC translation (gap >= 2), focus on:\n- Memory operations → Object properties\n- Bit manipulation → Booleans/Enums\n- goto-based flow → Methods/Match statements\n- Hardware I/O → Framework APIs\n- Counter loops → Iterators/Comprehensions"
         },
         {
           "action_id": "LM-04-A04",
@@ -273,32 +287,41 @@
         },
         {
           "action_id": "LM-04-A06",
-          "description": "Define idiom mappings (language-specific patterns)"
+          "description": "Define semantic cluster mappings (for gap >= 2)",
+          "conditional": "abstraction_gap >= 2",
+          "llm_guidance": "Identify groups of low-level operations that represent ONE high-level concept:\n- '20 lines of register manipulation' → player.update_state()\n- '50 lines of memory copying' → data.copy()\n- '100 lines of bit flag checks' → if entity.state == State.X:"
         },
         {
           "action_id": "LM-04-A07",
-          "description": "Review and validate translation rules"
+          "description": "Review and validate translation rules against abstraction analysis"
         }
       ],
       "tools_used": [
+        "analyze_abstraction_level.py",
         "define_translation_rules.py"
       ],
       "templates_used": [
-        "translation_rules_template.json"
+        "translation_rules_template.json",
+        "abstraction_analysis_template.json"
       ],
       "outputs": [
+        "specs/migration/abstraction_analysis.json",
         "specs/migration/translation_rules.json"
       ],
       "gates": [
         {
           "gate_id": "G-LM-04",
-          "name": "Translation Rules Defined",
+          "name": "Abstraction Analysis & Translation Rules Complete",
           "checks": [
+            "Abstraction level analysis complete",
+            "Translation strategy determined (SEMANTIC, DIRECT, or LITERAL)",
             "Type mappings complete",
             "Dependency mappings defined",
+            "Semantic clusters identified (if gap >= 2)",
             "Rules validated for consistency"
           ],
-          "blocking": true
+          "blocking": true,
+          "critical_note": "The abstraction gap determines everything. Gap >= 2 means DO NOT do 1:1 translation."
         }
       ],
       "next_step": "LM-04.5"
@@ -414,8 +437,8 @@
         },
         {
           "action_id": "LM-05-A04",
-          "description": "Translate function bodies - THE COMPLETE IMPLEMENTATION",
-          "llm_guidance": "This is the critical step. Translate the ENTIRE function body:\n- All control flow (if/else, loops, switch/match)\n- All business logic and algorithms\n- All error handling\n- All edge cases\n- Complex logic like goto statements (refactor to structured code)\n- Performance-critical sections\n\nDO NOT create stubs. DO NOT add TODO comments. TRANSLATE THE CODE."
+          "description": "Translate function bodies using appropriate strategy from LM-04",
+          "llm_guidance": "This is the critical step. Your approach depends on the ABSTRACTION GAP from LM-04:\n\n**LITERAL (Gap = 0)**: Syntax changes only\n  - Direct line-by-line translation\n  - Preserve structure exactly\n\n**DIRECT (Gap = 1)**: Idiom mapping\n  - Translate constructs to target language equivalents\n  - Preserve algorithm structure, adapt syntax\n\n**SEMANTIC (Gap >= 2)**: Behavior translation - DO NOT translate 1:1!\n  - Ask: 'What does this code DO, not HOW does it do it?'\n  - Memory operations → Object properties\n  - Bit flags → Enums/Booleans  \n  - goto/labels → Methods/Match statements\n  - Hardware I/O → Framework APIs\n  - Register manipulation → High-level state changes\n  \n  Example (C++ mimicking ASM → Python):\n  WRONG: a = M(PlayerState); a &= 0x03; if(z) goto Standing\n  RIGHT: if player.state == PlayerState.STANDING:\n\nThe semantic approach produces CLEANER, MORE MAINTAINABLE code.\nSee docs/TRANSLATION_LEARNINGS.md for detailed SMB migration examples.\n\nDO NOT create stubs. DO NOT add TODO comments. TRANSLATE THE BEHAVIOR."
         },
         {
           "action_id": "LM-05-A05",
@@ -796,12 +819,42 @@
         "5. Result: Behavior preservation guaranteed, architecture potentially improved"
       ]
     },
+    "abstraction_level_principle": {
+      "description": "The abstraction gap between source and target determines translation strategy",
+      "levels": {
+        "level_1_machine_code": "Binary (0s and 1s), CPU-specific",
+        "level_2_assembly": "Mnemonics (ADD, MOV, JMP), hardware-aware, registers, flags",
+        "level_3_middle_level": "C, C++ - high-level constructs + memory access, pointers",
+        "level_4_high_level": "Python, Java, C# - abstracts hardware entirely"
+      },
+      "strategy_by_gap": {
+        "gap_0": "LITERAL - Syntax changes only (Python 2 → Python 3)",
+        "gap_1": "DIRECT - Idiom mapping (C++ → Java)",
+        "gap_2_plus": "SEMANTIC - Translate behavior, not implementation (ASM → Python, C++/ASM → Python)"
+      },
+      "semantic_translation_rules": {
+        "memory_operations": "Object properties (M(Player_X) → player.x)",
+        "bit_manipulation": "Booleans/Enums (a & 0x04 → powerup == FIRE)",
+        "goto_flow": "Methods/Match statements",
+        "hardware_io": "Framework APIs (PPU_WRITE → pygame.draw)",
+        "counter_loops": "Iterators/Comprehensions",
+        "cpu_flags": "Explicit boolean conditions (if z → if value == 0)"
+      },
+      "red_flags_wrong_approach": [
+        "Emulating CPU flags (carry, zero, negative) in high-level language",
+        "Using bit manipulation for state that should be enums",
+        "Memory address constants instead of named object fields",
+        "Hardware register writes instead of API calls",
+        "Assembly idioms (JSR/RTS) instead of function calls"
+      ]
+    },
     "handling_complex_code": {
       "goto_statements": "Refactor to structured control flow (while loops, state machines, or function calls)",
       "macros": "Expand macros and translate the expanded code, or convert to functions/templates",
       "inline_assembly": "Rewrite in pure target language or use FFI to call native code",
       "global_state": "Convert to explicit state objects passed as parameters, or use dependency injection",
-      "pointer_arithmetic": "Use array indexing, slices, or safe abstractions in target language"
+      "pointer_arithmetic": "Use array indexing, slices, or safe abstractions in target language",
+      "register_operations": "For semantic translation: identify what the register manipulation DOES and use direct assignment/comparison"
     },
     "common_migration_patterns": {
       "cpp_to_python": {
@@ -824,6 +877,21 @@
     }
   },
   "version_history": [
+    {
+      "version": "1.2.0",
+      "date": "2025-12-06",
+      "changes": [
+        "CRITICAL: Added abstraction level analysis (LM-04-A00, LM-04-A00B)",
+        "Added abstraction_level_principle to llm_agent_guidance",
+        "LM-04 now determines SEMANTIC vs DIRECT vs LITERAL translation strategy based on gap",
+        "Updated LM-05-A04 with strategy-specific guidance",
+        "Added semantic_translation_rules and red_flags_wrong_approach",
+        "Added abstraction_analysis.json output",
+        "Updated G-LM-04 gate to verify abstraction analysis complete"
+      ],
+      "author": "Claude Opus 4",
+      "reason": "SMB migration case study: Translating C++ (mimicking ASM, Level 2-3) to Python (Level 4) with gap >= 2 failed when using literal translation (1,654 states, 7,862 ops). Semantic translation produced 1,500 lines of clean, working code. Key insight: abstraction gap determines strategy."
+    },
     {
       "version": "1.1.0",
       "date": "2025-12-05",
